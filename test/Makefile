@@ -1,0 +1,25 @@
+ROOT = ..
+CC = gcc
+CFLAGS = -I$(ROOT)/include -std=c99 -g
+LDFLAGS = \
+	  -L$(ROOT)/lib\
+	  -laxut \
+	  -laxe \
+	  -fsanitize=address
+
+OBJS = test.o test_scope.o test_vail.o test_pool.o test_pred.o test_vector.o test_algo.o test_list.o test_avltree.o test_hashmap.o test_string.o test_uintk.o
+TARGET = test
+
+all: 
+	$(MAKE) clean
+	$(MAKE) $(TARGET)
+	@echo Doing test cases ...
+	@./$(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+clean:
+	$(RM) $(OBJS) $(TARGET)
+
+.PHONY: all clean
