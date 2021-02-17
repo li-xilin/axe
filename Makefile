@@ -18,7 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+DEBUG ?= 0
+
 all clean:
-	$(MAKE) -C src/libaxe $@
-	$(MAKE) -C src/libaxut $@
+	$(MAKE) -C src/libaxe $@ ENABLE_DEBUG=$(DEBUG)
+	$(MAKE) -C src/libaxut $@ ENABLE_DEBUG=$(DEBUG)
 	$(MAKE) -C test $@
