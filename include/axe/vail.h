@@ -26,9 +26,15 @@
 #include <stdint.h>
 #include <stdarg.h>
 
+#ifndef AX_BASE_DEFINED
+#define AX_BASE_DEFINED
 typedef struct ax_base_st ax_base;
+#endif
+
+#ifndef AX_VAIL_DEFINED
+#define AX_VAIL_DEFINED
 typedef struct ax_vail_st ax_vail;
-typedef struct ax_vail_info_st ax_vail_info;
+#endif
 
 struct ax_vail_info_st
 {
@@ -36,6 +42,7 @@ struct ax_vail_info_st
 	size_t size;
 	int    type;
 };
+typedef struct ax_vail_info_st ax_vail_info;
 
 ax_vail *ax_vail_vcreate(ax_base *base, const char *fmt, va_list valist);
 

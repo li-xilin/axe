@@ -31,9 +31,20 @@
 #define AXUT_NAME_MAX 128
 #define AXUT_LOG_MAX 128
 
-typedef struct axut_suite_st axut_suite;
+#ifndef AXUT_RUNNER_DEFINED
+#define AXUT_RUNNER_DEFINED
 typedef struct axut_runner_st axut_runner;
+#endif
+
+#ifndef AXUT_SUITE_DEFINED
+#define AXUT_SUITE_DEFINED
+typedef struct axut_suite_st axut_suite;
+#endif
+
+#ifndef AXUT_CASE_DEFINED
+#define AXUT_CASE_DEFINED
 typedef struct axut_case_st axut_case;
+#endif
 
 typedef void (*axut_case_proc_f)(axut_runner *runner);
 

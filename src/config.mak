@@ -26,7 +26,7 @@ AR = ar
 MAKE = make
 RM = rm -f
 CC = gcc
-CFLAGS = -Wall -I$(ROOT)/src/include -I$(INCLUDE) -std=c99
+CFLAGS = -Wall --pedantic -Werror -I$(ROOT)/src/include -I$(INCLUDE) -std=c99
 
 ifeq ($(ENABLE_DEBUG), 1)
 	CFLAGS += -O0 -DAX_DEBUG -g

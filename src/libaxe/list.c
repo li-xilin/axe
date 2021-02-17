@@ -42,7 +42,7 @@ struct node_st
 {
 	struct node_st *pre;
 	struct node_st *next;
-	unsigned char data[0];
+	ax_byte data[];
 };
 
 struct ax_list_st

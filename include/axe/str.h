@@ -28,9 +28,20 @@
 
 #define AX_STR_NAME "one.any.box.str"
 
+#ifndef AX_STR_DEFINED
+#define AX_STR_DEFINED
 typedef struct ax_str_st ax_str;
+#endif
+
+#ifndef AX_SEQ_DEFINED
+#define AX_SEQ_DEFINED
 typedef struct ax_seq_st ax_seq;
+#endif
+
+#ifndef AX_STR_TRAIT_DEFINED
+#define AX_STR_TRAIT_DEFINED
 typedef struct ax_str_trait_st ax_str_trait;
+#endif
 
 typedef ax_fail     (*ax_str_append_f) (ax_str* str, const char *s);
 typedef size_t      (*ax_str_length_f) (ax_str* str);

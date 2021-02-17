@@ -42,7 +42,7 @@
 struct node_st
 {
 	struct node_st *next;
-	char kvbuffer[0];
+	ax_byte kvbuffer[];
 };
 
 struct bucket_st
@@ -225,7 +225,7 @@ static struct node_st* *find_node(ax_map *map, struct bucket_st *bucket, const v
 static void free_node(ax_map *map, struct node_st* *pp_node)
 {
 	assert(pp_node);
-	char *value_ptr = (*pp_node)->kvbuffer + map->key_tr->size;
+	ax_byte *value_ptr = (*pp_node)->kvbuffer + map->key_tr->size;
 	map->val_tr->free((*pp_node)->kvbuffer);
 	map->val_tr->free(value_ptr);
 	struct node_st *node_to_free = *pp_node;
@@ -374,7 +374,7 @@ static ax_fail map_put (ax_map *map, const void *key, const void *val)
 	struct bucket_st *bucket = locate_bucket(role.hashmap, pkey);
 	struct node_st* *pp_find_result = find_node(role.map, bucket, pkey);
 	if (pp_find_result) {
-		char *value_ptr = (*pp_find_result)->kvbuffer + map->key_tr->size;
+		ax_byte *value_ptr = (*pp_find_result)->kvbuffer + map->key_tr->size;
 		map->val_tr->free(value_ptr);
 		map->val_tr->copy(pool, value_ptr, pval, map->val_tr->size);
 	} else {

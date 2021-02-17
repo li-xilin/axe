@@ -50,15 +50,15 @@
 struct block
 {
 	struct node* node;
-	unsigned char data[0];
+	ax_byte data[];
 };
 
 struct node
 {
 	struct group* group;
 	intptr_t index;
-	void* blocktab;
-	uint16_t* freetab;
+	ax_byte *blocktab;
+	ax_byte *freetab;
 	struct node *pre;
 	struct node *next;
 	size_t blocktab_used;
@@ -321,7 +321,7 @@ group_prepare_block(struct group* group)
 				return NULL;
 		}
 		node->blocktab_used = 1;
-		block = node->blocktab;
+		block = (struct block*)node->blocktab;
 	}
 	block->node = node;
 
@@ -353,7 +353,7 @@ block_free(struct block* block)
 {
 	struct node* node = block->node;
 	struct group* group = node->group;
-	uint16_t shift = ((void*)block - node->blocktab) / node->group->block_size;
+	uint16_t shift = ((ax_byte*)block - node->blocktab) / node->group->block_size;
 
 #ifdef AX_DEBUG
 	if (check_double_free(node, shift))
@@ -415,7 +415,7 @@ ax_pool_realloc(ax_pool* pool, void *ptr, size_t size)
 	CHECK_PARAM_NULL(pool);
 
 	struct group* group = pool_prepare_group(pool, size);
-	struct block* block = ptr - sizeof(struct block);
+	struct block* block = (struct block*)((ax_byte*)ptr - sizeof(struct block));
 	if (block->node == NULL && group == NULL)
 		return realloc(ptr, size + sizeof *block);
 	
@@ -437,7 +437,7 @@ ax_pool_free(void* ptr)
 	if (ptr == NULL)
 		return;
 
-	struct block* block = ptr - sizeof(struct block);
+	struct block* block = (struct block*)((ax_byte*)ptr - sizeof(struct block));
 	if (block->node == NULL)
 		free(block);
 	else

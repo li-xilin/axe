@@ -224,9 +224,8 @@ static void test_seq_trunc(axut_runner *r)
 	ax_seq_trunc(role.seq, 5);
 	axut_assert(r, seq_equal_array(role.seq, table1, sizeof table1));
 
-	int32_t table2[] = {};
 	ax_seq_trunc(role.seq, 0);
-	axut_assert(r, seq_equal_array(role.seq, table2, sizeof table2));
+	axut_assert(r, seq_equal_array(role.seq, NULL, 0));
 
 	int32_t table3[] = {0, 0, 0, 0, 0};
 	ax_seq_trunc(role.seq, 5);

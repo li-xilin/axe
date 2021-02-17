@@ -30,10 +30,10 @@ void __ax_debug_assert_fail (const char* file, const char* func, int line, const
 # define AX_WHERE __FILE__ ":" __FUNCTION__ ":" __LINE__ ":"
 
 #ifdef AX_DEBUG
-# define ax_assert(_exp, _fmt, ...) ((_exp) \
-	? (void)0 : __ax_debug_assert_fail(__FILE__, __FUNCTION__, __LINE__, "assertion failed", _fmt, ##__VA_ARGS__))
+# define ax_assert(_exp, ...) ((_exp) \
+	? (void)0 : __ax_debug_assert_fail(__FILE__, __FUNCTION__, __LINE__, "assertion failed", __VA_ARGS__))
 #else
-# define ax_assert(_exp, _fmt, ...) ((void)0)
+# define ax_assert(_exp, ...) ((void)0)
 #endif
 
 #endif

@@ -29,6 +29,7 @@
 #include <axe/pool.h>
 #include <axe/debug.h>
 #include <axe/base.h>
+#include <axe/mem.h>
 #include <axe/error.h>
 
 #include <string.h>
@@ -43,7 +44,7 @@ struct node_st
         struct node_st *right;
         struct node_st *parent;
         size_t height;
-	unsigned char kvbuffer[0];
+	ax_byte kvbuffer[];
 };
 
 struct ax_avltree_st
@@ -275,35 +276,15 @@ static struct node_st *balance(struct node_st *root)
 	return root;
 }
 
-static void mem_xor(void *ptr1, void *ptr2, size_t size)
-{
-	size_t fast_size = size / sizeof(ax_fast_uint);
-	size_t slow_size = size % sizeof(ax_fast_uint);
-
-	size_t *pf1 = ptr1, *pf2 = ptr2;
-	for (size_t i = 0; i!= fast_size; i++) {
-		pf1[i] = pf1[i] ^ pf2[i];
-		pf2[i] = pf1[i] ^ pf2[i];
-		pf1[i] = pf1[i] ^ pf2[i];
-	}
-
-	uint8_t *p1 = ptr1 + size - fast_size, *p2 = ptr2 + size - fast_size;
-	for (size_t i = 0; i!= slow_size; i++) {
-		p1[i] = p1[i] ^ p2[i];
-		p2[i] = p1[i] ^ p2[i];
-		p1[i] = p1[i] ^ p2[i];
-	}
-}
-
 static void swap_node(ax_map *map, struct node_st *node1, struct node_st *node2)
 {
 	// TODO
 	ax_avltree_role role = { .map = map };
 	size_t node_size = sizeof(struct node_st) + role.map->key_tr->size + role.map->val_tr->size;
 
-	mem_xor(node1, node2, node_size);
-	mem_xor(node2, node1, node_size);
-	mem_xor(node1, node2, node_size);
+	ax_memxor(node1, node2, node_size);
+	ax_memxor(node2, node1, node_size);
+	ax_memxor(node1, node2, node_size);
 }
 
 static struct node_st* remove_node(ax_map *map, struct node_st* node)

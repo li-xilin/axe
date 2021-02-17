@@ -24,9 +24,20 @@
 #define AXE_BASE_H_
 #include <stddef.h>
 
-typedef struct ax_pool_st ax_pool;
-typedef struct ax_scope_st ax_scope;
+#ifndef AX_BASE_DEFINED
+#define AX_BASE_DEFINED
 typedef struct ax_base_st ax_base;
+#endif
+
+#ifndef AX_POOL_DEFINED
+#define AX_POOL_DEFINED
+typedef struct ax_pool_st ax_pool;
+#endif
+
+#ifndef AX_SCOPE_DEFINED
+#define AX_SCOPE_DEFINED
+typedef struct ax_scope_st ax_scope;
+#endif
 
 struct ax_base_func_set;
 

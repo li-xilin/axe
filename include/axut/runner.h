@@ -29,9 +29,21 @@
 #include "../axe/base.h"
 #include "../axe/str.h"
 
+#ifndef AXUT_RUNNER_DEFINED
+#define AXUT_RUNNER_DEFINED
 typedef struct axut_runner_st axut_runner;
+#endif
+
+#ifndef AXUT_SUITE_DEFINED
+#define AXUT_SUITE_DEFINED
 typedef struct axut_suite_st axut_suite;
+#endif
+
+#ifndef AXUT_CASE_DEFINED
+#define AXUT_CASE_DEFINED
 typedef struct axut_case_st axut_case;
+#endif
+
 typedef void (*axut_output_f)(const char* suite_name, axut_case *tc, ax_str *out);
 
 typedef union

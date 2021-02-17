@@ -45,7 +45,7 @@ ax_seq *ax_seq_vinit(ax_scope *scope, ax_seq_construct_f *builder, const char *f
 	for (int i = 0; i < vail_size; i++) {
 		ax_vail_get(vail, i, &vinfo);
 		for (int j = 0; j < vinfo.size; j++)
-			ax_seq_push(seq, vinfo.ptr + j * ax_stuff_size(type));
+			ax_seq_push(seq, (ax_byte*)vinfo.ptr + j * ax_stuff_size(type));
 	}
 	ax_vail_destroy(vail);
 	ax_scope_attach(scope, (ax_one *)seq);

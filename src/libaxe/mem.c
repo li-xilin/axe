@@ -44,7 +44,7 @@ void ax_memxor(void *ptr1, void *ptr2, size_t size)
 		pf1[i] = pf1[i] ^ pf2[i];
 	}
 
-	uint8_t *p1 = ptr1 + size - slow_size, *p2 = ptr2 + size - slow_size;
+	uint8_t *p1 = (ax_byte*)ptr1 + size - slow_size, *p2 = (ax_byte*)ptr2 + size - slow_size;
 	for (size_t i = 0; i!= slow_size; i++) {
 		p1[i] = p1[i] ^ p2[i];
 		p2[i] = p1[i] ^ p2[i];

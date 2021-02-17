@@ -27,8 +27,15 @@
 
 #define AX_SEQ_NAME "one.any.box.seq"
 
+#ifndef AX_SEQ_DEFINED
+#define AX_SEQ_DEFINED
 typedef struct ax_seq_st ax_seq;
+#endif
+
+#ifndef AX_TRAIT_DEFINED
+#define AX_TRAIT_DEFINED
 typedef struct ax_seq_trait_st ax_seq_trait;
+#endif
 
 typedef ax_fail (*ax_seq_push_f)   (ax_seq *seq, const void *val);
 typedef ax_fail (*ax_seq_pop_f)    (ax_seq *seq);
@@ -76,7 +83,7 @@ inline static ax_fail ax_seq_pop(ax_seq *seq)
 
 inline static void ax_seq_invert(ax_seq *seq)
 {
-	return seq->tr->invert(seq);
+	seq->tr->invert(seq);
 }
 
 inline static ax_fail ax_seq_trunc(ax_seq *seq, size_t size)

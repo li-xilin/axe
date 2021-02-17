@@ -46,7 +46,7 @@ struct ax_vector_st
 	size_t size;
 	size_t capacity;
 	size_t maxsize;
-	void *buffer;
+	ax_byte *buffer;
 };
 
 static ax_fail     seq_push(ax_seq *seq, const void *val);
@@ -148,7 +148,7 @@ static void iter_move(ax_iter *it, long i)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_seq *seq = it->owner;
-	it->point += (i * (seq->elem_tr->size));
+	it->point = (ax_byte*)it->point + (i * (seq->elem_tr->size));
 	ax_assert(iter_if_valid(it), "iterator boundary exceed");
 }
 
@@ -232,7 +232,7 @@ static long iter_dist(const ax_iter *it1, const ax_iter *it2)
 	CHECK_PARAM_VALIDITY(it2, iter_if_valid(it2));
 
 	const ax_vector *vector = it1->owner;
-	return (it2->point - it1->point) / vector->seq.elem_tr->size;
+	return ((uintptr_t)it2->point - (uintptr_t)it1->point) / vector->seq.elem_tr->size;
 }
 
 static void riter_move(ax_iter *it, long i)
@@ -241,7 +241,7 @@ static void riter_move(ax_iter *it, long i)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_seq *seq = it->owner;
-	it->point -= (i * (seq->elem_tr->size));
+	it->point = (ax_byte*)it->point - (i * (seq->elem_tr->size));
 	ax_assert(iter_if_valid(it), "iterator boundary exceed");
 }
 
@@ -401,14 +401,14 @@ static void iter_erase(ax_iter *it)
 	const ax_stuff_trait *etr = vector->seq.elem_tr;
 	 
 	vector->seq.elem_tr->free(it->point);
-	void *end = vector->buffer + (vector->size - 1) * etr->size;
-	for (void *p = it->point ; p < end ; p += etr->size) {
+	ax_byte *end = vector->buffer + (vector->size - 1) * etr->size;
+	for (ax_byte *p = it->point ; p < end ; p += etr->size) {
 		etr->move(p, p + etr->size, etr->size);
 	}
 
 	vector->size --;
 	if(!ax_iter_norm(*it))
-		it->point -= etr->size;
+		it->point = (ax_byte*)it->point - etr->size;
 }
 
 static const ax_stuff_trait *box_elem_tr(const ax_box *box)
@@ -422,9 +422,9 @@ static void box_clear(ax_box *box)
 	CHECK_PARAM_NULL(box);
 	ax_vector_role role = { .box = (ax_box*)box};
 	const ax_stuff_trait *etr = role.vector->seq.elem_tr;
-	void *end = role.vector->buffer + role.vector->size * etr->size;
+	ax_byte *end = role.vector->buffer + role.vector->size * etr->size;
 	if (role.vector->buffer) {
-		for (void *p = role.vector->buffer ; p < end ; p += etr->size) {
+		for (ax_byte *p = role.vector->buffer ; p < end ; p += etr->size) {
 			etr->free(p);
 		}
 		free(role.vector->buffer);
@@ -445,14 +445,14 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	ax_base *base = vector->one_env.base;
 	ax_pool *pool = ax_base_pool(base);
 
-	size_t offset = it->point - vector->buffer; //backup offset before realloc
+	size_t offset = (ax_byte *)it->point - vector->buffer; //backup offset before realloc
 	if(realloc_buffer_before_add(vector))
 		return ax_true;
 	it->point = vector->buffer + offset; //restore offset
 
-	void *ins = ax_iter_norm(*it) ? it->point : (it->point + etr->size);
+	void *ins = ax_iter_norm(*it) ? it->point : ((ax_byte*)it->point + etr->size);
 	void *end = vector->buffer + (vector->size) * etr->size;
-	for (void *p = end ; p != ins ; p -= etr->size) {
+	for (ax_byte *p = end ; p != ins ; p -= etr->size) {
 		etr->move(p, p - etr->size, etr->size);
 	}
 
@@ -467,7 +467,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 
 	vector->size ++;
 	if(ax_iter_norm(*it))
-		it->point += etr->size;
+		it->point = (ax_byte*)it->point + etr->size;
 	return ax_false;
 }
 

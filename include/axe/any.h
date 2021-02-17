@@ -26,10 +26,22 @@
 
 #define AX_ANY_NAME "one.any"
 
-typedef struct ax_any_st ax_any;
+#ifndef AX_STUFF_TRAIT_DEFINED
+#define AX_STUFF_TRAIT_DEFINED
 typedef struct ax_stuff_trait_st ax_stuff_trait;
-typedef struct ax_any_env_st ax_any_env;
+#endif
+
+#ifndef AX_ANY_DEFINED
+#define AX_ANY_DEFINED
+typedef struct ax_any_st ax_any;
+#endif
+
+
+#ifndef AX_ANY_TRAIT_DEFINED
+#define AX_ANY_TRAIT_DEFINED
 typedef struct ax_any_trait_st ax_any_trait;
+#endif
+
 
 typedef ax_any     *(*ax_any_copy_f) (const ax_any* any);
 typedef ax_any     *(*ax_any_move_f) (      ax_any* any);

@@ -26,8 +26,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifndef AX_BASE_DEFINED
+#define AX_BASE_DEFINED
 typedef struct ax_base_st ax_base;
+#endif
+
+#ifndef AX_POOL_DEFINED
+#define AX_POOL_DEFINED
 typedef struct ax_pool_st ax_pool;
+#endif
 
 typedef void *(*ax_mem_alloc_f)(size_t size);
 typedef void (*ax_mem_free_f)(void *ptr);

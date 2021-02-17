@@ -24,7 +24,11 @@
 #define AXE_MEM_H_
 
 #include "def.h"
+
+#ifndef AX_POOL_DEFINED
+#define AX_POOL_DEFINED
 typedef struct ax_pool_st ax_pool;
+#endif
 
 void ax_memxor(void *ptr1, void *ptr2, size_t size);
 

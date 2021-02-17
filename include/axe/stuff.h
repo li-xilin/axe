@@ -27,7 +27,16 @@
 #include <stddef.h>
 #include <stdarg.h>
 
+#ifndef AX_POOL_DEFINED
+#define AX_POOL_DEFINED
 typedef struct ax_pool_st ax_pool;
+#endif
+
+
+#ifndef AX_STUFF_TRAIT_DEFINED
+#define AX_STUFF_TRAIT_DEFINED
+typedef struct ax_stuff_trait_st ax_stuff_trait;
+#endif
 
 #define AX_ST_NIL   0
 #define AX_ST_RAW   1
@@ -47,10 +56,7 @@ typedef struct ax_pool_st ax_pool;
 #define AX_ST_PTR   15
 #define AX_ST_PWL   16
 
-typedef struct ax_stuff_trait_st ax_stuff_trait;
-typedef union ax_stuff_u ax_stuff;
-
-union ax_stuff_u
+union ax_stuff_un
 {
 	int8_t   i8;
 	int16_t  i16;
@@ -68,6 +74,7 @@ union ax_stuff_u
 	void*    ptr;
 	void*    raw;
 };
+typedef union ax_stuff_un ax_stuff;
 
 typedef void   (*ax_stuff_free_f) (void* p);
 typedef ax_bool(*ax_stuff_compare_f) (const void* p1, const void* p2, size_t size);

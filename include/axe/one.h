@@ -24,9 +24,21 @@
 #define AXE_ONE_H_
 #include "def.h"
 
+#ifndef AX_BASE_DEFINED
+#define AX_BASE_DEFINED
 typedef struct ax_base_st ax_base;
+#endif
+
+#ifndef AX_ONE_DEFINED
+#define AX_ONE_DEFINED
 typedef struct ax_one_st ax_one;
+#endif
+
+#ifndef AX_SCOPE_DEFINED
+#define AX_SCOPE_DEFINED
 typedef struct ax_scope_st ax_scope;
+#endif
+
 typedef struct ax_one_env_st ax_one_env;
 
 typedef void        (*ax_one_free_f) (ax_one *one);
@@ -65,7 +77,7 @@ static inline const char *ax_one_name(const ax_one *one)
 }
 
 static inline void ax_one_free(ax_one *one) {
-	return one->tr->free(one);
+	one->tr->free(one);
 }
 
 static inline ax_scope *ax_one_scope(const ax_one *one)

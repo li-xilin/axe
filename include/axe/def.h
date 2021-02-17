@@ -11,6 +11,8 @@ inline static ax_bool ax_bool_equal(ax_bool b1, ax_bool b2) { return  !!b1 == !!
 
 typedef ax_bool ax_fail;
 
+typedef uint8_t ax_byte;
+
 typedef size_t ax_fast_uint;
 
 typedef void (*ax_unary_f)(void *out, const void *in, void *arg);

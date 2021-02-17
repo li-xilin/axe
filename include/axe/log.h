@@ -29,13 +29,13 @@
 
 void __ax_log_print (int level, const char*, ...);
 
-#define ax_pinfo(_fmt, ...)    __ax_log_print(AX_LM_INFO, (_fmt), ##__VA_ARGS__)
-#define ax_pwarning(_fmt, ...) __ax_log_print(AX_LM_WARNING, (_fmt), ##__VA_ARGS__)
-#define ax_perror(_fmt, ...)   __ax_log_print(AX_LM_ERROR, (_fmt), ##__VA_ARGS__)
+#define ax_pinfo(...)    __ax_log_print(AX_LM_INFO, __VA_ARGS__)
+#define ax_pwarning(...) __ax_log_print(AX_LM_WARNING, __VA_ARGS__)
+#define ax_perror(...)   __ax_log_print(AX_LM_ERROR, __VA_ARGS__)
 
-#define ax_pinfo_if(_cond, _fmt, ...)      ((_cond) ? __ax_log_print(AX_LM_INFO, (_fmt), ##__VA_ARGS__) : (void)0)
-#define ax_pwarning_if(_cond, _fmt, ...)   ((_cond) ? __ax_log_print(AX_LM_WARNING, (_fmt), ##__VA_ARGS__) : (void)0)
-#define ax_perror_if(_cond, _fmt, ...)     ((_cond) ? __ax_log_print(AX_LM_ERROR, (_fmt), ##__VA_ARGS__) : (void)0)
-#define ax_panic_if(_cond, _lm, _fmt, ...) ((_cond) ? __ax_log_print((_lm), (_fmt), ##__VA_ARGS__), abort(): (void)0)
+#define ax_pinfo_if(_cond, ...)      ((_cond) ? __ax_log_print(AX_LM_INFO, __VA_ARGS__) : (void)0)
+#define ax_pwarning_if(_cond, ...)   ((_cond) ? __ax_log_print(AX_LM_WARNING, __VA_ARGS__) : (void)0)
+#define ax_perror_if(_cond, ...)     ((_cond) ? __ax_log_print(AX_LM_ERROR, __VA_ARGS__) : (void)0)
+#define ax_panic_if(_cond, _lm, ...) ((_cond) ? __ax_log_print((_lm), __VA_ARGS__), abort(): (void)0)
 
 #endif

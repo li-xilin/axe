@@ -372,13 +372,15 @@ ax_fail ax_merge_sort(ax_iter first, ax_iter last)
 
 ax_bool ax_equal_to_arr(ax_iter first, ax_iter last, void *arr, size_t size)
 {
+	CHECK_PARAM_VALIDITY(arr, !!arr == !!size);
+
 	const ax_box *box = first.owner;
 	const ax_stuff_trait *tr = ax_box_elem_tr(box);
 	ax_assert(size % tr->size == 0, "unexpected size");
 
 	size_t pos = 0;
 	while (!ax_iter_equal(first, last) && pos < size) {
-		if (!tr->equal(ax_iter_get(first), arr + pos, tr->size))
+		if (!tr->equal(ax_iter_get(first), (ax_byte*)arr + pos, tr->size))
 			return ax_false;
 		first = ax_iter_next(first);
 		pos += tr->size;
