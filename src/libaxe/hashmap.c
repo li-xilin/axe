@@ -589,7 +589,7 @@ static void box_clear(ax_box *box)
 
 	ax_hashmap_role role = { .box = (ax_box*)box };
 	for (struct bucket_st *bucket = role.hashmap->bucket_list; bucket; bucket = bucket->next)
-		for (struct node_st **pp_node = &bucket->node_list; *pp_node;) //TODO fix bug
+		for (struct node_st **pp_node = &bucket->node_list; *pp_node;)
 			free_node(role.map, pp_node);
 
 	ax_pool *pool = ax_base_pool(ax_one_base(role.one));

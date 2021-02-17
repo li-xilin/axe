@@ -18,12 +18,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+INCLUDE = $(ROOT)/include
+LIB = $(ROOT)/lib
+BIN = $(ROOT)/bin
+
 AR = ar
 MAKE = make
 RM = rm -f
 CC = gcc
-CFLAGS = -Wall -I$(ROOT)/src/include -I$(ROOT)/include -std=c99 -DAX_DEBUG -g
+CFLAGS = -Wall -I$(ROOT)/src/include -I$(INCLUDE) -std=c99
 
-LIB_PATH = $(ROOT)/lib
-BIN_PATH = $(ROOT)/bin
+ifeq ($(ENABLE_DEBUG), 1)
+	CFLAGS += -O0 -DAX_DEBUG -g
+else
+	CFLAGS += -O2
+endif
+
 

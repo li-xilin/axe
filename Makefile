@@ -19,6 +19,6 @@
 # THE SOFTWARE.
 
 all clean:
-	cd src/libaxe; $(MAKE) $@
-	cd src/libaxut; $(MAKE) $@
-	cd test; $(MAKE) $@
+	$(MAKE) -C src/libaxe $@
+	$(MAKE) -C src/libaxut $@
+	$(MAKE) -C test $@

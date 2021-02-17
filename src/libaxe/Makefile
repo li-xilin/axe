@@ -21,7 +21,7 @@
 ROOT = ../..
 include $(ROOT)/src/config.mak
 
-TARGET = $(ROOT)/lib/libaxe.a
+TARGET = $(LIB)/libaxe.a
 
 OBJS = stuff.o scope.o debug.o pair.o any.o vail.o vector.o base.o pool.o mem.o \
        one.o error.o log.o algo.o oper.o seq.o iter.o list.o avltree.o hashmap.o \
