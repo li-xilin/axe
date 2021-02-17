@@ -100,14 +100,14 @@ static const ax_any_trait any_trait;
 static const ax_box_trait box_trait;
 static const ax_map_trait map_trait;
 
-static inline void *get_node_value(const ax_map *map, struct node_st *node)
+inline static inline void *get_node_value(const ax_map *map, struct node_st *node)
 {
 	assert(node);
 	return node->kvbuffer + map->key_tr->size;
 }
 
 
-static struct node_st *get_left_end_node(const ax_map *map, struct node_st *node)
+inline static struct node_st *get_left_end_node(const ax_map *map, struct node_st *node)
 {
 	assert(node);
 	while (node->left)
@@ -115,7 +115,7 @@ static struct node_st *get_left_end_node(const ax_map *map, struct node_st *node
 	return node;
 }
 
-static struct node_st *get_right_end_node(const ax_map *map, struct node_st *node)
+inline static struct node_st *get_right_end_node(const ax_map *map, struct node_st *node)
 {
 	assert(node);
 	while (node->right)
@@ -175,14 +175,14 @@ static struct node_st *find_node(const ax_map *map, struct node_st *node, const 
 		return node;
 }
 
-static int height(struct node_st *root)
+inline static int height(struct node_st *root)
 {
 	return root ? root->height : 0;
 }
 
-static void adjust_height(struct node_st *root)
+inline static void adjust_height(struct node_st *root)
 {
-	root->height = 1 + MAX(height(root->left), height(root->right));
+	root->height = 1 + AX_MAX(height(root->left), height(root->right));
 }
 
 static struct node_st *rotate_right(struct node_st *root)
@@ -297,6 +297,7 @@ static void mem_xor(void *ptr1, void *ptr2, size_t size)
 
 static void swap_node(ax_map *map, struct node_st *node1, struct node_st *node2)
 {
+	// TODO
 	ax_avltree_role role = { .map = map };
 	size_t node_size = sizeof(struct node_st) + role.map->key_tr->size + role.map->val_tr->size;
 
@@ -483,13 +484,15 @@ static void iter_erase(ax_iter *it)
 
 	struct node_st * current = remove_node(role.map, node);
 
-	if (current) 
-		do {
-			current  = current->parent;
+	if (current) {
+		while (current->parent) {
 			adjust_height(current);
 			current = balance(current);
-		} while (current->parent);
-
+			current  = current->parent;
+		} 
+		adjust_height(current);
+		current = balance(current);
+	}
 	role.avltree->root = current;
 	role.avltree->size --;
 }
@@ -618,12 +621,15 @@ static ax_fail map_erase (ax_map* map, const void *key)
 
 	struct node_st * current = remove_node(map, node);
 
-	if (current)
-		do {
-			current  = current->parent;
+	if (current) {
+		while (current->parent) {
 			adjust_height(current);
 			current = balance(current);
-		} while (current->parent);
+			current  = current->parent;
+		} 
+		adjust_height(current);
+		current = balance(current);
+	}
 
 	role.avltree->root = current;
 	role.avltree->size --;

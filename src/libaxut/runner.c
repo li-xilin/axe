@@ -39,6 +39,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <inttypes.h>
 
 #include "check.h"
 
@@ -265,7 +266,21 @@ void __axut_assert_str_equal(axut_runner *r, const char *ex, const char *ac, con
 {
 	if (strcmp(ex, ac) == 0)
 		return;
-	__axut_fail(r, file, line, "assertion failed: '%s' equal to '%s'", ex, ac);
+	__axut_fail(r, file, line, "assertion failed: expect '%s', but actually '%s'", ex, ac);
+}
+
+void __axut_assert_int_equal(axut_runner *r, int64_t ex, int64_t ac, const char *file, int line)
+{
+	if (ex == ac)
+		return;
+	__axut_fail(r, file, line, "assertion failed: expect '%" PRId64 "', but actually '%" PRId64 "'", ex, ac);
+}
+
+void __axut_assert_uint_equal(axut_runner *r, uint64_t ex, uint64_t ac, const char *file, int line)
+{
+	if (ex == ac)
+		return;
+	__axut_fail(r, file, line, "assertion failed: expect '%" PRIu64 "', but actually '%" PRIu64 "'", ex, ac);
 }
 
 void __axut_fail(axut_runner *r, const char *file, int line, const char *fmt, ...)

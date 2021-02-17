@@ -73,7 +73,7 @@ static void complex(axut_runner *r)
 	for (int i = 0; i < N; i++) {
 		ax_map_erase(role.map, &i);
 	}
-	axut_assert(r, ax_box_size(role.box) == 0);
+	axut_assert_uint_equal(r, 0, ax_box_size(role.box));
 
 	for (int i = 0; i < N; i++) {
 		axut_assert(r, table[i] == 1);
@@ -92,9 +92,9 @@ static void foreach(axut_runner *r)
 
 	ax_iter it = ax_box_begin(role.box), end = ax_box_end(role.box);
 	while (!ax_iter_equal(it, end)) {
-		ax_iter_erase(it);
+		it = ax_iter_erase(it);
 	}
-	axut_assert(r, ax_box_size(role.box) == 0);
+	axut_assert_uint_equal(r, ax_box_size(role.box), 0);
 
 	ax_base_destroy(base);
 }
@@ -103,9 +103,9 @@ axut_suite* suite_for_avltree(ax_base *base)
 {
 	axut_suite *suite = axut_suite_create(ax_base_local(base), "avltree");
 
-	//axut_suite_add(suite, complex, 0);
+	axut_suite_add(suite, complex, 0);
 	axut_suite_add(suite, insert, 0);
-	//axut_suite_add(suite, foreach, 0);
+	axut_suite_add(suite, foreach, 0);
 
 	return suite;
 }

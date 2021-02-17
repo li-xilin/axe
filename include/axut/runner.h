@@ -56,6 +56,10 @@ void __axut_assert(axut_runner *r, ax_bool cond, const char *file, int line, con
 
 void __axut_assert_str_equal(axut_runner *r, const char *ex, const char *ac, const char *file, int line);
 
+void __axut_assert_int_equal(axut_runner *r, int64_t ex, int64_t ac, const char *file, int line);
+
+void __axut_assert_uint_equal(axut_runner *r, uint64_t ex, uint64_t ac, const char *file, int line);
+
 void __axut_fail(axut_runner *r, const char *file, int line, const char *fmt, ...);
 
 #define axut_assert(r, cond) __axut_assert((r), (cond), __FILE__, __LINE__, "assertion failed: %s", #cond)
@@ -65,6 +69,11 @@ void __axut_fail(axut_runner *r, const char *file, int line, const char *fmt, ..
 #define axut_fail(r, fmt, ...) __axut_fail((r), __FILE__, __LINE__, fmt, ##__VA_ARGS__)
 
 #define axut_assert_str_equal(r, ex, ac) __axut_assert_str_equal((r), ex, ac, __FILE__, __LINE__)
+
+#define axut_assert_int_equal(r, ex, ac) __axut_assert_int_equal((r), ex, ac, __FILE__, __LINE__)
+
+#define axut_assert_uint_equal(r, ex, ac) __axut_assert_uint_equal((r), ex, ac, __FILE__, __LINE__)
+
 
 #endif
 
