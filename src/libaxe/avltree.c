@@ -101,7 +101,7 @@ static const ax_any_trait any_trait;
 static const ax_box_trait box_trait;
 static const ax_map_trait map_trait;
 
-inline static inline void *get_node_value(const ax_map *map, struct node_st *node)
+inline static void *get_node_value(const ax_map *map, struct node_st *node)
 {
 	assert(node);
 	return node->kvbuffer + map->key_tr->size;
