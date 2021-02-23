@@ -29,7 +29,7 @@ OBJS = stuff.o scope.o debug.o pair.o any.o vail.o vector.o base.o pool.o mem.o 
 
 all: $(TARGET)
 $(TARGET): $(OBJS)
-	$(AR) rcs $@ $(OBJS)
+	$(AR) -rcs $@ $(OBJS)
 clean:
 	$(RM) $(OBJS) $(TARGET)
 

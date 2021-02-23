@@ -27,7 +27,7 @@ OBJS = suite.o runner.o
 
 all: $(TARGET)
 $(TARGET): $(OBJS)
-	$(AR) rcs $@ $(OBJS)
+	$(AR) -rcs $@ $(OBJS)
 clean:
 	$(RM) $(OBJS) $(TARGET)
 
