@@ -28,7 +28,6 @@
 #include <axe/pool.h>
 #include <axe/error.h>
 #include <axe/log.h>
-#include <alloca.h>
 
 #include <string.h>
 #include <stdlib.h>
