@@ -23,7 +23,6 @@ LIB = $(ROOT)/lib
 BIN = $(ROOT)/bin
 
 AR = ar
-MAKE = make
 RM = rm -f
 CC = gcc
 CFLAGS = -Wall --pedantic -Werror -I$(ROOT)/src/include -I$(INCLUDE) -std=c99
