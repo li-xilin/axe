@@ -10,7 +10,7 @@
 #include <time.h>
 
 #define ALLOC_COUNT 0xFFFFF
-static void test_pool(axut_runner *r)
+static void pool(axut_runner *r)
 {
 	long begin = clock();
 	ax_pool *pool = ax_pool_create();
@@ -35,9 +35,9 @@ static void test_pool(axut_runner *r)
 axut_suite *suite_for_pool(ax_base *base)
 {
 	axut_suite* suite = axut_suite_create(ax_base_local(base), "pool");
-	srand(time(NULL));
+	srand(42);
 
-	axut_suite_add(suite, test_pool, 0);
+	axut_suite_add(suite, pool, 0);
 
 	return suite;
 }

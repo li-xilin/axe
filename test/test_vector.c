@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static void test_create(axut_runner *r)
+static void create(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
 	ax_vector_role role;
@@ -31,7 +31,7 @@ static void test_create(axut_runner *r)
 	ax_base_destroy(base);
 }
 
-static void test_push(axut_runner *r)
+static void push(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
 	ax_vector_role role = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
@@ -52,7 +52,7 @@ static void test_push(axut_runner *r)
 	ax_base_destroy(base);
 }
 
-static void test_iter(axut_runner *r)
+static void iter(axut_runner *r)
 {
 	ax_iter cur, last;
 	int i;
@@ -82,7 +82,7 @@ static void test_iter(axut_runner *r)
 	ax_base_destroy(base);
 }
 
-static void test_riter(axut_runner *r)
+static void riter(axut_runner *r)
 {
 	ax_iter cur, last;
 	int i;
@@ -122,7 +122,7 @@ static void test_riter(axut_runner *r)
 }
 
 
-static void test_seq_insert(axut_runner *r)
+static void seq_insert(axut_runner *r)
 {
 	int ins;
 	ax_base* base = ax_base_create();
@@ -149,7 +149,7 @@ static void test_seq_insert(axut_runner *r)
 	ax_base_destroy(base);
 }
 
-static void test_seq_insert_for_riter(axut_runner *r)
+static void seq_insert_for_riter(axut_runner *r)
 {
 	int ins;
 	ax_base* base = ax_base_create();
@@ -176,7 +176,7 @@ static void test_seq_insert_for_riter(axut_runner *r)
 	ax_base_destroy(base);
 }
 
-static void test_any_move(axut_runner *r)
+static void any_move(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
 	ax_vector_role role1 = ax_vector_init(ax_base_local(base), "i32x4", 1, 2, 3, 4);
@@ -192,7 +192,7 @@ static void test_any_move(axut_runner *r)
 	ax_base_destroy(base);
 }
 
-static void test_any_copy(axut_runner *r)
+static void any_copy(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
 	ax_vector_role role1 = ax_vector_init(ax_base_local(base), "i32x4", 1, 2, 3, 4);
@@ -210,7 +210,7 @@ static void test_any_copy(axut_runner *r)
 	ax_base_destroy(base);
 }
 
-static void test_seq_trunc(axut_runner *r)
+static void seq_trunc(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
 
@@ -230,7 +230,7 @@ static void test_seq_trunc(axut_runner *r)
 	ax_base_destroy(base);
 }
 
-static void test_seq_invert(axut_runner *r)
+static void seq_invert(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
 	ax_vector_role role = ax_vector_init(ax_base_local(base), "i32x5", 1, 2, 3, 4, 5);
@@ -257,16 +257,16 @@ axut_suite *suite_for_vector(ax_base *base)
 {
 	axut_suite* suite = axut_suite_create(ax_base_local(base), "vector");
 
-	axut_suite_add(suite, test_create, 0);
-	axut_suite_add(suite, test_push, 0);
-	axut_suite_add(suite, test_any_move, 0);
-	axut_suite_add(suite, test_any_copy, 0);
-	axut_suite_add(suite, test_iter, 0);
-	axut_suite_add(suite, test_riter, 0);
-	axut_suite_add(suite, test_seq_insert, 0);
-	axut_suite_add(suite, test_seq_insert_for_riter, 0);
-	axut_suite_add(suite, test_seq_trunc, 0);
-	axut_suite_add(suite, test_seq_invert, 0);
+	axut_suite_add(suite, create, 0);
+	axut_suite_add(suite, push, 0);
+	axut_suite_add(suite, any_move, 0);
+	axut_suite_add(suite, any_copy, 0);
+	axut_suite_add(suite, iter, 0);
+	axut_suite_add(suite, riter, 0);
+	axut_suite_add(suite, seq_insert, 0);
+	axut_suite_add(suite, seq_insert_for_riter, 0);
+	axut_suite_add(suite, seq_trunc, 0);
+	axut_suite_add(suite, seq_invert, 0);
 
 	return suite;
 }

@@ -17,7 +17,7 @@
 #include <string.h>
 #include <time.h>
 
-static void test_algo_complex(axut_runner *r)
+static void all_any_none_of(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
 	ax_vector_role role = ax_vector_create(
@@ -36,8 +36,10 @@ static void test_algo_complex(axut_runner *r)
 	}
 
 	int32_t twenty = 20;
+	ax_bool ret;
 	pred = ax_pred_binary_make(ax_oper_for(AX_ST_I32)->lt, NULL, &twenty, NULL);
-	ax_bool ret = ax_all_of(first, last, &pred);
+
+	ret = ax_all_of(first, last, &pred);
 	axut_assert(r, ret == ax_true);
 
 	ret = ax_any_of(first, last, &pred);
@@ -49,7 +51,7 @@ static void test_algo_complex(axut_runner *r)
 	ax_base_destroy(base);
 }
 
-static void test_partation(axut_runner *r)
+static void partation(axut_runner *r)
 {
 	ax_base *base = ax_base_create();
 
@@ -77,7 +79,7 @@ static void test_partation(axut_runner *r)
 
 }
 
-static void test_quick_sort(axut_runner *r)
+static void quick_sort(axut_runner *r)
 {
 	ax_vector_role role;
 	ax_base *base = ax_base_create();
@@ -98,7 +100,7 @@ static void test_quick_sort(axut_runner *r)
 	ax_base_destroy(base);
 }
 
-static void test_merge(axut_runner *r)
+static void merge(axut_runner *r)
 {
 	ax_base *base = ax_base_create();
 
@@ -121,7 +123,7 @@ static void test_merge(axut_runner *r)
 
 }
 
-static void test_merge_sort(axut_runner *r)
+static void merge_sort(axut_runner *r)
 {
 	ax_vector_role role;
 	ax_base *base = ax_base_create();
@@ -139,7 +141,7 @@ static void test_merge_sort(axut_runner *r)
 	ax_base_destroy(base);
 }
 
-static void test_binary_search(axut_runner *r)
+static void binary_search(axut_runner *r)
 {
 	ax_vector_role role;
 	ax_base *base = ax_base_create();
@@ -166,7 +168,7 @@ static void test_binary_search(axut_runner *r)
 	ax_base_destroy(base);
 }
 
-static void test_binary_search_if_not(axut_runner *r)
+static void binary_search_if_not(axut_runner *r)
 {
 	ax_vector_role role;
 	ax_base *base = ax_base_create();
@@ -202,7 +204,7 @@ static void test_binary_search_if_not(axut_runner *r)
 }
 
 
-static void test_insertion_sort(axut_runner *r)
+static void insertion_sort(axut_runner *r)
 {
 	ax_vector_role role;
 	ax_base *base = ax_base_create();
@@ -227,7 +229,7 @@ static int qsort_compare_cb(const void* p1, const void* p2)
 
 }
 
-static void test_sort_time(axut_runner *r) {
+static void sort_time(axut_runner *r) {
 	const size_t length = 0xFFF;
 	ax_iter first, last;
 	clock_t time_before;
@@ -300,15 +302,15 @@ axut_suite *suite_for_algo(ax_base *base)
 {
 	axut_suite* suite = axut_suite_create(ax_base_local(base), "algo");
 
-	axut_suite_add(suite, test_algo_complex, 0);
-	axut_suite_add(suite, test_partation, 0);
-	axut_suite_add(suite, test_quick_sort, 0);
-	axut_suite_add(suite, test_merge, 0);
-	axut_suite_add(suite, test_merge_sort, 0);
-	axut_suite_add(suite, test_sort_time, 0);
-	axut_suite_add(suite, test_binary_search, 0);
-	axut_suite_add(suite, test_binary_search_if_not, 0);
-	axut_suite_add(suite, test_insertion_sort, 0);
+	axut_suite_add(suite, all_any_none_of, 0);
+	axut_suite_add(suite, partation, 0);
+	axut_suite_add(suite, quick_sort, 0);
+	axut_suite_add(suite, merge, 0);
+	axut_suite_add(suite, merge_sort, 0);
+	axut_suite_add(suite, sort_time, 0);
+	axut_suite_add(suite, binary_search, 0);
+	axut_suite_add(suite, binary_search_if_not, 0);
+	axut_suite_add(suite, insertion_sort, 0);
 
 	return suite;
 }

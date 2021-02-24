@@ -18,7 +18,7 @@ test: clean $(TARGET)
 	./test_all
 
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $(OBJS) $(LDFLAGS)
 
 clean:
 	$(RM) $(OBJS) $(TARGET)

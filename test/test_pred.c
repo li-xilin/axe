@@ -7,7 +7,7 @@
 #include <setjmp.h>
 #include <stdlib.h>
 
-static void test_pred_unary(axut_runner *r)
+static void pred_unary(axut_runner *r)
 {
 	uint32_t in = 1, out;
 	ax_pred pred = ax_pred_unary_make(ax_oper_for(AX_ST_U32)->bit_not, NULL, NULL);
@@ -21,7 +21,7 @@ static void test_pred_unary(axut_runner *r)
 
 }
 
-static void test_pred_binary(axut_runner *r)
+static void pred_binary(axut_runner *r)
 {
 	ax_pred pred;
 	uint32_t in1 = 3, in2 = 4, out;
@@ -48,8 +48,8 @@ axut_suite *suite_for_pred(ax_base *base)
 {
 	axut_suite *suite = axut_suite_create(ax_base_local(base), "pred");
 
-	axut_suite_add(suite, test_pred_unary, 0);
-	axut_suite_add(suite, test_pred_binary, 0);
+	axut_suite_add(suite, pred_unary, 0);
+	axut_suite_add(suite, pred_binary, 0);
 
 	return suite;
 }
