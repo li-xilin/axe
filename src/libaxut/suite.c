@@ -171,7 +171,7 @@ void axut_suite_set_arg(axut_suite *s, void *arg)
 	s->arg = arg;
 }
 
-void *axut_suite_arg(axut_suite *s)
+void *axut_suite_arg(const axut_suite *s)
 {
 	return s->arg;
 }
