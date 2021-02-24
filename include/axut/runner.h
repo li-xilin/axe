@@ -64,6 +64,8 @@ void axut_runner_remove(axut_runner *r, axut_suite* s);
 
 void axut_runner_run(axut_runner *r);
 
+void *axut_runner_arg(const axut_runner *r);
+
 void __axut_assert(axut_runner *r, ax_bool cond, const char *file, int line, const char *fmt, ...);
 
 void __axut_assert_str_equal(axut_runner *r, const char *ex, const char *ac, const char *file, int line);

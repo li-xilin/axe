@@ -78,7 +78,7 @@ axut_suite *axut_suite_create(ax_scope *scope, const char* name);
 
 void axut_suite_set_arg(axut_suite *s, void *arg);
 
-void *axut_suite_arg(axut_suite *s);
+void *axut_suite_arg(const axut_suite *s);
 
 ax_fail axut_suite_add_case(axut_suite *suite, const char *name, axut_case_proc_f proc, int priority);
 
