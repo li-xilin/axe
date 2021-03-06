@@ -54,9 +54,16 @@ struct ax_one_trait_st
 };
 typedef struct ax_one_trait_st ax_one_trait;
 
+
 typedef union
 {
 	ax_one *one;
+} ax_one_crol;
+
+typedef union
+{
+	ax_one *one;
+	ax_one_crol c;
 } ax_one_role;
 
 struct ax_one_st
@@ -98,6 +105,7 @@ static inline ax_base *ax_one_base(const ax_one *one)
 ax_bool ax_one_is(const ax_one *one, const char *type);
 
 #define ax_cast(type, ptr) ((ax_##type##_role){ .type = ptr })
+#define ax_ccast(type, ptr) ((ax_##type##_crol){ .type = ptr })
 
 #endif
 

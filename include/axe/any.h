@@ -55,10 +55,18 @@ struct ax_any_trait_st
 	const ax_any_move_f  move;
 };
 
+
+typedef union
+{
+	const ax_any *any;
+	const ax_one *one;
+} ax_any_crol;
+
 typedef union
 {
 	ax_any *any;
 	ax_one *one;
+	ax_any_crol c;
 } ax_any_role;
 
 struct ax_any_st
