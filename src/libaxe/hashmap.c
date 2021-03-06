@@ -226,7 +226,7 @@ static void free_node(ax_map *map, struct node_st* *pp_node)
 {
 	assert(pp_node);
 	ax_byte *value_ptr = (*pp_node)->kvbuffer + map->key_tr->size;
-	map->val_tr->free((*pp_node)->kvbuffer);
+	map->key_tr->free((*pp_node)->kvbuffer);
 	map->val_tr->free(value_ptr);
 	struct node_st *node_to_free = *pp_node;
 	(*pp_node) = node_to_free->next;
