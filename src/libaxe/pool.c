@@ -391,7 +391,6 @@ ax_pool_alloc(ax_pool* pool, size_t size)
 		size = 1;
 
 	struct block* block;
-	//printf("alloc shift = %hhd, size = %lX size_max = %lX\n", shift, size, BLOCKSIZE_MAX);
 	if (size > BLOCKSIZE_MAX) {
 		block = malloc(sizeof(struct block) + size);
 		if (block == NULL) {
@@ -414,17 +413,23 @@ ax_pool_realloc(ax_pool* pool, void *ptr, size_t size)
 {
 	CHECK_PARAM_NULL(pool);
 
-	struct group* group = pool_prepare_group(pool, size);
+	if (!ptr)
+		return ax_pool_alloc(pool, size);
+
 	struct block* block = (struct block*)((ax_byte*)ptr - sizeof(struct block));
-	if (block->node == NULL && group == NULL)
-		return realloc(ptr, size + sizeof *block);
+
+	if (block->node == NULL && size > BLOCKSIZE_MAX) {
+		block = realloc(block, size + sizeof *block);
+		return block ? block->data : NULL;
+	}
 	
-	size_t old_size = block->node ? block->node->group->block_size : ~(size_t)0;
+	size_t old_size = block->node ? block->node->group->block_size : ~(size_t)0; // BUG
 	size_t size_copy = AX_MIN(size, old_size);
 
 	void *new = ax_pool_alloc(pool, size);
 	if (!new)
 		return NULL;
+
 	memcpy(new, ptr, size_copy);
 	ax_pool_free(ptr);
 	return new;
@@ -453,6 +458,12 @@ void
 ax_pool_free(void* ptr)
 {
 	free(ptr);
+}
+
+void *
+ax_pool_realloc(ax_pool* pool, void* ptr, size_t size)
+{
+	return realloc(ptr, size);
 }
 #endif
 
@@ -495,7 +506,6 @@ ax_pool_dump(ax_pool* pool)
 ax_pool*
 ax_pool_create()
 {
-	//printf("%ld %ld %ld %ld\n", GROUP_MAX, BLOCK_MAX, BLOCKSIZE_MAX, STEP_SIZE);
 	ax_pool* pool;
 	pool = malloc(sizeof(ax_pool));
 	if (pool == NULL) {

@@ -41,6 +41,8 @@ typedef void (*ax_mem_free_f)(void *ptr);
 
 void *ax_pool_alloc(ax_pool* pool, size_t size);
 
+void *ax_pool_realloc(ax_pool* pool, void *ptr, size_t size);
+
 void ax_pool_free(void* ptr);
 
 ax_pool *ax_pool_create();
