@@ -47,21 +47,22 @@ static void test_foreach(axut_runner *r)
 	ax_base* base = ax_base_create();
 	ax_hashmap_role role = ax_hashmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_S),
 			ax_stuff_traits(AX_ST_I32));
-	for (int32_t i = 0; i < 50; i++) {
+	const int count = 100;
+	for (int32_t i = 0; i < count; i++) {
 		char key[4];
 		sprintf(key, "%d", i);
 		ax_map_put(role.map, key, &i);
 	}
 
-	int32_t check_table[50];
-	for (int i = 0; i < 50; i++) check_table[i] = 50;
+	int32_t check_table[count];
+	for (int i = 0; i < count; i++) check_table[i] = -1;
 	ax_foreach(ax_pair *, pair, role.box) {
 		int key;
 		sscanf((char*)ax_pair_key(pair), "%d", &key);
 		axut_assert(r, key == *(uint32_t*)ax_pair_value(pair));
 		check_table[key] = 0;
 	}
-	for (int i = 0; i < 50; i++) 
+	for (int i = 0; i < count; i++) 
 		axut_assert(r, check_table[i] == 0);
 
 	ax_base_destroy(base);
