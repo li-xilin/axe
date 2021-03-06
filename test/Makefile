@@ -7,7 +7,7 @@ LDFLAGS = -L$(ROOT)/lib\
 	  -fsanitize=address
 
 OBJS = test.o test_scope.o test_vail.o test_pool.o test_pred.o test_vector.o \
-       test_algo.o test_list.o test_avltree.o test_hashmap.o test_string.o test_uintk.o
+       test_algo.o test_list.o test_avltree.o test_hmap.o test_string.o test_uintk.o
 
 TARGET = test_all
 

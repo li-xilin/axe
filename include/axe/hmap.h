@@ -20,28 +20,40 @@
  * THE SOFTWARE.
  */
 
-#ifndef AXE_HASHMAP_H_
-#define AXE_HASHMAP_H_
+#ifndef AXE_HMAP_H_
+#define AXE_HMAP_H_
 #include "map.h"
 
-typedef struct ax_hashmap_st ax_hashmap;
+typedef struct ax_hmap_st ax_hmap;
 
 typedef union
 {
-	ax_hashmap *hashmap;
+	const ax_hmap *hmap;
+	const ax_map *map;
+	const ax_box *box;
+	const ax_any *any;
+	const ax_one *one;
+} ax_hmap_crol;
+
+typedef union
+{
+	ax_hmap *hmap;
 	ax_map *map;
 	ax_box *box;
 	ax_any *any;
 	ax_one *one;
-} ax_hashmap_role;
+	ax_hmap_crol c;
+} ax_hmap_role;
 
-ax_map *__ax_hashmap_construct(
+
+
+ax_map *__ax_hmap_construct(
 		ax_base* base,
 		const ax_stuff_trait* key_tr,
 		const ax_stuff_trait* val_tr
 );
 
-ax_hashmap_role ax_hashmap_create(
+ax_hmap_role ax_hmap_create(
 		ax_scope *scope,
 		const ax_stuff_trait *key_tr,
 		const ax_stuff_trait *val_tr
