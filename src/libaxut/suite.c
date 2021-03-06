@@ -34,6 +34,7 @@ static void one_free(ax_one *one)
 
 	ax_scope_detach(one);
 	ax_one_free(suite_rl.suite->tctab.one);
+	ax_pool_free(suite_rl.suite->name);
 	ax_pool_free(suite_rl.suite);
 }
 
