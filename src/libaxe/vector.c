@@ -31,6 +31,8 @@
 #include <axe/vail.h>
 #include <axe/stuff.h>
 #include <axe/error.h>
+#include <axe/mem.h>
+#include <axe/buff.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -39,14 +41,20 @@
 
 #include "check.h"
 
+#define MIN_SIZE
+
 struct ax_vector_st
 {
 	ax_seq seq;
 	ax_one_env one_env;
+	/*
 	size_t size;
 	size_t capacity;
 	size_t maxsize;
-	ax_byte *buffer;
+	*/
+	//ax_mem_size size;
+	ax_buff *buff;
+	//ax_byte *buffer;
 };
 
 static ax_fail     seq_push(ax_seq *seq, const void *val);
@@ -89,58 +97,27 @@ static const ax_iter_trait iter_trait;
 #ifdef AX_DEBUG
 static inline ax_bool iter_if_valid(const ax_iter *it)
 {
-	ax_vector_role role = { (void*)it->owner};
-	const ax_stuff_trait *etr = role.vector->seq.elem_tr;
+
+	ax_vector *vector = it->owner;
+	const ax_stuff_trait *etr = vector->seq.elem_tr;
+	ax_byte *ptr = ax_buff_ptr(vector->buff);
+	size_t size = ax_buff_size(vector->buff, NULL);
+
 	return  (ax_iter_norm(*it)
-		? (it->point >= role.vector->buffer && it->point <= role.vector->buffer + role.vector->size * etr->size)
-		: (it->point >= role.vector->buffer - etr->size && it->point < role.vector->buffer + role.vector->size * etr->size))
-		&& ((intptr_t)it->point - (intptr_t)role.vector->buffer) % etr->size == 0;
+		? ((ax_byte *)it->point >= ptr && (ax_byte *)it->point <= ptr + size)
+		: ((ax_byte *)it->point >= ptr - etr->size && (ax_byte *)it->point < ptr + size))
+		&& ((intptr_t)it->point - (intptr_t)ptr) % etr->size == 0;
 }
 
 static inline ax_bool iter_if_have_value(ax_iter it)
 {
-	ax_vector_role role = { (void*)it.owner};
-	const ax_stuff_trait *etr = role.vector->seq.elem_tr;
-	return it.point >= role.vector->buffer && it.point < role.vector->buffer + role.vector->size * etr->size;
+
+	ax_vector *vector = it.owner;
+	ax_byte *ptr = ax_buff_ptr(vector->buff);
+	size_t size = ax_buff_size(vector->buff, NULL);
+	return (ax_byte *)it.point >= ptr && (ax_byte *)it.point < ptr + size;
 }
 #endif
-
-static ax_fail realloc_buffer_before_add(ax_vector *vector)
-{
-	ax_vector_role role = { .vector = vector };
-	const ax_stuff_trait *etr = vector->seq.elem_tr;
-	if (vector->size == vector->capacity) {
-		if(vector->capacity == vector->maxsize) {
-			ax_base_set_errno(ax_one_base(role.one), AX_ERR_FULL);
-			return ax_true;
-		}
-		vector->capacity <<= 1;
-		vector->capacity |= 1;
-		if(vector->capacity > vector->maxsize)
-			vector->capacity = vector->maxsize;
-		void *ptr = realloc(vector->buffer, vector->capacity * etr->size);
-		if (ptr == NULL) {
-			ax_base_set_errno(ax_one_base(role.one), AX_ERR_NOMEM);
-			return ax_true;
-		}
-		vector->buffer = ptr;
-	}
-	return ax_false;
-}
-
-static ax_fail realloc_buffer_after_remove(ax_vector *vector)
-{
-	if (vector->size == vector->capacity >> 2) {
-		vector->capacity >>= 1;
-		void *ptr = realloc(vector->buffer, vector->capacity * vector->seq.elem_tr->size);
-		if (ptr == NULL) {
-			ax_assert(ax_false, "failed to realloc memory");
-			return ax_true;
-		}
-		vector->buffer = ptr;
-	}
-	return ax_false;
-}
 
 static void iter_move(ax_iter *it, long i)
 {
@@ -185,7 +162,8 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 
 	ax_vector *vector = (ax_vector_role) { (void*)it->owner }.vector;
 	const ax_stuff_trait *etr = vector->seq.elem_tr;
-	CHECK_PARAM_VALIDITY(it, it->point >= vector->buffer && it->point < vector->buffer + vector->size * etr->size);
+	CHECK_PARAM_VALIDITY(it, (ax_byte *)it->point >= ax_buff_ptr(vector->buff)
+			&& (ax_byte *)it->point < ax_buff_ptr(vector->buff) + ax_buff_size(vector->buff, NULL));
 
 	ax_base *base = ax_one_base(it->owner);
 	ax_pool *pool = ax_base_pool(base);
@@ -265,6 +243,7 @@ static void one_free(ax_one *one)
 	ax_vector_role role = { .one = one };
 	ax_scope_detach(one);
 	box_clear(role.box);
+	ax_one_free(ax_cast(buff, role.vector->buff).one);
 	ax_pool_free(one);
 }
 
@@ -288,47 +267,63 @@ static ax_any *any_copy(const ax_any *any)
 	ax_vector_role role = { .any = (ax_any*)any };
 	ax_base *base = ax_one_base(role.one);
 	ax_pool *pool = ax_base_pool(base);
-	ax_vector *new = ax_pool_alloc(pool, (sizeof(ax_vector)));
-	if (!new) {
+	ax_vector *new_vector = NULL;
+	ax_buff *new_buff = NULL;
+
+	new_vector = ax_pool_alloc(pool, (sizeof(ax_vector)));
+	if (!new_vector) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return NULL;
+		goto fail;
 	}
-	memcpy(new, role.vector, sizeof(ax_vector));
-	new->buffer = malloc(role.seq->elem_tr->size * role.vector->capacity);
-	if (!new->buffer) {
-		ax_pool_free(new);
-		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return NULL;
-	}
-	memcpy(new->buffer, role.vector->buffer, role.seq->elem_tr->size * role.vector->size);
-	new->one_env.sindex = 0;
-	new->one_env.scope = NULL;
-	ax_scope_attach(ax_base_local(base), (ax_one*)&new->seq.box.any.one);
-	return (ax_any*)new;
+	memcpy(new_vector, role.vector, sizeof(ax_vector));
+	new_buff = (ax_buff *)ax_any_copy(ax_cast(buff, role.vector->buff).any);
+	if (!new_buff)
+		goto fail;
+
+	new_vector->buff = new_buff;
+
+	new_vector->one_env.sindex = 0;
+	new_vector->one_env.scope = NULL;
+	ax_scope_attach(ax_base_local(base), ax_cast(vector, new_vector).one);
+	return ax_cast(vector, new_vector).any;
+fail:
+	ax_pool_free(new_vector);
+	ax_one_free(ax_cast(buff, new_buff).one);
+	return NULL;
 }
 
 static ax_any *any_move(ax_any *any)
 {
 	CHECK_PARAM_NULL(any);
 
-	ax_vector_role role = { .any = (ax_any*)any };
-	ax_base *base = ax_one_base(role.one);
+	ax_vector *src_vec = (ax_vector*)any;
+	ax_base *base = ax_one_base(ax_cast(vector, src_vec).one);
 	ax_pool *pool = ax_base_pool(base);
-	ax_vector *new = ax_pool_alloc(pool, (sizeof(ax_vector)));
-	if (!new) {
+	ax_buff *dst_buff= NULL;
+	ax_vector *dst_vec = NULL;
+
+	dst_vec = ax_pool_alloc(pool, (sizeof(ax_vector)));
+	if (!dst_vec) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return NULL;
+		goto fail;
 	}
-	memcpy(new, role.vector, sizeof(ax_vector));
-	new->one_env.sindex = 0;
-	new->one_env.scope = NULL;
-	ax_scope_attach(ax_base_local(base), (ax_one*)&new->seq.box.any.one);
+	memcpy(dst_vec, src_vec, sizeof(ax_vector));
 
-	role.vector->buffer = NULL;
-	role.vector->size = 0;
-	role.vector->capacity = 0;
+	dst_buff = (ax_buff *)ax_any_move(ax_cast(buff, src_vec->buff).any);
+	if (!dst_buff)
+		goto fail;
 
-	return (ax_any*)new;
+	dst_vec->buff = dst_buff;
+
+	dst_vec->one_env.sindex = 0;
+	dst_vec->one_env.scope = NULL;
+	ax_scope_attach(ax_base_local(base), ax_cast(vector, dst_vec).one);
+
+	return ax_cast(vector, dst_vec).any;
+fail:
+	ax_pool_free(dst_vec);
+	ax_one_free(ax_cast(buff, dst_buff).one);
+	return NULL;
 
 }
 
@@ -337,7 +332,7 @@ static size_t box_size(const ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	const ax_vector *vector = (const ax_vector*)box;
-	return vector->size;
+	return ax_buff_size(vector->buff, NULL) / vector->seq.elem_tr->size;
 }
 
 static size_t box_maxsize(const ax_box *box)
@@ -350,7 +345,11 @@ static ax_iter box_begin(const ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	ax_vector_role role = { .box = (ax_box*)box };
-	ax_iter it = { .owner = (void*)box, .point = role.vector->buffer, .tr = &iter_trait };
+	ax_iter it = {
+		.owner = (void*)box,
+		.point = ax_buff_ptr(role.vector->buff),
+		.tr = &iter_trait
+	};
 	return it;
 }
 
@@ -361,7 +360,7 @@ static ax_iter box_end(const ax_box *box)
 	ax_vector_role role = { .box = (ax_box*)box};
 	ax_iter it = {
 		.owner = (void*)box,
-		.point = role.vector->buffer + (role.seq->elem_tr->size * role.vector->size),
+		.point = ax_buff_ptr(role.vector->buff) + ax_buff_size(role.vector->buff, NULL),
 		.tr = &iter_trait
 	};
 	return it;
@@ -373,10 +372,11 @@ static ax_iter box_rbegin(const ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	ax_vector_role role = { .box = (ax_box*)box};
-	ax_iter it;
-	it.owner = (void *)box;
-	it.point = role.vector->buffer + (role.vector->size - 1) * role.seq->elem_tr->size;
-	it.tr = &reverse_iter_trait;
+	ax_iter it = {
+		.owner = (void*)box,
+		.point = ax_buff_ptr(role.vector->buff) + ax_buff_size(role.vector->buff, NULL) - role.seq->elem_tr->size,
+		.tr = &reverse_iter_trait
+	};
 	return it;
 }
 
@@ -387,7 +387,7 @@ static ax_iter box_rend(const ax_box *box)
 	ax_vector_role role = { .box = (ax_box*)box};
 	ax_iter it;
 	it.owner = (void *)box;
-	it.point = role.vector->buffer - role.seq->elem_tr->size;
+	it.point = ax_buff_ptr(role.vector->buff) - role.seq->elem_tr->size;
 	it.tr = &reverse_iter_trait;
 	return it;
 }
@@ -399,16 +399,20 @@ static void iter_erase(ax_iter *it)
 
 	ax_vector *vector = (ax_vector_role) { (void*)it->owner }.vector;
 	const ax_stuff_trait *etr = vector->seq.elem_tr;
+	ax_byte *ptr = ax_buff_ptr(vector->buff);
+	size_t size = ax_buff_size(vector->buff, NULL);
 	 
 	vector->seq.elem_tr->free(it->point);
-	ax_byte *end = vector->buffer + (vector->size - 1) * etr->size;
+	ax_byte *end = ptr + size - etr->size;
 	for (ax_byte *p = it->point ; p < end ; p += etr->size) {
 		etr->move(p, p + etr->size, etr->size);
 	}
 
-	vector->size --;
+	size_t shift = (ax_byte*)it->point - ptr;
+
+	ax_buff_adapt(vector->buff, size - etr->size);
 	if(!ax_iter_norm(*it))
-		it->point = (ax_byte*)it->point - etr->size;
+		it->point = ax_buff_ptr(vector->buff) + shift - etr->size;
 }
 
 static const ax_stuff_trait *box_elem_tr(const ax_box *box)
@@ -420,18 +424,17 @@ static const ax_stuff_trait *box_elem_tr(const ax_box *box)
 static void box_clear(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
-	ax_vector_role role = { .box = (ax_box*)box};
-	const ax_stuff_trait *etr = role.vector->seq.elem_tr;
-	ax_byte *end = role.vector->buffer + role.vector->size * etr->size;
-	if (role.vector->buffer) {
-		for (ax_byte *p = role.vector->buffer ; p < end ; p += etr->size) {
-			etr->free(p);
-		}
-		free(role.vector->buffer);
-		role.vector->buffer = NULL;
-		role.vector->size = 0;
-		role.vector->capacity = 0;
+	ax_vector *vector = (ax_vector *)box;
+
+	const ax_stuff_trait *etr = vector->seq.elem_tr;
+	ax_byte *ptr = ax_buff_ptr(vector->buff);
+	size_t size = ax_buff_size(vector->buff, NULL);
+
+	ax_byte *end = ptr + size;
+	for (ax_byte *p = ptr ; p < end ; p += etr->size) {
+		etr->free(p);
 	}
+	ax_buff_adapt(vector->buff, 0);
 }
 
 static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
@@ -440,18 +443,23 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, it->owner == seq && iter_if_valid(it));
 
-	ax_vector *vector = (ax_vector_role) { .seq = seq }.vector;
+	ax_vector *vector = (ax_vector *) seq;
 	const ax_stuff_trait *etr = vector->seq.elem_tr;
 	ax_base *base = vector->one_env.base;
 	ax_pool *pool = ax_base_pool(base);
+	ax_byte *ptr = ax_buff_ptr(vector->buff);
+	size_t size = ax_buff_size(vector->buff, NULL);
 
-	size_t offset = (ax_byte *)it->point - vector->buffer; //backup offset before realloc
-	if(realloc_buffer_before_add(vector))
+	long offset = (ax_byte *)it->point - ptr; //backup offset before realloc
+
+	if (ax_buff_adapt(vector->buff, size + etr->size))
 		return ax_true;
-	it->point = vector->buffer + offset; //restore offset
+
+	ptr = ax_buff_ptr(vector->buff);
+	it->point = ptr + offset; //restore offset
 
 	void *ins = ax_iter_norm(*it) ? it->point : ((ax_byte*)it->point + etr->size);
-	void *end = vector->buffer + (vector->size) * etr->size;
+	void *end = ptr + size;
 	for (ax_byte *p = end ; p != ins ; p -= etr->size) {
 		etr->move(p, p - etr->size, etr->size);
 	}
@@ -462,10 +470,10 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 		: etr->init(pool, ins, etr->size);
 	if (fail) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
+		ax_buff_resize(vector->buff, size);
 		return ax_true;
 	}
 
-	vector->size ++;
 	if(ax_iter_norm(*it))
 		it->point = (ax_byte*)it->point + etr->size;
 	return ax_false;
@@ -475,24 +483,27 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_vector_role role = { .seq = seq };
-	const ax_stuff_trait *etr = role.vector->seq.elem_tr;
-	ax_base *base = ax_one_base(role.one);
+	ax_vector *vector = (ax_vector *) seq;
+	const ax_stuff_trait *etr = vector->seq.elem_tr;
+	ax_base *base = ax_one_base(ax_cast(vector, vector).one);
 	ax_pool *pool = ax_base_pool(base);
 
-	if (realloc_buffer_before_add(role.vector))
+	size_t size = ax_buff_size(vector->buff, NULL);
+
+	if (ax_buff_adapt(vector->buff, size + etr->size))
 		return ax_true;
 
 	const void *pval = seq->elem_tr->link ? &val: val;
+	ax_byte *ptr = ax_buff_ptr(vector->buff);
+
 	ax_fail fail = (val != NULL)
-		? etr->copy(pool, role.vector->buffer + (role.vector->size * etr->size), pval, etr->size)
-		: etr->init(pool, role.vector->buffer + (role.vector->size * etr->size), etr->size);
+		? etr->copy(pool, ptr + size, pval, etr->size)
+		: etr->init(pool, ptr + size, etr->size);
 	if (fail) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
+		ax_buff_resize(vector->buff, size);
 		return ax_true;
 	}
-
-	role.vector->size ++;
 
 	return ax_false;
 }
@@ -501,14 +512,19 @@ static ax_fail seq_pop(ax_seq *seq)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_vector_role role = { .seq = seq};
-	if (role.vector->size == 0) {
-		ax_base_set_errno(ax_one_base(role.one), AX_ERR_EMPTY);
+	ax_vector *vector = (ax_vector *) seq;
+	const ax_stuff_trait *etr = vector->seq.elem_tr;
+	size_t size = ax_buff_size(vector->buff, NULL);
+	ax_byte *ptr = ax_buff_ptr(vector->buff);
+
+	if (size == 0) {
+		ax_base *base = ax_one_base(ax_cast(vector, vector).one);
+		ax_base_set_errno(base, AX_ERR_EMPTY);
 		return ax_false;
 	}
-	role.vector->size --;
-	seq->elem_tr->free(role.vector->buffer + role.vector->size  * role.seq->elem_tr->size);
-	if(realloc_buffer_after_remove(role.vector))
+	seq->elem_tr->free(ptr + size - etr->size);
+
+	if (ax_buff_adapt(vector->buff, size - etr->size))
 		return ax_true;
 	return ax_false;
 }
@@ -517,15 +533,20 @@ static void seq_invert(ax_seq *seq)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_vector_role role = { .seq = seq};
-	if (role.vector->size == 0)
+	ax_vector *vector = (ax_vector *) seq;
+	const ax_stuff_trait *etr = vector->seq.elem_tr;
+	size_t size = ax_buff_size(vector->buff, NULL);
+	ax_byte *ptr = ax_buff_ptr(vector->buff);
+
+	if (size == 0)
 		return;
-	size_t left = 0, right = role.vector->size - 1;
-	while (right - left > 1) {
-		seq->elem_tr->swap(role.vector->buffer + left * seq->elem_tr->size,
-				role.vector->buffer + right * seq->elem_tr->size,
+
+	size_t left = 0, right = size - etr->size;
+	while (right - left > etr->size) {
+		seq->elem_tr->swap(ptr + left, ptr + right,
 				seq->elem_tr->size);
-		left++, right--;
+		left += etr->size;
+		right -= etr->size;
 	}
 }
 
@@ -535,48 +556,34 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 	CHECK_PARAM_VALIDITY(size, size <= ax_box_maxsize(&seq->box));
 
 	ax_vector_role role = { .seq = (ax_seq*)seq};
-	if (size == role.vector->size) 
+
+	ax_vector *vector = (ax_vector *) seq;
+	const ax_stuff_trait *etr = seq->elem_tr;
+	size_t old_size = ax_buff_size(vector->buff, NULL);
+
+
+	size *= etr->size;
+
+	if (size == old_size) 
 		return ax_false;
 
-	size_t capacity = role.vector->capacity;
-	if (size < role.vector->size) {
-		for (size_t i = size; i <= role.vector->size; i++) {
-			seq->elem_tr->free(role.vector->buffer + i * role.seq->elem_tr->size);
+	if (size < old_size) {
+		ax_byte *ptr = ax_buff_ptr(vector->buff);
+		for (size_t off = size; off <= old_size; off += etr->size) {
+			seq->elem_tr->free(ptr + off);
 		}
-
-		role.vector->size = size;
-		if (size == 0)
-			capacity = 1;
-		else {
-			while(capacity > size)
-				capacity >>= 1;
-			capacity = (capacity << 1) | 1;
-		}
-
-		void *alloc_ptr = realloc(role.vector->buffer, capacity * role.seq->elem_tr->size);
-		if (alloc_ptr)
-			role.vector->buffer = alloc_ptr;
-		role.vector->capacity = capacity;
+		if (ax_buff_adapt(vector->buff, size))
+			return ax_true;
 	} else {
 		ax_base *base = ax_one_base(role.one);
 		ax_pool *pool = ax_base_pool(base);
-		while(capacity < size) {
-			capacity <<= 1;
-			capacity |= 1;
-		}
-		void *alloc_ptr = realloc(role.vector->buffer, capacity * role.seq->elem_tr->size);
-		if (alloc_ptr == NULL) {
-			ax_base_set_errno(role.vector->one_env.base, AX_ERR_NOMEM);
+		if (ax_buff_adapt(vector->buff, size))
 			return ax_true;
-		}
-		role.vector->buffer = alloc_ptr;
-		role.vector->capacity = capacity;
+		ax_byte *ptr = ax_buff_ptr(vector->buff);
 
-		for (size_t i = role.vector->size; i < size; i++) {
-			seq->elem_tr->init(pool, role.vector->buffer + i * role.seq->elem_tr->size,
-					seq->elem_tr->size);
+		for (size_t off = old_size; off < size ; off += etr->size) {
+			seq->elem_tr->init(pool, ptr + off, seq->elem_tr->size);
 		}
-		role.vector->size = size;
 	}
 	return ax_false;
 }
@@ -586,11 +593,15 @@ static ax_iter seq_at(const ax_seq *seq, size_t index)
 	CHECK_PARAM_NULL(seq);
 	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(&seq->box));
 
-	ax_vector_role role = { .seq = (ax_seq*)seq};
+
+	ax_vector *vector = (ax_vector *) seq;
+	const ax_stuff_trait *etr = seq->elem_tr;
+	ax_byte *ptr = ax_buff_ptr(vector->buff);
+
 	ax_iter it = {
-		.owner = role.vector,
+		.owner = vector,
 		.tr = &iter_trait,
-		.point =  role.vector->buffer + index * role.seq->elem_tr->size
+		.point =  ptr + index * etr->size
 	};
 	return it;
 }
@@ -684,11 +695,18 @@ ax_seq *__ax_vector_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 	CHECK_PARAM_NULL(elem_tr->move);
 	CHECK_PARAM_NULL(elem_tr->swap);
 
-	ax_vector_role role = { ax_pool_alloc(ax_base_pool(base), sizeof(ax_vector)) };
-	if (role.vector == NULL) {
+	ax_buff *buff = NULL;
+	ax_seq *seq = NULL;
+
+	seq = ax_pool_alloc(ax_base_pool(base), sizeof(ax_vector));
+	if (!seq) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return NULL;
+		goto fail;
 	}
+
+	buff = (ax_buff *)__ax_buff_construct(base);
+	if (!buff)
+		goto fail;
 
 	ax_vector vec_init = {
 		.seq = {
@@ -709,14 +727,15 @@ ax_seq *__ax_vector_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 			.scope = NULL,
 			.sindex = 0
 		},
-		.maxsize = box_trait.maxsize(role.box),
-		.buffer = NULL,
-		.capacity = 0,
-		.size = 0,
-
+		.buff = buff
 	};
-	memcpy(role.vector, &vec_init, sizeof vec_init);
-	return role.seq;
+
+	memcpy(seq, &vec_init, sizeof vec_init);
+	return seq;
+fail:
+	ax_pool_free(seq);
+	ax_one_free(ax_cast(buff, buff).one);
+	return NULL;
 }
 
 ax_vector_role ax_vector_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
@@ -725,6 +744,8 @@ ax_vector_role ax_vector_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
 	CHECK_PARAM_NULL(elem_tr);
 
 	ax_vector_role role = { .seq = __ax_vector_construct(ax_scope_base(scope), elem_tr) };
+	if (!role.one)
+		return role;
 	ax_scope_attach(scope, role.one);
 	return role;
 }
@@ -733,5 +754,5 @@ void *ax_vector_buffer(ax_vector *vector)
 {
 	CHECK_PARAM_NULL(vector);
 
-	return vector->buffer;
+	return ax_buff_ptr(vector->buff);
 }
