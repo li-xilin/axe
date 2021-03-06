@@ -37,7 +37,7 @@
 
 struct ax_buff_st
 {
-	ax_any any;
+	ax_any __any;
 	ax_one_env one_env;
 	size_t used;
 	size_t real;
@@ -50,7 +50,6 @@ static ax_any     *any_copy(const ax_any *any);
 static ax_any     *any_move(ax_any *any);
 
 static void        one_free(ax_one *one);
-static ax_one_env *one_envp(const ax_one *one);
 
 static const ax_one_trait one_trait;
 static const ax_any_trait any_trait;
@@ -62,14 +61,6 @@ static void one_free(ax_one *one)
 	ax_scope_detach(one);
 	ax_pool_free(((ax_buff *)one)->buf);
 	ax_pool_free(one);
-}
-
-static ax_one_env *one_envp(const ax_one *one)
-{
-	CHECK_PARAM_NULL(one);
-
-	ax_buff *buff = (ax_buff *) one;
-	return &buff->one_env;
 }
 
 static ax_any *any_copy(const ax_any *any)
@@ -158,7 +149,7 @@ static ax_fail mem_resize(const ax_buff *buff, size_t require, size_t *alloc)
 			, "invalid msize");
 
 	if (require > buff->max) {
-		ax_base *base = buff->one_env.base;
+		ax_base *base = ax_one_base(ax_ccast(buff, buff).one);
 		ax_base_set_errno(base, AX_ERR_FULL);
 		return ax_true;
 	}
@@ -181,7 +172,7 @@ static const ax_one_trait one_trait =
 {
 	.name = "one.buff",
 	.free = one_free,
-	.envp = one_envp
+	.envp = offsetof(ax_buff, one_env)
 };
 
 static const ax_any_trait any_trait =
@@ -204,14 +195,14 @@ ax_any *__ax_buff_construct(ax_base *base)
 		goto fail;
 
 	ax_buff buff_init = {
-		.any = {
-			.one = {
+		.__any = {
+			.__one = {
+				.base = base,
 				.tr = &one_trait,
 			},
 			.tr = &any_trait
 		},
 		.one_env = {
-			.base = base,
 			.scope = NULL,
 			.sindex = 0
 		},
@@ -307,6 +298,7 @@ ax_fail ax_buff_resize(ax_buff *buff, size_t size)
 ax_fail ax_buff_alloc(ax_buff *buff, size_t size, void **obuf)
 {
 	CHECK_PARAM_NULL(buff);
+	CHECK_PARAM_NULL(obuf);
 
 	size_t size_alloc;
 	if (mem_resize(buff, size, &size_alloc))

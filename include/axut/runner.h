@@ -48,9 +48,17 @@ typedef void (*axut_output_f)(const char* suite_name, axut_case *tc, ax_str *out
 
 typedef union
 {
+	const axut_runner *runner;
+	const ax_one *one;
+} axut_runner_crol;
+
+typedef union
+{
 	axut_runner *runner;
 	ax_one *one;
+	axut_runner_crol c;
 } axut_runner_role;
+
 
 ax_one *__axut_runner_construct(ax_base *base, axut_output_f ran_cb);
 

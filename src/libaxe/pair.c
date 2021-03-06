@@ -34,14 +34,13 @@
 
 struct ax_pair_st
 {
-	ax_one one;
+	ax_one __one;
 	ax_one_env one_env;
 	const void *key;
 	void *value;
 };
 
 static void one_free(ax_one *one);
-static ax_one_env *one_envp(const ax_one *one);
 
 static const ax_one_trait one_trait;
 
@@ -53,34 +52,26 @@ static void one_free(ax_one* one)
 	ax_pool_free(one);
 }
 
-static ax_one_env *one_envp(const ax_one *one)
-{
-	CHECK_PARAM_NULL(one);
-
-	ax_pair_role role = { .one = (ax_one *)one };
-	return &role.pair->one_env;
-}
-
 static const ax_one_trait one_trait =
 {
 	.name = "one:pair",
 	.free = one_free,
-	.envp = one_envp
+	.envp = offsetof(ax_pair, one_env) 
 };
 
-ax_pair *ax_pair_construct(ax_base *base, const void *key, void *value)
+ax_pair *__ax_pair_construct(ax_base *base, const void *key, void *value)
 {
 	CHECK_PARAM_NULL(base);
 
 	ax_pool *pool = ax_base_pool(base);
 	ax_pair *pair = ax_pool_alloc(pool, sizeof(ax_pair));
 	ax_pair pair_init = {
-		.one = {
+		.__one = {
+			.base = base,
 			.tr = &one_trait,
 
 		},
 		.one_env = {
-			.base = base,
 			.scope = NULL,
 			.sindex = 0
 		},
@@ -94,8 +85,8 @@ ax_pair *ax_pair_construct(ax_base *base, const void *key, void *value)
 ax_pair_role ax_pair_create(ax_scope* scope, const void *key, void *value)
 {
 	CHECK_PARAM_NULL(scope);
-
-	ax_pair_role role = { ax_pair_construct(ax_scope_base(scope), key, value) };
+	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
+	ax_pair_role role = { __ax_pair_construct(base, key, value) };
 	if (role.one == NULL)
 		return role;
 	ax_scope_attach(scope, role.one);

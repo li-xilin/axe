@@ -16,7 +16,7 @@
 
 struct axut_suite_st
 {
-	ax_one one;
+	ax_one __one;
 	ax_one_env one_env;
 	char *name;
 	void *arg;
@@ -24,7 +24,6 @@ struct axut_suite_st
 };
 
 static void one_free(ax_one *one);
-static ax_one_env *one_envp(const ax_one *one);
 
 static void one_free(ax_one *one)
 {
@@ -38,18 +37,10 @@ static void one_free(ax_one *one)
 	ax_pool_free(suite_rl.suite);
 }
 
-static ax_one_env *one_envp(const ax_one *one)
-{
-	CHECK_PARAM_NULL(one);
-
-	axut_suite_role role = { .one = (ax_one *)one };
-	return &role.suite->one_env;
-}
-
 static const ax_one_trait one_trait = {
 	.name = "one.suite",
 	.free = one_free,
-	.envp = one_envp
+	.envp = offsetof(axut_suite, one_env) 
 };
 
 static void case_free(void *p)
@@ -139,11 +130,11 @@ ax_one *__axut_suite_construct(ax_base *base, const char* name)
 	char *name_copy = ax_strdup(pool, name);
 
 	axut_suite suite_init = {
-		.one = {
+		.__one = {
+			.base = base,
 			.tr = &one_trait
 		},
 		.one_env = {
-			.base = base,
 			.scope = NULL,
 			.sindex = 0,
 		},
@@ -153,14 +144,14 @@ ax_one *__axut_suite_construct(ax_base *base, const char* name)
 		.name = name_copy
 	};
 	memcpy(suite, &suite_init, sizeof suite_init);
-	return &suite->one;
+	return &suite->__one;
 }
 
 axut_suite *axut_suite_create(ax_scope *scope, const char *name)
 {
 	CHECK_PARAM_NULL(scope);
-
-	axut_suite_role suite_rl = { .one = __axut_suite_construct(ax_scope_base(scope), name) };
+	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
+	axut_suite_role suite_rl = { .one = __axut_suite_construct(base, name) };
 	if (suite_rl.one == NULL)
 		return suite_rl.suite;
 	ax_scope_attach(scope, suite_rl.one);

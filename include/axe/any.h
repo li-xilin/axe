@@ -71,7 +71,7 @@ typedef union
 
 struct ax_any_st
 {
-	ax_one one;
+	ax_one __one;
 	const ax_any_trait *const tr;
 };
 

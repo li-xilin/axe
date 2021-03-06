@@ -24,6 +24,7 @@
 #define AXUT_DEF_H_
 
 #define axut_cast(type, ptr) ((axut_##type##_role){ .type = ptr })
+#define axut_ccast(type, ptr) ((axut_##type##_crol){ .type = ptr })
 
 #endif
 

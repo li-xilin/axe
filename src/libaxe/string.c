@@ -37,7 +37,7 @@
 
 struct ax_string_st
 {
-	ax_str str;
+	ax_str __str;
 	ax_vector *vector;
 	ax_one_env one_env;
 };
@@ -86,7 +86,6 @@ static ax_any* any_copy(const ax_any* any);
 static ax_any* any_move(ax_any* any);
 
 static void        one_free(ax_one* one);
-static ax_one_env *one_envp(const ax_one *one);
 
 static const ax_one_trait one_trait;
 static const ax_any_trait any_trait;
@@ -253,13 +252,6 @@ static void one_free(ax_one* one)
 	ax_scope_detach(one);
 	ax_one_free(ax_cast(vector, role.string->vector).one);
 	ax_pool_free(one);
-}
-
-static ax_one_env *one_envp(const ax_one *one)
-{
-	CHECK_PARAM_NULL(one);
-	ax_string_role role = { .one = (ax_one *)one };
-	return &role.string->one_env;
 }
 
 static void any_dump(const ax_any* any, int ind)
@@ -505,7 +497,7 @@ static ax_fail str_sprintf(ax_str* str, const char *fmt, va_list args)
 	char buf[max_size];
 	int ret = vsnprintf(buf, max_size, fmt, args);
 	if (ret == -1 || ret >= max_size) {
-		ax_base *base = ax_one_base(&str->box.any.one);
+		ax_base *base = ax_one_base(ax_cast(str, str).one);
 		ax_base_set_errno(base, AX_ERR_TOOLONG);
 	       return ax_true;	
 	}
@@ -518,7 +510,7 @@ static const ax_one_trait one_trait =
 {
 	.name = "one.any.box.str:string",
 	.free = one_free,
-	.envp = one_envp
+	.envp = offsetof(ax_string, one_env) 
 };
 
 static const ax_any_trait any_trait =
@@ -600,10 +592,11 @@ ax_str *__ax_string_construct(ax_base* base)
 
 	ax_vector_role vec_role = { .seq = __ax_vector_construct(base, ax_stuff_traits(AX_ST_U8)) };
 	ax_string string_init = {
-		.str = {
-			.box = {
-				.any = {
-					.one = {
+		.__str = {
+			.__box = {
+				.__any = {
+					.__one = {
+						.base = base,
 						.tr = &one_trait
 					},
 					.tr = &any_trait,
@@ -613,7 +606,6 @@ ax_str *__ax_string_construct(ax_base* base)
 			.tr = &str_trait
 		},
 		.one_env = {
-			.base = base,
 			.scope = NULL,
 			.sindex = 0
 		},
@@ -623,13 +615,14 @@ ax_str *__ax_string_construct(ax_base* base)
 	ax_seq_push(vec_role.seq, &zero);
 
 	memcpy(string, &string_init, sizeof string_init);
-	return &string->str;
+	return &string->__str;
 }
 
 
 ax_string_role ax_string_create(ax_scope *scope)
 {
-	ax_string_role role = { .str = __ax_string_construct(ax_scope_base(scope)) };
+	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
+	ax_string_role role = { .str = __ax_string_construct(base) };
 	if (role.one == NULL)
 		return role;
 	ax_scope_attach(scope, role.one);

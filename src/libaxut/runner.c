@@ -45,7 +45,7 @@
 
 struct axut_runner_st
 {
-	ax_one one;
+	ax_one __one;
 	ax_one_env one_env;
 	char *name;
 	axut_output_f output_cb;
@@ -58,7 +58,6 @@ struct axut_runner_st
 };
 
 static void one_free(ax_one *one);
-static ax_one_env *one_envp(const ax_one *one);
 
 static void one_free(ax_one *one)
 {
@@ -74,18 +73,10 @@ static void one_free(ax_one *one)
 	ax_pool_free(runner_rl.runner);
 }
 
-static ax_one_env *one_envp(const ax_one *one)
-{
-	CHECK_PARAM_NULL(one);
-
-	axut_runner_role role = { .one = (ax_one *)one };
-	return &role.runner->one_env;
-}
-
 static const ax_one_trait one_trait = {
 	.name = "one.suite",
 	.free = one_free,
-	.envp = one_envp
+	.envp = offsetof(axut_runner, one_env)
 };
 
 
@@ -129,11 +120,11 @@ ax_one *__axut_runner_construct(ax_base *base, axut_output_f output_cb)
 		goto fail;
 
 	axut_runner runner_init = {
-		.one = {
+		.__one = {
+			.base = base,
 			.tr = &one_trait
 		},
 		.one_env = {
-			.base = base,
 			.scope = NULL,
 			.sindex = 0,
 		},
@@ -164,7 +155,8 @@ axut_runner *axut_runner_create(ax_scope *scope, axut_output_f ran_cb)
 {
 	CHECK_PARAM_NULL(scope);
 
-	axut_runner_role runner_rl = { .one = __axut_runner_construct(ax_scope_base(scope), ran_cb) };
+	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
+	axut_runner_role runner_rl = { .one = __axut_runner_construct(base, ran_cb) };
 	if (runner_rl.one == NULL)
 		return runner_rl.runner;
 	ax_scope_attach(scope, runner_rl.one);
@@ -219,7 +211,7 @@ void axut_runner_run(axut_runner *r)
 	ax_foreach(axut_suite * const*, ppsuite, r->suites.box) {
 		const ax_seq *case_tab = axut_suite_all_case(*ppsuite);
 		r->arg = axut_suite_arg(*ppsuite);
-		ax_foreach(axut_case *, tc, &case_tab->box) {
+		ax_foreach(axut_case *, tc, &case_tab->__box) {
 			jmp_buf jmp;
 			if (tc->state != AXUT_CS_READY)
 				continue;
@@ -248,7 +240,7 @@ void *axut_runner_arg(const axut_runner *r)
 static void fail(axut_runner *r, const char *file, int line, const char *fmt, va_list args)
 {
 	char buf[1024];
-	ax_base *base = r->one_env.base;
+	ax_base *base = ax_one_base(axut_cast(runner, r).one);
 	ax_pool *pool = ax_base_pool(base);
 
 	ax_pool_free(r->current->file);

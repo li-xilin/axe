@@ -66,9 +66,17 @@ struct ax_str_trait_st
 
 struct ax_str_st
 {
-	ax_box box;
+	ax_box __box;
 	const ax_str_trait* tr;
 };
+
+typedef union
+{
+	const ax_str *str;
+	const ax_box *box;
+	const ax_any *any;
+	const ax_one *one;
+} ax_str_crol;
 
 typedef union
 {
@@ -76,6 +84,7 @@ typedef union
 	ax_box *box;
 	ax_any *any;
 	ax_one *one;
+	ax_str_crol c;
 } ax_str_role;
 
 inline static ax_fail     ax_str_append (ax_str* str, const char *s) {return str->tr->append(str, s); }

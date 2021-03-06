@@ -12,7 +12,7 @@ ax_seq *ax_seq_vinit(ax_scope *scope, ax_seq_construct_f *builder, const char *f
 	CHECK_PARAM_NULL(builder);
 	CHECK_PARAM_NULL(fmt);
 
-	ax_base *base = ax_scope_base(scope);
+	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
 
 	ax_vail *vail = ax_vail_vcreate(base, fmt, varg);
 

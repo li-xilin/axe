@@ -30,11 +30,21 @@ typedef struct ax_list_st ax_list;
 
 typedef union
 {
+	const ax_one *one;
+	const ax_any *any;
+	const ax_box *box;
+	const ax_seq *seq;
+	const ax_list *list;
+} ax_list_crol;
+
+typedef union
+{
 	ax_one *one;
 	ax_any *any;
 	ax_box *box;
 	ax_seq *seq;
 	ax_list *list;
+	ax_list_crol c;
 } ax_list_role;
 
 ax_seq *__ax_list_construct(ax_base *base, const ax_stuff_trait *elem_tr);

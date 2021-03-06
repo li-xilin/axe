@@ -46,7 +46,7 @@ struct ax_map_trait_st
 
 struct ax_map_st
 {
-	ax_box box;
+	ax_box __box;
 	const ax_map_trait *const tr;
 	const ax_stuff_trait *const key_tr;
 	const ax_stuff_trait *const val_tr;
@@ -54,11 +54,21 @@ struct ax_map_st
 
 typedef union
 {
+	const ax_map *map;
+	const ax_box *box;
+	const ax_any *any;
+	const ax_one *one;
+} ax_map_crol;
+
+typedef union
+{
 	ax_map *map;
 	ax_box *box;
 	ax_any *any;
 	ax_one *one;
+	ax_map_crol c;
 } ax_map_role;
+
 
 inline static ax_fail ax_map_put(ax_map *map, const void *key, const void *val) { return ((ax_map*)map)->tr->put(map, key, val); }
 

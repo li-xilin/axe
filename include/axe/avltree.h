@@ -28,11 +28,21 @@ typedef struct ax_avltree_st ax_avltree;
 
 typedef union
 {
+	const ax_avltree *avltree;
+	const ax_map *map;
+	const ax_box *box;
+	const ax_any *any;
+	const ax_one *one;
+} ax_avltree_crol;
+
+typedef union
+{
 	ax_avltree *avltree;
 	ax_map *map;
 	ax_box *box;
 	ax_any *any;
 	ax_one *one;
+	ax_avltree_crol c;
 } ax_avltree_role;
 
 ax_map *__ax_avltree_construct(ax_base* base,

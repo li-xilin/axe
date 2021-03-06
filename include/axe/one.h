@@ -50,7 +50,7 @@ struct ax_one_trait_st
 {
 	const char          *name;
 	const ax_one_free_f  free;
-	const ax_one_envp_f  envp;
+	const size_t         envp;
 };
 typedef struct ax_one_trait_st ax_one_trait;
 
@@ -69,11 +69,12 @@ typedef union
 struct ax_one_st
 {
 	const ax_one_trait *const tr;
+	ax_base *const base;
 };
 
 struct ax_one_env_st
 {
-	ax_base *base;
+	//ax_base *base;
 	ax_scope *scope;
 	size_t sindex;
 };
@@ -87,19 +88,20 @@ static inline void ax_one_free(ax_one *one) {
 	one->tr->free(one);
 }
 
-static inline ax_scope *ax_one_scope(const ax_one *one)
-{
-	return one->tr->envp(one)->scope;
-}
 
 static inline ax_one_env *ax_one_envp(const ax_one *one)
 {
-	return one->tr->envp(one);
+	return (ax_one_env *)((char*)one + one->tr->envp);
+}
+
+static inline ax_scope *ax_one_scope(const ax_one *one)
+{
+	return ax_one_envp(one)->scope;
 }
 
 static inline ax_base *ax_one_base(const ax_one *one)
 {
-	return one->tr->envp(one)->base;
+	return one->base;
 }
 
 ax_bool ax_one_is(const ax_one *one, const char *type);

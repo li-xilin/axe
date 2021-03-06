@@ -24,7 +24,7 @@ static void create(axut_runner *r)
 
 	ax_seq *seq = ax_seq_init(ax_base_local(base), __ax_vector_construct, "i32x3", 1, 2, 3);
 	int i = 1;
-	ax_foreach(int*, v, &seq->box) {
+	ax_foreach(int*, v, ax_cast(seq, seq).box) {
 		axut_assert(r, *v == i++);
 	}
 

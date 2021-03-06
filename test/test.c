@@ -2,7 +2,7 @@
 #include <axe/base.h>
 #include <stdio.h>
 
-extern axut_suite *suite_for_hashmap(ax_base *base);
+extern axut_suite *suite_for_hmap(ax_base *base);
 extern axut_suite *suite_for_vector(ax_base *base);
 extern axut_suite *suite_for_string(ax_base *base);
 extern axut_suite *suite_for_scope(ax_base *base);
@@ -19,7 +19,7 @@ int main()
 	ax_base *base = ax_base_create();
 
 	axut_runner *r = axut_runner_create(ax_base_local(base), NULL);
-	axut_runner_add(r, suite_for_hashmap(base));
+	axut_runner_add(r, suite_for_hmap(base));
 	axut_runner_add(r, suite_for_vector(base));
 	axut_runner_add(r, suite_for_string(base));
 	axut_runner_add(r, suite_for_scope(base));

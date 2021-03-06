@@ -58,10 +58,18 @@ struct ax_seq_trait_st
 
 struct ax_seq_st
 {
-	ax_box box;
+	ax_box __box;
 	const ax_seq_trait *const tr;
 	const ax_stuff_trait *const elem_tr;
 };
+
+typedef union
+{
+	const ax_seq *seq;
+	const ax_box *box;
+	const ax_any *any;
+	const ax_one *one;
+} ax_seq_crol;
 
 typedef union
 {
@@ -69,6 +77,7 @@ typedef union
 	ax_box *box;
 	ax_any *any;
 	ax_one *one;
+	ax_seq_crol c;
 } ax_seq_role;
 
 inline static ax_fail ax_seq_push(ax_seq *seq, const void *val)

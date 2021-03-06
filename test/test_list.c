@@ -13,21 +13,20 @@
 
 static ax_bool seq_equal_array(ax_seq *seq, void *arr, size_t mem_size)
 {
-	 return ax_equal_to_arr(ax_box_begin(&seq->box), ax_box_end(&seq->box), arr, mem_size);
+	ax_box *box = ax_cast(seq, seq).box;
+	 return ax_equal_to_arr(ax_box_begin(box), ax_box_end(box), arr, mem_size);
 }
 
 static void create(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_list_role role;
-
-	role = ax_list_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_list_role role = ax_list_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	axut_assert(r, role.any != NULL);
 	axut_assert(r, ax_box_size(role.box) == 0);
 
 	ax_seq *seq = ax_seq_init(ax_base_local(base), __ax_list_construct, "i32x3", 1, 2, 3);
 	int i = 1;
-	ax_foreach(int*, v, &seq->box) {
+	ax_foreach(int*, v, ax_cast(seq, seq).box) {
 		axut_assert(r, *v == i++);
 	}
 

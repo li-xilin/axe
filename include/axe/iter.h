@@ -34,6 +34,7 @@
 #define AX_IT_OUT  0x08
 
 typedef struct ax_iter_st ax_iter;
+typedef struct ax_citer_st ax_citer;
 typedef struct ax_iter_trait_st ax_iter_trait;
 typedef struct ax_box_st ax_box;
 
@@ -60,12 +61,25 @@ struct ax_iter_trait_st
 	unsigned char   type;
 };
 
+struct ax_citer_st
+{
+	void *const owner;
+	const ax_iter_trait *const tr;
+	void *const point;
+};
+
 struct ax_iter_st
 {
 	void *owner;
 	const ax_iter_trait *tr;
 	void *point;
 };
+
+inline ax_citer ax_iter_ro(ax_iter it)
+{
+	void *p = (void*)&it;
+	return *(ax_citer*) p;
+}
 
 inline static ax_bool ax_iter_norm (ax_iter it)
 {
@@ -110,7 +124,6 @@ inline static ax_bool ax_iter_equal(ax_iter it1, ax_iter it2)
 	ax_assert(it1.owner == it2.owner, "different owner of two iterator");
 	ax_assert(it1.tr == it2.tr, "different trait of two iterator");
 	return it1.point == it2.point;
-	//return it1.tr->equal(&it1, &it2);
 }
 
 inline static ax_bool ax_iter_less(ax_iter it1, const ax_iter it2)
