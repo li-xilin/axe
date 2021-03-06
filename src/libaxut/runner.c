@@ -54,7 +54,7 @@ struct axut_runner_st
 	ax_string_role  output;
 	jmp_buf *jump_ptr;
 	axut_case *current;
-	
+	void *arg;
 };
 
 static void one_free(ax_one *one);
@@ -144,7 +144,10 @@ ax_one *__axut_runner_construct(ax_base *base, axut_output_f output_cb)
 			.seq = suites
 		},
 		.output = { .str = output },
-		.output_cb = output_cb 
+		.output_cb = output_cb ,
+		.current = NULL,
+		.arg = NULL
+			
 	};
 	memcpy(runner, &runner_init, sizeof runner_init);
 
@@ -215,6 +218,7 @@ void axut_runner_run(axut_runner *r)
 	axut_output_f output_cb = r->output_cb ? r->output_cb : default_output;
 	ax_foreach(axut_suite * const*, ppsuite, r->suites.box) {
 		const ax_seq *case_tab = axut_suite_all_case(*ppsuite);
+		r->arg = axut_suite_arg(*ppsuite);
 		ax_foreach(axut_case *, tc, &case_tab->box) {
 			jmp_buf jmp;
 			if (tc->state != AXUT_CS_READY)
@@ -232,7 +236,13 @@ void axut_runner_run(axut_runner *r)
 			case_count ++;
 		}
 	}
+	r->arg = NULL;
 	ax_str_sprintf(r->output.str, "PASS : %d / %d\n", case_pass, case_count);
+}
+
+void *axut_runner_arg(const axut_runner *r)
+{
+	return r->arg;
 }
 
 static void fail(axut_runner *r, const char *file, int line, const char *fmt, va_list args)
