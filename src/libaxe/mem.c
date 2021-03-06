@@ -22,13 +22,13 @@
 
 #include <axe/def.h>
 #include <axe/pool.h>
+#include <axe/mem.h>
 
 #include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
 
 #include "check.h"
-
 void ax_memxor(void *ptr1, void *ptr2, size_t size)
 {
 	if (ptr1 == ptr2)
