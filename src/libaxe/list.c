@@ -355,9 +355,9 @@ static void one_free(ax_one *one)
 	if (!one)
 		return;
 
-	ax_list_role role = { .one = one };
+	ax_list_role list_r = { .one = one };
 	ax_scope_detach(one);
-	box_clear(role.box);
+	box_clear(list_r.box);
 	ax_pool_free(one);
 }
 
@@ -426,8 +426,8 @@ static size_t box_size(const ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_list_role role = { .box = (ax_box*)box};
-	return role.list->size;
+	ax_list_role list_r = { .box = (ax_box*)box};
+	return list_r.list->size;
 }
 
 static size_t box_maxsize(const ax_box *box)
@@ -439,10 +439,10 @@ static ax_iter box_begin(const ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_list_role role = { .box = (ax_box*)box };
+	ax_list_role list_r = { .box = (ax_box*)box };
 	ax_iter it = {
 		.owner = (void *)box,
-		.point = role.list->head,
+		.point = list_r.list->head,
 		.tr = &iter_trait };
 	return it;
 }
@@ -464,8 +464,8 @@ static ax_iter box_rbegin(const ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_list_role role = { .box = (ax_box*)box};
-	struct node_st *right_end = role.list->head ? role.list->head->pre : NULL;
+	ax_list_role list_r = { .box = (ax_box*)box};
+	struct node_st *right_end = list_r.list->head ? list_r.list->head->pre : NULL;
 	ax_iter it = {
 		.owner = (void *)box,
 		.point = right_end,
@@ -488,8 +488,8 @@ static ax_iter box_rend(const ax_box *box)
 
 static const ax_stuff_trait *box_elem_tr(const ax_box* box)
 {
-	ax_list_role role = { .box = (ax_box*)box };
-	return role.seq->elem_tr;
+	ax_list_role list_r = { .box = (ax_box*)box };
+	return list_r.seq->elem_tr;
 }
 
 static void box_clear(ax_box *box)
@@ -578,10 +578,10 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_list_role list_rl = { .seq = seq };
+	ax_list_role list_r = { .seq = seq };
 
 	const ax_stuff_trait *etr = seq->elem_tr;
-	ax_base *base = ax_one_base(list_rl.one);
+	ax_base *base = ax_one_base(list_r.one);
 	ax_pool *pool = ax_base_pool(base);
 
 	struct node_st *node = ax_pool_alloc(pool, sizeof(struct node_st) + etr->size);
@@ -601,18 +601,18 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 		return ax_true;
 	}
 
-	if (list_rl.list->head) {
-		node->pre = list_rl.list->head->pre;
-		node->next = list_rl.list->head;
-		list_rl.list->head->pre->next = node;
-		list_rl.list->head->pre = node;
+	if (list_r.list->head) {
+		node->pre = list_r.list->head->pre;
+		node->next = list_r.list->head;
+		list_r.list->head->pre->next = node;
+		list_r.list->head->pre = node;
 	} else {
 		node->pre = node;
 		node->next = node;
-		list_rl.list->head = node;
+		list_r.list->head = node;
 	}
 
-	list_rl.list->size ++;
+	list_r.list->size ++;
 
 	return ax_false;
 }
@@ -800,8 +800,8 @@ ax_seq* __ax_list_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 	CHECK_PARAM_NULL(elem_tr->free);
 	CHECK_PARAM_NULL(elem_tr->copy);
 
-	ax_list_role role = { ax_pool_alloc(ax_base_pool(base), sizeof(ax_list)) };
-	if (role.list == NULL) {
+	ax_list_role list_r = { ax_pool_alloc(ax_base_pool(base), sizeof(ax_list)) };
+	if (list_r.list == NULL) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
 		return NULL;
 	}
@@ -828,8 +828,8 @@ ax_seq* __ax_list_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 		.head = 0,
 		.size = 0
 	};
-	memcpy(role.list, &list_init, sizeof list_init);
-	return role.seq;
+	memcpy(list_r.list, &list_init, sizeof list_init);
+	return list_r.seq;
 }
 
 ax_list_role ax_list_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
@@ -838,9 +838,9 @@ ax_list_role ax_list_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
 	CHECK_PARAM_NULL(elem_tr);
 
 	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
-	ax_list_role role = { .seq = __ax_list_construct(base, elem_tr) };
-	ax_scope_attach(scope, role.one);
-	return role;
+	ax_list_role list_r = { .seq = __ax_list_construct(base, elem_tr) };
+	ax_scope_attach(scope, list_r.one);
+	return list_r;
 }
 
 ax_list_role ax_list_init(ax_scope *scope, const char *fmt, ...)
@@ -850,8 +850,8 @@ ax_list_role ax_list_init(ax_scope *scope, const char *fmt, ...)
 
 	va_list varg;
 	va_start(varg, fmt);
-	ax_list_role role = { .seq = ax_seq_vinit(scope, __ax_list_construct, fmt, varg) };
+	ax_list_role list_r = { .seq = ax_seq_vinit(scope, __ax_list_construct, fmt, varg) };
 	va_end(varg);
-	return role;
+	return list_r;
 }
 

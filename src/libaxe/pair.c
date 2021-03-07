@@ -86,11 +86,11 @@ ax_pair_role ax_pair_create(ax_scope* scope, const void *key, void *value)
 {
 	CHECK_PARAM_NULL(scope);
 	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
-	ax_pair_role role = { __ax_pair_construct(base, key, value) };
-	if (role.one == NULL)
-		return role;
-	ax_scope_attach(scope, role.one);
-	return role;
+	ax_pair_role pair_r = { __ax_pair_construct(base, key, value) };
+	if (pair_r.one == NULL)
+		return pair_r;
+	ax_scope_attach(scope, pair_r.one);
+	return pair_r;
 }
 
 const void *ax_pair_key(ax_pair *pair)
