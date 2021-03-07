@@ -172,6 +172,7 @@ ax_fail axut_suite_add_case(axut_suite *suite, const char *name, axut_case_proc_
 {
 	axut_case tc_init  = {
 		.name = (char*)name,
+		.log = NULL,
 		.proc = proc,
 		.priority = priority,
 		.state = AXUT_CS_READY

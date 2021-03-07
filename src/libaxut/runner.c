@@ -52,6 +52,12 @@ struct axut_runner_st
 	ax_avl_role smap; // for removing suite
 	ax_vector_role suites;
 	ax_string_role  output;
+	struct {
+		int pass;
+		int fail;
+		int term;
+
+	} statistic;
 	jmp_buf *jump_ptr;
 	axut_case *current;
 	void *arg;
@@ -83,11 +89,18 @@ static const ax_one_trait one_trait = {
 static void default_output(const char *suite_name, axut_case *tc, ax_str *out)
 {
 	assert(tc->state != AXUT_CS_READY);
-	if (tc->state == AXUT_CS_PASS) {
-		ax_str_sprintf(out, "[ OK ] %-10s : %s\n", suite_name, tc->name);
-	} else {
-		ax_str_sprintf(out, "[FAIL] %-10s : %s: %s, line %d: %s\n",
-				suite_name, tc->name, tc->file, tc->line, tc->log);
+	switch (tc->state) {
+		case AXUT_CS_PASS:
+			ax_str_sprintf(out, "[ OK ] %-10s : %s\n", suite_name, tc->name);
+			break;
+		case AXUT_CS_FAIL:
+			ax_str_sprintf(out, "[FAIL] %-10s : %s: %s, line %d: %s\n",
+				suite_name, tc->name, tc->file, tc->line, tc->log ? tc->log : "none");
+			break;
+		case AXUT_CS_TERM:
+			ax_str_sprintf(out, "[TERM] %-10s : %s: %s, line %d: %s\n",
+				suite_name, tc->name, tc->file, tc->line, tc->log ? tc->log : "none");
+			break;
 	}
 }
 
@@ -127,6 +140,11 @@ ax_one *__axut_runner_construct(ax_base *base, axut_output_f output_cb)
 		.one_env = {
 			.scope = NULL,
 			.sindex = 0,
+		},
+		.statistic = {
+			.pass = 0,
+			.fail = 0,
+			.term = 0
 		},
 		.smap = {
 			.map = smap 
@@ -169,6 +187,15 @@ const char *axut_runner_result(const axut_runner *r)
 	return ax_str_cstr(r->output.str);
 }
 
+int axut_runner_summary(const axut_runner *r, int *pass, int *term)
+{
+	if (pass)
+		*pass = r->statistic.pass;
+	if (term)
+		*term = r->statistic.term;
+	return r->statistic.fail;
+}
+
 ax_fail axut_runner_add(axut_runner *r, axut_suite* s)
 {
 	CHECK_PARAM_NULL(r);
@@ -208,6 +235,10 @@ void axut_runner_run(axut_runner *r)
 {
 	int case_count = 0, case_pass = 0;
 	axut_output_f output_cb = r->output_cb ? r->output_cb : default_output;
+	ax_box_clear(r->output.box);
+	r->statistic.pass = 0;
+	r->statistic.fail = 0;
+	r->statistic.term = 0;
 	ax_foreach(axut_suite * const*, ppsuite, r->suites.box) {
 		const ax_seq *case_tab = axut_suite_all_case(*ppsuite);
 		r->arg = axut_suite_arg(*ppsuite);
@@ -217,12 +248,19 @@ void axut_runner_run(axut_runner *r)
 				continue;
 			r->jump_ptr = &jmp;
 			r->current = tc;
-			if(setjmp(jmp) == 0) {
-				tc->proc(r);
-				tc->state = AXUT_CS_PASS;
-				case_pass ++;
-			} else {
-				tc->state = AXUT_CS_FAIL;
+			int jmpid = setjmp(jmp);
+			switch (jmpid) {
+				case 0:
+					tc->proc(r);
+					tc->state = AXUT_CS_PASS;
+					case_pass ++;
+					break;
+				case 1:
+					tc->state = AXUT_CS_FAIL;
+					break;
+				case 2:
+					tc->state = AXUT_CS_TERM;
+					break;
 			}
 			output_cb(axut_suite_name(*ppsuite), tc, r->output.str);
 			case_count ++;
@@ -237,9 +275,8 @@ void *axut_runner_arg(const axut_runner *r)
 	return r->arg;
 }
 
-static void fail(axut_runner *r, const char *file, int line, const char *fmt, va_list args)
+static void leave(axut_runner *r, axut_case_state cs, const char *file, int line, const char *fmt, va_list args)
 {
-	char buf[1024];
 	ax_base *base = ax_one_base(axut_cast(runner, r).one);
 	ax_pool *pool = ax_base_pool(base);
 
@@ -249,9 +286,18 @@ static void fail(axut_runner *r, const char *file, int line, const char *fmt, va
 	r->current->line = line;
 
 	ax_pool_free(r->current->log);
-	vsprintf(buf, fmt, args);
-	r->current->log =  ax_strdup(pool, buf);
-	longjmp(*r->jump_ptr, 1);
+	r->current->log = NULL;
+	if (fmt) {
+		char buf[1024];
+		vsprintf(buf, fmt, args);
+		r->current->log =  ax_strdup(pool, buf);
+	}
+
+	assert(cs == AXUT_CS_FAIL || cs == AXUT_CS_TERM);
+	if (cs == AXUT_CS_FAIL)
+		longjmp(*r->jump_ptr, 1);
+	else
+		longjmp(*r->jump_ptr, 2);
 }
 
 void __axut_assert(axut_runner *r, ax_bool cond, const char *file, int line, const char *fmt, ...)
@@ -260,7 +306,7 @@ void __axut_assert(axut_runner *r, ax_bool cond, const char *file, int line, con
 		return;
 	va_list args;
 	va_start(args, fmt);
-	fail(r, file, line, fmt, args);
+	leave(r, AXUT_CS_FAIL, file, line, fmt, args);
 	va_end(args);
 }
 
@@ -289,7 +335,15 @@ void __axut_fail(axut_runner *r, const char *file, int line, const char *fmt, ..
 {
 	va_list args;
 	va_start(args, fmt);
-	fail(r, file, line, fmt, args);
+	leave(r, AXUT_CS_FAIL, file, line, fmt, args);
+	va_end(args);
+}
+
+void __axut_term(axut_runner *r, const char *file, int line, const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	leave(r, AXUT_CS_TERM, file, line, fmt, args);
 	va_end(args);
 }
 

@@ -267,9 +267,9 @@ static ax_any* any_copy(const ax_any* any)
 	ax_pool *pool = ax_base_pool(ax_one_base(string_r.one));
 	ax_string* new = ax_pool_alloc(pool, (sizeof(ax_string)));
 	memcpy(new, string_r.string, sizeof(ax_string));
-	ax_vector_role srcvec_role = { .vector = string_r.string->vector };
-	ax_vector_role dstvec_role = { .any = ax_any_copy(srcvec_role.any) };
-	new->vector = dstvec_role.vector;
+	ax_vector_role srcvec_r = { .vector = string_r.string->vector };
+	ax_vector_role dstvec_r = { .any = ax_any_copy(srcvec_r.any) };
+	new->vector = dstvec_r.vector;
 
 	return (ax_any*)new;
 }
@@ -282,11 +282,11 @@ static ax_any* any_move(ax_any* any)
 	ax_pool *pool = ax_base_pool(ax_one_base(string_r.one));
 	ax_string* new = ax_pool_alloc(pool, (sizeof(ax_string)));
 	memcpy(new, string_r.string, sizeof(ax_string));
-	ax_vector_role srcvec_role = { .vector = string_r.string->vector };
-	ax_vector_role dstvec_role = { .any = ax_any_move(srcvec_role.any) };
+	ax_vector_role srcvec_r = { .vector = string_r.string->vector };
+	ax_vector_role dstvec_r = { .any = ax_any_move(srcvec_r.any) };
 	char zero = '\0';
-	ax_seq_push(srcvec_role.seq, &zero);
-	new->vector = dstvec_role.vector;
+	ax_seq_push(srcvec_r.seq, &zero);
+	new->vector = dstvec_r.vector;
 
 	return (ax_any*)new;
 }
@@ -296,8 +296,8 @@ static size_t box_size(const ax_box* box)
 	CHECK_PARAM_NULL(box);
 
 	ax_string_role string_r = { .box = (ax_box*)box };
-	ax_vector_role vec_role = { .vector = string_r.string->vector };
-	return ax_box_size(vec_role.box) - 1;
+	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	return ax_box_size(vec_r.box) - 1;
 }
 
 static size_t box_maxsize(const ax_box* box)
@@ -312,8 +312,8 @@ static ax_iter box_begin(const ax_box* box)
 	CHECK_PARAM_NULL(box);
 
 	ax_string_role string_r = { .box = (ax_box*)box};
-	ax_vector_role vec_role = { .vector = string_r.string->vector };
-	ax_iter it = ax_box_begin(vec_role.box);
+	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_iter it = ax_box_begin(vec_r.box);
 	it.tr = &iter_trait;
 	return it;
 }
@@ -323,8 +323,8 @@ static ax_iter box_end(const ax_box* box)
 	CHECK_PARAM_NULL(box);
 
 	ax_string_role string_r = { .box = (ax_box*)box};
-	ax_vector_role vec_role = { .vector = string_r.string->vector };
-	ax_iter it = ax_box_end(vec_role.box);
+	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_iter it = ax_box_end(vec_r.box);
 	it = ax_iter_prev(it);
 	it.tr = &iter_trait;
 	return it;
@@ -336,8 +336,8 @@ static ax_iter box_rbegin(const ax_box* box)
 	CHECK_PARAM_NULL(box);
 
 	ax_string_role string_r = { .box = (ax_box*)box};
-	ax_vector_role vec_role = { .vector = string_r.string->vector };
-	ax_iter it = ax_box_rbegin(vec_role.box);
+	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_iter it = ax_box_rbegin(vec_r.box);
 	it = ax_iter_next(it);
 	it.tr = &riter_trait;
 	return it;
@@ -348,8 +348,8 @@ static ax_iter box_rend(const ax_box* box)
 	CHECK_PARAM_NULL(box);
 
 	ax_string_role string_r = { .box = (ax_box*)box};
-	ax_vector_role vec_role = { .vector = string_r.string->vector };
-	ax_iter it = ax_box_rend(vec_role.box);
+	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_iter it = ax_box_rend(vec_r.box);
 	it.tr = &riter_trait;
 	return it;
 }
@@ -360,15 +360,18 @@ static void box_clear(ax_box* box)
 	CHECK_PARAM_NULL(box);
 
 	ax_string_role string_r = { .box = (ax_box*)box};
-	ax_vector_role vec_role = { .vector = string_r.string->vector };
-	ax_box_clear(vec_role.box);
+	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_seq_trunc(vec_r.seq, 1);
+	ax_iter first = ax_box_begin(vec_r.box);
+	char *ch = ax_iter_get(first);
+	*ch = '\0';
 }
 
 static const ax_stuff_trait *box_elem_tr(const ax_box *box)
 {
 	ax_string_role string_r = { .box = (ax_box*)box };
-	ax_vector_role vec_role = { .vector = (ax_vector *)string_r.string->vector };
-	return ax_box_elem_tr(vec_role.box);
+	ax_vector_role vec_r = { .vector = (ax_vector *)string_r.string->vector };
+	return ax_box_elem_tr(vec_r.box);
 }
 
 static ax_bool str_append(ax_str* str, const char *s)
@@ -378,10 +381,10 @@ static ax_bool str_append(ax_str* str, const char *s)
 
 	size_t len = strlen(s);
 	ax_string_role string_r = { .str = str };
-	ax_vector_role vec_role = { .vector = string_r.string->vector };
-	size_t oldsize = ax_box_size(vec_role.box);
-	ax_seq_trunc(vec_role.seq, (oldsize + len) * sizeof(char));
-	char *buffer = ax_vector_buffer(vec_role.vector);
+	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	size_t oldsize = ax_box_size(vec_r.box);
+	ax_seq_trunc(vec_r.seq, (oldsize + len) * sizeof(char));
+	char *buffer = ax_vector_buffer(vec_r.vector);
 	memcpy(buffer + (oldsize - 1) * sizeof(char), s, (len + 1) * sizeof(char));
 	
 	return ax_true;
@@ -392,8 +395,8 @@ static size_t str_length (ax_str* str)
 	CHECK_PARAM_NULL(str);
 	
 	ax_string_role string_r = { .str = str };
-	ax_vector_role vec_role = { .vector = string_r.string->vector };
-	return ax_box_size(vec_role.box) - 1;
+	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	return ax_box_size(vec_r.box) - 1;
 }
 
 static ax_bool str_insert (ax_str* str, size_t start, const char *s)
@@ -403,10 +406,10 @@ static ax_bool str_insert (ax_str* str, size_t start, const char *s)
 	
 	size_t len = strlen(s);
 	ax_string_role string_r = { .str = str };
-	ax_vector_role vec_role = { .vector = string_r.string->vector };
-	size_t oldsize = ax_box_size(vec_role.box);
-	ax_seq_trunc(vec_role.seq, oldsize + len + sizeof(char));
-	char *buffer = ax_vector_buffer(vec_role.vector);
+	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	size_t oldsize = ax_box_size(vec_r.box);
+	ax_seq_trunc(vec_r.seq, oldsize + len + sizeof(char));
+	char *buffer = ax_vector_buffer(vec_r.vector);
 	memmove(buffer + start + len, buffer + start, oldsize - start);
 	memcpy(buffer + start, s, len);
 
@@ -418,8 +421,8 @@ static const char *str_cstr (ax_str* str)
 	CHECK_PARAM_NULL(str);
 
 	ax_string_role string_r = { .str = str };
-	ax_vector_role vec_role = { .vector = string_r.string->vector };
-	return ax_vector_buffer(vec_role.vector);
+	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	return ax_vector_buffer(vec_r.vector);
 }
 
 static int str_comp(ax_str* str, const char* s)
@@ -428,8 +431,8 @@ static int str_comp(ax_str* str, const char* s)
 	CHECK_PARAM_NULL(s);
 
 	ax_string_role string_r = { .str = str };
-	ax_vector_role vec_role = { .vector = string_r.string->vector };
-	const char *buffer = ax_vector_buffer(vec_role.vector);
+	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	const char *buffer = ax_vector_buffer(vec_r.vector);
 	return strcmp(buffer, s);
 }
 
@@ -440,7 +443,7 @@ static ax_str *str_substr (ax_str* str, size_t start, size_t len)
 	CHECK_PARAM_VALIDITY(len, start + len < ax_str_length(str));
 
 	ax_string_role string_r = { .str = str };
-	ax_vector_role vec_role = { .vector = string_r.string->vector };
+	ax_vector_role vec_r = { .vector = string_r.string->vector };
 
 	ax_string_role ret_r= ax_string_create(ax_one_scope(string_r.one));
 	if (ret_r.one == NULL) {
@@ -449,7 +452,7 @@ static ax_str *str_substr (ax_str* str, size_t start, size_t len)
 		return NULL;
 	}
 
-	char* buffer = ax_vector_buffer(vec_role.vector);
+	char* buffer = ax_vector_buffer(vec_r.vector);
 	char ch = buffer[start + len];
 	buffer[start + len] = '\0';
 	ax_str_append(ret_r.str, buffer + start);
@@ -589,7 +592,7 @@ ax_str *__ax_string_construct(ax_base* base)
 		return NULL;
 	}
 
-	ax_vector_role vec_role = { .seq = __ax_vector_construct(base, ax_stuff_traits(AX_ST_U8)) };
+	ax_vector_role vec_r = { .seq = __ax_vector_construct(base, ax_stuff_traits(AX_ST_U8)) };
 	ax_string string_init = {
 		.__str = {
 			.__box = {
@@ -608,10 +611,10 @@ ax_str *__ax_string_construct(ax_base* base)
 			.scope = NULL,
 			.sindex = 0
 		},
-		.vector = vec_role.vector
+		.vector = vec_r.vector
 	};
 	char zero = '\0';
-	ax_seq_push(vec_role.seq, &zero);
+	ax_seq_push(vec_r.seq, &zero);
 
 	memcpy(string, &string_init, sizeof string_init);
 	return &string->__str;

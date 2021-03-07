@@ -59,6 +59,7 @@ typedef enum axut_case_state_en
 	AXUT_CS_READY = 0,
 	AXUT_CS_PASS,
 	AXUT_CS_FAIL,
+	AXUT_CS_TERM,
 } axut_case_state;
 
 struct axut_case_st

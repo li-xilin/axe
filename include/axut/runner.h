@@ -59,12 +59,13 @@ typedef union
 	axut_runner_crol c;
 } axut_runner_role;
 
-
 ax_one *__axut_runner_construct(ax_base *base, axut_output_f ran_cb);
 
 axut_runner *axut_runner_create(ax_scope *scope, axut_output_f ran_cb);
 
 const char *axut_runner_result(const axut_runner *r);
+
+int axut_runner_summary(const axut_runner *r, int *pass, int *term);
 
 ax_fail axut_runner_add(axut_runner *r, axut_suite* s);
 
@@ -84,11 +85,15 @@ void __axut_assert_uint_equal(axut_runner *r, uint64_t ex, uint64_t ac, const ch
 
 void __axut_fail(axut_runner *r, const char *file, int line, const char *fmt, ...);
 
+void __axut_term(axut_runner *r, const char *file, int line, const char *fmt, ...);
+
 #define axut_assert(r, cond) __axut_assert((r), (cond), __FILE__, __LINE__, "assertion failed: %s", #cond)
 
-#define axut_assert_msg(r, cond, fmt, ...) __axut_assert((r), (cond), __FILE__, __LINE__, (fmt), ##__VA_ARGS__)
+#define axut_assert_msg(r, cond, ...) __axut_assert((r), (cond), __FILE__, __LINE__, __VA_ARGS__)
 
-#define axut_fail(r, fmt, ...) __axut_fail((r), __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define axut_fail(r, ...) __axut_fail((r), __FILE__, __LINE__, __VA_ARGS__)
+
+#define axut_term(r, ...) __axut_term((r), __FILE__, __LINE__, __VA_ARGS__)
 
 #define axut_assert_str_equal(r, ex, ac) __axut_assert_str_equal((r), ex, ac, __FILE__, __LINE__)
 
