@@ -8,7 +8,7 @@ extern axut_suite *suite_for_string(ax_base *base);
 extern axut_suite *suite_for_scope(ax_base *base);
 extern axut_suite *suite_for_algo(ax_base *base);
 extern axut_suite *suite_for_vail(ax_base *base);
-extern axut_suite *suite_for_avltree(ax_base *base);
+extern axut_suite *suite_for_avl(ax_base *base);
 extern axut_suite *suite_for_pool(ax_base *base);
 extern axut_suite *suite_for_list(ax_base *base);
 extern axut_suite *suite_for_pred(ax_base *base);
@@ -24,7 +24,7 @@ int main()
 	axut_runner_add(r, suite_for_string(base));
 	axut_runner_add(r, suite_for_scope(base));
 	axut_runner_add(r, suite_for_algo(base));
-	axut_runner_add(r, suite_for_avltree(base));
+	axut_runner_add(r, suite_for_avl(base));
 	axut_runner_add(r, suite_for_pool(base));
 	axut_runner_add(r, suite_for_list(base));
 	axut_runner_add(r, suite_for_pred(base));

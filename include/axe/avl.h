@@ -20,36 +20,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef AXE_AVLTREE_H_
-#define AXE_AVLTREE_H_
+#ifndef AXE_AVL_H_
+#define AXE_AVL_H_
 #include "map.h"
 
-typedef struct ax_avltree_st ax_avltree;
+typedef struct ax_avl_st ax_avl;
 
 typedef union
 {
-	const ax_avltree *avltree;
+	const ax_avl *avl;
 	const ax_map *map;
 	const ax_box *box;
 	const ax_any *any;
 	const ax_one *one;
-} ax_avltree_crol;
+} ax_avl_crol;
 
 typedef union
 {
-	ax_avltree *avltree;
+	ax_avl *avl;
 	ax_map *map;
 	ax_box *box;
 	ax_any *any;
 	ax_one *one;
-	ax_avltree_crol c;
-} ax_avltree_role;
+	ax_avl_crol c;
+} ax_avl_role;
 
-ax_map *__ax_avltree_construct(ax_base* base,
+ax_map *__ax_avl_construct(ax_base* base,
 		const ax_stuff_trait* key_tr,
 		const ax_stuff_trait* val_tr);
 
-ax_avltree_role ax_avltree_create(ax_scope *scope,
+ax_avl_role ax_avl_create(ax_scope *scope,
 		const ax_stuff_trait *key_tr,
 		const ax_stuff_trait *val_tr);
 

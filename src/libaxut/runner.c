@@ -27,7 +27,7 @@
 #include <axe/string.h>
 #include <axe/vector.h>
 #include <axe/mem.h>
-#include <axe/avltree.h>
+#include <axe/avl.h>
 #include <axe/pair.h>
 #include <axe/seq.h>
 #include <axe/scope.h>
@@ -49,7 +49,7 @@ struct axut_runner_st
 	ax_one_env one_env;
 	char *name;
 	axut_output_f output_cb;
-	ax_avltree_role smap; // for removing suite
+	ax_avl_role smap; // for removing suite
 	ax_vector_role suites;
 	ax_string_role  output;
 	jmp_buf *jump_ptr;
@@ -64,13 +64,13 @@ static void one_free(ax_one *one)
 	if (!one)
 		return;
 
-	axut_runner_role runner_rl = { .one = one };
+	axut_runner_role runner_r = { .one = one };
 
 	ax_scope_detach(one);
-	ax_one_free(runner_rl.runner->smap.one);
-	ax_one_free(runner_rl.runner->output.one);
-	ax_one_free(runner_rl.runner->suites.one);
-	ax_pool_free(runner_rl.runner);
+	ax_one_free(runner_r.runner->smap.one);
+	ax_one_free(runner_r.runner->output.one);
+	ax_one_free(runner_r.runner->suites.one);
+	ax_pool_free(runner_r.runner);
 }
 
 static const ax_one_trait one_trait = {
@@ -107,7 +107,7 @@ ax_one *__axut_runner_construct(ax_base *base, axut_output_f output_cb)
 		goto fail;
 	}
 
-	smap = __ax_avltree_construct(base, ax_stuff_traits(AX_ST_PTR), ax_stuff_traits(AX_ST_PTR));
+	smap = __ax_avl_construct(base, ax_stuff_traits(AX_ST_PTR), ax_stuff_traits(AX_ST_PTR));
 	if (!smap)
 		goto fail;
 
@@ -156,11 +156,11 @@ axut_runner *axut_runner_create(ax_scope *scope, axut_output_f ran_cb)
 	CHECK_PARAM_NULL(scope);
 
 	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
-	axut_runner_role runner_rl = { .one = __axut_runner_construct(base, ran_cb) };
-	if (runner_rl.one == NULL)
-		return runner_rl.runner;
-	ax_scope_attach(scope, runner_rl.one);
-	return runner_rl.runner;
+	axut_runner_role runner_r = { .one = __axut_runner_construct(base, ran_cb) };
+	if (runner_r.one == NULL)
+		return runner_r.runner;
+	ax_scope_attach(scope, runner_r.one);
+	return runner_r.runner;
 
 }
 
