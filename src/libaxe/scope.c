@@ -31,6 +31,8 @@
 #include <string.h>
 #include <assert.h>
 
+#undef free
+
 struct ax_scope_st
 {
 	ax_one __one;

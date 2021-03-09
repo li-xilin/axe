@@ -38,6 +38,8 @@
 #include <assert.h>
 #include <string.h>
 
+#undef free
+
 struct node_st
 {
         struct node_st *left;

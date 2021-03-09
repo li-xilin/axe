@@ -30,6 +30,8 @@
 
 #include "check.h"
 
+#undef free
+
 static ax_bool stuff_equal(const void* p1, const void* p2, size_t size)
 {
 	CHECK_PARAM_NULL(p1);

@@ -37,6 +37,7 @@
 #include <stdarg.h>
 #include "check.h"
 
+#undef free
 
 struct node_st
 {

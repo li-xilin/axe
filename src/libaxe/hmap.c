@@ -37,6 +37,8 @@
 
 #include "check.h"
 
+#undef free
+
 #define REALLOC_THRESHOLD 1
 
 struct node_st

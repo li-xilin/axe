@@ -41,6 +41,8 @@
 
 #include "check.h"
 
+#undef free
+
 #define MIN_SIZE
 
 struct ax_vector_st
