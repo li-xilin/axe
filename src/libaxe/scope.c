@@ -124,6 +124,18 @@ void ax_scope_attach(ax_scope *scope_attach, ax_one *one)
 	scope_attach->tab_size ++;
 }
 
+void ax_scope_clean(ax_scope *scope)
+{
+	ax_scope_r scope_r = { .scope = scope };
+
+	while (scope_r.scope->tab_size) {
+		ax_one *elem = scope_r.scope->tab[0];
+		elem->tr->free(elem);
+	}
+
+	scope_r.scope->tab_size = 0;
+}
+
 void ax_scope_detach(ax_one *one)
 {
 	CHECK_PARAM_NULL(one);

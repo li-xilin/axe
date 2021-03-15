@@ -46,6 +46,8 @@ ax_scope_r ax_scope_create(ax_scope *scope);
 
 void ax_scope_attach(ax_scope *scope, ax_one *one);
 
+void ax_scope_clean(ax_scope *scope);
+
 void ax_scope_destroy(ax_scope *scope);
 
 void ax_scope_detach(ax_one *one);
