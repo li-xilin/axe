@@ -42,19 +42,19 @@ typedef union
 	const ax_buff *buff;
 	const ax_any *any;
 	const ax_one *one;
-} ax_buff_crol;
+} ax_buff_cr;
 
 typedef union
 {
 	ax_buff *buff;
 	ax_any *any;
 	ax_one *one;
-	ax_buff_crol c;
-} ax_buff_role;
+	ax_buff_cr c;
+} ax_buff_r;
 
 ax_any *__ax_buff_construct(ax_base *base);
 
-ax_buff_role ax_buff_create(ax_scope *scope);
+ax_buff_r ax_buff_create(ax_scope *scope);
 
 ax_fail ax_buff_set_max(ax_buff *buff, size_t max);
 

@@ -31,15 +31,25 @@ typedef struct ax_string_st ax_string;
 
 typedef union
 {
+	const ax_string *string;
+	const ax_str* str;
+	const ax_box* box;
+	const ax_any* any;
+	const ax_one* one;
+} ax_string_cr;
+
+typedef union
+{
 	ax_string *string;
 	ax_str* str;
 	ax_box* box;
 	ax_any* any;
 	ax_one* one;
-} ax_string_role;
+	ax_string_cr c;
+} ax_string_r;
 
 ax_str *__ax_string_construct(ax_base* base);
 
-ax_string_role ax_string_create(ax_scope *scope);
+ax_string_r ax_string_create(ax_scope *scope);
 
 #endif

@@ -34,7 +34,7 @@
 
 struct ax_pair_st
 {
-	ax_one __one;
+	ax_one _one;
 	ax_one_env one_env;
 	const void *key;
 	void *value;
@@ -66,7 +66,7 @@ ax_pair *__ax_pair_construct(ax_base *base, const void *key, void *value)
 	ax_pool *pool = ax_base_pool(base);
 	ax_pair *pair = ax_pool_alloc(pool, sizeof(ax_pair));
 	ax_pair pair_init = {
-		.__one = {
+		._one = {
 			.base = base,
 			.tr = &one_trait,
 
@@ -82,11 +82,11 @@ ax_pair *__ax_pair_construct(ax_base *base, const void *key, void *value)
 	return pair;
 }
 
-ax_pair_role ax_pair_create(ax_scope* scope, const void *key, void *value)
+ax_pair_r ax_pair_create(ax_scope* scope, const void *key, void *value)
 {
 	CHECK_PARAM_NULL(scope);
-	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
-	ax_pair_role pair_r = { __ax_pair_construct(base, key, value) };
+	ax_base *base = ax_one_base(ax_r(scope, scope).one);
+	ax_pair_r pair_r = { __ax_pair_construct(base, key, value) };
 	if (pair_r.one == NULL)
 		return pair_r;
 	ax_scope_attach(scope, pair_r.one);

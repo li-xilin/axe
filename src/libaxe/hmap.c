@@ -110,7 +110,7 @@ static const ax_map_trait map_trait;
 
 static ax_fail rehash(ax_hmap *hmap, size_t new_size)
 {
-	ax_hmap_role hmap_r = { hmap };
+	ax_hmap_r hmap_r = { hmap };
 	ax_base *base = ax_one_base(hmap_r.one);
 	ax_pool *pool = ax_base_pool(base);
 
@@ -152,7 +152,7 @@ static ax_fail rehash(ax_hmap *hmap, size_t new_size)
 
 static struct node_st *make_node(ax_map *map, const void *key, const void *val)
 {
-	ax_hmap_role hmap_r = { .map = map };
+	ax_hmap_r hmap_r = { .map = map };
 
 	ax_base *base = ax_one_base(hmap_r.one);
 	ax_pool *pool = ax_base_pool(base);
@@ -269,7 +269,7 @@ static void *iter_get(const ax_iter *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
 
-	ax_hmap_role hmap_r = { it->owner };
+	ax_hmap_r hmap_r = { it->owner };
 	ax_base *base = ax_one_base(hmap_r.one);
 	struct node_st **pp_node = it->point;
 
@@ -288,7 +288,7 @@ static void *iter_get(const ax_iter *it)
 		: pval;
 
 
-	ax_pair_role pair_r = ax_pair_create(ax_base_local(base), key, val);
+	ax_pair_r pair_r = ax_pair_create(ax_base_local(base), key, val);
 
 	return pair_r.pair;
 }
@@ -300,7 +300,7 @@ static ax_fail iter_set(const ax_iter *it, const void *p)
 
 	struct node_st **pp_node = it->point;
 
-	ax_hmap_role hmap_r = { it->owner };
+	ax_hmap_r hmap_r = { it->owner };
 	ax_hmap *hmap= (ax_hmap*)it->owner;
 	assert(hmap->size != 0);
 
@@ -344,7 +344,7 @@ static void iter_erase(ax_iter *it)
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_NULL(it->point);
 
-	ax_hmap_role hmap_r = { it->point };
+	ax_hmap_r hmap_r = { it->point };
 	struct node_st **pp_node = it->point;
 	void *pkey = (*pp_node)->kvbuffer;
 
@@ -374,7 +374,7 @@ static ax_fail map_put (ax_map *map, const void *key, const void *val)
 	CHECK_PARAM_NULL(map);
 	CHECK_PARAM_NULL(key);
 
-	ax_hmap_role hmap_r = { .map = map };
+	ax_hmap_r hmap_r = { .map = map };
 	ax_base *base  = ax_one_base(hmap_r.one);
 	ax_pool *pool = ax_base_pool(base);
 
@@ -389,7 +389,7 @@ static ax_fail map_put (ax_map *map, const void *key, const void *val)
 		map->val_tr->copy(pool, value_ptr, pval, map->val_tr->size);
 	} else {
 		if (hmap_r.hmap->size == hmap_r.hmap->capacity * REALLOC_THRESHOLD) {
-			if (hmap_r.hmap->capacity == ax_box_maxsize(ax_cast(map, map).box)) {
+			if (hmap_r.hmap->capacity == ax_box_maxsize(ax_r(map, map).box)) {
 				ax_base_set_errno(base, AX_ERR_FULL);
 				return ax_true;
 			}
@@ -412,7 +412,7 @@ static ax_fail map_erase (ax_map *map, const void *key)
 	CHECK_PARAM_NULL(map);
 	CHECK_PARAM_NULL(key);
 
-	ax_hmap_role hmap_r = { .map = map };
+	ax_hmap_r hmap_r = { .map = map };
 	const void *pkey = map->key_tr->link ? &key : key;
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
 	struct node_st **pp_find_result = find_node(hmap_r.map, bucket, pkey);
@@ -439,7 +439,7 @@ static void *map_get (const ax_map *map, const void *key)
 	CHECK_PARAM_NULL(map);
 	CHECK_PARAM_NULL(key);
 
-	const ax_hmap_crol hmap_r = { .map = map };
+	const ax_hmap_cr hmap_r = { .map = map };
 	const void *pkey = map->key_tr->link ? &key : key;
 
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
@@ -457,7 +457,7 @@ static ax_bool map_exist (const ax_map *map, const void *key)
 	CHECK_PARAM_NULL(map);
 	CHECK_PARAM_NULL(key);
 
-	ax_hmap_role hmap_r = { .map = (ax_map*)map };
+	ax_hmap_r hmap_r = { .map = (ax_map*)map };
 	const void *pkey = map->key_tr->link ? &key : key;
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
 	struct node_st **pp_find_result = find_node(hmap_r.map, bucket, pkey);
@@ -471,7 +471,7 @@ static void one_free(ax_one *one)
 	if (!one)
 		return;
 
-	ax_hmap_role hmap_r= { .one = one };
+	ax_hmap_r hmap_r= { .one = one };
 	ax_scope_detach(hmap_r.one);
 	box_clear(hmap_r.box);
 	ax_pool_free(hmap_r.hmap->bucket_tab);
@@ -489,13 +489,13 @@ static ax_any *any_copy(const ax_any *any)
 {
 	CHECK_PARAM_NULL(any);
 
-	ax_hmap_role src_role = { .any = (ax_any *)any };
-	ax_base *base = ax_one_base(src_role.one);
-	const ax_stuff_trait *ktr = src_role.map->key_tr;
-	const ax_stuff_trait *vtr = src_role.map->val_tr;
-	ax_hmap_role dst_r = { .map = __ax_hmap_construct(base, ktr, vtr)};
+	ax_hmap_r src_r = { .any = (ax_any *)any };
+	ax_base *base = ax_one_base(src_r.one);
+	const ax_stuff_trait *ktr = src_r.map->key_tr;
+	const ax_stuff_trait *vtr = src_r.map->val_tr;
+	ax_hmap_r dst_r = { .map = __ax_hmap_construct(base, ktr, vtr)};
 
-	ax_foreach(ax_pair *, pair, src_role.box) {
+	ax_foreach(ax_pair *, pair, src_r.box) {
 		if (ax_map_put(dst_r.map, ax_pair_key(pair), ax_pair_value(pair))) {
 			ax_one_free(dst_r.one);
 			return NULL;
@@ -509,7 +509,7 @@ static ax_any *any_move(ax_any *any)
 {
 	CHECK_PARAM_NULL(any);
 
-	ax_hmap_role src_r = { .any = any };
+	ax_hmap_r src_r = { .any = any };
 	ax_base *base = src_r.one->base;
 	ax_pool *pool = ax_base_pool(base);
 
@@ -522,7 +522,7 @@ static ax_any *any_move(ax_any *any)
 	dst->one_env.scope = NULL;
 	dst->one_env.sindex = 0;
 
-	ax_scope_attach(ax_base_local(base), ax_cast(hmap, dst).one);
+	ax_scope_attach(ax_base_local(base), ax_r(hmap, dst).one);
 
 	return (ax_any *) dst;
 }
@@ -531,7 +531,7 @@ static size_t box_size(const ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_hmap_role hmap_r = { .box = (ax_box*)box };
+	ax_hmap_r hmap_r = { .box = (ax_box*)box };
 	return hmap_r.hmap->size;
 }
 
@@ -546,7 +546,7 @@ static ax_iter box_begin(const ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_hmap_role hmap_r = { .box = (ax_box*)box };
+	ax_hmap_r hmap_r = { .box = (ax_box*)box };
 	struct node_st **pp_node;
 	pp_node = &hmap_r.hmap->bucket_list->node_list;
 
@@ -562,7 +562,7 @@ static ax_iter box_end(const ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_hmap_role hmap_r = { .box = (ax_box*)box };
+	ax_hmap_r hmap_r = { .box = (ax_box*)box };
 	(void)hmap_r;
 	ax_iter it = {
 		.owner = (void *)box,
@@ -589,7 +589,7 @@ static void box_clear(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_hmap_role hmap_r = { .box = (ax_box*)box };
+	ax_hmap_r hmap_r = { .box = (ax_box*)box };
 	for (struct bucket_st *bucket = hmap_r.hmap->bucket_list; bucket; bucket = bucket->next)
 		for (struct node_st **pp_node = &bucket->node_list; *pp_node;)
 			free_node(hmap_r.map, pp_node);
@@ -608,7 +608,7 @@ static void box_clear(ax_box *box)
 
 static const ax_stuff_trait *box_elem_tr(const ax_box *box)
 {
-	ax_hmap_role hmap_r = { .box = (ax_box*)box };
+	ax_hmap_r hmap_r = { .box = (ax_box*)box };
 	return hmap_r.map->val_tr;
 }
 
@@ -705,9 +705,9 @@ ax_map *__ax_hmap_construct(ax_base *base, const ax_stuff_trait *key_tr, const a
 	
 	ax_hmap hmap_init = {
 		.__map = {
-			.__box = {
-				.__any = {
-					.__one = {
+			._box = {
+				._any = {
+					._one = {
 						.base = base,
 						.tr = &one_trait
 					},
@@ -739,14 +739,14 @@ ax_map *__ax_hmap_construct(ax_base *base, const ax_stuff_trait *key_tr, const a
 	return (ax_map *) hmap;
 }
 
-ax_hmap_role ax_hmap_create(ax_scope *scope, const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)
+ax_hmap_r ax_hmap_create(ax_scope *scope, const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)
 {
 	CHECK_PARAM_NULL(scope);
 	CHECK_PARAM_NULL(key_tr);
 	CHECK_PARAM_NULL(val_tr);
 
-	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
-	ax_hmap_role hmap_r =  { .map = __ax_hmap_construct(base, key_tr, val_tr) };
+	ax_base *base = ax_one_base(ax_r(scope, scope).one);
+	ax_hmap_r hmap_r =  { .map = __ax_hmap_construct(base, key_tr, val_tr) };
 	if (!hmap_r.one)
 		return hmap_r;
 	ax_scope_attach(scope, hmap_r.one);

@@ -50,7 +50,7 @@ struct ax_box_trait_st
 
 struct ax_box_st
 {
-	ax_any __any;
+	ax_any _any;
 	const ax_box_trait *const tr;
 };
 
@@ -59,15 +59,15 @@ typedef union
 	const ax_box *box;
 	const ax_any *any;
 	const ax_one *one;
-} ax_box_crol;
+} ax_box_cr;
 
 typedef union
 {
 	ax_box *box;
 	ax_any *any;
 	ax_one *one;
-	ax_box_crol c;
-} ax_box_role;
+	ax_box_cr c;
+} ax_box_r;
 
 static inline size_t  ax_box_size   (const ax_box* box)  { return box->tr->size(box); }
 static inline size_t  ax_box_maxsize(const ax_box* box)  { return box->tr->maxsize(box); }

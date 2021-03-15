@@ -107,7 +107,7 @@ void ax_generate(ax_iter first, ax_iter last, const void *ptr)
 	CHECK_ITER_COMPARABLE(&first, &last);
 
 	const ax_seq *seq = first.owner;
-	ax_base *base = ax_one_base(ax_ccast(seq, seq).one);
+	ax_base *base = ax_one_base(ax_cr(seq, seq).one);
 
 	ax_pool *pool = ax_base_pool(base);
 	for (ax_iter it = first; !ax_iter_equal(it, last); it = ax_iter_next(it)) {
@@ -292,7 +292,7 @@ void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
 	merge_sort(rmid, right, ext);
 
 
-	ax_iter end = ax_box_end(&ext->main->__box);
+	ax_iter end = ax_box_end(&ext->main->_box);
 	ax_iter main_first = { .owner = end.owner, .tr = end.tr };
 	ax_iter main_mid  = { .owner = end.owner, .tr = end.tr };
 	ax_iter main_last = { .owner = end.owner, .tr = end.tr };
@@ -325,7 +325,7 @@ ax_fail ax_merge_sort(ax_iter first, ax_iter last)
 	ax_assert(ax_one_is(first.owner, "one.any.box.seq"), "unsupported container type");
 	ax_assert(ax_iter_is(&first, AX_IT_FORW), "unsupported iterator type");
 
-	ax_seq_role main_r = { first.owner };
+	ax_seq_r main_r = { first.owner };
 
 	ax_base *base = ax_one_base(main_r.one);
 	const ax_stuff_trait *etr = ax_box_elem_tr(main_r.box);

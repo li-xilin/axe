@@ -16,7 +16,7 @@
 static void insert(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_avl_role avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
+	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
 			ax_stuff_traits(AX_ST_I32));
 	for (int k = 0, v = 0; k < N; k++, v++) {
 		ax_map_put(avl_r.map, &k, &v);
@@ -53,7 +53,7 @@ static void insert(axut_runner *r)
 static void complex(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_avl_role avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
+	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
 			ax_stuff_traits(AX_ST_I32));
 	for (int k = 0, v = 0; k < N; k++, v++) {
 		ax_map_put(avl_r.map, &k, &v);
@@ -84,7 +84,7 @@ static void complex(axut_runner *r)
 static void foreach(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_avl_role avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
+	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
 			ax_stuff_traits(AX_ST_I32));
 	for (int32_t i = 0; i < 50; i++) {
 		ax_map_put(avl_r.map, &i, &i);

@@ -14,7 +14,7 @@ static void test_complex(axut_runner* r)
 {
 #define N 500
 	ax_base* base = ax_base_create();
-	ax_hmap_role hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
+	ax_hmap_r hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
 			ax_stuff_traits(AX_ST_I32));
 	for (int k = 0, v = 0; k < N; k++, v++) {
 		ax_map_put(hmap_r.map, &k, &v);
@@ -45,7 +45,7 @@ static void test_complex(axut_runner* r)
 static void test_foreach(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_hmap_role hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_S),
+	ax_hmap_r hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_S),
 			ax_stuff_traits(AX_ST_I32));
 	const int count = 100;
 	for (int32_t i = 0; i < count; i++) {

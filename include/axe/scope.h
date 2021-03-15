@@ -31,18 +31,18 @@ typedef union
 {
 	const ax_one *one;
 	const ax_scope *scope;
-} ax_scope_crol;
+} ax_scope_cr;
 
 typedef union
 {
 	ax_one *one;
 	ax_scope *scope;
-	ax_scope_crol c;
-} ax_scope_role;
+	ax_scope_cr c;
+} ax_scope_r;
 
 ax_one *__ax_scope_construct(ax_base *base);
 
-ax_scope_role ax_scope_create(ax_scope *scope);
+ax_scope_r ax_scope_create(ax_scope *scope);
 
 void ax_scope_attach(ax_scope *scope, ax_one *one);
 

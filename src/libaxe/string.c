@@ -37,7 +37,7 @@
 
 struct ax_string_st
 {
-	ax_str __str;
+	ax_str _str;
 	ax_vector *vector;
 	ax_one_env one_env;
 };
@@ -248,9 +248,9 @@ static void one_free(ax_one* one)
 	if (!one)
 		return;
 
-	ax_string_role string_r = { .one = one };
+	ax_string_r string_r = { .one = one };
 	ax_scope_detach(one);
-	ax_one_free(ax_cast(vector, string_r.string->vector).one);
+	ax_one_free(ax_r(vector, string_r.string->vector).one);
 	ax_pool_free(one);
 }
 
@@ -263,12 +263,12 @@ static ax_any* any_copy(const ax_any* any)
 {
 	CHECK_PARAM_NULL(any);
 
-	ax_string_role string_r = { .any = (ax_any*)any };
+	ax_string_r string_r = { .any = (ax_any*)any };
 	ax_pool *pool = ax_base_pool(ax_one_base(string_r.one));
 	ax_string* new = ax_pool_alloc(pool, (sizeof(ax_string)));
 	memcpy(new, string_r.string, sizeof(ax_string));
-	ax_vector_role srcvec_r = { .vector = string_r.string->vector };
-	ax_vector_role dstvec_r = { .any = ax_any_copy(srcvec_r.any) };
+	ax_vector_r srcvec_r = { .vector = string_r.string->vector };
+	ax_vector_r dstvec_r = { .any = ax_any_copy(srcvec_r.any) };
 	new->vector = dstvec_r.vector;
 
 	return (ax_any*)new;
@@ -278,12 +278,12 @@ static ax_any* any_move(ax_any* any)
 {
 	CHECK_PARAM_NULL(any);
 
-	ax_string_role string_r = { .any = (ax_any*)any };
+	ax_string_r string_r = { .any = (ax_any*)any };
 	ax_pool *pool = ax_base_pool(ax_one_base(string_r.one));
 	ax_string* new = ax_pool_alloc(pool, (sizeof(ax_string)));
 	memcpy(new, string_r.string, sizeof(ax_string));
-	ax_vector_role srcvec_r = { .vector = string_r.string->vector };
-	ax_vector_role dstvec_r = { .any = ax_any_move(srcvec_r.any) };
+	ax_vector_r srcvec_r = { .vector = string_r.string->vector };
+	ax_vector_r dstvec_r = { .any = ax_any_move(srcvec_r.any) };
 	char zero = '\0';
 	ax_seq_push(srcvec_r.seq, &zero);
 	new->vector = dstvec_r.vector;
@@ -295,8 +295,8 @@ static size_t box_size(const ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_role string_r = { .box = (ax_box*)box };
-	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_string_r string_r = { .box = (ax_box*)box };
+	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	return ax_box_size(vec_r.box) - 1;
 }
 
@@ -311,8 +311,8 @@ static ax_iter box_begin(const ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_role string_r = { .box = (ax_box*)box};
-	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_string_r string_r = { .box = (ax_box*)box};
+	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	ax_iter it = ax_box_begin(vec_r.box);
 	it.tr = &iter_trait;
 	return it;
@@ -322,8 +322,8 @@ static ax_iter box_end(const ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_role string_r = { .box = (ax_box*)box};
-	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_string_r string_r = { .box = (ax_box*)box};
+	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	ax_iter it = ax_box_end(vec_r.box);
 	it = ax_iter_prev(it);
 	it.tr = &iter_trait;
@@ -335,8 +335,8 @@ static ax_iter box_rbegin(const ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_role string_r = { .box = (ax_box*)box};
-	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_string_r string_r = { .box = (ax_box*)box};
+	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	ax_iter it = ax_box_rbegin(vec_r.box);
 	it = ax_iter_next(it);
 	it.tr = &riter_trait;
@@ -347,8 +347,8 @@ static ax_iter box_rend(const ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_role string_r = { .box = (ax_box*)box};
-	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_string_r string_r = { .box = (ax_box*)box};
+	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	ax_iter it = ax_box_rend(vec_r.box);
 	it.tr = &riter_trait;
 	return it;
@@ -359,8 +359,8 @@ static void box_clear(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_role string_r = { .box = (ax_box*)box};
-	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_string_r string_r = { .box = (ax_box*)box};
+	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	ax_seq_trunc(vec_r.seq, 1);
 	ax_iter first = ax_box_begin(vec_r.box);
 	char *ch = ax_iter_get(first);
@@ -369,8 +369,8 @@ static void box_clear(ax_box* box)
 
 static const ax_stuff_trait *box_elem_tr(const ax_box *box)
 {
-	ax_string_role string_r = { .box = (ax_box*)box };
-	ax_vector_role vec_r = { .vector = (ax_vector *)string_r.string->vector };
+	ax_string_r string_r = { .box = (ax_box*)box };
+	ax_vector_r vec_r = { .vector = (ax_vector *)string_r.string->vector };
 	return ax_box_elem_tr(vec_r.box);
 }
 
@@ -380,8 +380,8 @@ static ax_bool str_append(ax_str* str, const char *s)
 	CHECK_PARAM_NULL(s);
 
 	size_t len = strlen(s);
-	ax_string_role string_r = { .str = str };
-	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_string_r string_r = { .str = str };
+	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	size_t oldsize = ax_box_size(vec_r.box);
 	ax_seq_trunc(vec_r.seq, (oldsize + len) * sizeof(char));
 	char *buffer = ax_vector_buffer(vec_r.vector);
@@ -394,8 +394,8 @@ static size_t str_length (ax_str* str)
 {
 	CHECK_PARAM_NULL(str);
 	
-	ax_string_role string_r = { .str = str };
-	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_string_r string_r = { .str = str };
+	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	return ax_box_size(vec_r.box) - 1;
 }
 
@@ -405,8 +405,8 @@ static ax_bool str_insert (ax_str* str, size_t start, const char *s)
 	CHECK_PARAM_VALIDITY(start, start < str_length(str));
 	
 	size_t len = strlen(s);
-	ax_string_role string_r = { .str = str };
-	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_string_r string_r = { .str = str };
+	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	size_t oldsize = ax_box_size(vec_r.box);
 	ax_seq_trunc(vec_r.seq, oldsize + len + sizeof(char));
 	char *buffer = ax_vector_buffer(vec_r.vector);
@@ -420,8 +420,8 @@ static const char *str_cstr (ax_str* str)
 {
 	CHECK_PARAM_NULL(str);
 
-	ax_string_role string_r = { .str = str };
-	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_string_r string_r = { .str = str };
+	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	return ax_vector_buffer(vec_r.vector);
 }
 
@@ -430,8 +430,8 @@ static int str_comp(ax_str* str, const char* s)
 	CHECK_PARAM_NULL(str);
 	CHECK_PARAM_NULL(s);
 
-	ax_string_role string_r = { .str = str };
-	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_string_r string_r = { .str = str };
+	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	const char *buffer = ax_vector_buffer(vec_r.vector);
 	return strcmp(buffer, s);
 }
@@ -442,10 +442,10 @@ static ax_str *str_substr (ax_str* str, size_t start, size_t len)
 	CHECK_PARAM_VALIDITY(start, start < ax_str_length(str));
 	CHECK_PARAM_VALIDITY(len, start + len < ax_str_length(str));
 
-	ax_string_role string_r = { .str = str };
-	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_string_r string_r = { .str = str };
+	ax_vector_r vec_r = { .vector = string_r.string->vector };
 
-	ax_string_role ret_r= ax_string_create(ax_one_scope(string_r.one));
+	ax_string_r ret_r= ax_string_create(ax_one_scope(string_r.one));
 	if (ret_r.one == NULL) {
 		ax_base *base = ax_one_base(string_r.one);
 		ax_base_set_errno(base, AX_ERR_NOMEM);
@@ -462,13 +462,13 @@ static ax_str *str_substr (ax_str* str, size_t start, size_t len)
 
 static ax_seq *str_split (ax_str* str, const char ch)
 {
-	ax_string_role string_r = { .str = str };
-	ax_vector_role vec_r = { .vector = string_r.string->vector };
+	ax_string_r string_r = { .str = str };
+	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	char *buffer = ax_vector_buffer(vec_r.vector);
 	char *cur = buffer, *head = buffer;
 	ax_base *base = ax_one_base(string_r.one);
-	ax_vector_role ret_role = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_S));
-	if (ret_role.one == NULL) {
+	ax_vector_r ret_r = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_S));
+	if (ret_r.one == NULL) {
 		ax_base *base = ax_one_base(string_r.one);
 		ax_base_set_errno(base, AX_ERR_ITACC);
 		return NULL;
@@ -477,19 +477,19 @@ static ax_seq *str_split (ax_str* str, const char ch)
 		if (*cur == ch) {
 			char backup = *cur;
 			*cur = '\0';
-			if(ax_seq_push(ret_role.seq, head))
+			if(ax_seq_push(ret_r.seq, head))
 				goto failed;
 			*cur = backup;
 			head = cur + 1;
 		}
 		cur++;
 	}
-	if(ax_seq_push(ret_role.seq, head))
+	if(ax_seq_push(ret_r.seq, head))
 		goto failed;
-	return ret_role.seq;
+	return ret_r.seq;
 failed:
-       if (ret_role.one)
-	       ax_one_free(ret_role.one);
+       if (ret_r.one)
+	       ax_one_free(ret_r.one);
        return NULL;
 }
 
@@ -499,7 +499,7 @@ static ax_fail str_sprintf(ax_str* str, const char *fmt, va_list args)
 	char buf[max_size];
 	int ret = vsnprintf(buf, max_size, fmt, args);
 	if (ret == -1 || ret >= max_size) {
-		ax_base *base = ax_one_base(ax_cast(str, str).one);
+		ax_base *base = ax_one_base(ax_r(str, str).one);
 		ax_base_set_errno(base, AX_ERR_TOOLONG);
 	       return ax_true;	
 	}
@@ -592,12 +592,12 @@ ax_str *__ax_string_construct(ax_base* base)
 		return NULL;
 	}
 
-	ax_vector_role vec_r = { .seq = __ax_vector_construct(base, ax_stuff_traits(AX_ST_U8)) };
+	ax_vector_r vec_r = { .seq = __ax_vector_construct(base, ax_stuff_traits(AX_ST_U8)) };
 	ax_string string_init = {
-		.__str = {
-			.__box = {
-				.__any = {
-					.__one = {
+		._str = {
+			._box = {
+				._any = {
+					._one = {
 						.base = base,
 						.tr = &one_trait
 					},
@@ -617,14 +617,14 @@ ax_str *__ax_string_construct(ax_base* base)
 	ax_seq_push(vec_r.seq, &zero);
 
 	memcpy(string, &string_init, sizeof string_init);
-	return &string->__str;
+	return &string->_str;
 }
 
 
-ax_string_role ax_string_create(ax_scope *scope)
+ax_string_r ax_string_create(ax_scope *scope)
 {
-	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
-	ax_string_role string_r = { .str = __ax_string_construct(base) };
+	ax_base *base = ax_one_base(ax_r(scope, scope).one);
+	ax_string_r string_r = { .str = __ax_string_construct(base) };
 	if (string_r.one == NULL)
 		return string_r;
 	ax_scope_attach(scope, string_r.one);

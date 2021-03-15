@@ -35,7 +35,7 @@
 
 struct ax_scope_st
 {
-	ax_one __one;
+	ax_one _one;
 	ax_one_env one_env;
 	ax_one **tab;
 	size_t tab_size;
@@ -49,7 +49,7 @@ static void one_free(ax_one *one)
 	if (!one)
 		return;
 
-	ax_scope_role role = { one };
+	ax_scope_r role = { one };
 
 	ax_scope_detach(one);
 	while (role.scope->tab_size) {
@@ -75,7 +75,7 @@ ax_one *__ax_scope_construct(ax_base *base)
 	if (scope == NULL)
 		return NULL;
 	ax_scope scope_init = {
-		.__one = {
+		._one = {
 			.base = base,
 			.tr = &one_trait
 		},
@@ -88,16 +88,16 @@ ax_one *__ax_scope_construct(ax_base *base)
 		.tab_capacity = 0
 	};
 	memcpy(scope, &scope_init, sizeof scope_init);
-	return &scope->__one;
+	return &scope->_one;
 }
 
-ax_scope_role ax_scope_create(ax_scope *scope)
+ax_scope_r ax_scope_create(ax_scope *scope)
 {
 	CHECK_PARAM_NULL(scope);
 
 	assert(scope);
-	ax_base *base = ax_one_base(&scope->__one);
-	ax_scope_role role = { .one = __ax_scope_construct(base) };
+	ax_base *base = ax_one_base(&scope->_one);
+	ax_scope_r role = { .one = __ax_scope_construct(base) };
 	if (role.one == NULL)
 		return role;
 	ax_scope_attach(scope, role.one);
@@ -144,7 +144,7 @@ void ax_scope_detach(ax_one *one)
 void ax_scope_destroy(ax_scope *scope)
 {
 	CHECK_PARAM_NULL(scope);
-	ax_one_free(&scope->__one);
+	ax_one_free(&scope->_one);
 
 }
 

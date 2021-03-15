@@ -60,18 +60,18 @@ typedef union
 {
 	const ax_any *any;
 	const ax_one *one;
-} ax_any_crol;
+} ax_any_cr;
 
 typedef union
 {
 	ax_any *any;
 	ax_one *one;
-	ax_any_crol c;
-} ax_any_role;
+	ax_any_cr c;
+} ax_any_r;
 
 struct ax_any_st
 {
-	ax_one __one;
+	ax_one _one;
 	const ax_any_trait *const tr;
 };
 

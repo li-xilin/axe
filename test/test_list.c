@@ -13,20 +13,20 @@
 
 static ax_bool seq_equal_array(ax_seq *seq, void *arr, size_t mem_size)
 {
-	ax_box *box = ax_cast(seq, seq).box;
+	ax_box *box = ax_r(seq, seq).box;
 	 return ax_equal_to_arr(ax_box_begin(box), ax_box_end(box), arr, mem_size);
 }
 
 static void create(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_list_role role = ax_list_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_list_r role = ax_list_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	axut_assert(r, role.any != NULL);
 	axut_assert(r, ax_box_size(role.box) == 0);
 
 	ax_seq *seq = ax_seq_init(ax_base_local(base), __ax_list_construct, "i32x3", 1, 2, 3);
 	int i = 1;
-	ax_foreach(int*, v, ax_cast(seq, seq).box) {
+	ax_foreach(int*, v, ax_r(seq, seq).box) {
 		axut_assert(r, *v == i++);
 	}
 
@@ -36,7 +36,7 @@ static void create(axut_runner *r)
 static void push(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_list_role role = ax_list_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_list_r role = ax_list_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	for (int i = 0; i < 20; i++) {
 		ax_seq_push(role.seq, &i);
 	}
@@ -61,7 +61,7 @@ static void iter(axut_runner *r)
 
 	ax_base* base = ax_base_create();
 
-	ax_list_role role = ax_list_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_list_r role = ax_list_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	for (i = 0; i < 20; i++) {
 		ax_seq_push(role.seq, &i);
 	}
@@ -90,7 +90,7 @@ static void riter(axut_runner *r)
 	int i;
 
 	ax_base* base = ax_base_create();
-	ax_list_role role = ax_list_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_list_r role = ax_list_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	for (i = 0; i < 20; i++) {
 		ax_seq_push(role.seq, &i);
 	}
@@ -128,7 +128,7 @@ static void seq_insert(axut_runner *r)
 {
 	int ins;
 	ax_base* base = ax_base_create();
-	ax_list_role role = ax_list_init(ax_base_local(base), "i32x2", 1, 2);
+	ax_list_r role = ax_list_init(ax_base_local(base), "i32x2", 1, 2);
 
 	ax_iter it = ax_box_begin(role.box);
 
@@ -156,7 +156,7 @@ static void seq_insert_for_riter(axut_runner *r)
 {
 	int ins;
 	ax_base* base = ax_base_create();
-	ax_list_role role = ax_list_init(ax_base_local(base), "i32x2", 2, 1);
+	ax_list_r role = ax_list_init(ax_base_local(base), "i32x2", 2, 1);
 
 	ax_iter it = ax_box_rbegin(role.box);
 
@@ -182,14 +182,14 @@ static void seq_insert_for_riter(axut_runner *r)
 static void any_move(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_list_role role1 = ax_list_init(ax_base_local(base), "i32x4", 1, 2, 3, 4);
-	ax_list_role role2 = { .any = ax_any_move(role1.any) };
+	ax_list_r role1 = ax_list_init(ax_base_local(base), "i32x4", 1, 2, 3, 4);
+	ax_list_r role2 = { .any = ax_any_move(role1.any) };
 
 	int32_t table1[] = {1, 2, 3, 4};
 	axut_assert(r, ax_box_size(role1.box) == 0);
 	axut_assert(r, seq_equal_array(role2.seq, table1, sizeof table1));
 
-	ax_list_role role3 = { .any = ax_any_move(role1.any) };
+	ax_list_r role3 = { .any = ax_any_move(role1.any) };
 	axut_assert(r, ax_box_size(role3.box) == 0);
 
 	ax_base_destroy(base);
@@ -198,8 +198,8 @@ static void any_move(axut_runner *r)
 static void any_copy(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_list_role role1 = ax_list_init(ax_base_local(base), "i32x4", 1, 2, 3, 4);
-	ax_list_role role2 = { .any = ax_any_copy(role1.any) };
+	ax_list_r role1 = ax_list_init(ax_base_local(base), "i32x4", 1, 2, 3, 4);
+	ax_list_r role2 = { .any = ax_any_copy(role1.any) };
 
 	int32_t table1[] = {1, 2, 3, 4};
 	axut_assert(r, seq_equal_array(role1.seq, table1, sizeof table1));
@@ -207,7 +207,7 @@ static void any_copy(axut_runner *r)
 
 	ax_box_clear(role1.box);
 
-	ax_list_role role3 = { .any = ax_any_copy(role1.any) };
+	ax_list_r role3 = { .any = ax_any_copy(role1.any) };
 	axut_assert(r, ax_box_size(role3.box) == 0);
 
 	ax_base_destroy(base);
@@ -217,7 +217,7 @@ static void seq_trunc(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
 
-	ax_list_role role = ax_list_init(ax_base_local(base), "i32x3", 1, 2, 3);
+	ax_list_r role = ax_list_init(ax_base_local(base), "i32x3", 1, 2, 3);
 
 	int32_t table1[] = {1, 2, 3, 0, 0};
 	ax_seq_trunc(role.seq, 5);
@@ -236,7 +236,7 @@ static void seq_trunc(axut_runner *r)
 static void seq_invert(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_list_role role = ax_list_init(ax_base_local(base), "i32x5", 1, 2, 3, 4, 5);
+	ax_list_r role = ax_list_init(ax_base_local(base), "i32x5", 1, 2, 3, 4, 5);
 
 	int32_t table1[] = {5, 4, 3, 2, 1};
 	ax_seq_invert(role.seq);

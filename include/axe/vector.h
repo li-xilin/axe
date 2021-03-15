@@ -30,24 +30,34 @@ typedef struct ax_vector_st ax_vector;
 
 typedef union
 {
+	const ax_vector* vector;
+	const ax_seq* seq;
+	const ax_box* box;
+	const ax_any* any;
+	const ax_one* one;
+} ax_vector_cr;
+
+typedef union
+{
 	ax_vector* vector;
 	ax_seq* seq;
 	ax_box* box;
 	ax_any* any;
 	ax_one* one;
-} ax_vector_role;
+	ax_vector_cr c;
+} ax_vector_r;
 
 ax_seq*__ax_vector_construct(ax_base* base, const ax_stuff_trait* elem_tr);
 
-ax_vector_role ax_vector_create(ax_scope* scope, const ax_stuff_trait* elem_tr);
+ax_vector_r ax_vector_create(ax_scope* scope, const ax_stuff_trait* elem_tr);
 
 void* ax_vector_buffer(ax_vector *vecor);
 
-inline static ax_vector_role ax_vector_init(ax_scope *scope, const char *fmt, ...)
+inline static ax_vector_r ax_vector_init(ax_scope *scope, const char *fmt, ...)
 {
 	va_list varg;
 	va_start(varg, fmt);
-	ax_vector_role role = { .seq = ax_seq_vinit(scope, __ax_vector_construct, fmt, varg) };
+	ax_vector_r role = { .seq = ax_seq_vinit(scope, __ax_vector_construct, fmt, varg) };
 	va_end(varg);
 	return role;
 }

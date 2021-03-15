@@ -37,7 +37,7 @@
 
 struct ax_buff_st
 {
-	ax_any __any;
+	ax_any _any;
 	ax_one_env one_env;
 	size_t used;
 	size_t real;
@@ -67,7 +67,7 @@ static ax_any *any_copy(const ax_any *any)
 {
 	CHECK_PARAM_NULL(any);
 
-	const ax_one *src_one = ax_ccast(any, any).one;
+	const ax_one *src_one = ax_cr(any, any).one;
 	const ax_buff *src_buff = (const ax_buff *)any;
 
 	ax_base *base = ax_one_base(src_one);
@@ -94,8 +94,8 @@ static ax_any *any_copy(const ax_any *any)
 
 	dst_buff->one_env.sindex = 0;
 	dst_buff->one_env.scope = NULL;
-	ax_scope_attach(ax_base_local(base), ax_cast(buff, dst_buff).one);
-	return ax_cast(buff, dst_buff).any;
+	ax_scope_attach(ax_base_local(base), ax_r(buff, dst_buff).one);
+	return ax_r(buff, dst_buff).any;
 fail:
 	ax_pool_free(buffer);
 	ax_pool_free(dst_buff);
@@ -106,7 +106,7 @@ static ax_any *any_move(ax_any *any)
 {
 	CHECK_PARAM_NULL(any);
 
-	const ax_one *src_one = ax_ccast(any, any).one;
+	const ax_one *src_one = ax_cr(any, any).one;
 	ax_buff *src_buff = (ax_buff *) any, *dst_buff = NULL;
 	void *buf = NULL;
 
@@ -132,8 +132,8 @@ static ax_any *any_move(ax_any *any)
 	
 	dst_buff->one_env.sindex = 0;
 	dst_buff->one_env.scope = NULL;
-	ax_scope_attach(ax_base_local(base), ax_cast(buff,dst_buff).one);
-	return ax_cast(buff, dst_buff).any;
+	ax_scope_attach(ax_base_local(base), ax_r(buff,dst_buff).one);
+	return ax_r(buff, dst_buff).any;
 fail:
 	ax_pool_free(dst_buff);
 	ax_pool_free(buf);
@@ -149,7 +149,7 @@ static ax_fail mem_resize(const ax_buff *buff, size_t require, size_t *alloc)
 			, "invalid msize");
 
 	if (require > buff->max) {
-		ax_base *base = ax_one_base(ax_ccast(buff, buff).one);
+		ax_base *base = ax_one_base(ax_cr(buff, buff).one);
 		ax_base_set_errno(base, AX_ERR_FULL);
 		return ax_true;
 	}
@@ -195,8 +195,8 @@ ax_any *__ax_buff_construct(ax_base *base)
 		goto fail;
 
 	ax_buff buff_init = {
-		.__any = {
-			.__one = {
+		._any = {
+			._one = {
 				.base = base,
 				.tr = &one_trait,
 			},
@@ -213,19 +213,19 @@ ax_any *__ax_buff_construct(ax_base *base)
 		.buf = NULL
 	};
 	memcpy(buff, &buff_init, sizeof buff_init);
-	return ax_cast(buff, buff).any;
+	return ax_r(buff, buff).any;
 fail:
 	ax_pool_free(buff);
 	return NULL;
 }
 
-ax_buff_role ax_buff_create(ax_scope *scope)
+ax_buff_r ax_buff_create(ax_scope *scope)
 {
 	CHECK_PARAM_NULL(scope);
 
-	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
+	ax_base *base = ax_one_base(ax_r(scope, scope).one);
 	ax_any *any = __ax_buff_construct(base);
-	ax_buff_role buff_r = { .any = any };
+	ax_buff_r buff_r = { .any = any };
 	if (!any)
 		return buff_r;
 	ax_scope_attach(scope, buff_r.one);
@@ -239,7 +239,7 @@ ax_fail ax_buff_set_max(ax_buff *buff, size_t max)
 	ax_assert(buff->min <= max, "min is greater then max");
 
 	if (buff->real > max) {
-		ax_base *base = ax_one_base(ax_cast(buff, buff).one);
+		ax_base *base = ax_one_base(ax_r(buff, buff).one);
 		ax_pool *pool = ax_base_pool(base);
 		size_t size_copy = buff->used < max ? buff->used : max;
 
@@ -268,7 +268,7 @@ ax_fail ax_buff_adapt(ax_buff *buff, size_t size)
 		return ax_true;
 
 	if (size_realloc != buff->real) {
-		ax_base *base = ax_one_base(ax_cast(buff, buff).one);
+		ax_base *base = ax_one_base(ax_r(buff, buff).one);
 		ax_pool *pool = ax_base_pool(base);
 		void *buf = ax_pool_realloc(pool, buff->buf, size_realloc);
 		if (!buf) {
@@ -305,7 +305,7 @@ ax_fail ax_buff_alloc(ax_buff *buff, size_t size, void **obuf)
 		return ax_true;
 
 	if (size_alloc != buff->real) {
-		ax_base *base = ax_one_base(ax_cast(buff, buff).one);
+		ax_base *base = ax_one_base(ax_r(buff, buff).one);
 		ax_pool *pool = ax_base_pool(base);
 		void *buf = ax_pool_alloc(pool, size_alloc);
 		if (!buf) {
@@ -323,7 +323,7 @@ ax_fail ax_buff_alloc(ax_buff *buff, size_t size, void **obuf)
 
 ax_fail ax_buff_shrink(ax_buff *buff)
 {
-	ax_base *base = ax_one_base(ax_cast(buff, buff).one);
+	ax_base *base = ax_one_base(ax_r(buff, buff).one);
 	ax_pool *pool = ax_base_pool(base);
 	void *new_buf = NULL;
 	new_buf = ax_pool_realloc(pool, buff->buf, buff->used);
@@ -341,7 +341,7 @@ ax_fail ax_buff_reserve(ax_buff *buff, size_t size)
 {
 	ax_assert(size < buff->max, "size too large");
 
-	ax_base *base = ax_one_base(ax_cast(buff, buff).one);
+	ax_base *base = ax_one_base(ax_r(buff, buff).one);
 	ax_pool *pool = ax_base_pool(base);
 	
 	void *new_buf = NULL;

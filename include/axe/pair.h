@@ -28,13 +28,20 @@ typedef struct ax_pair_st ax_pair;
 
 typedef union
 {
+	const ax_pair *pair;
+	const ax_one *one;
+} ax_pair_cr;
+
+typedef union
+{
 	ax_pair *pair;
 	ax_one *one;
-} ax_pair_role;
+	ax_pair_cr c;
+} ax_pair_r;
 
 ax_pair *__ax_pair_construct(ax_base *base, const void *key, void *value);
 
-ax_pair_role ax_pair_create(ax_scope *scope, const void *key, void *value);
+ax_pair_r ax_pair_create(ax_scope *scope, const void *key, void *value);
 
 const void *ax_pair_key(ax_pair *pair);
 

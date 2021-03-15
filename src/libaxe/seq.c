@@ -6,17 +6,16 @@
 
 #include "check.h"
 
-
 ax_seq *ax_seq_vinit(ax_scope *scope, ax_seq_construct_f *builder, const char *fmt, va_list varg) 
 {
 	CHECK_PARAM_NULL(builder);
 	CHECK_PARAM_NULL(fmt);
 
-	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
+	ax_base *base = ax_one_base(ax_r(scope, scope).one);
 
 	ax_vail *vail = ax_vail_vcreate(base, fmt, varg);
 
-	if (vail == NULL) {
+	if (!vail) {
 		return NULL;
 	}
 	int vail_size = ax_vail_size(vail);
@@ -34,7 +33,7 @@ ax_seq *ax_seq_vinit(ax_scope *scope, ax_seq_construct_f *builder, const char *f
 	}
 
 	ax_seq *seq = builder(base, ax_stuff_traits(elem_type));
-	if (seq == NULL) {
+	if (!seq) {
 		ax_vail_destroy(vail);
 		return NULL;
 	}
@@ -51,7 +50,6 @@ ax_seq *ax_seq_vinit(ax_scope *scope, ax_seq_construct_f *builder, const char *f
 	ax_scope_attach(scope, (ax_one *)seq);
 	return seq;
 }
-
 
 ax_seq *ax_seq_init(ax_scope *scope, ax_seq_construct_f *builder, const char *fmt, ...) 
 {

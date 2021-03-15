@@ -24,7 +24,10 @@
 #define AXE_HMAP_H_
 #include "map.h"
 
+#ifndef AX_HMAP_DEFINED
+#define AX_HMAP_DEFINED
 typedef struct ax_hmap_st ax_hmap;
+#endif
 
 typedef union
 {
@@ -33,7 +36,7 @@ typedef union
 	const ax_box *box;
 	const ax_any *any;
 	const ax_one *one;
-} ax_hmap_crol;
+} ax_hmap_cr;
 
 typedef union
 {
@@ -42,10 +45,8 @@ typedef union
 	ax_box *box;
 	ax_any *any;
 	ax_one *one;
-	ax_hmap_crol c;
-} ax_hmap_role;
-
-
+	ax_hmap_cr c;
+} ax_hmap_r;
 
 ax_map *__ax_hmap_construct(
 		ax_base* base,
@@ -53,7 +54,7 @@ ax_map *__ax_hmap_construct(
 		const ax_stuff_trait* val_tr
 );
 
-ax_hmap_role ax_hmap_create(
+ax_hmap_r ax_hmap_create(
 		ax_scope *scope,
 		const ax_stuff_trait *key_tr,
 		const ax_stuff_trait *val_tr

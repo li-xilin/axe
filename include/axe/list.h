@@ -35,7 +35,7 @@ typedef union
 	const ax_box *box;
 	const ax_seq *seq;
 	const ax_list *list;
-} ax_list_crol;
+} ax_list_cr;
 
 typedef union
 {
@@ -44,14 +44,14 @@ typedef union
 	ax_box *box;
 	ax_seq *seq;
 	ax_list *list;
-	ax_list_crol c;
-} ax_list_role;
+	ax_list_cr c;
+} ax_list_r;
 
 ax_seq *__ax_list_construct(ax_base *base, const ax_stuff_trait *elem_tr);
 
-ax_list_role ax_list_create(ax_scope *scope, const ax_stuff_trait *elem_tr);
+ax_list_r ax_list_create(ax_scope *scope, const ax_stuff_trait *elem_tr);
 
-ax_list_role ax_list_init(ax_scope *scope, const char *fmt, ...);
+ax_list_r ax_list_init(ax_scope *scope, const char *fmt, ...);
 
 
 #endif

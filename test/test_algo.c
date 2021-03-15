@@ -20,7 +20,7 @@
 static void all_any_none_of(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_vector_role role = ax_vector_create(
+	ax_vector_r role = ax_vector_create(
 		ax_base_local(base),
 		ax_stuff_traits(AX_ST_I32));
 	for (int i = 0; i < 18; i++) { ax_seq_push(role.seq, &i); }
@@ -55,7 +55,7 @@ static void partation(axut_runner *r)
 {
 	ax_base *base = ax_base_create();
 
-	ax_vector_role role = ax_vector_init(ax_base_local(base),
+	ax_vector_r role = ax_vector_init(ax_base_local(base),
 			"i32x9", 1, 8, 2, 4, 9, 5, 3, 6, 7);
 	ax_iter first = ax_box_begin(role.box);
 	ax_iter last = ax_box_end(role.box);
@@ -81,7 +81,7 @@ static void partation(axut_runner *r)
 
 static void quick_sort(axut_runner *r)
 {
-	ax_vector_role role;
+	ax_vector_r role;
 	ax_base *base = ax_base_create();
 
 	 role = ax_vector_init(ax_base_local(base),
@@ -104,9 +104,9 @@ static void merge(axut_runner *r)
 {
 	ax_base *base = ax_base_create();
 
-	ax_vector_role role1 = ax_vector_init(ax_base_local(base), "i32x3", 1, 3, 5);
-	ax_vector_role role2 = ax_vector_init(ax_base_local(base), "i32x3", 2, 2, 6);
-	ax_vector_role role3 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r role1 = ax_vector_init(ax_base_local(base), "i32x3", 1, 3, 5);
+	ax_vector_r role2 = ax_vector_init(ax_base_local(base), "i32x3", 2, 2, 6);
+	ax_vector_r role3 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	ax_seq_trunc(role3.seq, 6);
 
 	ax_iter first1 = ax_box_begin(role1.box);
@@ -125,7 +125,7 @@ static void merge(axut_runner *r)
 
 static void merge_sort(axut_runner *r)
 {
-	ax_vector_role role;
+	ax_vector_r role;
 	ax_base *base = ax_base_create();
 
 	 role = ax_vector_init(ax_base_local(base),
@@ -143,7 +143,7 @@ static void merge_sort(axut_runner *r)
 
 static void binary_search(axut_runner *r)
 {
-	ax_vector_role role;
+	ax_vector_r role;
 	ax_base *base = ax_base_create();
 
 	role = ax_vector_init(ax_base_local(base),
@@ -170,7 +170,7 @@ static void binary_search(axut_runner *r)
 
 static void binary_search_if_not(axut_runner *r)
 {
-	ax_vector_role role;
+	ax_vector_r role;
 	ax_base *base = ax_base_create();
 
 	role = ax_vector_init(ax_base_local(base),
@@ -206,7 +206,7 @@ static void binary_search_if_not(axut_runner *r)
 
 static void insertion_sort(axut_runner *r)
 {
-	ax_vector_role role;
+	ax_vector_r role;
 	ax_base *base = ax_base_create();
 
 	role = ax_vector_init(ax_base_local(base),
@@ -242,10 +242,10 @@ static void sort_time(axut_runner *r) {
 	printf("\t0x3FFFFF 2.53, 3.01\n");
 
 	ax_base *base = ax_base_create();
-	ax_vector_role role1 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
-	ax_vector_role role2 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
-	ax_vector_role role3 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
-	ax_vector_role role4 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r role1 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r role2 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r role3 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r role4 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	
 	printf("Sorting 0x%lX numbers\n", length);
 	for (int i = 0; i < length; i++) {

@@ -14,7 +14,7 @@
 static void create(axut_runner *r)
 {
 	ax_base* base = axut_runner_arg(r);
-	ax_scope_role role = ax_scope_create(ax_base_local(base));
+	ax_scope_r role = ax_scope_create(ax_base_local(base));
 	axut_assert(r, role.one != NULL);
 	ax_scope_destroy(role.scope);
 }
@@ -22,29 +22,29 @@ static void create(axut_runner *r)
 static void global(axut_runner *r)
 {
 	ax_base* base = axut_runner_arg(r);
-	ax_vector_role role0 = ax_vector_create(ax_base_global(base), ax_stuff_traits(AX_ST_I32));
-	ax_vector_role role1 = ax_vector_create(ax_base_global(base), ax_stuff_traits(AX_ST_I32));
-	ax_vector_role role2 = ax_vector_create(ax_base_global(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r role0 = ax_vector_create(ax_base_global(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r role1 = ax_vector_create(ax_base_global(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r role2 = ax_vector_create(ax_base_global(base), ax_stuff_traits(AX_ST_I32));
 }
 
 static void local(axut_runner *r)
 {
 	ax_base* base = axut_runner_arg(r);
 	assert(base);
-	ax_vector_role v1_role = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r v1_r = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	{
 		int d = ax_base_enter(base);
-		ax_vector_role v2_role = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+		ax_vector_r v2_r = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 		{
 			int d = ax_base_enter(base);
-			ax_vector_role v3_role = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+			ax_vector_r v3_r = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 			ax_base_leave(base, d);
 		}
 
 		ax_base_leave(base, d);
 	}
-	ax_vector_role v4_role = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
-	ax_vector_role v5_role = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r v4_r = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r v5_r = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 }
 
 static void cleanup(axut_runner *r)

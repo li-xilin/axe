@@ -14,7 +14,7 @@
 static void create(axut_runner *r)
 {
 	ax_base *base = axut_runner_arg(r);
-	ax_string_role role = ax_string_create(ax_base_local(base));
+	ax_string_r role = ax_string_create(ax_base_local(base));
 	axut_assert(r, role.any != NULL);
 	axut_assert(r, ax_box_size(role.box) == 0);
 	axut_assert(r, ax_str_length(role.str) == 0);
@@ -23,7 +23,7 @@ static void create(axut_runner *r)
 static void append(axut_runner *r)
 {
 	ax_base *base = axut_runner_arg(r);
-	ax_string_role role = ax_string_create(ax_base_local(base));
+	ax_string_r role = ax_string_create(ax_base_local(base));
 	ax_str_append(role.str, "hello");
 	ax_str_append(role.str, " world");
 	axut_assert(r, strcmp(ax_str_cstr(role.str), "hello world") == 0);
@@ -35,13 +35,13 @@ static void append(axut_runner *r)
 static void split(axut_runner *r)
 {
 	ax_base *base = axut_runner_arg(r);
-	ax_string_role role = ax_string_create(ax_base_local(base));
+	ax_string_r role = ax_string_create(ax_base_local(base));
 	ax_str_append(role.str, ":111:222::");
 	ax_seq *ret = ax_str_split(role.str, ':');
 	
 
 	int i = 0;
-	ax_foreach(char*, p, ax_cast(seq, ret).box) {
+	ax_foreach(char*, p, ax_r(seq, ret).box) {
 		switch(i) {
 			case 0: axut_assert_str_equal(r, p, ""); break;
 			case 1: axut_assert_str_equal(r, p, "111"); break;

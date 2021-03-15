@@ -48,7 +48,7 @@ struct node_st
 
 struct ax_list_st
 {
-	ax_seq __seq;
+	ax_seq _seq;
 	ax_one_env one_env;
 	struct node_st *head;
 	size_t size;
@@ -132,7 +132,7 @@ static void *iter_get(const ax_iter *it)
 {
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr && it->point);
 	ax_list *list = (ax_list *) it->owner;
-	const ax_stuff_trait *etr = list->__seq.elem_tr;
+	const ax_stuff_trait *etr = list->_seq.elem_tr;
 	struct node_st *node = it->point;
 	return etr->link ? *(void**) node->data : node->data;
 }
@@ -144,7 +144,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 
 	struct node_st *node = it->point;
 	ax_list *list = (ax_list *) it->owner;
-	const ax_stuff_trait *etr = list->__seq.elem_tr;
+	const ax_stuff_trait *etr = list->_seq.elem_tr;
 
 	ax_base *base = ax_one_base(it->owner);
 	ax_pool *pool = ax_base_pool(base);
@@ -168,7 +168,7 @@ static void iter_erase(ax_iter *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
 
-	ax_list *list = ax_cast(list, it->owner).list;
+	ax_list *list = ax_r(list, it->owner).list;
 	struct node_st *node = it->point;
 	it->point = node->next;
 	if (list->size == 1)
@@ -180,7 +180,7 @@ static void iter_erase(ax_iter *it)
 		node->next->pre = node->pre;
 	}
 
-	const ax_stuff_trait *etr = list->__seq.elem_tr;
+	const ax_stuff_trait *etr = list->_seq.elem_tr;
 	etr->free(node->data);
 	ax_pool_free(node);
 }
@@ -356,7 +356,7 @@ static void one_free(ax_one *one)
 	if (!one)
 		return;
 
-	ax_list_role list_r = { .one = one };
+	ax_list_r list_r = { .one = one };
 	ax_scope_detach(one);
 	box_clear(list_r.box);
 	ax_pool_free(one);
@@ -371,12 +371,12 @@ static ax_any *any_copy(const ax_any *any)
 {
 	CHECK_PARAM_NULL(any);
 
-	ax_list_crol list_r = { .any = any };
+	ax_list_cr list_r = { .any = any };
 	const ax_stuff_trait *etr = list_r.seq->elem_tr;
 
 	ax_base *base = ax_one_base(list_r.one);
-	ax_list_role new_role = { .seq = __ax_list_construct(base, etr) };
-	if (new_role.one == NULL) {
+	ax_list_r new_r = { .seq = __ax_list_construct(base, etr) };
+	if (new_r.one == NULL) {
 		return NULL;
 	}
 
@@ -386,24 +386,24 @@ static ax_any *any_copy(const ax_any *any)
 	while (!ax_iter_equal(it, end)) {
 		const void *pval = ax_iter_get(it);
 		const void *val = etr->link ? *(const void**)pval : pval;
-		if (ax_seq_push(new_role.seq, val)) {
-			ax_one_free(new_role.one);
+		if (ax_seq_push(new_r.seq, val)) {
+			ax_one_free(new_r.one);
 			return NULL;
 		}
 		it = ax_iter_next(it);
 	}
 
-	new_role.list->one_env.sindex = 0;
-	new_role.list->one_env.scope = NULL;
-	ax_scope_attach(ax_base_local(base), new_role.one);
-	return (ax_any*)new_role.any;
+	new_r.list->one_env.sindex = 0;
+	new_r.list->one_env.scope = NULL;
+	ax_scope_attach(ax_base_local(base), new_r.one);
+	return (ax_any*)new_r.any;
 }
 
 static ax_any *any_move(ax_any *any)
 {
 	CHECK_PARAM_NULL(any);
 
-	ax_list_role list_r = { .any = any };
+	ax_list_r list_r = { .any = any };
 
 	ax_base *base = ax_one_base(list_r.one);
 	ax_pool *pool = ax_base_pool(base);
@@ -420,14 +420,14 @@ static ax_any *any_move(ax_any *any)
 
 	new->one_env.sindex = 0;
 	new->one_env.scope = NULL;
-	ax_scope_attach(ax_base_local(base), ax_cast(list, new).one);
+	ax_scope_attach(ax_base_local(base), ax_r(list, new).one);
 	return (ax_any*)new;}
 
 static size_t box_size(const ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_list_role list_r = { .box = (ax_box*)box};
+	ax_list_r list_r = { .box = (ax_box*)box};
 	return list_r.list->size;
 }
 
@@ -440,7 +440,7 @@ static ax_iter box_begin(const ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_list_role list_r = { .box = (ax_box*)box };
+	ax_list_r list_r = { .box = (ax_box*)box };
 	ax_iter it = {
 		.owner = (void *)box,
 		.point = list_r.list->head,
@@ -465,7 +465,7 @@ static ax_iter box_rbegin(const ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_list_role list_r = { .box = (ax_box*)box};
+	ax_list_r list_r = { .box = (ax_box*)box};
 	struct node_st *right_end = list_r.list->head ? list_r.list->head->pre : NULL;
 	ax_iter it = {
 		.owner = (void *)box,
@@ -489,7 +489,7 @@ static ax_iter box_rend(const ax_box *box)
 
 static const ax_stuff_trait *box_elem_tr(const ax_box* box)
 {
-	ax_list_role list_r = { .box = (ax_box*)box };
+	ax_list_r list_r = { .box = (ax_box*)box };
 	return list_r.seq->elem_tr;
 }
 
@@ -502,7 +502,7 @@ static void box_clear(ax_box *box)
 	if (list->size == 0)
 		return;
 
-	const ax_stuff_trait *etr = ax_cast(list, list).seq->elem_tr;
+	const ax_stuff_trait *etr = ax_r(list, list).seq->elem_tr;
 	struct node_st *node = list->head;
 	do {	
 		struct node_st *next = node->next;
@@ -521,7 +521,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr);
 
-	ax_list_role list_r = { .seq = seq };
+	ax_list_r list_r = { .seq = seq };
 	CHECK_PARAM_VALIDITY(it, (it->point ? !!list_r.list->head : 1));
 
 	const ax_stuff_trait *etr = list_r.seq->elem_tr;
@@ -579,7 +579,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_list_role list_r = { .seq = seq };
+	ax_list_r list_r = { .seq = seq };
 
 	const ax_stuff_trait *etr = seq->elem_tr;
 	ax_base *base = ax_one_base(list_r.one);
@@ -623,7 +623,7 @@ static ax_fail seq_pop(ax_seq *seq)
 	CHECK_PARAM_NULL(seq);
 
 	ax_list *list = (ax_list *)seq;
-	ax_base *base = ax_one_base(ax_cast(list, list).one);
+	ax_base *base = ax_one_base(ax_r(list, list).one);
 	if (list->size == 0)
 	{
 		ax_base_set_errno(base, AX_ERR_EMPTY);
@@ -801,17 +801,17 @@ ax_seq* __ax_list_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 	CHECK_PARAM_NULL(elem_tr->free);
 	CHECK_PARAM_NULL(elem_tr->copy);
 
-	ax_list_role list_r = { ax_pool_alloc(ax_base_pool(base), sizeof(ax_list)) };
+	ax_list_r list_r = { ax_pool_alloc(ax_base_pool(base), sizeof(ax_list)) };
 	if (list_r.list == NULL) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
 		return NULL;
 	}
 
 	ax_list list_init = {
-		.__seq = {
-			.__box = {
-				.__any = {
-					.__one = {
+		._seq = {
+			._box = {
+				._any = {
+					._one = {
 						.base = base,
 						.tr = &one_trait
 					},
@@ -833,25 +833,25 @@ ax_seq* __ax_list_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 	return list_r.seq;
 }
 
-ax_list_role ax_list_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
+ax_list_r ax_list_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
 {
 	CHECK_PARAM_NULL(scope);
 	CHECK_PARAM_NULL(elem_tr);
 
-	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
-	ax_list_role list_r = { .seq = __ax_list_construct(base, elem_tr) };
+	ax_base *base = ax_one_base(ax_r(scope, scope).one);
+	ax_list_r list_r = { .seq = __ax_list_construct(base, elem_tr) };
 	ax_scope_attach(scope, list_r.one);
 	return list_r;
 }
 
-ax_list_role ax_list_init(ax_scope *scope, const char *fmt, ...)
+ax_list_r ax_list_init(ax_scope *scope, const char *fmt, ...)
 {
 	CHECK_PARAM_NULL(scope);
 	CHECK_PARAM_NULL(fmt);
 
 	va_list varg;
 	va_start(varg, fmt);
-	ax_list_role list_r = { .seq = ax_seq_vinit(scope, __ax_list_construct, fmt, varg) };
+	ax_list_r list_r = { .seq = ax_seq_vinit(scope, __ax_list_construct, fmt, varg) };
 	va_end(varg);
 	return list_r;
 }
