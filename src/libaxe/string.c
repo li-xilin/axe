@@ -42,26 +42,22 @@ struct ax_string_st
 	ax_one_env one_env;
 };
 
-static void     iter_move(ax_iter *it, long i);
-static void     iter_prev(ax_iter *it);
-static void     iter_next(ax_iter *it);
+static void     citer_move(ax_citer *it, long i);
+static void     citer_prev(ax_citer *it);
+static void     citer_next(ax_citer *it);
+static ax_fail  citer_less(const ax_citer *it1, const ax_citer *it2);
+static long     citer_dist(const ax_citer *it1, const ax_citer *it2);
 
-static ax_fail  iter_less(const ax_iter *it1, const ax_iter *it2);
-static long     iter_dist(const ax_iter *it1, const ax_iter *it2);
-static ax_fail  iter_equal(const ax_iter *it1, const ax_iter *it2);
+static void     rciter_move(ax_citer *it, long i);
+static void     rciter_prev(ax_citer *it);
+static void     rciter_next(ax_citer *it);
+static ax_fail  rciter_less(const ax_citer *it1, const ax_citer *it2);
+static long     rciter_dist(const ax_citer *it1, const ax_citer *it2);
+
 
 static void    *iter_get(const ax_iter *it);
 static ax_fail  iter_set(const ax_iter *it, const void *val);
 static void     iter_erase(ax_iter *it);
-
-static void     riter_move(ax_iter *it, long i);
-static void     riter_prev(ax_iter *it);
-static void     riter_next(ax_iter *it);
-
-static ax_fail  riter_less(const ax_iter *it1, const ax_iter *it2);
-static long     riter_dist(const ax_iter *it1, const ax_iter *it2);
-
-
 
 static ax_bool str_append(ax_str* str, const char *s);
 static size_t  str_length (ax_str* str);
@@ -85,7 +81,7 @@ static void    any_dump(const ax_any* any, int ind);
 static ax_any* any_copy(const ax_any* any);
 static ax_any* any_move(ax_any* any);
 
-static void        one_free(ax_one* one);
+static void    one_free(ax_one* one);
 
 static const ax_one_trait one_trait;
 static const ax_any_trait any_trait;
@@ -94,34 +90,110 @@ static const ax_str_trait str_trait;
 static const ax_iter_trait iter_trait;
 static const ax_iter_trait riter_trait;
 
-static void iter_move(ax_iter *it, long i)
+static void citer_move(ax_citer *it, long i)
 {
 	ax_box *box = (ax_box *)it->owner;
-	ax_iter end = ax_box_end(box);
-	CHECK_ITERATOR_VALIDITY(it, !iter_equal(it, &end));
+	ax_citer end = ax_box_cend(box);
+	CHECK_ITERATOR_VALIDITY(it, !ax_citer_equal(it, &end));
 	end.point = it->point;
 	end.tr->move(&end, i);
 	it->point = end.point;
 }
 
-static void iter_prev(ax_iter *it)
+static void citer_prev(ax_citer *it)
 {
 	ax_box *box = (ax_box *)it->owner;
-	ax_iter end = ax_box_end(box);
-	CHECK_ITERATOR_VALIDITY(it, !iter_equal(it, &end));
+	ax_citer end = ax_box_cend(box);
+	CHECK_ITERATOR_VALIDITY(it, !ax_citer_equal(it, &end));
 	end.point = it->point;
 	end.tr->prev(it);
 	it->point = end.point;
 }
 
-static void iter_next(ax_iter *it)
+static void citer_next(ax_citer *it)
 {
 	ax_box *box = (ax_box *)it->owner;
-	ax_iter end = ax_box_end(box);
-	CHECK_ITERATOR_VALIDITY(it, !iter_equal(it, &end));
+	ax_citer end = ax_box_cend(box);
+	CHECK_ITERATOR_VALIDITY(it, !ax_citer_equal(it, &end));
 	end.point = it->point;
 	end.tr->prev(it);
 	it->point = end.point;
+}
+
+
+static ax_bool citer_less(const ax_citer *it1, const ax_citer *it2)
+{
+
+	ax_box *box = (ax_box *)it1->owner;
+	ax_citer end = ax_box_cend(box);
+	ax_citer it1_copy = *it1;
+	ax_citer it2_copy = *it2;
+	CHECK_ITERATOR_VALIDITY(it1, !ax_citer_equal(&it1_copy, &end));
+	CHECK_ITERATOR_VALIDITY(it2, !ax_citer_equal(&it2_copy, &end));
+	it1_copy.tr = it2_copy.tr = end.tr;
+	return end.tr->less(&it1_copy, &it2_copy);
+}
+
+static long citer_dist(const ax_citer *it1, const ax_citer *it2)
+{
+	ax_box *box = (ax_box *)it1->owner;
+	ax_citer end = ax_box_cend(box);
+	ax_citer it1_copy = *it1;
+	ax_citer it2_copy = *it2;
+	it1_copy.tr = it2_copy.tr = end.tr;
+	return end.tr->dist(&it1_copy, &it2_copy);
+}
+
+static void rciter_move(ax_citer *it, long i)
+{
+	ax_box *box = (ax_box *)it->owner;
+	ax_citer end = ax_box_cend(box);
+	CHECK_ITERATOR_VALIDITY(it, !ax_citer_equal(it, &end));
+	end.point = it->point;
+	end.tr->move(&end, i);
+	it->point = end.point;
+}
+
+static void rciter_prev(ax_citer *it)
+{
+	ax_box *box = (ax_box *)it->owner;
+	ax_citer rend = ax_box_crend(box);
+	CHECK_ITERATOR_VALIDITY(it, !ax_citer_equal(it, &rend));
+	rend.point = it->point;
+	rend.tr->prev(it);
+	it->point = rend.point;
+}
+
+static void rciter_next(ax_citer *it)
+{
+	ax_box *box = (ax_box *)it->owner;
+	ax_citer rend = ax_box_cend(box);
+	CHECK_ITERATOR_VALIDITY(it, !ax_citer_equal(it, &rend));
+	rend.point = it->point;
+	rend.tr->prev(it);
+	it->point = rend.point;
+}
+
+static ax_fail  rciter_less(const ax_citer *it1, const ax_citer *it2)
+{
+	ax_box *box = (ax_box *)it1->owner;
+	ax_citer rend = ax_box_crend(box);
+	ax_citer it1_copy = *it1;
+	ax_citer it2_copy = *it2;
+	CHECK_ITERATOR_VALIDITY(it1, !ax_citer_equal(&it1_copy, &rend));
+	CHECK_ITERATOR_VALIDITY(it2, !ax_citer_equal(&it2_copy, &rend));
+	it1_copy.tr = it2_copy.tr = rend.tr;
+	return rend.tr->less(&it1_copy, &it2_copy);
+}
+
+static long rciter_dist(const ax_citer *it1, const ax_citer *it2)
+{
+	ax_box *box = (ax_box *)it1->owner;
+	ax_citer rend = ax_box_crend(box);
+	ax_citer it1_copy = *it1;
+	ax_citer it2_copy = *it2;
+	it1_copy.tr = it2_copy.tr = rend.tr;
+	return rend.tr->dist(&it1_copy, &it2_copy);
 }
 
 static void *iter_get(const ax_iter *it)
@@ -130,8 +202,8 @@ static void *iter_get(const ax_iter *it)
 
 	ax_box *box = (ax_box *)it->owner;
 	ax_iter end = ax_box_end(box);
-	end = ax_iter_prev(end);
-	CHECK_ITERATOR_VALIDITY(it, !iter_equal(it, &end));
+	ax_iter_prev(&end);
+	CHECK_ITERATOR_VALIDITY(it, !ax_iter_equal(it, &end));
 	end.point = it->point;
 	return end.tr->get(&end);
 }
@@ -142,8 +214,8 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 
 	ax_box *box = (ax_box *)it->owner;
 	ax_iter end = ax_box_end(box);
-	end = ax_iter_prev(end);
-	CHECK_ITERATOR_VALIDITY(it, !iter_equal(it, &end));
+	ax_iter_prev(&end);
+	CHECK_ITERATOR_VALIDITY(it, !ax_iter_equal(it, &end));
 	end.point = it->point;
 	return end.tr->set(it, val);
 
@@ -155,92 +227,11 @@ static void iter_erase(ax_iter *it)
 
 	ax_box *box = (ax_box *)it->owner;
 	ax_iter end = ax_box_end(box);
-	end = ax_iter_prev(end);
-	CHECK_ITERATOR_VALIDITY(it, !iter_equal(it, &end));
+	ax_iter_prev(&end);
+	CHECK_ITERATOR_VALIDITY(it, !ax_iter_equal(it, &end));
 	end.point = it->point;
 
 	end.tr->erase(it);
-}
-
-static ax_bool iter_equal(const ax_iter *it1, const ax_iter *it2)
-{
-	return it1->point == it2->point;
-}
-
-static ax_bool iter_less(const ax_iter *it1, const ax_iter *it2)
-{
-
-	ax_box *box = (ax_box *)it1->owner;
-	ax_iter end = ax_box_end(box);
-	ax_iter it1_copy = *it1;
-	ax_iter it2_copy = *it2;
-	CHECK_ITERATOR_VALIDITY(it1, !iter_equal(&it1_copy, &end));
-	CHECK_ITERATOR_VALIDITY(it2, !iter_equal(&it2_copy, &end));
-	it1_copy.tr = it2_copy.tr = end.tr;
-	return end.tr->less(&it1_copy, &it2_copy);
-}
-
-static long iter_dist(const ax_iter *it1, const ax_iter *it2)
-{
-	ax_box *box = (ax_box *)it1->owner;
-	ax_iter end = ax_box_end(box);
-	ax_iter it1_copy = *it1;
-	ax_iter it2_copy = *it2;
-	it1_copy.tr = it2_copy.tr = end.tr;
-	return end.tr->dist(&it1_copy, &it2_copy);
-}
-
-static void riter_move(ax_iter *it, long i)
-{
-	ax_box *box = (ax_box *)it->owner;
-	ax_iter end = ax_box_end(box);
-	CHECK_ITERATOR_VALIDITY(it, !iter_equal(it, &end));
-	end.point = it->point;
-	end.tr->move(&end, i);
-	it->point = end.point;
-}
-
-static void riter_prev(ax_iter *it)
-{
-	ax_box *box = (ax_box *)it->owner;
-	ax_iter rend = ax_box_rend(box);
-	CHECK_ITERATOR_VALIDITY(it, !iter_equal(it, &rend));
-	rend.point = it->point;
-	rend.tr->prev(it);
-	it->point = rend.point;
-}
-
-static void riter_next(ax_iter *it)
-{
-	ax_box *box = (ax_box *)it->owner;
-	ax_iter rend = ax_box_end(box);
-	CHECK_ITERATOR_VALIDITY(it, !iter_equal(it, &rend));
-	rend.point = it->point;
-	rend.tr->prev(it);
-	it->point = rend.point;
-}
-
-static ax_fail  riter_less(const ax_iter *it1, const ax_iter *it2)
-{
-
-	ax_box *box = (ax_box *)it1->owner;
-	ax_iter rend = ax_box_rend(box);
-	ax_iter it1_copy = *it1;
-	ax_iter it2_copy = *it2;
-	CHECK_ITERATOR_VALIDITY(it1, !ax_iter_equal(it1_copy, rend));
-	CHECK_ITERATOR_VALIDITY(it2, !ax_iter_equal(it2_copy, rend));
-	it1_copy.tr = it2_copy.tr = rend.tr;
-	return rend.tr->less(&it1_copy, &it2_copy);
-}
-
-static long riter_dist(const ax_iter *it1, const ax_iter *it2)
-{
-	ax_box *box = (ax_box *)it1->owner;
-	ax_iter rend = ax_box_rend(box);
-	ax_iter it1_copy = *it1;
-	ax_iter it2_copy = *it2;
-	it1_copy.tr = it2_copy.tr = rend.tr;
-	return rend.tr->dist(&it1_copy, &it2_copy);
 }
 
 static void one_free(ax_one* one)
@@ -325,7 +316,7 @@ static ax_iter box_end(const ax_box* box)
 	ax_string_r string_r = { .box = (ax_box*)box};
 	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	ax_iter it = ax_box_end(vec_r.box);
-	it = ax_iter_prev(it);
+	ax_iter_prev(&it);
 	it.tr = &iter_trait;
 	return it;
 	
@@ -338,7 +329,7 @@ static ax_iter box_rbegin(const ax_box* box)
 	ax_string_r string_r = { .box = (ax_box*)box};
 	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	ax_iter it = ax_box_rbegin(vec_r.box);
-	it = ax_iter_next(it);
+	ax_iter_next(&it);
 	it.tr = &riter_trait;
 	return it;
 }
@@ -363,7 +354,7 @@ static void box_clear(ax_box* box)
 	ax_vector_r vec_r = { .vector = string_r.string->vector };
 	ax_seq_trunc(vec_r.seq, 1);
 	ax_iter first = ax_box_begin(vec_r.box);
-	char *ch = ax_iter_get(first);
+	char *ch = ax_iter_get(&first);
 	*ch = '\0';
 }
 
@@ -550,38 +541,35 @@ static const ax_str_trait str_trait =
 
 static const ax_iter_trait iter_trait =
 {
-	.norm   = ax_true,
-	.type   = AX_IT_RAND,
-
-	.move   = iter_move,
-	.prev = iter_prev,
-	.next = iter_next,
+	.ctr = {
+		.norm   = ax_true,
+		.type   = AX_IT_RAND,
+		.move   = citer_move,
+		.prev   = citer_prev,
+		.next   = citer_next,
+		.less   = citer_less,
+		.dist   = citer_dist
+	},
 
 	.get    = iter_get,
 	.set    = iter_set,
 	.erase  = iter_erase,
-
-	.equal  = iter_equal,
-	.less   = iter_less,
-	.dist   = iter_dist
 };
 
 static const ax_iter_trait riter_trait =
 {
-	.norm   = ax_false,
-	.type   = AX_IT_RAND,
-
-	.move   = riter_move,
-	.prev = riter_prev,
-	.next = riter_next,
-
+	.ctr = {
+		.norm   = ax_false,
+		.type   = AX_IT_RAND,
+		.move   = rciter_move,
+		.prev   = rciter_prev,
+		.next   = rciter_next,
+		.less   = rciter_less,
+		.dist   = rciter_dist
+	},
 	.get    = iter_get,
 	.set    = iter_set,
-	.erase  = iter_erase,
-
-	.equal  = iter_equal,
-	.less   = riter_less,
-	.dist   = riter_dist
+	.erase  = iter_erase
 };
 
 ax_str *__ax_string_construct(ax_base* base)

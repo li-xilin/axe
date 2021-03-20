@@ -44,7 +44,7 @@ inline static ax_pred ax_pred_binary_make(ax_binary_f oper, void *in1, void *in2
 	};
 }
 
-inline static void ax_pred_do(const ax_pred *pred, void *out, void *in1, void *in2)
+inline static void ax_pred_do(const ax_pred *pred, void *out, const void *in1, const void *in2)
 {
 #ifdef AX_DEBUG
 	const char *failed_msg = "invalid argument for predicate input";

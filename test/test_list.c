@@ -14,7 +14,9 @@
 static ax_bool seq_equal_array(ax_seq *seq, void *arr, size_t mem_size)
 {
 	ax_box *box = ax_r(seq, seq).box;
-	 return ax_equal_to_arr(ax_box_begin(box), ax_box_end(box), arr, mem_size);
+	ax_iter first = ax_box_begin(box);
+	ax_iter last = ax_box_end(box);
+	return ax_equal_to_arr(&first, &last, arr, mem_size);
 }
 
 static void create(axut_runner *r)
@@ -26,7 +28,7 @@ static void create(axut_runner *r)
 
 	ax_seq *seq = ax_seq_init(ax_base_local(base), __ax_list_construct, "i32x3", 1, 2, 3);
 	int i = 1;
-	ax_foreach(int*, v, ax_r(seq, seq).box) {
+	ax_foreach(const int*, v, ax_r(seq, seq).box) {
 		axut_assert(r, *v == i++);
 	}
 
@@ -42,8 +44,8 @@ static void push(axut_runner *r)
 	}
 
 	for (int i = 0; i < 20; i++) {
-		ax_iter iter = ax_seq_at(role.seq, i);
-		axut_assert(r, *(int*)ax_iter_get(iter) == i);
+		ax_iter it = ax_seq_at(role.seq, i);
+		axut_assert(r, *(int*)ax_iter_get(&it) == i);
 	}
 
 	for (int i = 0; i < 20; i++) {
@@ -67,16 +69,16 @@ static void iter(axut_runner *r)
 	}
 
 	i = 0;
-	ax_foreach(int*, v, role.box) {
+	ax_foreach(const int*, v, role.box) {
 		axut_assert(r, *v == i++);
 	}
 
 	i = 0;
 	cur = ax_box_begin(role.box);
 	last = ax_box_end(role.box);
-	while (!ax_iter_equal(cur, last)) {
-		axut_assert(r, *(int32_t*)ax_iter_get(cur) == i++);
-		cur = ax_iter_next(cur);
+	while (!ax_iter_equal(&cur, &last)) {
+		axut_assert(r, *(int32_t*)ax_iter_get(&cur) == i++);
+		ax_iter_next(&cur);
 	}
 
 
@@ -98,26 +100,26 @@ static void riter(axut_runner *r)
 	i = 20 - 1;
 	cur = ax_box_rbegin(role.box);
 	last = ax_box_rend(role.box);
-	while (!ax_iter_equal(cur, last)) {
-		axut_assert(r, *(int32_t*)ax_iter_get(cur) == i--);
-		cur = ax_iter_next(cur);
+	while (!ax_iter_equal(&cur, &last)) {
+		axut_assert(r, *(int32_t*)ax_iter_get(&cur) == i--);
+		ax_iter_next(&cur);
 	}
 
 	i = 20 - 1;
 	cur = ax_box_end(role.box);
 	last = ax_box_begin(role.box);
 	do {
-		cur = ax_iter_prev(cur);
-		axut_assert(r, *(int32_t*)ax_iter_get(cur) == i--);
-	} while (!ax_iter_equal(cur, last));
+		ax_iter_prev(&cur);
+		axut_assert(r, *(int32_t*)ax_iter_get(&cur) == i--);
+	} while (!ax_iter_equal(&cur, &last));
 
 	i = 0;
 	cur = ax_box_rend(role.box);
 	last = ax_box_rbegin(role.box);
 	do {
-		cur = ax_iter_prev(cur);
-		axut_assert(r, *(int32_t*)ax_iter_get(cur) == i++);
-	} while (!ax_iter_equal(cur, last));
+		ax_iter_prev(&cur);
+		axut_assert(r, *(int32_t*)ax_iter_get(&cur) == i++);
+	} while (!ax_iter_equal(&cur, &last));
 
 	ax_one_free(role.one);
 	ax_base_destroy(base);

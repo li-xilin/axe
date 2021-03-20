@@ -27,45 +27,71 @@
 
 #include <stdint.h>
 
-#define AX_IT_IN   0x01
-#define AX_IT_FORW 0x03
-#define AX_IT_BID  0x05
-#define AX_IT_RAND 0x07
-#define AX_IT_OUT  0x08
+#define AX_IT_IN   ((1 << 0))
+#define AX_IT_FORW ((1 << 1) | AX_IT_IN)
+#define AX_IT_BID  ((1 << 2) | AX_IT_IN | AX_IT_FORW)
+#define AX_IT_RAND ((1 << 3) | AX_IT_IN | AX_IT_FORW | AX_IT_BID)
+#define AX_IT_OUT  ((1 << 4))
 
+#ifndef AX_ITER_DEFINED
+#define AX_ITER_DEFINED
 typedef struct ax_iter_st ax_iter;
+#endif
+
+#ifndef AX_CITER_DEFINED
+#define AX_CITER_DEFINED
 typedef struct ax_citer_st ax_citer;
+#endif
+
+#ifndef AX_CITER_TRAIT_DEFINED
+#define AX_CITER_TRAIT_DEFINED
+typedef struct ax_citer_trait_st ax_citer_trait;
+#endif
+
+#ifndef AX_ITER_TRAIT_DEFINED
+#define AX_ITER_TRAIT_DEFINED
 typedef struct ax_iter_trait_st ax_iter_trait;
+#endif
+
+#ifndef AX_BOX_DEFINED
+#define AX_BOX_DEFINED
 typedef struct ax_box_st ax_box;
+#endif
 
 typedef void    *(*ax_iter_get_f)  (const ax_iter *it);
-typedef ax_fail  (*ax_iter_set_f)  (const ax_iter *it, const void *p);
-typedef ax_bool  (*ax_iter_comp_f) (const ax_iter *it1, const ax_iter *it2);
-typedef long     (*ax_iter_dist_f) (const ax_iter *it1, const ax_iter *it2);
-typedef void     (*ax_iter_erase_f)(ax_iter *it);
-typedef void     (*ax_iter_creep_f)(ax_iter *it);
-typedef void     (*ax_iter_move_f) (ax_iter *it, long i);
+typedef ax_bool  (*ax_iter_comp_f) (const ax_citer *it1, const ax_citer *it2);
+typedef long     (*ax_iter_dist_f) (const ax_citer *it1, const ax_citer *it2);
+typedef void     (*ax_iter_creep_f)(      ax_citer *it);
+typedef void     (*ax_iter_move_f) (      ax_citer *it, long i);
 
-struct ax_iter_trait_st
+typedef void     (*ax_iter_erase_f)(      ax_iter *it);
+typedef ax_fail  (*ax_iter_set_f)  (const ax_iter *it, const void *p);
+
+struct ax_citer_trait_st
 {
 	ax_iter_move_f  move;
 	ax_iter_creep_f prev;
 	ax_iter_creep_f next;
-	ax_iter_get_f   get;
-	ax_iter_set_f   set;
-	ax_iter_comp_f  equal;
 	ax_iter_comp_f  less;
 	ax_iter_dist_f  dist;
-	ax_iter_erase_f erase;
 	ax_bool         norm;
 	unsigned char   type;
 };
 
+struct ax_iter_trait_st
+{
+	const ax_citer_trait ctr; /* Keep this first */
+	ax_iter_get_f   get;
+	ax_iter_set_f   set;
+	ax_iter_erase_f erase;
+};
+
+
 struct ax_citer_st
 {
-	void *const owner;
-	const ax_iter_trait *const tr;
-	void *const point;
+	const void *owner;
+	const ax_citer_trait *tr;
+	void *point;
 };
 
 struct ax_iter_st
@@ -75,74 +101,124 @@ struct ax_iter_st
 	void *point;
 };
 
-inline ax_citer ax_iter_ro(ax_iter it)
+inline static ax_citer *ax_iter_c(const ax_iter *it)
 {
-	void *p = (void*)&it;
-	return *(ax_citer*) p;
+	register const void *p = it;
+	return (ax_citer*) p;
 }
 
-inline static ax_bool ax_iter_norm (ax_iter it)
+inline static ax_bool ax_citer_norm (const ax_citer *it)
 {
-	return it.tr->norm;
+	return it->tr->norm;
 }
 
-inline static ax_iter ax_iter_move(ax_iter it, long s) {
-	it.tr->move((&it), s);
-	return it;
-}
-
-inline static ax_iter ax_iter_next(ax_iter it)
+inline static ax_bool ax_iter_norm (const ax_iter *it)
 {
-	it.tr->next(&it);
-	return it;
-
+	return ax_citer_norm(ax_iter_c(it));
 }
 
-inline static ax_iter ax_iter_prev(ax_iter it)
+inline static void ax_citer_move(ax_citer *it, long s)
 {
-	it.tr->prev(&it);
-	return it;
+	it->tr->move(it, s);
 }
 
-inline static ax_iter ax_iter_erase(ax_iter it)
+inline static void ax_iter_move(ax_iter *it, long s)
 {
-	it.tr->erase(&it);
-	return it;
-}
-inline static void *ax_iter_get(ax_iter it)
-{
-	return it.tr->get((&it));
+	ax_citer_move(ax_iter_c(it), s);
 }
 
-inline static ax_fail ax_iter_set(ax_iter it, const void *val)
+inline static void ax_citer_next(ax_citer *it)
 {
-	return it.tr->set(&it, val);
+	it->tr->next(it);
 }
 
-inline static ax_bool ax_iter_equal(ax_iter it1, ax_iter it2)
+inline static void ax_iter_next(ax_iter *it)
 {
-	ax_assert(it1.owner == it2.owner, "different owner of two iterator");
-	ax_assert(it1.tr == it2.tr, "different trait of two iterator");
-	return it1.point == it2.point;
+	ax_citer_next(ax_iter_c(it));
 }
 
-inline static ax_bool ax_iter_less(ax_iter it1, const ax_iter it2)
+inline static void ax_citer_prev(ax_citer *it)
 {
-	return it1.tr->equal(&it1, &it2);
+	it->tr->prev(it);
 }
 
-inline static long ax_iter_dist(ax_iter it1, const ax_iter it2)
+inline static void ax_iter_prev(ax_iter *it)
 {
-	return it1.tr->dist(&it1, &it2);
+	ax_citer_prev(ax_iter_c(it));
 }
 
-inline static ax_bool ax_iter_is(const ax_iter *it, int type)
+inline static void ax_iter_erase(ax_iter *it)
+{
+	it->tr->erase(it);
+}
+
+inline static void *ax_iter_get(const ax_iter *it)
+{
+	return it->tr->get(it);
+}
+
+inline static const void *ax_citer_get(const ax_citer *it)
+{
+	void *p = (void *) it;
+	return ax_iter_get(p);
+}
+
+inline static ax_fail ax_iter_set(const ax_iter *it, const void *val)
+{
+	return it->tr->set(it, val);
+}
+
+inline static ax_bool ax_citer_equal(const ax_citer *it1, const ax_citer *it2)
+{
+	ax_assert(it1->owner == it2->owner && it1->tr == it2->tr,
+			"iterators is not comparable");
+	return it1->point == it2->point;
+}
+
+inline static ax_bool ax_iter_equal(const ax_iter *it1, const ax_iter *it2)
+{
+	return ax_citer_equal(ax_iter_c(it1), ax_iter_c(it2));
+}
+
+inline static ax_bool ax_citer_less(const ax_citer *it1, const ax_citer *it2)
+{
+	return it1->tr->less(it1, it2);
+}
+
+inline static ax_bool ax_iter_less(const ax_iter *it1, const ax_iter *it2)
+{
+	return ax_citer_less(ax_iter_c(it1), ax_iter_c(it2));
+}
+
+inline static long ax_citer_dist(const ax_citer *it1, const ax_citer *it2)
+{
+	return it1->tr->dist(it1, it2);
+}
+
+inline static long ax_iter_dist(const ax_iter *it1, const ax_iter *it2)
+{
+	return ax_citer_dist(ax_iter_c(it1), ax_iter_c(it2));
+}
+
+inline static ax_bool ax_citer_is(const ax_citer *it, int type)
 {
 	return (it->tr->type & type) == type;
 }
 
-void ax_iter_swap(ax_iter it1, ax_iter it2);
+inline static ax_bool ax_iter_is(const ax_iter *it, int type)
+{
+	return ax_citer_is(ax_iter_c(it), type);
+}
 
-ax_iter ax_iter_npos(void *owner, const ax_iter_trait *tr);
+void ax_iter_swap(const ax_iter *it1, const ax_iter *it2);
+
+ax_citer ax_citer_npos(const ax_citer *it);
+
+inline static ax_iter ax_iter_npos(const ax_iter *it)
+{
+	ax_citer citer = ax_citer_npos(ax_iter_c(it));
+	void *p = &citer;
+	return *(ax_iter *) p;
+}
 
 #endif

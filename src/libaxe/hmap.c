@@ -64,35 +64,35 @@ struct ax_hmap_st
 	struct bucket_st *bucket_tab;
 };
 
-static ax_bool     map_put (ax_map *map, const void *key, const void *val);
-static ax_bool     map_erase (ax_map *map, const void *key);
-static void      * map_get (const ax_map *map, const void *key);
-static ax_bool     map_exist (const ax_map *map, const void *key);
+static ax_bool  map_put (ax_map *map, const void *key, const void *val);
+static ax_bool  map_erase (ax_map *map, const void *key);
+static void    *map_get (const ax_map *map, const void *key);
+static ax_bool  map_exist (const ax_map *map, const void *key);
 
-static size_t      box_size(const ax_box *box);
-static size_t      box_maxsize(const ax_box *box);
-static ax_iter     box_begin(const ax_box *box);
-static ax_iter     box_end(const ax_box *box);
-static ax_iter     box_rbegin(const ax_box *box);
-static ax_iter     box_rend(const ax_box *box);
-static void        box_clear(ax_box *box);
+static size_t   box_size(const ax_box *box);
+static size_t   box_maxsize(const ax_box *box);
+static ax_iter  box_begin(const ax_box *box);
+static ax_iter  box_end(const ax_box *box);
+static ax_iter  box_rbegin(const ax_box *box);
+static ax_iter  box_rend(const ax_box *box);
+static void     box_clear(ax_box *box);
 static const ax_stuff_trait *box_elem_tr(const ax_box *box);
 
-static void        any_dump(const ax_any *any, int ind);
-static ax_any     *any_copy(const ax_any *any);
-static ax_any     *any_move(ax_any *any);
+static void     any_dump(const ax_any *any, int ind);
+static ax_any  *any_copy(const ax_any *any);
+static ax_any  *any_move(ax_any *any);
 
-static void        one_free(ax_one *one);
+static void     one_free(ax_one *one);
 
-static void        iter_move(ax_iter *it, long i);
-static void        iter_prev(ax_iter *it);
-static void        iter_next(ax_iter *it);
-static void       *iter_get(const ax_iter *it);
-static ax_fail     iter_set(const ax_iter *it, const void *p);
-static ax_bool     iter_equal(const ax_iter *it1, const ax_iter *it2);
-static ax_bool     iter_less(const ax_iter *it1, const ax_iter *it2);
-static long        iter_dist(const ax_iter *it1, const ax_iter *it2);
-static void        iter_erase(ax_iter *it);
+static void     citer_move(ax_citer *it, long i);
+static void     citer_prev(ax_citer *it);
+static void     citer_next(ax_citer *it);
+static void    *iter_get(const ax_iter *it);
+static ax_bool  citer_less(const ax_citer *it1, const ax_citer *it2);
+static long     citer_dist(const ax_citer *it1, const ax_citer *it2);
+
+static ax_fail  iter_set(const ax_iter *it, const void *p);
+static void     iter_erase(ax_iter *it);
 
 static ax_fail rehash(ax_hmap *hmap, size_t new_size);
 static struct node_st *make_node(ax_map *map, const void *key, const void *val);
@@ -238,22 +238,22 @@ static void free_node(ax_map *map, struct node_st **pp_node)
 	ax_pool_free(node_to_free);
 }
 
-static void iter_move(ax_iter *it, long i)
+static void citer_move(ax_citer *it, long i)
 {
 	UNSUPPORTED();
 }
 
 
-static void iter_prev(ax_iter *it)
+static void citer_prev(ax_citer *it)
 {
 	UNSUPPORTED();
 }
 
-static void iter_next(ax_iter *it)
+static void citer_next(ax_citer *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
 
-	ax_hmap *hmap= it->owner;
+	const ax_hmap *hmap= it->owner;
 	struct node_st **pp_node = it->point;
 	struct bucket_st *bucket = locate_bucket(hmap, (*pp_node)->kvbuffer);
 	assert(bucket);
@@ -269,7 +269,7 @@ static void *iter_get(const ax_iter *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
 
-	ax_hmap_r hmap_r = { it->owner };
+	ax_hmap_cr hmap_r = { .hmap = it->owner };
 	ax_base *base = ax_one_base(hmap_r.one);
 	struct node_st **pp_node = it->point;
 
@@ -291,6 +291,20 @@ static void *iter_get(const ax_iter *it)
 	ax_pair_r pair_r = ax_pair_create(ax_base_local(base), key, val);
 
 	return pair_r.pair;
+}
+
+static ax_bool citer_less(const ax_citer *it1, const ax_citer *it2)
+{
+	UNSUPPORTED();
+
+	return ax_false;
+}
+
+static long citer_dist(const ax_citer *it1, const ax_citer *it2)
+{
+	UNSUPPORTED();
+
+	return 0;
 }
 
 static ax_fail iter_set(const ax_iter *it, const void *p)
@@ -315,28 +329,6 @@ static ax_fail iter_set(const ax_iter *it, const void *p)
 		return ax_true;
 	}
 	return ax_false;
-}
-
- 
-static ax_bool iter_equal(const ax_iter *it1, const ax_iter *it2)
-{
-	CHECK_ITER_COMPARABLE(it1, it2);
-
-	return it1->point == it2->point;
-}
-
-static ax_bool iter_less(const ax_iter *it1, const ax_iter *it2)
-{
-	UNSUPPORTED();
-
-	return ax_false;
-}
-
-static long iter_dist(const ax_iter *it1, const ax_iter *it2)
-{
-	UNSUPPORTED();
-
-	return 0;
 }
 
 static void iter_erase(ax_iter *it)
@@ -495,8 +487,8 @@ static ax_any *any_copy(const ax_any *any)
 	const ax_stuff_trait *vtr = src_r.map->val_tr;
 	ax_hmap_r dst_r = { .map = __ax_hmap_construct(base, ktr, vtr)};
 
-	ax_foreach(ax_pair *, pair, src_r.box) {
-		if (ax_map_put(dst_r.map, ax_pair_key(pair), ax_pair_value(pair))) {
+	ax_foreach(const ax_pair *, pair, src_r.box) {
+		if (ax_map_put(dst_r.map, ax_pair_key(pair), ax_pair_cvalue(pair))) {
 			ax_one_free(dst_r.one);
 			return NULL;
 		}
@@ -648,39 +640,19 @@ static const ax_map_trait map_trait =
 
 static const ax_iter_trait iter_trait =
 {
-	.norm  = ax_true,
-	.type  = AX_IT_FORW,
-
-	.move = iter_move,
-	.prev = iter_prev,
-	.next = iter_next,
-
+	.ctr = {
+		.norm  = ax_true,
+		.type  = AX_IT_FORW,
+		.move = citer_move,
+		.prev = citer_prev,
+		.next = citer_next,
+		.less  = citer_less,
+		.dist  = citer_dist,
+	},
 	.get   = iter_get,
 	.set   = iter_set,
 	.erase = iter_erase,
-
-	.equal = iter_equal,
-	.less  = iter_less,
-	.dist  = iter_dist,
 };
-
-#if 0
-void ax_hmap_dump(ax_hmap *hmap)
-{
-	CHECK_PARAM_NULL(hmap);
-
-	puts("---");
-	for (struct bucket_st *bucket = hmap->bucket_list; bucket; bucket = bucket->next) {
-		printf("=> %p\n", bucket);
-		for (struct node_st *currnode = bucket->node_list; currnode; ) {
-			printf(" ==> %p\n", currnode);
-			currnode = currnode->next;
-		}
-	}
-	puts("---");
-
-}
-#endif
 
 ax_map *__ax_hmap_construct(ax_base *base, const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)
 {

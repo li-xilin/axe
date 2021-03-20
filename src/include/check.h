@@ -1,6 +1,6 @@
 #ifndef AXE_CHECK_H_
 #define AXE_CHECK_H_
-#include "axe/debug.h"
+#include <axe/debug.h>
 
 #define CHECK_PARAM_NULL(_param) ax_assert((_param), "parameter `%s' is NULL", #_param)
 

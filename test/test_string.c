@@ -41,7 +41,7 @@ static void split(axut_runner *r)
 	
 
 	int i = 0;
-	ax_foreach(char*, p, ax_r(seq, ret).box) {
+	ax_foreach(const char*, p, ax_r(seq, ret).box) {
 		switch(i) {
 			case 0: axut_assert_str_equal(r, p, ""); break;
 			case 1: axut_assert_str_equal(r, p, "111"); break;

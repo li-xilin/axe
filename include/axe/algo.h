@@ -4,62 +4,102 @@
 #include "iter.h"
 #include "pred.h"
 
-void ax_transform(ax_iter first1, ax_iter last1, ax_iter first2, const ax_pred *upred);
+void ax_transform(
+		const ax_citer *first1,
+		const ax_citer *last1,
+		const ax_iter *first2,
+		const ax_pred *upred);
 
-ax_bool ax_all_of(ax_iter first, ax_iter last, const ax_pred *upred);
+ax_bool ax_all_of(
+		const ax_citer *first,
+		const ax_citer *last,
+		const ax_pred *upred);
 
-ax_bool ax_any_of(ax_iter first, ax_iter last, const ax_pred *upred);
+ax_bool ax_any_of(
+		const ax_citer *first,
+		const ax_citer *last,
+		const ax_pred *upred);
 
-ax_bool ax_none_of(ax_iter first, ax_iter last, const ax_pred *upred);
+ax_bool ax_none_of(
+		const ax_citer *first,
+		const ax_citer *last,
+		const ax_pred *upred);
 
-size_t ax_count_if(ax_iter first, ax_iter last, const ax_pred *upred);
+size_t ax_count_if(
+		const ax_citer *first,
+		const ax_citer *last,
+		const ax_pred *upred);
 
-ax_iter ax_search_of(ax_iter first1, ax_iter last1, ax_iter first2, ax_iter last2);
+ax_iter ax_search_of(
+		const ax_iter *first1,
+		const ax_iter *last1,
+		const ax_citer *first2,
+		const ax_citer *last2);
 
-void ax_generate(ax_iter first, ax_iter last, const void *ptr);
+void ax_generate(
+		const ax_iter *first,
+		const ax_iter *last,
+		const void *ptr);
 
-inline static ax_iter ax_find_if(ax_iter first, ax_iter last, const ax_pred *upred)
-{
-	void __ax_find_if(ax_iter *first, const ax_iter *last, const ax_pred *upred);
-	__ax_find_if(&first, &last, upred);
-	return first;
-}
+void ax_find_if(
+		ax_citer *first,
+		const ax_citer *last,
+		const ax_pred *upred);
 
-inline static ax_iter ax_find_if_not(ax_iter first, ax_iter last, const ax_pred *upred)
-{
-	void __ax_find_if_not(ax_iter *first, const ax_iter *last, const ax_pred *upred);
-	__ax_find_if_not(&first, &last, upred);
-	return first;
-}
+void ax_find_if_not(
+		ax_citer *first,
+		const ax_citer *last,
+		const ax_pred *upred);
 
-ax_bool ax_sorted(ax_iter first, ax_iter last, const ax_pred *bpred);
 
-inline static ax_iter ax_partition(ax_iter first, ax_iter last, const ax_pred upred)
-{
-	void __ax_partition(ax_iter *first, const ax_iter *last, const ax_pred *upred);
-	__ax_partition(&first, &last, &upred);
-	return first;
-}
+ax_bool ax_sorted(
+		const ax_citer *first,
+		const ax_citer *last,
+		const ax_pred *bpred);
 
-ax_fail ax_quick_sort(ax_iter first, ax_iter last);
+void ax_partition(
+		ax_iter *first,
+		const ax_iter *last,
+		const ax_pred *upred);
 
-ax_bool ax_equal_to_arr(ax_iter first, ax_iter last, void *arr, size_t arrlen);
+ax_fail ax_quick_sort(
+		const ax_iter *first,
+		const ax_iter *last);
 
-inline static ax_iter ax_merge(ax_iter first1, ax_iter last1, ax_iter first2, ax_iter last2, ax_iter dest)
-{
-	void __ax_merge(ax_iter *first1, const ax_iter *last1, ax_iter *first2, const ax_iter *last2, ax_iter *dest);
-	__ax_merge(&first1, &last1, &first2, &last2, &dest);
-	return dest;
-}
+ax_bool ax_equal_to_arr(
+		const ax_iter *first, 
+		const ax_iter *last, 
+		void *arr, 
+		size_t arrlen);
 
-ax_fail ax_merge_sort(ax_iter first, ax_iter last);
+void ax_merge(
+		const ax_citer *first1,
+		const ax_citer *last1,
+		const ax_citer *first2,
+		const ax_citer *last2,
+		ax_iter *dest);
 
-ax_iter ax_binary_search(ax_iter first, ax_iter last, const void *p);
+ax_fail ax_merge_sort(
+		const ax_iter *first,
+		const ax_iter *last);
 
-ax_iter ax_binary_search_if_not(ax_iter first, ax_iter last, const ax_pred *upred);
+void ax_binary_search(
+		ax_citer *first, 
+		const ax_citer *last,
+		const void *p);
 
-ax_fail ax_insertion_sort(ax_iter first, ax_iter last);
+void ax_binary_search_if_not(
+		ax_citer *first,
+		const ax_citer *last,
+		const ax_pred *upred);
 
-ax_iter ax_find_first_unsorted(ax_iter first, ax_iter last, const ax_pred *bpred);
+ax_fail ax_insertion_sort(
+		const ax_iter *first,
+		const ax_iter *last);
+
+void ax_find_first_unsorted(
+		ax_citer *first,
+		const ax_citer *last,
+		const ax_pred *bpred);
 
 #endif

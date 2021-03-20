@@ -79,21 +79,21 @@ static ax_any  *any_move(ax_any* any);
 
 static void     one_free(ax_one* one);
 
-static void     iter_move(ax_iter *it, long i);
-static void     iter_prev(ax_iter *it);
-static void     iter_next(ax_iter *it);
+static void     citer_move(ax_citer *it, long i);
+static void     citer_prev(ax_citer *it);
+static void     citer_next(ax_citer *it);
+static ax_bool  citer_less(const ax_citer *it1, const ax_citer *it2);
+static long     citer_dist(const ax_citer *it1, const ax_citer *it2);
+
+static void     rciter_move(ax_citer *it, long i);
+static void     rciter_prev(ax_citer *it);
+static void     rciter_next(ax_citer *it);
+static ax_bool  rciter_less(const ax_citer *it1, const ax_citer *it2);
+static long     rciter_dist(const ax_citer *it1, const ax_citer *it2);
+
 static void    *iter_get(const ax_iter *it);
 static ax_fail  iter_set(const ax_iter *it, const void *val);
-static ax_bool  iter_equal(const ax_iter *it1, const ax_iter *it2);
-static ax_bool  iter_less(const ax_iter *it1, const ax_iter *it2);
-static long     iter_dist(const ax_iter *it1, const ax_iter *it2);
 static void     iter_erase(ax_iter *it);
-
-static void     riter_move(ax_iter *it, long i);
-static void     riter_prev(ax_iter *it);
-static void     riter_next(ax_iter *it);
-static ax_bool  riter_less(const ax_iter *it1, const ax_iter *it2);
-static long     riter_dist(const ax_iter *it1, const ax_iter *it2);
 
 static const ax_iter_trait iter_trait;
 static const ax_iter_trait riter_trait;
@@ -346,27 +346,95 @@ static void remove_child(struct node_st *node) {
 	}
 }
 
-static void iter_move(ax_iter *it, long i)
+static void citer_move(ax_citer *it, long i)
 {
 	UNSUPPORTED();
 }
 
-static void iter_prev(ax_iter *it)
+static void citer_prev(ax_citer *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr);
 
-	ax_avl_r avl_r = { it->owner };
+	ax_avl_cr avl_r = { it->owner };
 	it->point = it->point ? get_left_node(avl_r.map, it->point)
 		: get_right_end_node(avl_r.map, avl_r.avl->root);
 }
 
-static void iter_next(ax_iter *it)
+static void citer_next(ax_citer *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr);
 
 	ax_assert(it->point != NULL, "iterator boundary exceeded");
 	ax_avl* avl= (ax_avl*)it->owner;
 	it->point =  get_right_node(&avl->_map, it->point);
+}
+
+static ax_bool citer_less(const ax_citer *it1, const ax_citer *it2)
+{
+	UNSUPPORTED();
+	return ax_false;
+}
+
+static long citer_dist(const ax_citer *it1, const ax_citer *it2)
+{
+	CHECK_ITER_COMPARABLE(it1, it2);
+
+	ax_avl_r avl_r = { .one = (ax_one *)it1->owner};
+
+	struct node_st *node1 = it1->point;
+	struct node_st *node2 = it2->point;
+	struct node_st *cur = get_left_end_node(avl_r.map, avl_r.avl->root);
+
+	size_t loc1, loc2;
+	loc1 = loc2 = avl_r.avl->size;
+
+	int found = !node1 + !node2;
+
+	for (int i = 0; found < 2 && cur; i++) {
+		if (cur == node1)
+			loc1 = i, found++;
+		if (cur == node2)
+			loc2 = i, found++;
+		cur = get_right_node(avl_r.map, cur);
+	}
+
+	ax_assert(found == 2, "bad iterator");
+
+	return loc2 - loc1;
+}
+
+static void rciter_move(ax_citer *it, long i)
+{
+	UNSUPPORTED();
+}
+
+static void rciter_prev(ax_citer *it)
+{
+	CHECK_PARAM_VALIDITY(it, it->owner && it->tr);
+
+	const ax_avl* avl = it->owner;
+	it->point = it->point ? get_right_node(&avl->_map, it->point)
+		: get_left_end_node(&avl->_map, avl->root);
+}
+
+static void rciter_next(ax_citer *it)
+{
+	CHECK_PARAM_VALIDITY(it, it->owner && it->tr);
+
+	ax_assert(it->point != NULL, "iterator boundary exceeded");
+	const ax_avl *avl = it->owner;
+	it->point =  get_left_node(&avl->_map, it->point);
+}
+
+static ax_bool rciter_less(const ax_citer *it1, const ax_citer *it2)
+{
+	UNSUPPORTED();
+	return ax_false;
+}
+
+static long rciter_dist(const ax_citer *it1, const ax_citer *it2)
+{
+	return citer_dist(it2, it1);
 }
 
 static void *iter_get(const ax_iter *it)
@@ -407,48 +475,6 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	return ax_false;
 }
 
- 
-static ax_bool iter_equal(const ax_iter *it1, const ax_iter *it2)
-{
-	CHECK_ITER_COMPARABLE(it1, it2);
-
-	return it1->point == it2->point;
-}
-
-static ax_bool iter_less(const ax_iter *it1, const ax_iter *it2)
-{
-	UNSUPPORTED();
-	return ax_false;
-}
-
-static long iter_dist(const ax_iter *it1, const ax_iter *it2)
-{
-	CHECK_ITER_COMPARABLE(it1, it2);
-
-	ax_avl_r avl_r = { .one = (ax_one *)it1->owner};
-
-	struct node_st *node1 = it1->point;
-	struct node_st *node2 = it2->point;
-	struct node_st *cur = get_left_end_node(avl_r.map, avl_r.avl->root);
-
-	size_t loc1, loc2;
-	loc1 = loc2 = avl_r.avl->size;
-
-	int found = !node1 + !node2;
-
-	for (int i = 0; found < 2 && cur; i++) {
-		if (cur == node1)
-			loc1 = i, found++;
-		if (cur == node2)
-			loc2 = i, found++;
-		cur = get_right_node(avl_r.map, cur);
-	}
-
-	ax_assert(found == 2, "bad iterator");
-
-	return loc2 - loc1;
-}
-
 static void iter_erase(ax_iter *it)
 {
 	CHECK_PARAM_NULL(it);
@@ -457,7 +483,7 @@ static void iter_erase(ax_iter *it)
 	ax_avl_r avl_r = { it->owner };
 	struct node_st * node = it->point;
 
-	struct node_st *next_node = (it->tr->norm)
+	struct node_st *next_node = ax_iter_norm(it)
 		? get_right_node(avl_r.map, node)
 		: get_left_node(avl_r.map, node);
 
@@ -476,40 +502,6 @@ static void iter_erase(ax_iter *it)
 	}
 	avl_r.avl->root = current;
 	avl_r.avl->size --;
-}
-
-static void riter_move(ax_iter *it, long i)
-{
-	UNSUPPORTED();
-}
-
-static void riter_prev(ax_iter *it)
-{
-	CHECK_PARAM_VALIDITY(it, it->owner && it->tr);
-
-	ax_avl* avl= it->owner;
-	it->point = it->point ? get_right_node(&avl->_map, it->point)
-		: get_left_end_node(&avl->_map, avl->root);
-}
-
-static void riter_next(ax_iter *it)
-{
-	CHECK_PARAM_VALIDITY(it, it->owner && it->tr);
-
-	ax_assert(it->point != NULL, "iterator boundary exceeded");
-	ax_avl *avl = it->owner;
-	it->point =  get_left_node(&avl->_map, it->point);
-}
-
-static ax_bool riter_less(const ax_iter *it1, const ax_iter *it2)
-{
-	UNSUPPORTED();
-	return ax_false;
-}
-
-static long riter_dist(const ax_iter *it1, const ax_iter *it2)
-{
-	return iter_dist(it2, it1);
 }
 
 static ax_fail map_put (ax_map* map, const void *key, const void *val)
@@ -674,8 +666,8 @@ static ax_any *any_copy(const ax_any *any)
 	const ax_stuff_trait *vtr = src_r.map->val_tr;
 	ax_avl_r dst_r = { .map = __ax_avl_construct(base, ktr, vtr)};
 
-	ax_foreach(ax_pair *, pair, src_r.box) {
-		if (ax_map_put(dst_r.map, ax_pair_key(pair), ax_pair_value(pair))) {
+	ax_foreach(const ax_pair *, pair, src_r.box) {
+		if (ax_map_put(dst_r.map, ax_pair_key(pair), ax_pair_cvalue(pair))) {
 			ax_one_free(dst_r.one);
 			return NULL;
 		}
@@ -793,11 +785,11 @@ static void box_clear(ax_box* box)
 
 	ax_iter cur = ax_box_begin(avl_r.box);
 	ax_iter last = ax_box_end(avl_r.box);
-	while (!ax_iter_equal(cur, last)) {
+	while (!ax_iter_equal(&cur, &last)) {
 		struct node_st *node = cur.point;
 		avl_r.map->key_tr->free(node->kvbuffer);
 		avl_r.map->val_tr->free(node->kvbuffer + avl_r.map->key_tr->size);
-		cur = ax_iter_next(cur);
+		ax_iter_next(&cur);
 	}
 
 	remove_child(avl_r.avl->root);
@@ -846,38 +838,34 @@ static const ax_map_trait map_trait =
 
 static const ax_iter_trait iter_trait =
 {
-	.norm   = ax_true,
-	.type   = AX_IT_BID,
-
-	.move   = iter_move,
-	.prev = iter_prev,
-	.next = iter_next,
-
+	.ctr = {
+		.norm = ax_true,
+		.type = AX_IT_BID,
+		.move = citer_move,
+		.prev = citer_prev,
+		.next = citer_next,
+		.less = citer_less,
+		.dist = citer_dist
+	},
 	.get    = iter_get,
 	.set    = iter_set,
 	.erase  = iter_erase,
-
-	.equal  = iter_equal,
-	.less   = iter_less,
-	.dist   = iter_dist
 };
 
 static const ax_iter_trait riter_trait =
 {
-	.norm   = ax_false,
-	.type   = AX_IT_BID,
-
-	.move   = riter_move,
-	.prev = riter_prev,
-	.next = riter_next,
-
+	.ctr = {
+		.norm = ax_false,
+		.type = AX_IT_BID,
+		.move = rciter_move,
+		.prev = rciter_prev,
+		.next = rciter_next,
+		.less = rciter_less,
+		.dist = rciter_dist,
+	},
 	.get    = iter_get,
 	.set    = iter_set,
 	.erase  = iter_erase,
-
-	.equal  = iter_equal,
-	.less   = riter_less,
-	.dist   = riter_dist
 };
 
 ax_map *__ax_avl_construct(ax_base* base, const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr)

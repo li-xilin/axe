@@ -20,7 +20,7 @@ struct axut_suite_st
 	ax_one_env one_env;
 	char *name;
 	void *arg;
-	ax_vector_role tctab;
+	ax_vector_r tctab;
 };
 
 static void one_free(ax_one *one);
@@ -150,7 +150,7 @@ ax_one *__axut_suite_construct(ax_base *base, const char* name)
 axut_suite *axut_suite_create(ax_scope *scope, const char *name)
 {
 	CHECK_PARAM_NULL(scope);
-	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
+	ax_base *base = ax_one_base(ax_r(scope, scope).one);
 	axut_suite_role suite_rl = { .one = __axut_suite_construct(base, name) };
 	if (suite_rl.one == NULL)
 		return suite_rl.suite;
@@ -180,8 +180,9 @@ ax_fail axut_suite_add_case(axut_suite *suite, const char *name, axut_case_proc_
 	ax_fail fail = ax_seq_push(suite->tctab.seq, &tc_init);
 	if (fail)
 		return fail;
-
-	ax_insertion_sort(ax_box_begin(suite->tctab.box), ax_box_end(suite->tctab.box));
+	ax_iter first = ax_box_begin(suite->tctab.box);
+	ax_iter last = ax_box_end(suite->tctab.box);
+	ax_insertion_sort(&first, &last);
 	return ax_false;
 }
 

@@ -49,9 +49,9 @@ struct axut_runner_st
 	ax_one_env one_env;
 	char *name;
 	axut_output_f output_cb;
-	ax_avl_role smap; // for removing suite
-	ax_vector_role suites;
-	ax_string_role  output;
+	ax_avl_r smap; // for removing suite
+	ax_vector_r suites;
+	ax_string_r output;
 	struct {
 		int pass;
 		int fail;
@@ -163,9 +163,9 @@ ax_one *__axut_runner_construct(ax_base *base, axut_output_f output_cb)
 	return axut_cast(runner, runner).one;
 fail:
 	ax_pool_free(runner);
-	ax_one_free(ax_cast(seq, suites).one);
-	ax_one_free(ax_cast(map, smap).one);
-	ax_one_free(ax_cast(str, output).one);
+	ax_one_free(ax_r(seq, suites).one);
+	ax_one_free(ax_r(map, smap).one);
+	ax_one_free(ax_r(str, output).one);
 	return NULL;
 }
 
@@ -173,7 +173,7 @@ axut_runner *axut_runner_create(ax_scope *scope, axut_output_f ran_cb)
 {
 	CHECK_PARAM_NULL(scope);
 
-	ax_base *base = ax_one_base(ax_cast(scope, scope).one);
+	ax_base *base = ax_one_base(ax_r(scope, scope).one);
 	axut_runner_role runner_r = { .one = __axut_runner_construct(base, ran_cb) };
 	if (runner_r.one == NULL)
 		return runner_r.runner;
@@ -207,7 +207,7 @@ ax_fail axut_runner_add(axut_runner *r, axut_suite* s)
 		return fail;
 
 	ax_iter last = ax_box_end(r->suites.box);
-	last = ax_iter_prev(last);
+	ax_iter_prev(&last);
 
 	fail = ax_map_put(r->smap.map, &s, &last.point);
 	if (fail) {
@@ -228,7 +228,7 @@ void axut_runner_remove(axut_runner *r, axut_suite* s)
 	ax_iter last = ax_box_end(r->suites.box);
 	last.point = *point;
 	ax_map_erase(r->smap.map, &s);
-	ax_iter_erase(last);
+	ax_iter_erase(&last);
 }
 
 void axut_runner_run(axut_runner *r)
@@ -242,8 +242,9 @@ void axut_runner_run(axut_runner *r)
 	ax_foreach(axut_suite * const*, ppsuite, r->suites.box) {
 		const ax_seq *case_tab = axut_suite_all_case(*ppsuite);
 		r->arg = axut_suite_arg(*ppsuite);
-		ax_foreach(axut_case *, tc, &case_tab->__box) {
+		ax_foreach(const axut_case *, test_case, &case_tab->_box) {
 			jmp_buf jmp;
+			axut_case *tc = (axut_case *)test_case;
 			if (tc->state != AXUT_CS_READY)
 				continue;
 			r->jump_ptr = &jmp;

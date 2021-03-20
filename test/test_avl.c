@@ -28,24 +28,24 @@ static void insert(axut_runner *r)
 	}
 
 	int i = 0;
-	ax_foreach(ax_pair *, pair, avl_r.box) {
+	ax_foreach(const ax_pair *, pair, avl_r.box) {
 		 axut_assert(r, *(int32_t*)ax_pair_key(pair) == i++);
 	}
 
 	i = N-1;
 	ax_iter it = ax_box_rbegin(avl_r.box), end = ax_box_rend(avl_r.box);
-	while (!ax_iter_equal(it, end)) {
-		ax_pair *pair = ax_iter_get(it);
+	while (!ax_iter_equal(&it, &end)) {
+		ax_pair *pair = ax_iter_get(&it);
 		int *k = (int*)ax_pair_key(pair);
 		axut_assert(r, *k == i);
-		it = ax_iter_next(it);
+		ax_iter_next(&it);
 		i--;
 	}
 
 	ax_iter it_begin = ax_box_begin(avl_r.box);
 	ax_iter it_end = ax_box_end(avl_r.box);
-	it_end = ax_iter_prev(it_end);
-	axut_assert(r, ax_iter_dist(it_begin, it_end) == N-1);
+	ax_iter_prev(&it_end);
+	axut_assert(r, ax_iter_dist(&it_begin, &it_end) == N-1);
 
 	ax_base_destroy(base);
 }
@@ -61,13 +61,13 @@ static void complex(axut_runner *r)
 
 	int table[N] = {0};
 	ax_iter it = ax_box_begin(avl_r.box), end = ax_box_end(avl_r.box);
-	while (!ax_iter_equal(it, end)) {
-		ax_pair *pair = ax_iter_get(it);
+	while (!ax_iter_equal(&it, &end)) {
+		ax_pair *pair = ax_iter_get(&it);
 		int *k = (int*)ax_pair_key(pair);
 		int *v = (int*)ax_pair_value(pair);
 		axut_assert(r, *k == *v);
 		table[*k] = 1;
-		it = ax_iter_next(it);
+		ax_iter_next(&it);
 	}
 
 	for (int i = 0; i < N; i++) {
@@ -91,8 +91,8 @@ static void foreach(axut_runner *r)
 	}
 
 	ax_iter it = ax_box_begin(avl_r.box), end = ax_box_end(avl_r.box);
-	while (!ax_iter_equal(it, end)) {
-		it = ax_iter_erase(it);
+	while (!ax_iter_equal(&it, &end)) {
+		ax_iter_erase(&it);
 	}
 	axut_assert_uint_equal(r, ax_box_size(avl_r.box), 0);
 

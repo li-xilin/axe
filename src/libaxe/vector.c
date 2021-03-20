@@ -72,15 +72,19 @@ static ax_any     *any_move(ax_any *any);
 
 static void        one_free(ax_one *one);
 
-static void        iter_move(ax_iter *it, long i);
-static void        iter_prev(ax_iter *it);
-static void        iter_next(ax_iter *it);
+static void        citer_move(ax_citer *it, long i);
+static void        citer_prev(ax_citer *it);
+static void        citer_next(ax_citer *it);
+static ax_bool     citer_less(const ax_citer *it1, const ax_citer *it2);
+static long        citer_dist(const ax_citer *it1, const ax_citer *it2);
+
+static void        rciter_move(ax_citer *it, long i);
+static void        rciter_prev(ax_citer *it);
+static void        rciter_next(ax_citer *it);
+
 static void       *iter_get(const ax_iter *it);
-static ax_fail     iter_set(const ax_iter *it, const void *val);
 static void        iter_erase(ax_iter *it);
-static ax_bool     iter_equal(const ax_iter *it1, const ax_iter *it2);
-static ax_bool     iter_less(const ax_iter *it1, const ax_iter *it2);
-static long        iter_dist(const ax_iter *it1, const ax_iter *it2);
+static ax_fail     iter_set(const ax_iter *it, const void *val);
 
 static const ax_any_trait any_trait;
 static const ax_box_trait box_trait;
@@ -89,15 +93,15 @@ static const ax_iter_trait reverse_iter_trait;
 static const ax_iter_trait iter_trait;
 
 #ifdef AX_DEBUG
-static inline ax_bool iter_if_valid(const ax_iter *it)
+static inline ax_bool iter_if_valid(const ax_citer *it)
 {
 
-	ax_vector *vector = it->owner;
-	const ax_stuff_trait *etr = vector->__seq.elem_tr;
+	const ax_vector *vector = it->owner;
+	const ax_stuff_trait *etr = vector->_seq.elem_tr;
 	ax_byte *ptr = ax_buff_ptr(vector->buff);
 	size_t size = ax_buff_size(vector->buff, NULL);
 
-	return  (ax_iter_norm(*it)
+	return  (ax_citer_norm(it)
 		? ((ax_byte *)it->point >= ptr && (ax_byte *)it->point <= ptr + size)
 		: ((ax_byte *)it->point >= ptr - etr->size && (ax_byte *)it->point < ptr + size))
 		&& ((intptr_t)it->point - (intptr_t)ptr) % etr->size == 0;
@@ -113,7 +117,7 @@ static inline ax_bool iter_if_have_value(ax_iter it)
 }
 #endif
 
-static void iter_move(ax_iter *it, long i)
+static void citer_move(ax_citer *it, long i)
 {
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
@@ -124,29 +128,72 @@ static void iter_move(ax_iter *it, long i)
 }
 
 
-static void iter_prev(ax_iter *it)
+static void citer_prev(ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
-	iter_move(it, -1);
+	citer_move(it, -1);
 }
 
-static void iter_next(ax_iter *it)
+static void citer_next(ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
-	iter_move(it, 1);
+	citer_move(it, 1);
 }
 
 static void *iter_get(const ax_iter *it)
 {
 	CHECK_PARAM_NULL(it);
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr && it->point);
+
 	ax_vector *vector = (ax_vector *) it->owner;
 	const ax_stuff_trait *etr = vector->_seq.elem_tr;
 	return etr->link ? *(void**) it->point : it->point;
+}
+
+static ax_bool citer_less(const ax_citer *it1, const ax_citer *it2)
+{
+	CHECK_PARAM_NULL(it1);
+	CHECK_PARAM_NULL(it2);
+	CHECK_ITER_COMPARABLE(it1, it2);
+	CHECK_PARAM_VALIDITY(it1, iter_if_valid(it1));
+	CHECK_PARAM_VALIDITY(it2, iter_if_valid(it2));
+
+	return ax_citer_norm(it1) ? (it1->point < it2->point) : (it1->point > it2->point);
+}
+
+static long citer_dist(const ax_citer *it1, const ax_citer *it2)
+{
+	CHECK_ITER_COMPARABLE(it1, it2);
+	CHECK_PARAM_VALIDITY(it1, iter_if_valid(it1));
+	CHECK_PARAM_VALIDITY(it2, iter_if_valid(it2));
+
+	const ax_vector *vector = it1->owner;
+	return ((uintptr_t)it2->point - (uintptr_t)it1->point) / vector->_seq.elem_tr->size;
+}
+
+static void rciter_move(ax_citer *it, long i)
+{
+	CHECK_PARAM_NULL(it);
+	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
+
+	const ax_seq *seq = it->owner;
+	it->point = (ax_byte*)it->point - (i * (seq->elem_tr->size));
+	ax_assert(iter_if_valid(it), "iterator boundary exceed");
+}
+
+static void rciter_prev(ax_citer *it)
+{
+	rciter_move(it, -1);
+}
+
+static void rciter_next(ax_citer *it)
+{
+	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
+	rciter_move(it, 1);
 }
 
 static ax_fail iter_set(const ax_iter *it, const void *val)
@@ -176,59 +223,6 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	
 	return ax_false;
 }
-
-static ax_bool iter_equal(const ax_iter *it1, const ax_iter *it2)
-{
-	CHECK_ITER_COMPARABLE(it1, it2);
-	CHECK_PARAM_VALIDITY(it1, iter_if_valid(it1));
-	CHECK_PARAM_VALIDITY(it2, iter_if_valid(it2));
-
-	return it1->point == it2->point;
-}
-
-static ax_bool iter_less(const ax_iter *it1, const ax_iter *it2)
-{
-	CHECK_PARAM_NULL(it1);
-	CHECK_PARAM_NULL(it2);
-	CHECK_ITER_COMPARABLE(it1, it2);
-	CHECK_PARAM_VALIDITY(it1, iter_if_valid(it1));
-	CHECK_PARAM_VALIDITY(it2, iter_if_valid(it2));
-
-	return ax_iter_norm(*it1) ? (it1->point < it2->point) : (it1->point > it2->point);
-}
-
-static long iter_dist(const ax_iter *it1, const ax_iter *it2)
-{
-	CHECK_ITER_COMPARABLE(it1, it2);
-	CHECK_PARAM_VALIDITY(it1, iter_if_valid(it1));
-	CHECK_PARAM_VALIDITY(it2, iter_if_valid(it2));
-
-	const ax_vector *vector = it1->owner;
-	return ((uintptr_t)it2->point - (uintptr_t)it1->point) / vector->_seq.elem_tr->size;
-}
-
-static void riter_move(ax_iter *it, long i)
-{
-	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
-
-	const ax_seq *seq = it->owner;
-	it->point = (ax_byte*)it->point - (i * (seq->elem_tr->size));
-	ax_assert(iter_if_valid(it), "iterator boundary exceed");
-}
-
-static void riter_prev(ax_iter *it)
-{
-	riter_move(it, -1);
-}
-
-static void riter_next(ax_iter *it)
-{
-	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
-	riter_move(it, 1);
-}
-
-
 
 static void one_free(ax_one *one)
 {
@@ -371,16 +365,17 @@ static ax_iter box_rend(const ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	ax_vector_r role = { .box = (ax_box*)box};
-	ax_iter it;
-	it.owner = (void *)box;
-	it.point = ax_buff_ptr(role.vector->buff) - role.seq->elem_tr->size;
-	it.tr = &reverse_iter_trait;
+	ax_iter it = {
+		.owner = (void *)box,
+		.point = ax_buff_ptr(role.vector->buff) - role.seq->elem_tr->size,
+		.tr = &reverse_iter_trait
+	};
 	return it;
 }
 
 static void iter_erase(ax_iter *it)
 {
-	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
+	CHECK_PARAM_VALIDITY(it, iter_if_valid(ax_iter_c(it)));
 	CHECK_PARAM_VALIDITY(it, iter_if_have_value(*it));
 
 	ax_vector *vector = (ax_vector_r) { (void*)it->owner }.vector;
@@ -397,7 +392,7 @@ static void iter_erase(ax_iter *it)
 	size_t shift = (ax_byte*)it->point - ptr;
 
 	ax_buff_adapt(vector->buff, size - etr->size);
-	if(!ax_iter_norm(*it))
+	if(!ax_iter_norm(it))
 		it->point = ax_buff_ptr(vector->buff) + shift - etr->size;
 }
 
@@ -427,7 +422,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 {
 	CHECK_PARAM_NULL(seq);
 	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, it->owner == seq && iter_if_valid(it));
+	CHECK_PARAM_VALIDITY(it, it->owner == seq && iter_if_valid(ax_iter_c(it)));
 
 	ax_vector *vector = (ax_vector *) seq;
 	const ax_stuff_trait *etr = seq->elem_tr;
@@ -444,7 +439,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	ptr = ax_buff_ptr(vector->buff);
 	it->point = ptr + offset; //restore offset
 
-	void *ins = ax_iter_norm(*it) ? it->point : ((ax_byte*)it->point + etr->size);
+	void *ins = ax_iter_norm(it) ? it->point : ((ax_byte*)it->point + etr->size);
 	void *end = ptr + size;
 	for (ax_byte *p = end ; p != ins ; p -= etr->size) {
 		etr->move(p, p - etr->size, etr->size);
@@ -460,7 +455,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 		return ax_true;
 	}
 
-	if(ax_iter_norm(*it))
+	if(ax_iter_norm(it))
 		it->point = (ax_byte*)it->point + etr->size;
 	return ax_false;
 }
@@ -539,7 +534,7 @@ static void seq_invert(ax_seq *seq)
 static ax_fail seq_trunc(ax_seq *seq, size_t size)
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(size, size <= ax_box_maxsize(&seq->__box));
+	CHECK_PARAM_VALIDITY(size, size <= ax_box_maxsize(&seq->_box));
 
 	ax_vector_r role = { .seq = (ax_seq*)seq};
 
@@ -577,7 +572,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 static ax_iter seq_at(const ax_seq *seq, size_t index)
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(&seq->__box));
+	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(&seq->_box));
 
 
 	ax_vector *vector = (ax_vector *) seq;
@@ -634,40 +629,34 @@ static const ax_seq_trait seq_trait =
 
 static const ax_iter_trait iter_trait =
 {
-	.norm = ax_true,
-	.type = AX_IT_RAND,
-
-	.move = iter_move,
-	.next = iter_next,
-	.prev = iter_prev,
-
+	.ctr = {
+		.norm = ax_true,
+		.type = AX_IT_RAND,
+		.move = citer_move,
+		.next = citer_next,
+		.prev = citer_prev,
+		.less = citer_less,
+		.dist = citer_dist,
+	},
 	.get = iter_get,
 	.set = iter_set,
 	.erase = iter_erase,
-
-	.equal = iter_equal,
-	.less = iter_less,
-
-	.dist = iter_dist,
 };
 
 static const ax_iter_trait reverse_iter_trait =
 {
-	.norm = ax_false,
-	.type = AX_IT_RAND,
-
-	.move = riter_move,
-	.prev = riter_prev,
-	.next = riter_next,
-
+	.ctr = {
+		.norm = ax_false,
+		.type = AX_IT_RAND,
+		.move = rciter_move,
+		.next = rciter_next,
+		.prev = rciter_prev,
+		.less = citer_less,
+		.dist = citer_dist,
+	},
 	.get = iter_get,
 	.set = iter_set,
 	.erase = iter_erase,
-
-	.equal = iter_equal,
-	.less = iter_less,
-
-	.dist = iter_dist,
 };
 
 ax_seq *__ax_vector_construct(ax_base *base,const ax_stuff_trait *elem_tr)

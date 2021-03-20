@@ -93,7 +93,7 @@ ax_pair_r ax_pair_create(ax_scope* scope, const void *key, void *value)
 	return pair_r;
 }
 
-const void *ax_pair_key(ax_pair *pair)
+const void *ax_pair_key(const ax_pair *pair)
 {
 	CHECK_PARAM_NULL(pair);
 

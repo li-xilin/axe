@@ -43,8 +43,13 @@ ax_pair *__ax_pair_construct(ax_base *base, const void *key, void *value);
 
 ax_pair_r ax_pair_create(ax_scope *scope, const void *key, void *value);
 
-const void *ax_pair_key(ax_pair *pair);
+const void *ax_pair_key(const ax_pair *pair);
 
 void *ax_pair_value(ax_pair *pair);
+
+inline static const void *ax_pair_cvalue(const ax_pair *pair)
+{
+	return ax_pair_value((ax_pair *)pair);
+}
 
 #endif

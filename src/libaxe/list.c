@@ -75,15 +75,21 @@ static ax_any     *any_move(ax_any *any);
 
 static void        one_free(ax_one *one);
 
-static void        iter_move(ax_iter *it, long i);
-static void        iter_prev(ax_iter *it);
-static void        iter_next(ax_iter *it);
+static void        citer_move(ax_citer *it, long i);
+static void        citer_prev(ax_citer *it);
+static void        citer_next(ax_citer *it);
+static ax_bool     citer_less(const ax_citer *it1, const ax_citer *it2);
+static long        citer_dist(const ax_citer *it1, const ax_citer *it2);
+
+static void        rciter_move(ax_citer *it, long i);
+static void        rciter_prev(ax_citer *it);
+static void        rciter_next(ax_citer *it);
+static ax_bool     rciter_less(const ax_citer *it1, const ax_citer *it2);
+static long        rciter_dist(const ax_citer *it1, const ax_citer *it2);
+
 static void       *iter_get(const ax_iter *it);
 static ax_fail     iter_set(const ax_iter *it, const void *val);
 static void        iter_erase(ax_iter *it);
-static ax_bool     iter_equal(const ax_iter *it1, const ax_iter *it2);
-static ax_bool     iter_less(const ax_iter *it1, const ax_iter *it2);
-static long        iter_dist(const ax_iter *it1, const ax_iter *it2);
 
 static const ax_any_trait any_trait;
 static const ax_box_trait box_trait;
@@ -92,13 +98,13 @@ static const ax_iter_trait reverse_iter_trait;
 static const ax_iter_trait iter_trait;
 
 
-static void iter_move(ax_iter *it, long i)
+static void citer_move(ax_citer *it, long i)
 {
 	UNSUPPORTED();
 }
 
 
-static void iter_prev(ax_iter *it)
+static void citer_prev(ax_citer *it)
 {
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr);
 	ax_list *list = (ax_list *)it->owner;
@@ -113,7 +119,7 @@ static void iter_prev(ax_iter *it)
 	}
 }
 
-static void iter_next(ax_iter *it)
+static void citer_next(ax_citer *it)
 {
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr);
 
@@ -137,62 +143,7 @@ static void *iter_get(const ax_iter *it)
 	return etr->link ? *(void**) node->data : node->data;
 }
 
-static ax_fail iter_set(const ax_iter *it, const void *val)
-{
-
-	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr && it->point);
-
-	struct node_st *node = it->point;
-	ax_list *list = (ax_list *) it->owner;
-	const ax_stuff_trait *etr = list->_seq.elem_tr;
-
-	ax_base *base = ax_one_base(it->owner);
-	ax_pool *pool = ax_base_pool(base);
-	 
-	etr->free(node->data);
-	
-	const void *pval = etr->link ? &pval : val;
-	ax_fail fail = (val != NULL)
-		? etr->copy(pool, node->data, pval, etr->size)
-		: etr->init(pool, node->data, etr->size);
-	if (fail) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
-		ax_pool_free(node);
-		return ax_true;
-	}
-
-	return ax_false;
-}
-
-static void iter_erase(ax_iter *it)
-{
-	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
-
-	ax_list *list = ax_r(list, it->owner).list;
-	struct node_st *node = it->point;
-	it->point = node->next;
-	if (list->size == 1)
-		list->head = NULL;
-	else {
-		if (list->head == node)
-			list->head = node->next;
-		node->pre->next = node->next;
-		node->next->pre = node->pre;
-	}
-
-	const ax_stuff_trait *etr = list->_seq.elem_tr;
-	etr->free(node->data);
-	ax_pool_free(node);
-}
-
-static ax_bool iter_equal(const ax_iter *it1, const ax_iter *it2)
-{
-	CHECK_ITER_COMPARABLE(it1, it2);
-
-	return it1->point == it2->point;
-}
-
-static ax_bool iter_less(const ax_iter *it1, const ax_iter *it2)
+static ax_bool citer_less(const ax_citer *it1, const ax_citer *it2)
 {
 	CHECK_ITER_COMPARABLE(it1, it2);
 
@@ -212,7 +163,7 @@ static ax_bool iter_less(const ax_iter *it1, const ax_iter *it2)
 	return ax_false;
 }
 
-static long iter_dist(const ax_iter *it1, const ax_iter *it2)
+static long citer_dist(const ax_citer *it1, const ax_citer *it2)
 {
 	CHECK_ITER_COMPARABLE(it1, it2);
 
@@ -254,12 +205,12 @@ static long iter_dist(const ax_iter *it1, const ax_iter *it2)
 }
 
 
-static void riter_move(ax_iter *it, long i)
+static void rciter_move(ax_citer *it, long i)
 {
 	UNSUPPORTED();
 }
 
-static void riter_prev(ax_iter *it)
+static void rciter_prev(ax_citer *it)
 {
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr);
 	ax_list *list = (ax_list *)it->owner;
@@ -274,7 +225,7 @@ static void riter_prev(ax_iter *it)
 	}
 }
 
-static void riter_next(ax_iter *it)
+static void rciter_next(ax_citer *it)
 {
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr);
 
@@ -289,7 +240,7 @@ static void riter_next(ax_iter *it)
 	}
 }
 
-static ax_bool riter_less(const ax_iter *it1, const ax_iter *it2)
+static ax_bool rciter_less(const ax_citer *it1, const ax_citer *it2)
 {
 	CHECK_ITER_COMPARABLE(it1, it2);
 
@@ -309,7 +260,7 @@ static ax_bool riter_less(const ax_iter *it1, const ax_iter *it2)
 	return ax_false;
 }
 
-static long riter_dist(const ax_iter *it1, const ax_iter *it2)
+static long rciter_dist(const ax_citer *it1, const ax_citer *it2)
 {
 	CHECK_ITER_COMPARABLE(it1, it2);
 
@@ -350,6 +301,56 @@ static long riter_dist(const ax_iter *it1, const ax_iter *it2)
 	return 0;
 }
 
+static ax_fail iter_set(const ax_iter *it, const void *val)
+{
+
+	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr && it->point);
+
+	struct node_st *node = it->point;
+	ax_list *list = (ax_list *) it->owner;
+	const ax_stuff_trait *etr = list->_seq.elem_tr;
+
+	ax_base *base = ax_one_base(it->owner);
+	ax_pool *pool = ax_base_pool(base);
+	 
+	etr->free(node->data);
+	
+	const void *pval = etr->link ? &pval : val;
+	ax_fail fail = (val != NULL)
+		? etr->copy(pool, node->data, pval, etr->size)
+		: etr->init(pool, node->data, etr->size);
+	if (fail) {
+		ax_base_set_errno(base, AX_ERR_NOMEM);
+		ax_pool_free(node);
+		return ax_true;
+	}
+
+	return ax_false;
+}
+
+static void iter_erase(ax_iter *it)
+{
+	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
+
+	ax_list *list = ax_r(list, it->owner).list;
+	struct node_st *node = it->point;
+	//it->point = node->next; // ?
+	it->point = ax_iter_norm(it) ? node->next : node->pre; 
+	if (list->size == 1)
+		list->head = NULL;
+	else {
+		if (list->head == node)
+			list->head = node->next;
+		node->pre->next = node->next;
+		node->next->pre = node->pre;
+	}
+
+	const ax_stuff_trait *etr = list->_seq.elem_tr;
+	etr->free(node->data);
+	ax_pool_free(node);
+}
+
+
 
 static void one_free(ax_one *one)
 {
@@ -383,14 +384,14 @@ static ax_any *any_copy(const ax_any *any)
 
 	ax_iter it = ax_box_begin(list_r.box);
 	ax_iter end = ax_box_end(list_r.box);
-	while (!ax_iter_equal(it, end)) {
-		const void *pval = ax_iter_get(it);
+	while (!ax_iter_equal(&it, &end)) {
+		const void *pval = ax_iter_get(&it);
 		const void *val = etr->link ? *(const void**)pval : pval;
 		if (ax_seq_push(new_r.seq, val)) {
 			ax_one_free(new_r.one);
 			return NULL;
 		}
-		it = ax_iter_next(it);
+		ax_iter_next(&it);
 	}
 
 	new_r.list->one_env.sindex = 0;
@@ -546,7 +547,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 
 	if (list_r.list->head) {
 
-		if (it->tr->norm) {
+		if (ax_iter_norm(it)) {
 			struct node_st *old = (it->point) ? it->point : list_r.list->head;
 			node->pre = old->pre;
 			node->next = old;
@@ -564,14 +565,14 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 		node->next = node;
 	}
 
-	if ((it->tr->norm && it->point == list_r.list->head)
-			|| (!it->tr->norm && it->point == NULL))
+	if ((ax_iter_norm(it) && it->point == list_r.list->head)
+			|| (!ax_iter_norm(it) && it->point == NULL))
 		list_r.list->head = node;
 
 
 	list_r.list->size ++;
 	
-	it->point = ax_iter_norm(*it) ? node->next : node->pre;
+	it->point = ax_iter_norm(it) ? node->next : node->pre;
 	return ax_false;
 }
 
@@ -671,7 +672,7 @@ static void seq_invert(ax_seq *seq)
 static ax_fail seq_trunc(ax_seq *seq, size_t size)
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(size, size <= ax_box_maxsize(&seq->__box));
+	CHECK_PARAM_VALIDITY(size, size <= ax_box_maxsize(&seq->_box));
 
 	ax_list *list = (ax_list *)seq;
 
@@ -699,7 +700,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 static ax_iter seq_at(const ax_seq *seq, size_t index) /* Could optimized to mean time O(n/4) */
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(&seq->__box));
+	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(&seq->_box));
 
 	ax_list *list = (ax_list *)seq;
 	struct node_st *cur = list->head;
@@ -760,16 +761,15 @@ static const ax_seq_trait seq_trait =
 
 static const ax_iter_trait iter_trait =
 {
-	.norm = ax_true,
-	.type = AX_IT_RAND,
-
-	.move = iter_move,
-	.next = iter_next,
-	.prev = iter_prev,
-	.less = iter_less,
-	.dist = iter_dist,
-	.equal = iter_equal,
-
+	.ctr = {
+		.norm = ax_true,
+		.type = AX_IT_RAND,
+		.move = citer_move,
+		.next = citer_next,
+		.prev = citer_prev,
+		.less = citer_less,
+		.dist = citer_dist,
+	},
 	.get = iter_get,
 	.set = iter_set,
 	.erase = iter_erase
@@ -777,16 +777,15 @@ static const ax_iter_trait iter_trait =
 
 static const ax_iter_trait reverse_iter_trait =
 {
-	.norm = ax_false,
-	.type = AX_IT_RAND,
-
-	.move = riter_move,
-	.prev = riter_prev,
-	.next = riter_next,
-	.less = riter_less,
-	.dist = riter_dist,
-	.equal = iter_equal,
-
+	.ctr = {
+		.norm = ax_false,
+		.type = AX_IT_RAND,
+		.move = rciter_move,
+		.prev = rciter_prev,
+		.next = rciter_next,
+		.less = rciter_less,
+		.dist = rciter_dist,
+	},
 	.get = iter_get,
 	.set = iter_set,
 	.erase = iter_erase
