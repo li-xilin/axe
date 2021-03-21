@@ -6,6 +6,12 @@
 #define AX_BIND_1 1
 #define AX_BIND_2 2
 #define AX_BIND_U 4
+
+#ifndef AX_PRED_DEFINED
+#define AX_PRED_DEFINED
+typedef struct ax_pred_st ax_pred;
+#endif
+
 struct ax_pred_st
 {
 	union {
@@ -18,9 +24,6 @@ struct ax_pred_st
 	int   bind;
 };
 
-typedef struct ax_pred_st ax_pred;
-
-
 inline static ax_pred ax_pred_unary_make(ax_unary_f oper, void *in, void *args)
 {
 	return (ax_pred) {
@@ -31,7 +34,6 @@ inline static ax_pred ax_pred_unary_make(ax_unary_f oper, void *in, void *args)
 		.args = args
 	};
 }
-
 
 inline static ax_pred ax_pred_binary_make(ax_binary_f oper, void *in1, void *in2, void *args)
 {
