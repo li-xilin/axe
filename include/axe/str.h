@@ -26,7 +26,7 @@
 #include "def.h"
 #include <stdarg.h>
 
-#define AX_STR_NAME "one.any.box.any.str"
+#define AX_STR_NAME "one.any.box.seq.str"
 
 #ifndef AX_STR_DEFINED
 #define AX_STR_DEFINED
