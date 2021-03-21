@@ -58,7 +58,7 @@ struct ax_list_st
 static ax_fail     seq_push(ax_seq *seq, const void *val);
 static ax_fail     seq_pop(ax_seq *seq);
 static ax_fail     seq_trunc(ax_seq *seq, size_t size);
-static ax_iter     seq_at(const ax_seq *seq, size_t index);
+static ax_iter     seq_at(ax_seq *seq, size_t index);
 static ax_fail     seq_insert(ax_seq *seq, ax_iter *it, const void *val);
 
 static size_t      box_size(const ax_box *box);
@@ -697,7 +697,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 	return ax_false;
 }
 
-static ax_iter seq_at(const ax_seq *seq, size_t index) /* Could optimized to mean time O(n/4) */
+static ax_iter seq_at(ax_seq *seq, size_t index) /* Could optimized to mean time O(n/4) */
 {
 	CHECK_PARAM_NULL(seq);
 	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(&seq->_box));

@@ -89,7 +89,7 @@ static inline size_t ax_box_maxsize(const ax_box* box)
 	return box->tr->maxsize(box);
 }
 
-static inline ax_iter ax_box_begin(const ax_box* box)
+static inline ax_iter ax_box_begin(const ax_box* box) // TODO: remove const
 {
 	return box->tr->begin(box);
 }

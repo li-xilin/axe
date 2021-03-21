@@ -187,7 +187,6 @@ ax_any *__ax_buff_construct(ax_base *base)
 
 	ax_pool *pool = ax_base_pool(base);
 	ax_buff *buff = NULL;
-	//ax_byte *buf = NULL;
 
 	buff = ax_pool_alloc(pool, sizeof(ax_buff));
 
@@ -243,7 +242,7 @@ ax_fail ax_buff_set_max(ax_buff *buff, size_t max)
 		ax_pool *pool = ax_base_pool(base);
 		size_t size_copy = buff->used < max ? buff->used : max;
 
-		ax_byte *new_buf = ax_pool_alloc(pool, max);
+		void *new_buf = ax_pool_alloc(pool, max);
 		if (!new_buf) {
 			ax_base_set_errno(base, AX_ERR_NOMEM);
 			return ax_true;
@@ -388,12 +387,8 @@ size_t ax_buff_min(const ax_buff *buff)
 	return buff->min;
 }
 
-ax_byte *ax_buff_ptr(ax_buff *buff)
+void *ax_buff_ptr(ax_buff *buff)
 {
 	return buff->buf;
 }
 
-const ax_byte *ax_buff_const_ptr(const ax_buff *buff)
-{
-	return buff->buf;
-}

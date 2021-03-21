@@ -30,6 +30,13 @@
 typedef struct ax_pool_st ax_pool;
 #endif
 
+#define ax_mem_pswap(_a, _b, _type) \
+do { \
+	_type tmp = *(_type*)(_a); \
+	*(_type*) (_a) = *(_type*) (_b); \
+	*(_type*) (_b) = tmp; \
+} while(0)
+
 void ax_memxor(void *ptr1, void *ptr2, size_t size);
 
 char *ax_strdup(ax_pool *pool, const char *str);

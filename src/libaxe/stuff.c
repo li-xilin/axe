@@ -34,15 +34,6 @@
 #include <inttypes.h>
 #include <assert.h>
 
-#define PSWAP(a, b, type) \
-{ \
-	type tmp; \
-	tmp = *(type*)a; \
-	*(type*) a = *(type*) b; \
-	*(type*) b = tmp; \
-};
-
-
 
 size_t ax_stuff_size(int type)
 {
@@ -312,16 +303,16 @@ void ax_stuff_mem_swap(void* dst, void* src, size_t size)
 	switch(size) {
 		case 0: return;
 		case sizeof(uint8_t):
-			PSWAP(dst, src, uint8_t);
+			ax_mem_pswap(dst, src, uint8_t);
 			break;
 		case sizeof(uint16_t):
-			PSWAP(dst, src, uint16_t);
+			ax_mem_pswap(dst, src, uint16_t);
 			break;
 		case sizeof(uint32_t):
-			PSWAP(dst, src, uint32_t);
+			ax_mem_pswap(dst, src, uint32_t);
 			break;
 		case sizeof(uint64_t):
-			PSWAP(dst, src, uint64_t);
+			ax_mem_pswap(dst, src, uint64_t);
 			break;
 		default:
 			ax_memxor(dst, src, size);

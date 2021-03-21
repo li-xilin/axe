@@ -32,19 +32,21 @@ typedef struct ax_string_st ax_string;
 typedef union
 {
 	const ax_string *string;
-	const ax_str* str;
-	const ax_box* box;
-	const ax_any* any;
-	const ax_one* one;
+	const ax_str *str;
+	const ax_seq *seq;
+	const ax_box *box;
+	const ax_any *any;
+	const ax_one *one;
 } ax_string_cr;
 
 typedef union
 {
 	ax_string *string;
-	ax_str* str;
-	ax_box* box;
-	ax_any* any;
-	ax_one* one;
+	ax_str *str;
+	ax_seq *seq;
+	ax_box *box;
+	ax_any *any;
+	ax_one *one;
 	ax_string_cr c;
 } ax_string_r;
 

@@ -54,8 +54,9 @@ struct ax_vector_st
 
 static ax_fail     seq_push(ax_seq *seq, const void *val);
 static ax_fail     seq_pop(ax_seq *seq);
+static void        seq_invert(ax_seq *seq);
 static ax_fail     seq_trunc(ax_seq *seq, size_t size);
-static ax_iter     seq_at(const ax_seq *seq, size_t index);
+static ax_iter     seq_at(ax_seq *seq, size_t index);
 static ax_fail     seq_insert(ax_seq *seq, ax_iter *it, const void *val);
 
 static size_t      box_size(const ax_box *box);
@@ -203,8 +204,8 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 
 	ax_vector *vector = (ax_vector_r) { (void*)it->owner }.vector;
 	const ax_stuff_trait *etr = vector->_seq.elem_tr;
-	CHECK_PARAM_VALIDITY(it, (ax_byte *)it->point >= ax_buff_ptr(vector->buff)
-			&& (ax_byte *)it->point < ax_buff_ptr(vector->buff) + ax_buff_size(vector->buff, NULL));
+	CHECK_PARAM_VALIDITY(it, (ax_byte *)it->point >= (ax_byte *)ax_buff_ptr(vector->buff)
+			&& (ax_byte *)it->point < (ax_byte *)ax_buff_ptr(vector->buff) + ax_buff_size(vector->buff, NULL));
 
 	ax_base *base = ax_one_base(it->owner);
 	ax_pool *pool = ax_base_pool(base);
@@ -340,7 +341,7 @@ static ax_iter box_end(const ax_box *box)
 	ax_vector_r role = { .box = (ax_box*)box};
 	ax_iter it = {
 		.owner = (void*)box,
-		.point = ax_buff_ptr(role.vector->buff) + ax_buff_size(role.vector->buff, NULL),
+		.point = (ax_byte *)ax_buff_ptr(role.vector->buff) + ax_buff_size(role.vector->buff, NULL),
 		.tr = &iter_trait
 	};
 	return it;
@@ -354,7 +355,7 @@ static ax_iter box_rbegin(const ax_box *box)
 	ax_vector_r role = { .box = (ax_box*)box};
 	ax_iter it = {
 		.owner = (void*)box,
-		.point = ax_buff_ptr(role.vector->buff) + ax_buff_size(role.vector->buff, NULL) - role.seq->elem_tr->size,
+		.point = (ax_byte *)ax_buff_ptr(role.vector->buff) + ax_buff_size(role.vector->buff, NULL) - role.seq->elem_tr->size,
 		.tr = &reverse_iter_trait
 	};
 	return it;
@@ -367,7 +368,7 @@ static ax_iter box_rend(const ax_box *box)
 	ax_vector_r role = { .box = (ax_box*)box};
 	ax_iter it = {
 		.owner = (void *)box,
-		.point = ax_buff_ptr(role.vector->buff) - role.seq->elem_tr->size,
+		.point = (ax_byte *)ax_buff_ptr(role.vector->buff) - role.seq->elem_tr->size,
 		.tr = &reverse_iter_trait
 	};
 	return it;
@@ -393,7 +394,7 @@ static void iter_erase(ax_iter *it)
 
 	ax_buff_adapt(vector->buff, size - etr->size);
 	if(!ax_iter_norm(it))
-		it->point = ax_buff_ptr(vector->buff) + shift - etr->size;
+		it->point = (ax_byte *)ax_buff_ptr(vector->buff) + shift - etr->size;
 }
 
 static const ax_stuff_trait *box_elem_tr(const ax_box *box)
@@ -569,7 +570,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 	return ax_false;
 }
 
-static ax_iter seq_at(const ax_seq *seq, size_t index)
+static ax_iter seq_at(ax_seq *seq, size_t index)
 {
 	CHECK_PARAM_NULL(seq);
 	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(&seq->_box));

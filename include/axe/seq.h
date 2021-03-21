@@ -41,7 +41,7 @@ typedef ax_fail (*ax_seq_push_f)   (ax_seq *seq, const void *val);
 typedef ax_fail (*ax_seq_pop_f)    (ax_seq *seq);
 typedef void    (*ax_seq_invert_f) (ax_seq *seq);
 typedef ax_fail (*ax_seq_trunc_f)  (ax_seq *seq, size_t size);
-typedef ax_iter (*ax_seq_at_f)     (const ax_seq *seq, size_t index);
+typedef ax_iter (*ax_seq_at_f)     (ax_seq *seq, size_t index);
 typedef ax_fail (*ax_seq_insert_f) (ax_seq *seq, ax_iter *iter, const void *val);
 
 typedef ax_seq *(ax_seq_construct_f)(ax_base *base, const ax_stuff_trait *tr);
@@ -100,9 +100,16 @@ inline static ax_fail ax_seq_trunc(ax_seq *seq, size_t size)
 	return seq->tr->trunc(seq, size);
 }
 
-inline static ax_iter ax_seq_at(const ax_seq *seq, size_t index)
+inline static ax_iter ax_seq_at(ax_seq *seq, size_t index)
 {
 	return seq->tr->at(seq, index);
+}
+
+inline static ax_citer ax_seq_cat(const ax_seq *seq, size_t index)
+{
+	ax_iter it = seq->tr->at((ax_seq *)seq, index);
+	void *p = &it;
+	return *(ax_citer *)p;
 }
 
 static inline ax_fail ax_seq_insert(ax_seq *seq, ax_iter *it, const void *val)

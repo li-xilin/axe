@@ -184,7 +184,7 @@ axut_runner *axut_runner_create(ax_scope *scope, axut_output_f ran_cb)
 
 const char *axut_runner_result(const axut_runner *r)
 {
-	return ax_str_cstr(r->output.str);
+	return ax_str_strz(r->output.str);
 }
 
 int axut_runner_summary(const axut_runner *r, int *pass, int *term)

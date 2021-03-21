@@ -14,30 +14,30 @@
 static void create(axut_runner *r)
 {
 	ax_base *base = axut_runner_arg(r);
-	ax_string_r role = ax_string_create(ax_base_local(base));
-	axut_assert(r, role.any != NULL);
-	axut_assert(r, ax_box_size(role.box) == 0);
-	axut_assert(r, ax_str_length(role.str) == 0);
+	ax_string_r str_r = ax_string_create(ax_base_local(base));
+	axut_assert(r, str_r.any != NULL);
+	axut_assert(r, ax_box_size(str_r.box) == 0);
+	axut_assert(r, ax_str_length(str_r.str) == 0);
 }
 
 static void append(axut_runner *r)
 {
 	ax_base *base = axut_runner_arg(r);
-	ax_string_r role = ax_string_create(ax_base_local(base));
-	ax_str_append(role.str, "hello");
-	ax_str_append(role.str, " world");
-	axut_assert(r, strcmp(ax_str_cstr(role.str), "hello world") == 0);
-	axut_assert(r, ax_str_length(role.str) == sizeof "hello world" - 1);
-	ax_str_insert(role.str, 6, "my ");
-	axut_assert(r, strcmp(ax_str_cstr(role.str), "hello my world") == 0);
+	ax_string_r str_r = ax_string_create(ax_base_local(base));
+	ax_str_append(str_r.str, "hello");
+	ax_str_append(str_r.str, " world");
+	axut_assert(r, strcmp(ax_str_strz(str_r.str), "hello world") == 0);
+	axut_assert(r, ax_str_length(str_r.str) == sizeof "hello world" - 1);
+	ax_str_insert(str_r.str, 6, "my ");
+	axut_assert(r, strcmp(ax_str_strz(str_r.str), "hello my world") == 0);
 }
 
 static void split(axut_runner *r)
 {
 	ax_base *base = axut_runner_arg(r);
-	ax_string_r role = ax_string_create(ax_base_local(base));
-	ax_str_append(role.str, ":111:222::");
-	ax_seq *ret = ax_str_split(role.str, ':');
+	ax_string_r str_r = ax_string_create(ax_base_local(base));
+	ax_str_append(str_r.str, ":111:222::");
+	ax_seq *ret = ax_str_split(str_r.str, ':');
 	
 
 	int i = 0;

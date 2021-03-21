@@ -74,8 +74,11 @@ size_t ax_buff_max(const ax_buff *buff);
 
 size_t ax_buff_min(const ax_buff *buff);
 
-ax_byte *ax_buff_ptr(ax_buff *buff);
+void *ax_buff_ptr(ax_buff *buff);
 
-const ax_byte *ax_buff_const_ptr(const ax_buff *buff);
+inline static const void *ax_buff_cptr(const ax_buff *buff)
+{
+	return ax_buff_ptr((ax_buff *) buff);
+}
 
 #endif

@@ -284,7 +284,7 @@ struct merge_sort_context_st {
 	const ax_seq *main;
 	void **imap;
 
-	const ax_seq *aux;
+	ax_seq *aux;
 };
 
 void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
