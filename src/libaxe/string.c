@@ -314,6 +314,7 @@ fail:
 static ax_any* any_move(ax_any* any)
 {
 	CHECK_PARAM_NULL(any);
+
 	ax_string_r self_r = { .any = (ax_any*)any };
 	ax_base *base = ax_one_base(self_r.one);
 	ax_pool *pool = ax_base_pool(base);
@@ -502,7 +503,7 @@ static int str_comp(const ax_str* str, const char* s)
 
 static ax_str *str_substr (const ax_str* str, size_t start, size_t len)
 {
-
+	CHECK_PARAM_NULL(str);
 	CHECK_PARAM_VALIDITY(start, start < ax_str_length(str));
 	CHECK_PARAM_VALIDITY(len, start + len < ax_str_length(str));
 
@@ -530,6 +531,8 @@ fail:
 
 static ax_seq *str_split (const ax_str* str, const char ch)
 {
+	CHECK_PARAM_NULL(str);
+
 	ax_string_cr self_r = { .str = str };
 	ax_buff *buff = self_r.string->buff_r.buff;
 	ax_base *base = ax_one_base(self_r.one);
@@ -563,6 +566,9 @@ fail:
 
 static ax_fail str_sprintf(ax_str* str, const char *fmt, va_list args)
 {
+	CHECK_PARAM_NULL(str);
+	CHECK_PARAM_NULL(fmt);
+
 	const size_t max_size = 4096;
 	char buf[max_size];
 	int ret = vsnprintf(buf, max_size, fmt, args);
@@ -809,6 +815,8 @@ static const ax_iter_trait riter_trait =
 
 ax_str *__ax_string_construct(ax_base* base)
 {
+	CHECK_PARAM_NULL(base);
+	
 	ax_string *self = NULL;
 	ax_buff_r buff_r = { NULL };
 
