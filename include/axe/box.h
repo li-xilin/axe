@@ -40,7 +40,7 @@ typedef struct ax_box_trait_st ax_box_trait;
 		ax_citer_next(&__##_var##_iter))
 
 typedef size_t  (*ax_box_size_f)  (const ax_box* box);
-typedef ax_iter (*ax_box_iter_f)  (const ax_box* box);
+typedef ax_iter (*ax_box_iter_f)  (      ax_box* box);
 typedef void    (*ax_box_clear_f) (      ax_box* box);
 typedef const ax_stuff_trait *(*ax_box_elem_tr_f) (const ax_box* box);
 
@@ -89,47 +89,47 @@ static inline size_t ax_box_maxsize(const ax_box* box)
 	return box->tr->maxsize(box);
 }
 
-static inline ax_iter ax_box_begin(const ax_box* box) // TODO: remove const
+static inline ax_iter ax_box_begin(ax_box* box)
 {
 	return box->tr->begin(box);
 }
 
-static inline ax_iter ax_box_end(const ax_box* box)
+static inline ax_iter ax_box_end(ax_box* box)
 {
 	return box->tr->end(box);
 }
 
-static inline ax_iter ax_box_rbegin(const ax_box* box)
+static inline ax_iter ax_box_rbegin(ax_box* box)
 {
 	return box->tr->rbegin(box);
 }
 
-static inline ax_iter ax_box_rend(const ax_box* box)
+static inline ax_iter ax_box_rend(ax_box* box)
 {
 	return box->tr->rend(box);
 }
 
 static inline ax_citer ax_box_cbegin(const ax_box* box)
 {
-	ax_iter iter = box->tr->begin(box);
+	ax_iter iter = box->tr->begin((ax_box *)box);
 	return *ax_iter_c(&iter);
 }
 
 static inline ax_citer ax_box_cend(const ax_box* box)
 {
-	ax_iter iter = box->tr->end(box);
+	ax_iter iter = box->tr->end((ax_box *)box);
 	return *ax_iter_c(&iter);
 }
 
 static inline ax_citer ax_box_crbegin(const ax_box* box)
 {
-	ax_iter iter = box->tr->rbegin(box);
+	ax_iter iter = box->tr->rbegin((ax_box *)box);
 	return *ax_iter_c(&iter);
 }
 
 static inline ax_citer ax_box_crend(const ax_box* box)
 {
-	ax_iter iter = box->tr->rend(box);
+	ax_iter iter = box->tr->rend((ax_box *)box);
 	return *ax_iter_c(&iter);
 }
 

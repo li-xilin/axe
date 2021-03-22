@@ -81,10 +81,10 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val);
 
 static size_t  box_size(const ax_box* box);
 static size_t  box_maxsize(const ax_box* box);
-static ax_iter box_begin(const ax_box* box);
-static ax_iter box_end(const ax_box* box);
-static ax_iter box_rbegin(const ax_box* box);
-static ax_iter box_rend(const ax_box* box);
+static ax_iter box_begin(ax_box* box);
+static ax_iter box_end(ax_box* box);
+static ax_iter box_rbegin(ax_box* box);
+static ax_iter box_rend(ax_box* box);
 static void    box_clear(ax_box* box);
 static const ax_stuff_trait *box_elem_tr(const ax_box *box);
 
@@ -364,51 +364,51 @@ static size_t box_maxsize(const ax_box* box)
 	return maxsize / sizeof(char) - 1;
 }
 
-static ax_iter box_begin(const ax_box* box)
+static ax_iter box_begin(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_r self_r = { .box = (ax_box *)box };
+	ax_string_r self_r = { .box = box };
 	return (ax_iter) {
-		.owner = self_r.string,
+		.owner = box,
 		.tr = &iter_trait,
 		.point = (ax_byte *)ax_buff_ptr(self_r.string->buff_r.buff)
 	};
 }
 
-static ax_iter box_end(const ax_box* box)
+static ax_iter box_end(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_r self_r = { .box = (ax_box *)box };
+	ax_string_r self_r = { .box = box };
 	ax_buff *buff = self_r.string->buff_r.buff;
 	return (ax_iter) {
-		.owner = self_r.string,
+		.owner = box,
 		.tr = &iter_trait,
 		.point = (ax_byte *)ax_buff_ptr(buff) + ax_buff_size(buff, NULL) - sizeof(char)
 	};
 }
 
-static ax_iter box_rbegin(const ax_box* box)
+static ax_iter box_rbegin(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_r self_r = { .box = (ax_box *)box };
+	ax_string_r self_r = { .box = box };
 	ax_buff *buff = self_r.string->buff_r.buff;
 	return (ax_iter) {
-		.owner = self_r.string,
+		.owner = box,
 		.tr = &riter_trait,
 		.point = (ax_byte *)ax_buff_ptr(buff) + ax_buff_size(buff, NULL) - 2 * sizeof(char)
 	};
 }
 
-static ax_iter box_rend(const ax_box* box)
+static ax_iter box_rend(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_r self_r = { .box = (ax_box *)box };
+	ax_string_r self_r = { .box = box };
 	return (ax_iter) {
-		.owner = self_r.string,
+		.owner = box,
 		.tr = &riter_trait,
 		.point = (ax_byte *)ax_buff_ptr(self_r.string->buff_r.buff) - sizeof(char)
 	};

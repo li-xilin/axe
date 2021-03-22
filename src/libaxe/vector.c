@@ -20,7 +20,6 @@
  * THE SOFTWARE.
  */
 
-#define AX_DEBUG
 #include <axe/vector.h>
 #include <axe/base.h>
 #include <axe/def.h>
@@ -62,10 +61,10 @@ static ax_fail     seq_insert(ax_seq *seq, ax_iter *it, const void *val);
 
 static size_t      box_size(const ax_box *box);
 static size_t      box_maxsize(const ax_box *box);
-static ax_iter     box_begin(const ax_box *box);
-static ax_iter     box_end(const ax_box *box);
-static ax_iter     box_rbegin(const ax_box *box);
-static ax_iter     box_rend(const ax_box *box);
+static ax_iter     box_begin(ax_box *box);
+static ax_iter     box_end(ax_box *box);
+static ax_iter     box_rbegin(ax_box *box);
+static ax_iter     box_rend(ax_box *box);
 static void        box_clear(ax_box *box);
 static const ax_stuff_trait *box_elem_tr(const ax_box *box);
 
@@ -354,11 +353,11 @@ static size_t box_maxsize(const ax_box *box)
 	return ax_buff_max(self_r.vector->buff) / self_r.seq->elem_tr->size;
 }
 
-static ax_iter box_begin(const ax_box *box)
+static ax_iter box_begin(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_vector_r self_r = { .box = (ax_box*)box };
+	ax_vector_r self_r = { .box = box };
 	ax_iter it = {
 		.owner = (void*)box,
 		.point = ax_buff_ptr(self_r.vector->buff),
@@ -367,11 +366,11 @@ static ax_iter box_begin(const ax_box *box)
 	return it;
 }
 
-static ax_iter box_end(const ax_box *box)
+static ax_iter box_end(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_vector_r self_r = { .box = (ax_box*)box};
+	ax_vector_r self_r = { .box = box};
 	ax_iter it = {
 		.owner = (void*)box,
 		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff) + ax_buff_size(self_r.vector->buff, NULL),
@@ -380,11 +379,11 @@ static ax_iter box_end(const ax_box *box)
 	return it;
 }
 
-static ax_iter box_rbegin(const ax_box *box)
+static ax_iter box_rbegin(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_vector_r self_r = { .box = (ax_box*)box};
+	ax_vector_r self_r = { .box = box};
 	ax_iter it = {
 		.owner = (void*)box,
 		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff) + ax_buff_size(self_r.vector->buff, NULL) - self_r.seq->elem_tr->size,
@@ -393,11 +392,11 @@ static ax_iter box_rbegin(const ax_box *box)
 	return it;
 }
 
-static ax_iter box_rend(const ax_box *box)
+static ax_iter box_rend(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_vector_r self_r = { .box = (ax_box*)box};
+	ax_vector_r self_r = { .box = box};
 	ax_iter it = {
 		.owner = (void *)box,
 		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff) - self_r.seq->elem_tr->size,

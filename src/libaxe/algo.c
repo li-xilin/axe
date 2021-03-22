@@ -281,7 +281,7 @@ void ax_merge(const ax_citer *first1, const ax_citer *last1, const ax_citer *fir
 }
 
 struct merge_sort_context_st {
-	const ax_seq *main;
+	ax_seq *main;
 	void **imap;
 
 	ax_seq *aux;
@@ -300,7 +300,6 @@ void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
 	merge_sort(mid, rmid, ext);
 	merge_sort(rmid, right, ext);
 
-
 	ax_iter end = ax_box_end(&ext->main->_box);
 	ax_iter main_first = { .owner = end.owner, .tr = end.tr };
 	ax_iter main_mid  = { .owner = end.owner, .tr = end.tr };
@@ -308,7 +307,6 @@ void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
 	ax_iter aux_first;
 	ax_iter aux_mid;
 	ax_iter aux_last;
-
 
 	main_first.point = ext->imap[left];
 	main_mid.point = ext->imap[lmid];

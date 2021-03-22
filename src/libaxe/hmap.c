@@ -71,10 +71,10 @@ static ax_bool  map_exist (const ax_map *map, const void *key);
 
 static size_t   box_size(const ax_box *box);
 static size_t   box_maxsize(const ax_box *box);
-static ax_iter  box_begin(const ax_box *box);
-static ax_iter  box_end(const ax_box *box);
-static ax_iter  box_rbegin(const ax_box *box);
-static ax_iter  box_rend(const ax_box *box);
+static ax_iter  box_begin(ax_box *box);
+static ax_iter  box_end(ax_box *box);
+static ax_iter  box_rbegin(ax_box *box);
+static ax_iter  box_rend(ax_box *box);
 static void     box_clear(ax_box *box);
 static const ax_stuff_trait *box_elem_tr(const ax_box *box);
 
@@ -534,11 +534,11 @@ static size_t box_maxsize(const ax_box *box)
 	return (~(size_t)0) >> 1;
 }
 
-static ax_iter box_begin(const ax_box *box)
+static ax_iter box_begin(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_hmap_r hmap_r = { .box = (ax_box*)box };
+	ax_hmap_r hmap_r = { .box = box };
 	struct node_st **pp_node;
 	pp_node = &hmap_r.hmap->bucket_list->node_list;
 
@@ -550,14 +550,12 @@ static ax_iter box_begin(const ax_box *box)
 	return it;
 }
 
-static ax_iter box_end(const ax_box *box)
+static ax_iter box_end(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_hmap_r hmap_r = { .box = (ax_box*)box };
-	(void)hmap_r;
 	ax_iter it = {
-		.owner = (void *)box,
+		.owner = box,
 		.point = NULL,
 		.tr = &iter_trait
 	};
@@ -565,13 +563,13 @@ static ax_iter box_end(const ax_box *box)
 }
 
 
-static ax_iter box_rbegin(const ax_box *box)
+static ax_iter box_rbegin(ax_box *box)
 {
 	UNSUPPORTED();
 	return (ax_iter) { 0 };
 }
 
-static ax_iter box_rend(const ax_box *box)
+static ax_iter box_rend(ax_box *box)
 {
 	UNSUPPORTED();
 	return (ax_iter) { 0 };

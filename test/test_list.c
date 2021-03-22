@@ -63,26 +63,29 @@ static void iter(axut_runner *r)
 
 	ax_base* base = ax_base_create();
 
-	ax_list_r role = ax_list_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_list_r list_r = ax_list_create(
+			ax_base_local(base),
+			ax_stuff_traits(AX_ST_I32));
+
 	for (i = 0; i < 20; i++) {
-		ax_seq_push(role.seq, &i);
+		ax_seq_push(list_r.seq, &i);
 	}
 
 	i = 0;
-	ax_foreach(const int*, v, role.box) {
+	ax_foreach(const int*, v, list_r.box) {
 		axut_assert(r, *v == i++);
 	}
 
 	i = 0;
-	cur = ax_box_begin(role.box);
-	last = ax_box_end(role.box);
+	cur = ax_box_begin(list_r.box);
+	last = ax_box_end(list_r.box);
 	while (!ax_iter_equal(&cur, &last)) {
 		axut_assert(r, *(int32_t*)ax_iter_get(&cur) == i++);
 		ax_iter_next(&cur);
 	}
 
 
-	ax_one_free(role.one);
+	ax_one_free(list_r.one);
 	ax_base_destroy(base);
 }
 

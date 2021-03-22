@@ -63,10 +63,10 @@ static ax_fail     seq_insert(ax_seq *seq, ax_iter *it, const void *val);
 
 static size_t      box_size(const ax_box *box);
 static size_t      box_maxsize(const ax_box *box);
-static ax_iter     box_begin(const ax_box *box);
-static ax_iter     box_end(const ax_box *box);
-static ax_iter     box_rbegin(const ax_box *box);
-static ax_iter     box_rend(const ax_box *box);
+static ax_iter     box_begin(ax_box *box);
+static ax_iter     box_end(ax_box *box);
+static ax_iter     box_rbegin(ax_box *box);
+static ax_iter     box_rend(ax_box *box);
 static void        box_clear(ax_box *box);
 static const ax_stuff_trait *box_elem_tr(const ax_box* box);
 
@@ -382,16 +382,16 @@ static ax_any *any_copy(const ax_any *any)
 	}
 
 
-	ax_iter it = ax_box_begin(list_r.box);
-	ax_iter end = ax_box_end(list_r.box);
-	while (!ax_iter_equal(&it, &end)) {
-		const void *pval = ax_iter_get(&it);
+	ax_citer it = ax_box_cbegin(list_r.box);
+	ax_citer end = ax_box_cend(list_r.box);
+	while (!ax_citer_equal(&it, &end)) {
+		const void *pval = ax_citer_get(&it);
 		const void *val = etr->link ? *(const void**)pval : pval;
 		if (ax_seq_push(new_r.seq, val)) {
 			ax_one_free(new_r.one);
 			return NULL;
 		}
-		ax_iter_next(&it);
+		ax_citer_next(&it);
 	}
 
 	new_r.list->one_env.sindex = 0;
@@ -437,24 +437,24 @@ static size_t box_maxsize(const ax_box *box)
 	return 0xFF;
 }
 
-static ax_iter box_begin(const ax_box *box)
+static ax_iter box_begin(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_list_r list_r = { .box = (ax_box*)box };
+	ax_list_r list_r = { .box = box };
 	ax_iter it = {
-		.owner = (void *)box,
+		.owner = box,
 		.point = list_r.list->head,
 		.tr = &iter_trait };
 	return it;
 }
 
-static ax_iter box_end(const ax_box *box)
+static ax_iter box_end(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
 	ax_iter it = {
-		.owner = (void *)box,
+		.owner = box,
 		.point = NULL,
 		.tr = &iter_trait
 	};
@@ -462,11 +462,11 @@ static ax_iter box_end(const ax_box *box)
 	
 }
 
-static ax_iter box_rbegin(const ax_box *box)
+static ax_iter box_rbegin(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_list_r list_r = { .box = (ax_box*)box};
+	ax_list_r list_r = { .box = box };
 	struct node_st *right_end = list_r.list->head ? list_r.list->head->pre : NULL;
 	ax_iter it = {
 		.owner = (void *)box,
@@ -476,12 +476,12 @@ static ax_iter box_rbegin(const ax_box *box)
 	return it;
 }
 
-static ax_iter box_rend(const ax_box *box)
+static ax_iter box_rend(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
 	ax_iter it = {
-		.owner = (void *)box,
+		.owner = box,
 		.point = NULL,
 		.tr = &reverse_iter_trait,
 	};

@@ -66,10 +66,10 @@ static ax_bool  map_exist (const ax_map* map, const void *key);
 
 static size_t   box_size(const ax_box* box);
 static size_t   box_maxsize(const ax_box* box);
-static ax_iter  box_begin(const ax_box* box);
-static ax_iter  box_end(const ax_box* box);
-static ax_iter  box_rbegin(const ax_box* box);
-static ax_iter  box_rend(const ax_box* box);
+static ax_iter  box_begin(ax_box* box);
+static ax_iter  box_end(ax_box* box);
+static ax_iter  box_rbegin(ax_box* box);
+static ax_iter  box_rend(ax_box* box);
 static void     box_clear(ax_box* box);
 static const ax_stuff_trait *box_elem_tr(const ax_box *box);
 
@@ -713,7 +713,7 @@ static size_t box_maxsize(const ax_box* box)
 	return 0xFFFF;
 }
 
-static ax_iter box_begin(const ax_box* box)
+static ax_iter box_begin(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
@@ -725,7 +725,7 @@ static ax_iter box_begin(const ax_box* box)
 			node = node->left;
 
 	ax_iter it = {
-		.owner = (void *)box,
+		.owner = box,
 		.point = node,
 		.tr = &iter_trait
 	};
@@ -733,19 +733,19 @@ static ax_iter box_begin(const ax_box* box)
 	return it;
 }
 
-static ax_iter box_end(const ax_box* box)
+static ax_iter box_end(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
 	ax_iter it = {
-		.owner = (void *)box,
+		.owner = box,
 		.point = NULL,
 		.tr = &iter_trait,
 	};
 	return it;
 }
 
-static ax_iter box_rbegin(const ax_box* box)
+static ax_iter box_rbegin(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
@@ -757,20 +757,20 @@ static ax_iter box_rbegin(const ax_box* box)
 			node = node->right;
 
 	ax_iter it = {
-		.owner = (void *)box,
+		.owner = box,
 		.point = node,
 		.tr = &riter_trait
 	};
 	return it;
 }
 
-static ax_iter box_rend(const ax_box* box)
+static ax_iter box_rend(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
 	
 	ax_iter it = {
-		.owner = (void *)box,
+		.owner = box,
 		.point = NULL,
 		.tr = &riter_trait,
 	};
