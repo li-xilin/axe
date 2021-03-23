@@ -75,13 +75,11 @@ static ax_any     *any_move(ax_any *any);
 
 static void        one_free(ax_one *one);
 
-static void        citer_move(ax_citer *it, long i);
 static void        citer_prev(ax_citer *it);
 static void        citer_next(ax_citer *it);
 static ax_bool     citer_less(const ax_citer *it1, const ax_citer *it2);
 static long        citer_dist(const ax_citer *it1, const ax_citer *it2);
 
-static void        rciter_move(ax_citer *it, long i);
 static void        rciter_prev(ax_citer *it);
 static void        rciter_next(ax_citer *it);
 static ax_bool     rciter_less(const ax_citer *it1, const ax_citer *it2);
@@ -96,13 +94,6 @@ static const ax_box_trait box_trait;
 static const ax_seq_trait seq_trait;
 static const ax_iter_trait reverse_iter_trait;
 static const ax_iter_trait iter_trait;
-
-
-static void citer_move(ax_citer *it, long i)
-{
-	UNSUPPORTED();
-}
-
 
 static void citer_prev(ax_citer *it)
 {
@@ -202,12 +193,6 @@ static long citer_dist(const ax_citer *it1, const ax_citer *it2)
 
 	ax_assert(ax_false, "invalid iterator");
 	return 0;
-}
-
-
-static void rciter_move(ax_citer *it, long i)
-{
-	UNSUPPORTED();
 }
 
 static void rciter_prev(ax_citer *it)
@@ -764,7 +749,7 @@ static const ax_iter_trait iter_trait =
 	.ctr = {
 		.norm = ax_true,
 		.type = AX_IT_RAND,
-		.move = citer_move,
+		.move = NULL,
 		.next = citer_next,
 		.prev = citer_prev,
 		.less = citer_less,
@@ -780,7 +765,7 @@ static const ax_iter_trait reverse_iter_trait =
 	.ctr = {
 		.norm = ax_false,
 		.type = AX_IT_RAND,
-		.move = rciter_move,
+		.move = NULL,
 		.prev = rciter_prev,
 		.next = rciter_next,
 		.less = rciter_less,

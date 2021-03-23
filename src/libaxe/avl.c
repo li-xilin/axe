@@ -79,13 +79,11 @@ static ax_any  *any_move(ax_any* any);
 
 static void     one_free(ax_one* one);
 
-static void     citer_move(ax_citer *it, long i);
 static void     citer_prev(ax_citer *it);
 static void     citer_next(ax_citer *it);
 static ax_bool  citer_less(const ax_citer *it1, const ax_citer *it2);
 static long     citer_dist(const ax_citer *it1, const ax_citer *it2);
 
-static void     rciter_move(ax_citer *it, long i);
 static void     rciter_prev(ax_citer *it);
 static void     rciter_next(ax_citer *it);
 static ax_bool  rciter_less(const ax_citer *it1, const ax_citer *it2);
@@ -346,11 +344,6 @@ static void remove_child(struct node_st *node) {
 	}
 }
 
-static void citer_move(ax_citer *it, long i)
-{
-	UNSUPPORTED();
-}
-
 static void citer_prev(ax_citer *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr);
@@ -401,11 +394,6 @@ static long citer_dist(const ax_citer *it1, const ax_citer *it2)
 	ax_assert(found == 2, "bad iterator");
 
 	return loc2 - loc1;
-}
-
-static void rciter_move(ax_citer *it, long i)
-{
-	UNSUPPORTED();
 }
 
 static void rciter_prev(ax_citer *it)
@@ -841,7 +829,7 @@ static const ax_iter_trait iter_trait =
 	.ctr = {
 		.norm = ax_true,
 		.type = AX_IT_BID,
-		.move = citer_move,
+		.move = NULL,
 		.prev = citer_prev,
 		.next = citer_next,
 		.less = citer_less,
@@ -857,7 +845,7 @@ static const ax_iter_trait riter_trait =
 	.ctr = {
 		.norm = ax_false,
 		.type = AX_IT_BID,
-		.move = rciter_move,
+		.move = NULL,
 		.prev = rciter_prev,
 		.next = rciter_next,
 		.less = rciter_less,

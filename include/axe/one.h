@@ -23,6 +23,15 @@
 #ifndef AXE_ONE_H_
 #define AXE_ONE_H_
 #include "def.h"
+#include "debug.h"
+
+#define ax_trait_require(_one, _trait) ax_assert((_trait), \
+		"operation for %s is required, do implement it", \
+		((ax_one *)(_one))->tr->name)
+
+#define ax_trait_optional(_one, _trait) ax_assert((_trait), \
+		"operation for %s is not supported", \
+		((ax_one *)(_one))->tr->name)
 
 #ifndef AX_BASE_DEFINED
 #define AX_BASE_DEFINED
@@ -74,28 +83,31 @@ struct ax_one_st
 
 struct ax_one_env_st
 {
-	//ax_base *base;
 	ax_scope *scope;
 	size_t sindex;
 };
 
 static inline const char *ax_one_name(const ax_one *one)
 {
+	ax_trait_require(one, one->tr->name);
 	return one->tr->name;
 }
 
 static inline void ax_one_free(ax_one *one) {
+	ax_trait_require(one, one->tr->free);
 	one->tr->free(one);
 }
 
 
 static inline ax_one_env *ax_one_envp(const ax_one *one)
 {
+	ax_trait_require(one, one->tr->envp);
 	return (ax_one_env *)((char*)one + one->tr->envp);
 }
 
 static inline ax_scope *ax_one_scope(const ax_one *one)
 {
+	ax_trait_require(one, one->tr->envp);
 	return ax_one_envp(one)->scope;
 }
 

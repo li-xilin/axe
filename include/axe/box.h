@@ -81,65 +81,77 @@ typedef union
 
 static inline size_t ax_box_size(const ax_box* box)
 {
+	ax_trait_require(box, box->tr->size);
 	return box->tr->size(box);
 }
 
 static inline size_t ax_box_maxsize(const ax_box* box)
 {
+	ax_trait_require(box, box->tr->maxsize);
 	return box->tr->maxsize(box);
 }
 
 static inline ax_iter ax_box_begin(ax_box* box)
 {
+	ax_trait_require(box, box->tr->begin);
 	return box->tr->begin(box);
 }
 
 static inline ax_iter ax_box_end(ax_box* box)
 {
+	ax_trait_require(box, box->tr->end);
 	return box->tr->end(box);
 }
 
 static inline ax_iter ax_box_rbegin(ax_box* box)
 {
+	ax_trait_optional(box, box->tr->rbegin);
 	return box->tr->rbegin(box);
 }
 
 static inline ax_iter ax_box_rend(ax_box* box)
 {
+	ax_trait_optional(box, box->tr->rend);
 	return box->tr->rend(box);
 }
 
 static inline ax_citer ax_box_cbegin(const ax_box* box)
 {
-	ax_iter iter = box->tr->begin((ax_box *)box);
+	ax_trait_require(box, box->tr->begin);
+	ax_iter iter = ax_box_begin((ax_box *)box);
 	return *ax_iter_c(&iter);
 }
 
 static inline ax_citer ax_box_cend(const ax_box* box)
 {
-	ax_iter iter = box->tr->end((ax_box *)box);
+	ax_trait_require(box, box->tr->end);
+	ax_iter iter = ax_box_end((ax_box *)box);
 	return *ax_iter_c(&iter);
 }
 
 static inline ax_citer ax_box_crbegin(const ax_box* box)
 {
+	ax_trait_optional(box, box->tr->rbegin);
 	ax_iter iter = box->tr->rbegin((ax_box *)box);
 	return *ax_iter_c(&iter);
 }
 
 static inline ax_citer ax_box_crend(const ax_box* box)
 {
+	ax_trait_optional(box, box->tr->rend);
 	ax_iter iter = box->tr->rend((ax_box *)box);
 	return *ax_iter_c(&iter);
 }
 
 static inline void ax_box_clear(ax_box* box)
 {
+	ax_trait_require(box, box->tr->clear);
 	box->tr->clear(box);
 }
 
 static inline const ax_stuff_trait *ax_box_elem_tr(const ax_box* box)
 {
+	ax_trait_require(box, box->tr->elem_tr);
 	return box->tr->elem_tr(box);
 }
 

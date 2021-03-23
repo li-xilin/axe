@@ -30,14 +30,17 @@
 void __ax_debug_assert_fail(const char* file, const char* func, int line, const char* brief, const char* fmt, ...)
 {
 	va_list vl;
-	fprintf(stderr, "%s:%s:%d:%s", file, func, line, brief);
-	if (fmt) {
-		fputc(':', stderr);
+	char text[2048];
+	int nchar = snprintf(text, sizeof text, "%s:%s:%d:%s", file, func, line, brief);
+	if (fmt && sizeof text - nchar > sizeof ":\n") {
+		text[nchar++] = ':';
+		text[nchar] = '\0';
 		va_start(vl, fmt);
-		vfprintf(stderr, fmt, vl);
+		nchar += vsnprintf(text + nchar, sizeof text - nchar, fmt, vl);
 		va_end(vl);
-		fputc('\n', stderr);
 	} 
-
+	text[nchar++] = '\n';
+	text[nchar]= '\0';
+		
 	abort();
 }

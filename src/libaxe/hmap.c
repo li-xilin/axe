@@ -73,8 +73,6 @@ static size_t   box_size(const ax_box *box);
 static size_t   box_maxsize(const ax_box *box);
 static ax_iter  box_begin(ax_box *box);
 static ax_iter  box_end(ax_box *box);
-static ax_iter  box_rbegin(ax_box *box);
-static ax_iter  box_rend(ax_box *box);
 static void     box_clear(ax_box *box);
 static const ax_stuff_trait *box_elem_tr(const ax_box *box);
 
@@ -84,12 +82,8 @@ static ax_any  *any_move(ax_any *any);
 
 static void     one_free(ax_one *one);
 
-static void     citer_move(ax_citer *it, long i);
-static void     citer_prev(ax_citer *it);
 static void     citer_next(ax_citer *it);
 static void    *iter_get(const ax_iter *it);
-static ax_bool  citer_less(const ax_citer *it1, const ax_citer *it2);
-static long     citer_dist(const ax_citer *it1, const ax_citer *it2);
 
 static ax_fail  iter_set(const ax_iter *it, const void *p);
 static void     iter_erase(ax_iter *it);
@@ -238,17 +232,6 @@ static void free_node(ax_map *map, struct node_st **pp_node)
 	ax_pool_free(node_to_free);
 }
 
-static void citer_move(ax_citer *it, long i)
-{
-	UNSUPPORTED();
-}
-
-
-static void citer_prev(ax_citer *it)
-{
-	UNSUPPORTED();
-}
-
 static void citer_next(ax_citer *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
@@ -291,20 +274,6 @@ static void *iter_get(const ax_iter *it)
 	ax_pair_r pair_r = ax_pair_create(ax_base_local(base), key, val);
 
 	return pair_r.pair;
-}
-
-static ax_bool citer_less(const ax_citer *it1, const ax_citer *it2)
-{
-	UNSUPPORTED();
-
-	return ax_false;
-}
-
-static long citer_dist(const ax_citer *it1, const ax_citer *it2)
-{
-	UNSUPPORTED();
-
-	return 0;
 }
 
 static ax_fail iter_set(const ax_iter *it, const void *p)
@@ -562,19 +531,6 @@ static ax_iter box_end(ax_box *box)
 	return it;
 }
 
-
-static ax_iter box_rbegin(ax_box *box)
-{
-	UNSUPPORTED();
-	return (ax_iter) { 0 };
-}
-
-static ax_iter box_rend(ax_box *box)
-{
-	UNSUPPORTED();
-	return (ax_iter) { 0 };
-}
-
 static void box_clear(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
@@ -622,8 +578,8 @@ static const ax_box_trait box_trait =
 	.maxsize = box_maxsize,
 	.begin   = box_begin,
 	.end     = box_end,
-	.rbegin  = box_rbegin,
-	.rend    = box_rend,
+	.rbegin  = NULL,
+	.rend    = NULL,
 	.clear   = box_clear,
 	.elem_tr = box_elem_tr
 };
@@ -641,11 +597,11 @@ static const ax_iter_trait iter_trait =
 	.ctr = {
 		.norm  = ax_true,
 		.type  = AX_IT_FORW,
-		.move = citer_move,
-		.prev = citer_prev,
+		.move = NULL,
+		.prev = NULL,
 		.next = citer_next,
-		.less  = citer_less,
-		.dist  = citer_dist,
+		.less  = NULL,
+		.dist  = NULL,
 	},
 	.get   = iter_get,
 	.set   = iter_set,

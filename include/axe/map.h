@@ -70,12 +70,34 @@ typedef union
 } ax_map_r;
 
 
-inline static ax_fail ax_map_put(ax_map *map, const void *key, const void *val) { return ((ax_map*)map)->tr->put(map, key, val); }
+inline static ax_fail ax_map_put(ax_map *map, const void *key, const void *val)
+{
+	ax_trait_require(map, map->tr->put);
+	return map->tr->put(map, key, val);
+}
 
-inline static ax_fail ax_map_erase(ax_map *map, const void *key) { return ((ax_map*)map)->tr->erase(map, key); }
+inline static ax_fail ax_map_erase(ax_map *map, const void *key)
+{
+	ax_trait_require(map, map->tr->erase);
+	return map->tr->erase(map, key);
+}
 
-inline static void *ax_map_get(const ax_map *map, const void *key) { return ((ax_map*)map)->tr->get(map, key); }
+inline static void *ax_map_get(ax_map *map, const void *key)
+{
+	ax_trait_require(map, map->tr->get);
+	return map->tr->get(map, key);
+}
 
-inline static ax_fail ax_map_exist(const ax_map *map, const void *key) { return ((ax_map*)map)->tr->exist(map, key); }
+inline static void *ax_map_cget(const ax_map *map, const void *key)
+{
+	ax_trait_require(map, map->tr->get);
+	return map->tr->get(map, key);
+}
+
+inline static ax_bool ax_map_exist(const ax_map *map, const void *key)
+{
+	ax_trait_require(map, map->tr->exist);
+	return map->tr->exist(map, key);
+}
 
 #endif

@@ -77,11 +77,13 @@ struct ax_any_st
 
 inline static ax_any *ax_any_copy(const ax_any* any)
 {
+	ax_trait_require(any, any->tr->copy);
 	return any->tr->copy(any);
 }
 
 inline static ax_any *ax_any_move(ax_any* any)
 {
+	ax_trait_require(any, any->tr->move);
 	return any->tr->move(any);
 }
 

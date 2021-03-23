@@ -82,31 +82,37 @@ typedef union
 
 inline static ax_fail ax_seq_push(ax_seq *seq, const void *val)
 {
+	ax_trait_require(seq, seq->tr->push);
 	return seq->tr->push(seq, val);
 }
 
 inline static ax_fail ax_seq_pop(ax_seq *seq)
 {
+	ax_trait_require(seq, seq->tr->pop);
 	return seq->tr->pop(seq);
 }
 
 inline static void ax_seq_invert(ax_seq *seq)
 {
+	ax_trait_require(seq, seq->tr->invert);
 	seq->tr->invert(seq);
 }
 
 inline static ax_fail ax_seq_trunc(ax_seq *seq, size_t size)
 {
+	ax_trait_optional(seq, seq->tr->trunc);
 	return seq->tr->trunc(seq, size);
 }
 
 inline static ax_iter ax_seq_at(ax_seq *seq, size_t index)
 {
+	ax_trait_optional(seq, seq->tr->at);
 	return seq->tr->at(seq, index);
 }
 
 inline static ax_citer ax_seq_cat(const ax_seq *seq, size_t index)
 {
+	ax_trait_optional(seq, seq->tr->at);
 	ax_iter it = seq->tr->at((ax_seq *)seq, index);
 	void *p = &it;
 	return *(ax_citer *)p;
@@ -114,6 +120,7 @@ inline static ax_citer ax_seq_cat(const ax_seq *seq, size_t index)
 
 static inline ax_fail ax_seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 {
+	ax_trait_optional(seq, seq->tr->at);
 	return seq->tr->insert(seq, it, val);
 }
 
