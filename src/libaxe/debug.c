@@ -41,6 +41,7 @@ void __ax_debug_assert_fail(const char* file, const char* func, int line, const 
 	} 
 	text[nchar++] = '\n';
 	text[nchar]= '\0';
+	fputs(text, stderr);
 		
 	abort();
 }
