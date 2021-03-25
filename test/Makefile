@@ -1,6 +1,6 @@
 ROOT = ..
 CC = gcc
-CFLAGS = -I$(ROOT)/include -std=c99 --pedantic -Werror -g
+CFLAGS = -I$(ROOT)/include -std=c99 --pedantic -Werror -g -DAX_DEBUG
 LDFLAGS = -L$(ROOT)/lib\
 	  -laxut \
 	  -laxe \
