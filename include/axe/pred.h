@@ -41,7 +41,6 @@ inline static ax_pred ax_pred_binary_make(ax_binary_f oper, void *in1, void *in2
 		.fun.b = oper,
 		.first = in1,
 		.second = in2,
-		//.bind = (in1 ? (in2 ? (AX_BIND_1|AX_BIND_2) : AX_BIND_1) : (in2 ? AX_BIND_2 : 0 )),
 		.bind = (in1 ? AX_BIND_1 : 0) | (in2 ? AX_BIND_2 : 0 ),
 		.args = args
 	};
