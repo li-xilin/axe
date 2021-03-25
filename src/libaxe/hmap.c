@@ -56,8 +56,7 @@ struct bucket_st
 
 struct ax_hmap_st
 {
-	ax_map __map;
-	ax_one_env one_env;
+	ax_map _map;
 	size_t size;
 	size_t capacity;
 	struct bucket_st *bucket_list;
@@ -97,9 +96,6 @@ static struct node_st **find_node(const ax_map *map, struct bucket_st *bucket, c
 static void free_node(ax_map *map, struct node_st **pp_node);
 
 static const ax_iter_trait iter_trait;
-static const ax_one_trait one_trait;
-static const ax_any_trait any_trait;
-static const ax_box_trait box_trait;
 static const ax_map_trait map_trait;
 
 static ax_fail rehash(ax_hmap *hmap, size_t new_size)
@@ -121,7 +117,7 @@ static ax_fail rehash(ax_hmap *hmap, size_t new_size)
 	for (;bucket; bucket = bucket->next) {
 		for (struct node_st *currnode = bucket->node_list; currnode;) {
 			struct bucket_st *new_bucket = new_tab
-				+ hmap->__map.key_tr->hash(currnode->kvbuffer, hmap->__map.key_tr->size)
+				+ hmap->_map.env.key_tr->hash(currnode->kvbuffer, hmap->_map.env.key_tr->size)
 				% new_size;
 			if (!new_bucket->node_list) {
 				new_bucket->next = hmap->bucket_list;
@@ -151,22 +147,22 @@ static struct node_st *make_node(ax_map *map, const void *key, const void *val)
 	ax_base *base = ax_one_base(hmap_r.one);
 	ax_pool *pool = ax_base_pool(base);
 
-	size_t key_size = map->key_tr->size;
-	size_t node_size = sizeof(struct node_st) + key_size + map->val_tr->size;
+	size_t key_size = map->env.key_tr->size;
+	size_t node_size = sizeof(struct node_st) + key_size + map->env.val_tr->size;
 
 	struct node_st *node = ax_pool_alloc(pool, node_size);
 	if (!node) {
 		ax_base_set_errno(base, AX_ERR_NOKEY);
 		return NULL;
 	}
-	map->key_tr->copy(pool, node->kvbuffer, key, map->key_tr->size);
-	map->val_tr->copy(pool, node->kvbuffer + key_size, val, map->val_tr->size);
+	map->env.key_tr->copy(pool, node->kvbuffer, key, map->env.key_tr->size);
+	map->env.val_tr->copy(pool, node->kvbuffer + key_size, val, map->env.val_tr->size);
 	return node;
 }
 
 static inline struct bucket_st *locate_bucket(const ax_hmap *hmap, const void *key)
 {
-	size_t index = hmap->__map.key_tr->hash(key, hmap->__map.key_tr->size) % hmap->capacity;
+	size_t index = hmap->_map.env.key_tr->hash(key, hmap->_map.env.key_tr->size) % hmap->capacity;
 	return hmap->bucket_tab + index;
 }
 #if 0
@@ -216,7 +212,7 @@ static struct node_st **find_node(const ax_map *map, struct bucket_st *bucket, c
 {
 	struct node_st **pp_node;
 	for (pp_node = &bucket->node_list; *pp_node; pp_node = &((*pp_node)->next))
-		if (map->key_tr->equal((*pp_node)->kvbuffer, key, map->key_tr->size))
+		if (map->env.key_tr->equal((*pp_node)->kvbuffer, key, map->env.key_tr->size))
 			return pp_node;
 	return NULL;
 }
@@ -224,9 +220,9 @@ static struct node_st **find_node(const ax_map *map, struct bucket_st *bucket, c
 static void free_node(ax_map *map, struct node_st **pp_node)
 {
 	assert(pp_node);
-	ax_byte *value_ptr = (*pp_node)->kvbuffer + map->key_tr->size;
-	map->key_tr->free((*pp_node)->kvbuffer);
-	map->val_tr->free(value_ptr);
+	ax_byte *value_ptr = (*pp_node)->kvbuffer + map->env.key_tr->size;
+	map->env.key_tr->free((*pp_node)->kvbuffer);
+	map->env.val_tr->free(value_ptr);
 	struct node_st *node_to_free = *pp_node;
 	(*pp_node) = node_to_free->next;
 	ax_pool_free(node_to_free);
@@ -257,8 +253,8 @@ static void *iter_get(const ax_iter *it)
 	struct node_st **pp_node = it->point;
 
 	const ax_stuff_trait
-		*key_tr = hmap_r.map->key_tr,
-		*val_tr = hmap_r.map->val_tr;
+		*key_tr = hmap_r.map->env.key_tr,
+		*val_tr = hmap_r.map->env.val_tr;
 
 	void *key = (key_tr->link)
 		? *(void**)(*pp_node)->kvbuffer
@@ -289,11 +285,11 @@ static ax_fail iter_set(const ax_iter *it, const void *p)
 
 	ax_base *base = ax_one_base(hmap_r.one);
 	ax_pool *pool = ax_base_pool(base);
-	const ax_stuff_trait *val_tr = hmap_r.map->val_tr;
+	const ax_stuff_trait *val_tr = hmap_r.map->env.val_tr;
 
-	val_tr->free((*pp_node)->kvbuffer + hmap_r.map->key_tr->size);
-	if (val_tr->copy(pool, (*pp_node)->kvbuffer + hmap_r.map->key_tr->size,
-				p, hmap_r.map->val_tr->size)) {
+	val_tr->free((*pp_node)->kvbuffer + hmap_r.map->env.key_tr->size);
+	if (val_tr->copy(pool, (*pp_node)->kvbuffer + hmap_r.map->env.key_tr->size,
+				p, hmap_r.map->env.val_tr->size)) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
 		return ax_true;
 	}
@@ -339,15 +335,15 @@ static ax_fail map_put (ax_map *map, const void *key, const void *val)
 	ax_base *base  = ax_one_base(hmap_r.one);
 	ax_pool *pool = ax_base_pool(base);
 
-	const void *pkey = map->key_tr->link ? &key : key;
-	const void *pval = map->val_tr->link ? &val : val;
+	const void *pkey = map->env.key_tr->link ? &key : key;
+	const void *pval = map->env.val_tr->link ? &val : val;
 
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
 	struct node_st **pp_find_result = find_node(hmap_r.map, bucket, pkey);
 	if (pp_find_result) {
-		ax_byte *value_ptr = (*pp_find_result)->kvbuffer + map->key_tr->size;
-		map->val_tr->free(value_ptr);
-		map->val_tr->copy(pool, value_ptr, pval, map->val_tr->size);
+		ax_byte *value_ptr = (*pp_find_result)->kvbuffer + map->env.key_tr->size;
+		map->env.val_tr->free(value_ptr);
+		map->env.val_tr->copy(pool, value_ptr, pval, map->env.val_tr->size);
 	} else {
 		if (hmap_r.hmap->size == hmap_r.hmap->capacity * REALLOC_THRESHOLD) {
 			if (hmap_r.hmap->capacity == ax_box_maxsize(ax_r(map, map).box)) {
@@ -374,7 +370,7 @@ static ax_fail map_erase (ax_map *map, const void *key)
 	CHECK_PARAM_NULL(key);
 
 	ax_hmap_r hmap_r = { .map = map };
-	const void *pkey = map->key_tr->link ? &key : key;
+	const void *pkey = map->env.key_tr->link ? &key : key;
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
 	struct node_st **pp_find_result = find_node(hmap_r.map, bucket, pkey);
 	if (!pp_find_result) {
@@ -401,7 +397,7 @@ static void *map_get (const ax_map *map, const void *key)
 	CHECK_PARAM_NULL(key);
 
 	const ax_hmap_cr hmap_r = { .map = map };
-	const void *pkey = map->key_tr->link ? &key : key;
+	const void *pkey = map->env.key_tr->link ? &key : key;
 
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
 	struct node_st **pp_find_result = find_node(hmap_r.map, bucket, pkey);
@@ -410,7 +406,7 @@ static void *map_get (const ax_map *map, const void *key)
 		ax_base_set_errno(base, AX_ERR_NOKEY);
 		return NULL;
 	}
-	return  (*pp_find_result)->kvbuffer + hmap_r.map->key_tr->size;
+	return  (*pp_find_result)->kvbuffer + hmap_r.map->env.key_tr->size;
 }
 
 static ax_bool map_exist (const ax_map *map, const void *key)
@@ -419,7 +415,7 @@ static ax_bool map_exist (const ax_map *map, const void *key)
 	CHECK_PARAM_NULL(key);
 
 	ax_hmap_r hmap_r = { .map = (ax_map*)map };
-	const void *pkey = map->key_tr->link ? &key : key;
+	const void *pkey = map->env.key_tr->link ? &key : key;
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
 	struct node_st **pp_find_result = find_node(hmap_r.map, bucket, pkey);
 	if (pp_find_result)
@@ -452,8 +448,8 @@ static ax_any *any_copy(const ax_any *any)
 
 	ax_hmap_r src_r = { .any = (ax_any *)any };
 	ax_base *base = ax_one_base(src_r.one);
-	const ax_stuff_trait *ktr = src_r.map->key_tr;
-	const ax_stuff_trait *vtr = src_r.map->val_tr;
+	const ax_stuff_trait *ktr = src_r.map->env.key_tr;
+	const ax_stuff_trait *vtr = src_r.map->env.val_tr;
 	ax_hmap_r dst_r = { .map = __ax_hmap_construct(base, ktr, vtr)};
 
 	ax_foreach(const ax_pair *, pair, src_r.box) {
@@ -463,6 +459,10 @@ static ax_any *any_copy(const ax_any *any)
 		}
 	}
 
+	dst_r.hmap->_map.env.one.scope = NULL;
+	dst_r.hmap->_map.env.one.sindex = 0;
+	ax_scope_attach(ax_base_local(base), dst_r.one);
+
 	return dst_r.any;
 }
 
@@ -471,7 +471,7 @@ static ax_any *any_move(ax_any *any)
 	CHECK_PARAM_NULL(any);
 
 	ax_hmap_r src_r = { .any = any };
-	ax_base *base = src_r.one->base;
+	ax_base *base = ax_one_base(src_r.one);
 	ax_pool *pool = ax_base_pool(base);
 
 	ax_hmap *dst = ax_pool_alloc(pool, sizeof(ax_hmap));
@@ -480,9 +480,8 @@ static ax_any *any_move(ax_any *any)
 	src_r.hmap->size = 0;
 
 
-	dst->one_env.scope = NULL;
-	dst->one_env.sindex = 0;
-
+	dst->_map.env.one.scope = NULL;
+	dst->_map.env.one.sindex = 0;
 	ax_scope_attach(ax_base_local(base), ax_r(hmap, dst).one);
 
 	return (ax_any *) dst;
@@ -555,37 +554,30 @@ static void box_clear(ax_box *box)
 static const ax_stuff_trait *box_elem_tr(const ax_box *box)
 {
 	ax_hmap_r hmap_r = { .box = (ax_box*)box };
-	return hmap_r.map->val_tr;
+	return hmap_r.map->env.val_tr;
 }
-
-static const ax_one_trait one_trait =
-{
-	.name  = "one.any.box.map.hmap",
-	.free  = one_free,
-	.envp  = offsetof(ax_hmap, one_env)
-};
-
-static const ax_any_trait any_trait =
-{
-	.dump = any_dump,
-	.copy = any_copy,
-	.move = any_move,
-};
-
-static const ax_box_trait box_trait =
-{
-	.size    = box_size,
-	.maxsize = box_maxsize,
-	.begin   = box_begin,
-	.end     = box_end,
-	.rbegin  = NULL,
-	.rend    = NULL,
-	.clear   = box_clear,
-	.elem_tr = box_elem_tr
-};
 
 static const ax_map_trait map_trait =
 {
+	.box = {
+		.any = {
+			.one = {
+				.name  = AX_HMAP_NAME,
+				.free  = one_free,
+			},
+			.dump = any_dump,
+			.copy = any_copy,
+			.move = any_move,
+		},
+		.size    = box_size,
+		.maxsize = box_maxsize,
+		.begin   = box_begin,
+		.end     = box_end,
+		.rbegin  = NULL,
+		.rend    = NULL,
+		.clear   = box_clear,
+		.elem_tr = box_elem_tr
+	},
 	.put   = map_put,
 	.get   = map_get,
 	.erase = map_erase,
@@ -630,24 +622,17 @@ ax_map *__ax_hmap_construct(ax_base *base, const ax_stuff_trait *key_tr, const a
 	}
 	
 	ax_hmap hmap_init = {
-		.__map = {
-			._box = {
-				._any = {
-					._one = {
-						.base = base,
-						.tr = &one_trait
-					},
-					.tr = &any_trait,
-				},
-				.tr = &box_trait,
-			},
+		._map = {
 			.tr = &map_trait,
-			.key_tr = key_tr,
-			.val_tr = val_tr,
-		},
-		.one_env = {
-			.scope = NULL,
-			.sindex = 0
+			.env = {
+				.one = {
+					.base = base,
+					.scope = NULL,
+					.sindex = 0
+				},
+				.key_tr = key_tr,
+				.val_tr = val_tr,
+			},
 		},
 		.capacity = 1,
 		.size = 0,

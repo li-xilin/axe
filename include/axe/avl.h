@@ -24,6 +24,8 @@
 #define AXE_AVL_H_
 #include "map.h"
 
+#define AX_AVL_NAME AX_MAP_NAME ".avl"
+
 #ifndef AX_AVL_DEFINED
 #define AX_AVL_DEFINED
 typedef struct ax_avl_st ax_avl;

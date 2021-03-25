@@ -24,7 +24,7 @@
 #define AXE_ANY_H_
 #include "one.h"
 
-#define AX_ANY_NAME "one.any"
+#define AX_ANY_NAME AX_ONE_NAME ".any"
 
 #ifndef AX_STUFF_TRAIT_DEFINED
 #define AX_STUFF_TRAIT_DEFINED
@@ -50,6 +50,7 @@ typedef void        (*ax_any_assign_f) (const ax_any* any); /* to be determined 
 
 struct ax_any_trait_st
 {
+	const ax_one_trait one;
 	const ax_any_dump_f  dump;
 	const ax_any_copy_f  copy;
 	const ax_any_move_f  move;
@@ -71,8 +72,8 @@ typedef union
 
 struct ax_any_st
 {
-	ax_one _one;
 	const ax_any_trait *const tr;
+	ax_one_env env;
 };
 
 inline static ax_any *ax_any_copy(const ax_any* any)

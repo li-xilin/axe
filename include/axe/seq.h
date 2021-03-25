@@ -25,7 +25,7 @@
 #include "box.h"
 #include "def.h"
 
-#define AX_SEQ_NAME "one.any.box.seq"
+#define AX_SEQ_NAME AX_BOX_NAME ".seq"
 
 #ifndef AX_SEQ_DEFINED
 #define AX_SEQ_DEFINED
@@ -48,6 +48,7 @@ typedef ax_seq *(ax_seq_construct_f)(ax_base *base, const ax_stuff_trait *tr);
 
 struct ax_seq_trait_st
 {
+	const ax_box_trait box; /* Keep this first */
 	const ax_seq_push_f   push;
 	const ax_seq_pop_f    pop;
 	const ax_seq_invert_f invert;
@@ -56,11 +57,16 @@ struct ax_seq_trait_st
 	const ax_seq_insert_f insert;
 };
 
+typedef struct ax_seq_env_st
+{
+	ax_one_env one; /* Keep this first */
+	const ax_stuff_trait *const elem_tr;
+} ax_seq_env;
+
 struct ax_seq_st
 {
-	ax_box _box;
-	const ax_seq_trait *const tr;
-	const ax_stuff_trait *const elem_tr;
+	const ax_seq_trait *const tr; /* Keep this first */
+	ax_seq_env env;
 };
 
 typedef union

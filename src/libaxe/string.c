@@ -43,7 +43,6 @@
 struct ax_string_st
 {
 	ax_str _str;
-	ax_one_env one_env;
 	ax_buff_r buff_r;
 };
 
@@ -94,9 +93,6 @@ static ax_any* any_move(ax_any* any);
 
 static void    one_free(ax_one* one);
 
-static const ax_one_trait one_trait;
-static const ax_any_trait any_trait;
-static const ax_box_trait box_trait;
 static const ax_str_trait str_trait;
 static const ax_iter_trait iter_trait;
 static const ax_iter_trait riter_trait;
@@ -300,8 +296,8 @@ static ax_any* any_copy(const ax_any* any)
 
 	memcpy(new_str_r.string, self_r.string, sizeof(ax_string));
 
-	new_str_r.string->one_env.scope = NULL;
-	new_str_r.string->one_env.sindex = 0;
+	new_str_r.string->_str.env.one.scope = NULL;
+	new_str_r.string->_str.env.one.sindex = 0;
 	ax_scope_attach(ax_base_local(base), new_str_r.one);
 
 	return new_str_r.any;
@@ -334,8 +330,8 @@ static ax_any* any_move(ax_any* any)
 
 	memcpy(new_str_r.string, self_r.string, sizeof(ax_string));
 
-	new_str_r.string->one_env.scope = NULL;
-	new_str_r.string->one_env.sindex = 0;
+	new_str_r.string->_str.env.one.scope = NULL;
+	new_str_r.string->_str.env.one.sindex = 0;
 	ax_scope_attach(ax_base_local(base), new_str_r.one);
 
 	return new_str_r.any;
@@ -430,7 +426,7 @@ static void box_clear(ax_box* box)
 static const ax_stuff_trait *box_elem_tr(const ax_box *box)
 {
 	ax_string_r self_r = { .box = (ax_box *)box };
-	return self_r.seq->elem_tr;
+	return self_r.seq->env.elem_tr;
 }
 
 static ax_fail str_append(ax_str* str, const char *s)
@@ -687,7 +683,7 @@ static void seq_invert(ax_seq *seq)
 static ax_fail seq_trunc(ax_seq *seq, size_t size)
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(size, size <= ax_box_maxsize(&seq->_box));
+	CHECK_PARAM_VALIDITY(size, size <= ax_box_maxsize(ax_r(seq, seq).box));
 
 	ax_string_r self_r = { .seq = seq };
 	ax_buff *buff = self_r.string->buff_r.buff;
@@ -712,7 +708,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 static ax_iter seq_at(ax_seq *seq, size_t index)
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(&seq->_box));
+	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(ax_r(seq, seq).box));
 
 	ax_string_r self_r = { .seq = seq };
 	ax_buff *buff = self_r.string->buff_r.buff;
@@ -729,47 +725,37 @@ static ax_iter seq_at(ax_seq *seq, size_t index)
 	return it;
 }
 
-
-static const ax_one_trait one_trait =
-{
-	.name = AX_STR_NAME ".string",
-	.free = one_free,
-	.envp = offsetof(ax_string, one_env) 
-};
-
-static const ax_any_trait any_trait =
-{
-	.dump = any_dump,
-	.copy = any_copy,
-	.move = any_move,
-};
-
-static const ax_box_trait box_trait =
-{
-	.size = box_size,
-	.maxsize = box_maxsize,
-	.elem_tr = box_elem_tr,
-
-	.begin = box_begin,
-	.end = box_end,
-	.rbegin = box_rbegin,
-	.rend = box_rend,
-
-	.clear = box_clear,
-};
-
-static const ax_seq_trait seq_trait =
-{
-	.push = seq_push,
-	.pop = seq_pop,
-	.invert = seq_invert,
-	.trunc = seq_trunc,
-	.at = seq_at,
-	.insert = seq_insert,
-};
-
 static const ax_str_trait str_trait =
 {
+	.seq = {
+		.box = {
+			.any = {
+				.one = {
+					.name = AX_STRING_NAME,
+					.free = one_free,
+				},
+				.dump = any_dump,
+				.copy = any_copy,
+				.move = any_move,
+			},
+			.size = box_size,
+			.maxsize = box_maxsize,
+			.elem_tr = box_elem_tr,
+
+			.begin = box_begin,
+			.end = box_end,
+			.rbegin = box_rbegin,
+			.rend = box_rend,
+
+			.clear = box_clear,
+		},
+		.push = seq_push,
+		.pop = seq_pop,
+		.invert = seq_invert,
+		.trunc = seq_trunc,
+		.at = seq_at,
+		.insert = seq_insert,
+	},
 	.append = str_append,
 	.length = str_length,
 	.insert = str_insert,
@@ -832,25 +818,15 @@ ax_str *__ax_string_construct(ax_base* base)
 
 	ax_string string_init = {
 		._str = {
-			._seq = {
-				._box = {
-					._any = {
-						._one = {
-							.base = base,
-							.tr = &one_trait
-						},
-						.tr = &any_trait,
-					},
-					.tr = &box_trait,
+			.tr = &str_trait,
+			.env = {
+				.one = {
+					.base = base,
+					.scope = NULL,
+					.sindex = 0
 				},
-				.tr = &seq_trait,
 				.elem_tr = ax_stuff_traits(AX_ST_I8)
 			},
-			.tr = &str_trait,
-		},
-		.one_env = {
-			.scope = NULL,
-			.sindex = 0
 		},
 		.buff_r = buff_r
 	};

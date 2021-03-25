@@ -28,6 +28,8 @@
 #include "../axe/str.h"
 #include "../axe/box.h"
 
+#define AXUT_SUITE_NAME AX_ONE_NAME ".one"
+
 #define AXUT_NAME_MAX 128
 #define AXUT_LOG_MAX 128
 

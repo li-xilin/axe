@@ -24,6 +24,8 @@
 #define AXE_HMAP_H_
 #include "map.h"
 
+#define AX_HMAP_NAME AX_MAP_NAME ".hmap"
+
 #ifndef AX_HMAP_DEFINED
 #define AX_HMAP_DEFINED
 typedef struct ax_hmap_st ax_hmap;

@@ -24,7 +24,10 @@
 #define AXE_PAIR_H_
 #include "one.h"
 
+#ifndef AX_PAIR_DEFINED
+#define AX_PAIR_DEFINED
 typedef struct ax_pair_st ax_pair;
+#endif
 
 typedef union
 {

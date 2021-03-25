@@ -25,6 +25,8 @@
 #include "def.h"
 #include "debug.h"
 
+#define AX_ONE_NAME "one"
+
 #define ax_trait_require(_one, _trait) ax_assert((_trait), \
 		"operation for %s is required, do implement it", \
 		((ax_one *)(_one))->tr->name)
@@ -59,10 +61,8 @@ struct ax_one_trait_st
 {
 	const char          *name;
 	const ax_one_free_f  free;
-	const size_t         envp;
 };
 typedef struct ax_one_trait_st ax_one_trait;
-
 
 typedef union
 {
@@ -75,16 +75,17 @@ typedef union
 	ax_one_cr c;
 } ax_one_r;
 
-struct ax_one_st
-{
-	const ax_one_trait *const tr;
-	ax_base *const base;
-};
-
 struct ax_one_env_st
 {
+	ax_base *const base;
 	ax_scope *scope;
 	size_t sindex;
+};
+
+struct ax_one_st
+{
+	const ax_one_trait *const tr; /* Keep this first */
+	ax_one_env env;
 };
 
 static inline const char *ax_one_name(const ax_one *one)
@@ -101,19 +102,17 @@ static inline void ax_one_free(ax_one *one) {
 
 static inline ax_one_env *ax_one_envp(const ax_one *one)
 {
-	ax_trait_require(one, one->tr->envp);
-	return (ax_one_env *)((char*)one + one->tr->envp);
+	return (ax_one_env *)((char*)one + sizeof (ax_one_trait *));
 }
 
 static inline ax_scope *ax_one_scope(const ax_one *one)
 {
-	ax_trait_require(one, one->tr->envp);
 	return ax_one_envp(one)->scope;
 }
 
 static inline ax_base *ax_one_base(const ax_one *one)
 {
-	return one->base;
+	return ax_one_envp(one)->base;
 }
 
 ax_bool ax_one_is(const ax_one *one, const char *type);

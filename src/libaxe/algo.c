@@ -88,13 +88,13 @@ ax_iter ax_search_of(const ax_iter *first1, const ax_iter *last1, const ax_citer
 {
 	CHECK_ITER_COMPARABLE(first1, last1);
 
-	ax_seq *seq = first1->owner;
+	const ax_stuff_trait *etr = ax_box_elem_tr(first1->owner);
 	for (ax_iter it1 = *first1; !ax_iter_equal(&it1, last1); ax_iter_next(&it1)) {
 		for (ax_citer it2 = *first2; !ax_citer_equal(&it2, last2); ax_citer_next(&it2))
 		{
 			void *e1 = ax_iter_get(&it1);
 			const void *e2 = ax_citer_get(&it2);
-			if (seq->elem_tr->equal(e1, e2, seq->elem_tr->size)) {
+			if (etr->equal(e1, e2, etr->size)) {
 				return it1; 
 			}
 		}
@@ -106,13 +106,13 @@ void ax_generate(const ax_iter *first, const ax_iter *last, const void *ptr)
 {
 	CHECK_ITER_COMPARABLE(first, last);
 
-	ax_seq *seq = first->owner;
-	ax_base *base = ax_one_base(ax_cr(seq, seq).one);
+	const ax_stuff_trait *etr = ax_box_elem_tr(first->owner);
+	ax_base *base = ax_one_base(first->owner);
 	ax_pool *pool = ax_base_pool(base);
 
 	for (ax_iter it = *first; !ax_iter_equal(&it, last); ax_iter_next(&it)) {
 		void *p = ax_iter_get(&it);
-		seq->elem_tr->copy(pool, p, ptr, seq->elem_tr->size);
+		etr->copy(pool, p, ptr, etr->size);
 	}
 }
 
@@ -300,7 +300,7 @@ void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
 	merge_sort(mid, rmid, ext);
 	merge_sort(rmid, right, ext);
 
-	ax_iter end = ax_box_end(&ext->main->_box);
+	ax_iter end = ax_box_end(ax_r(seq, ext->main).box);
 	ax_iter main_first = { .owner = end.owner, .tr = end.tr };
 	ax_iter main_mid  = { .owner = end.owner, .tr = end.tr };
 	ax_iter main_last = { .owner = end.owner, .tr = end.tr };
@@ -336,7 +336,7 @@ void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
 ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 {
 	CHECK_ITER_COMPARABLE(first, last);
-	ax_assert(ax_one_is(first->owner, "one.any.box.seq"), "unsupported container type");
+	ax_assert(ax_one_is(first->owner, AX_SEQ_NAME), "unsupported one object type");
 	ax_assert(ax_iter_is(first, AX_IT_FORW), "unsupported iterator type");
 
 	ax_seq_r main_r = { first->owner };

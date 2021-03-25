@@ -38,7 +38,6 @@
 struct ax_buff_st
 {
 	ax_any _any;
-	ax_one_env one_env;
 	size_t used;
 	size_t real;
 	size_t min;
@@ -46,12 +45,11 @@ struct ax_buff_st
 	void *buf;
 };
 
-static ax_any     *any_copy(const ax_any *any);
-static ax_any     *any_move(ax_any *any);
+static ax_any *any_copy(const ax_any *any);
+static ax_any *any_move(ax_any *any);
 
-static void        one_free(ax_one *one);
+static void    one_free(ax_one *one);
 
-static const ax_one_trait one_trait;
 static const ax_any_trait any_trait;
 
 static void one_free(ax_one *one)
@@ -92,8 +90,8 @@ static ax_any *any_copy(const ax_any *any)
 	dst_buff->real = src_buff->used;
 	dst_buff->buf = buffer;
 
-	dst_buff->one_env.sindex = 0;
-	dst_buff->one_env.scope = NULL;
+	dst_buff->_any.env.sindex = 0;
+	dst_buff->_any.env.scope = NULL;
 	ax_scope_attach(ax_base_local(base), ax_r(buff, dst_buff).one);
 	return ax_r(buff, dst_buff).any;
 fail:
@@ -130,8 +128,8 @@ static ax_any *any_move(ax_any *any)
 	src_buff->real = src_buff->min;
 	src_buff->buf = buf;
 	
-	dst_buff->one_env.sindex = 0;
-	dst_buff->one_env.scope = NULL;
+	dst_buff->_any.env.sindex = 0;
+	dst_buff->_any.env.scope = NULL;
 	ax_scope_attach(ax_base_local(base), ax_r(buff,dst_buff).one);
 	return ax_r(buff, dst_buff).any;
 fail:
@@ -167,16 +165,12 @@ static ax_fail mem_resize(const ax_buff *buff, size_t require, size_t *alloc)
 	return ax_false;
 }
 
-
-static const ax_one_trait one_trait =
-{
-	.name = "one.buff",
-	.free = one_free,
-	.envp = offsetof(ax_buff, one_env)
-};
-
 static const ax_any_trait any_trait =
 {
+	.one = {
+		.name = "one.buff",
+		.free = one_free
+	},
 	.move = any_move,
 	.copy = any_copy
 };
@@ -195,16 +189,14 @@ ax_any *__ax_buff_construct(ax_base *base)
 
 	ax_buff buff_init = {
 		._any = {
-			._one = {
+			.tr = &any_trait,
+			.env = {
 				.base = base,
-				.tr = &one_trait,
-			},
-			.tr = &any_trait
+				.scope = NULL,
+				.sindex = 0
+			}
 		},
-		.one_env = {
-			.scope = NULL,
-			.sindex = 0
-		},
+		
 		.used = 0,
 		.real = 0,
 		.min = 0,

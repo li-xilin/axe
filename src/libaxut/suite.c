@@ -16,7 +16,7 @@
 
 struct axut_suite_st
 {
-	ax_one __one;
+	ax_one _one;
 	ax_one_env one_env;
 	char *name;
 	void *arg;
@@ -39,8 +39,7 @@ static void one_free(ax_one *one)
 
 static const ax_one_trait one_trait = {
 	.name = "one.suite",
-	.free = one_free,
-	.envp = offsetof(axut_suite, one_env) 
+	.free = one_free
 };
 
 static void case_free(void *p)
@@ -130,13 +129,13 @@ ax_one *__axut_suite_construct(ax_base *base, const char* name)
 	char *name_copy = ax_strdup(pool, name);
 
 	axut_suite suite_init = {
-		.__one = {
-			.base = base,
-			.tr = &one_trait
-		},
-		.one_env = {
-			.scope = NULL,
-			.sindex = 0,
+		._one = {
+			.tr = &one_trait,
+				.env = {
+					.base = base,
+					.scope = NULL,
+					.sindex = 0,
+				},
 		},
 		.tctab = {
 			.seq = tctab 
@@ -144,7 +143,7 @@ ax_one *__axut_suite_construct(ax_base *base, const char* name)
 		.name = name_copy
 	};
 	memcpy(suite, &suite_init, sizeof suite_init);
-	return &suite->__one;
+	return &suite->_one;
 }
 
 axut_suite *axut_suite_create(ax_scope *scope, const char *name)

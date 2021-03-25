@@ -48,7 +48,6 @@
 struct ax_vector_st
 {
 	ax_seq _seq;
-	ax_one_env one_env;
 	ax_buff *buff;
 };
 
@@ -87,8 +86,6 @@ static void       *iter_get(const ax_iter *it);
 static void        iter_erase(ax_iter *it);
 static ax_fail     iter_set(const ax_iter *it, const void *val);
 
-static const ax_any_trait any_trait;
-static const ax_box_trait box_trait;
 static const ax_seq_trait seq_trait;
 static const ax_iter_trait reverse_iter_trait;
 static const ax_iter_trait iter_trait;
@@ -98,7 +95,7 @@ static inline ax_bool iter_if_valid(const ax_citer *it)
 {
 
 	const ax_vector *vector = it->owner;
-	const ax_stuff_trait *etr = vector->_seq.elem_tr;
+	const ax_stuff_trait *etr = vector->_seq.env.elem_tr;
 	ax_byte *ptr = ax_buff_ptr(vector->buff);
 	size_t size = ax_buff_size(vector->buff, NULL);
 
@@ -122,8 +119,7 @@ static void citer_move(ax_citer *it, long i)
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
-	const ax_seq *seq = it->owner;
-	it->point = (ax_byte*)it->point + (i * (seq->elem_tr->size));
+	it->point = (ax_byte*)it->point + (i * (ax_box_elem_tr(it->owner)->size));
 
 	CHECK_PARAM_VALIDITY(i, iter_if_valid(it));
 }
@@ -166,8 +162,7 @@ static long citer_dist(const ax_citer *it1, const ax_citer *it2)
 	CHECK_PARAM_VALIDITY(it1, iter_if_valid(it1));
 	CHECK_PARAM_VALIDITY(it2, iter_if_valid(it2));
 
-	const ax_vector *vector = it1->owner;
-	return ((uintptr_t)it2->point - (uintptr_t)it1->point) / vector->_seq.elem_tr->size;
+	return ((uintptr_t)it2->point - (uintptr_t)it1->point) / ax_box_elem_tr(it1->owner)->size;
 }
 
 static void rciter_move(ax_citer *it, long i)
@@ -175,8 +170,7 @@ static void rciter_move(ax_citer *it, long i)
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
-	const ax_seq *seq = it->owner;
-	it->point = (ax_byte*)it->point - (i * (seq->elem_tr->size));
+	it->point = (ax_byte*)it->point - (i * (ax_box_elem_tr(it->owner)->size));
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -205,8 +199,7 @@ static void *iter_get(const ax_iter *it)
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr && it->point);
 	CHECK_ITERATOR_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
 
-	ax_vector *vector = (ax_vector *) it->owner;
-	const ax_stuff_trait *etr = vector->_seq.elem_tr;
+	const ax_stuff_trait *etr = ax_box_elem_tr(it->owner);
 	return etr->link ? *(void**) it->point : it->point;
 }
 
@@ -214,8 +207,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 {
 	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
 
-	ax_vector *vector = (ax_vector_r) { (void*)it->owner }.vector;
-	const ax_stuff_trait *etr = vector->_seq.elem_tr;
+	const ax_stuff_trait *etr = ax_box_elem_tr(it->owner);
 
 	ax_base *base = ax_one_base(it->owner);
 	ax_pool *pool = ax_base_pool(base);
@@ -223,7 +215,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	etr->free(it->point);
 
 	const void *pval = etr->link ? &val : val;
-	ax_fail fail = !val
+	ax_fail fail = val
 		? etr->copy(pool, it->point, pval, etr->size)
 		: etr->init(pool, it->point, etr->size);
 	if (fail) {
@@ -239,7 +231,7 @@ static void iter_erase(ax_iter *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
 
 	ax_vector *vector = (ax_vector_r) { (void*)it->owner }.vector;
-	const ax_stuff_trait *etr = vector->_seq.elem_tr;
+	const ax_stuff_trait *etr = vector->_seq.env.elem_tr;
 	ax_byte *ptr = ax_buff_ptr(vector->buff);
 	size_t size = ax_buff_size(vector->buff, NULL);
 	 
@@ -294,8 +286,8 @@ static ax_any *any_copy(const ax_any *any)
 
 	new_vector->buff = new_buff;
 
-	new_vector->one_env.sindex = 0;
-	new_vector->one_env.scope = NULL;
+	new_vector->_seq.env.one.sindex = 0;
+	new_vector->_seq.env.one.scope = NULL;
 	ax_scope_attach(ax_base_local(base), ax_r(vector, new_vector).one);
 	return ax_r(vector, new_vector).any;
 fail:
@@ -327,8 +319,8 @@ static ax_any *any_move(ax_any *any)
 
 	dest->buff = dst_buff;
 
-	dest->one_env.sindex = 0;
-	dest->one_env.scope = NULL;
+	dest->_seq.env.one.sindex = 0;
+	dest->_seq.env.one.scope = NULL;
 	ax_scope_attach(ax_base_local(base), ax_r(vector, dest).one);
 
 	return ax_r(vector, dest).any;
@@ -344,13 +336,13 @@ static size_t box_size(const ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	const ax_vector *vector = (const ax_vector*)box;
-	return ax_buff_size(vector->buff, NULL) / vector->_seq.elem_tr->size;
+	return ax_buff_size(vector->buff, NULL) / vector->_seq.env.elem_tr->size;
 }
 
 static size_t box_maxsize(const ax_box *box)
 {
-	ax_vector_r self_r = { .box = (ax_box*)box };
-	return ax_buff_max(self_r.vector->buff) / self_r.seq->elem_tr->size;
+	const ax_vector *self = (const ax_vector*)box;
+	return ax_buff_max(self->buff) / self->_seq.env.elem_tr->size;
 }
 
 static ax_iter box_begin(ax_box *box)
@@ -386,7 +378,8 @@ static ax_iter box_rbegin(ax_box *box)
 	ax_vector_r self_r = { .box = box};
 	ax_iter it = {
 		.owner = (void*)box,
-		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff) + ax_buff_size(self_r.vector->buff, NULL) - self_r.seq->elem_tr->size,
+		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff)
+			+ ax_buff_size(self_r.vector->buff, NULL) - self_r.seq->env.elem_tr->size,
 		.tr = &reverse_iter_trait
 	};
 	return it;
@@ -399,7 +392,7 @@ static ax_iter box_rend(ax_box *box)
 	ax_vector_r self_r = { .box = box};
 	ax_iter it = {
 		.owner = (void *)box,
-		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff) - self_r.seq->elem_tr->size,
+		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff) - self_r.seq->env.elem_tr->size,
 		.tr = &reverse_iter_trait
 	};
 	return it;
@@ -408,7 +401,7 @@ static ax_iter box_rend(ax_box *box)
 static const ax_stuff_trait *box_elem_tr(const ax_box *box)
 {
 	ax_vector_r self_r = { .box = (ax_box*)box };
-	return self_r.seq->elem_tr;
+	return self_r.seq->env.elem_tr;
 }
 
 static void box_clear(ax_box *box)
@@ -416,7 +409,7 @@ static void box_clear(ax_box *box)
 	CHECK_PARAM_NULL(box);
 	ax_vector *vector = (ax_vector *)box;
 
-	const ax_stuff_trait *etr = vector->_seq.elem_tr;
+	const ax_stuff_trait *etr = vector->_seq.env.elem_tr;
 	ax_byte *ptr = ax_buff_ptr(vector->buff);
 	size_t size = ax_buff_size(vector->buff, NULL);
 
@@ -434,7 +427,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	CHECK_PARAM_VALIDITY(it, it->owner == seq && iter_if_valid(ax_iter_c(it)));
 
 	ax_vector *vector = (ax_vector *) seq;
-	const ax_stuff_trait *etr = seq->elem_tr;
+	const ax_stuff_trait *etr = seq->env.elem_tr;
 	ax_base *base = ax_one_base(ax_r(vector, vector).one);
 	ax_pool *pool = ax_base_pool(base);
 	ax_byte *ptr = ax_buff_ptr(vector->buff);
@@ -474,7 +467,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 	CHECK_PARAM_NULL(seq);
 
 	ax_vector *vector = (ax_vector *) seq;
-	const ax_stuff_trait *etr = seq->elem_tr;
+	const ax_stuff_trait *etr = seq->env.elem_tr;
 	ax_base *base = ax_one_base(ax_r(vector, vector).one);
 	ax_pool *pool = ax_base_pool(base);
 
@@ -483,7 +476,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 	if (ax_buff_adapt(vector->buff, size + etr->size))
 		return ax_true;
 
-	const void *pval = seq->elem_tr->link ? &val: val;
+	const void *pval = seq->env.elem_tr->link ? &val: val;
 	ax_byte *ptr = ax_buff_ptr(vector->buff);
 
 	ax_fail fail = (val != NULL)
@@ -503,7 +496,7 @@ static ax_fail seq_pop(ax_seq *seq)
 	CHECK_PARAM_NULL(seq);
 
 	ax_vector *vector = (ax_vector *) seq;
-	const ax_stuff_trait *etr = seq->elem_tr;
+	const ax_stuff_trait *etr = seq->env.elem_tr;
 	size_t size = ax_buff_size(vector->buff, NULL);
 	ax_byte *ptr = ax_buff_ptr(vector->buff);
 
@@ -512,7 +505,7 @@ static ax_fail seq_pop(ax_seq *seq)
 		ax_base_set_errno(base, AX_ERR_EMPTY);
 		return ax_false;
 	}
-	seq->elem_tr->free(ptr + size - etr->size);
+	seq->env.elem_tr->free(ptr + size - etr->size);
 
 	if (ax_buff_adapt(vector->buff, size - etr->size))
 		return ax_true;
@@ -524,7 +517,7 @@ static void seq_invert(ax_seq *seq)
 	CHECK_PARAM_NULL(seq);
 
 	ax_vector *vector = (ax_vector *) seq;
-	const ax_stuff_trait *etr = vector->_seq.elem_tr;
+	const ax_stuff_trait *etr = vector->_seq.env.elem_tr;
 	size_t size = ax_buff_size(vector->buff, NULL);
 	ax_byte *ptr = ax_buff_ptr(vector->buff);
 
@@ -533,8 +526,8 @@ static void seq_invert(ax_seq *seq)
 
 	size_t left = 0, right = size - etr->size;
 	while (right - left > etr->size) {
-		seq->elem_tr->swap(ptr + left, ptr + right,
-				seq->elem_tr->size);
+		seq->env.elem_tr->swap(ptr + left, ptr + right,
+				seq->env.elem_tr->size);
 		left += etr->size;
 		right -= etr->size;
 	}
@@ -543,12 +536,12 @@ static void seq_invert(ax_seq *seq)
 static ax_fail seq_trunc(ax_seq *seq, size_t size)
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(size, size <= ax_box_maxsize(&seq->_box));
+	CHECK_PARAM_VALIDITY(size, size <= ax_box_maxsize(ax_r(seq, seq).box));
 
 	ax_vector_r self_r = { .seq = (ax_seq*)seq};
 
 	ax_vector *vector = (ax_vector *) seq;
-	const ax_stuff_trait *etr = seq->elem_tr;
+	const ax_stuff_trait *etr = seq->env.elem_tr;
 	size_t old_size = ax_buff_size(vector->buff, NULL);
 
 
@@ -560,7 +553,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 	if (size < old_size) {
 		ax_byte *ptr = ax_buff_ptr(vector->buff);
 		for (size_t off = size; off <= old_size; off += etr->size) {
-			seq->elem_tr->free(ptr + off);
+			etr->free(ptr + off);
 		}
 		if (ax_buff_adapt(vector->buff, size))
 			return ax_true;
@@ -572,7 +565,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 		ax_byte *ptr = ax_buff_ptr(vector->buff);
 
 		for (size_t off = old_size; off < size ; off += etr->size) {
-			seq->elem_tr->init(pool, ptr + off, seq->elem_tr->size);
+			etr->init(pool, ptr + off, etr->size);
 		}
 	}
 	return ax_false;
@@ -581,10 +574,10 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 static ax_iter seq_at(ax_seq *seq, size_t index)
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(&seq->_box));
+	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(ax_r(seq, seq).box));
 
 	ax_vector *vector = (ax_vector *) seq;
-	const ax_stuff_trait *etr = seq->elem_tr;
+	const ax_stuff_trait *etr = seq->env.elem_tr;
 	ax_byte *ptr = ax_buff_ptr(vector->buff);
 
 	ax_iter it = {
@@ -595,38 +588,31 @@ static ax_iter seq_at(ax_seq *seq, size_t index)
 	return it;
 }
 
-static const ax_one_trait one_trait =
-{
-	.name = "one.any.box.seq.vector",
-	.free = one_free,
-	.envp = offsetof(ax_vector, one_env)
-};
-
-
-
-static const ax_any_trait any_trait =
-{
-	.dump = any_dump,
-	.copy = any_copy,
-	.move = any_move
-};
-
-static const ax_box_trait box_trait =
-{
-	.size = box_size,
-	.maxsize = box_maxsize,
-	.elem_tr = box_elem_tr,
-
-	.begin = box_begin,
-	.end = box_end,
-	.rbegin = box_rbegin,
-	.rend = box_rend,
-
-	.clear = box_clear,
-};
-
 static const ax_seq_trait seq_trait =
 {
+	.box = {
+		.any = {
+			.one = {
+				.name = AX_VECTOR_NAME,
+				.free = one_free,
+			},
+			.dump = any_dump,
+			.copy = any_copy,
+			.move = any_move
+
+		},
+		.size = box_size,
+		.maxsize = box_maxsize,
+		.elem_tr = box_elem_tr,
+
+		.begin = box_begin,
+		.end = box_end,
+		.rbegin = box_rbegin,
+		.rend = box_rend,
+
+		.clear = box_clear,
+
+	},
 	.push = seq_push,
 	.pop = seq_pop,
 	.invert = seq_invert,
@@ -693,23 +679,17 @@ ax_seq *__ax_vector_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 
 	ax_vector vec_init = {
 		._seq = {
-			._box = {
-				._any = {
-					._one = {
-						.base = base,
-						.tr = &one_trait
-					},
-					.tr = &any_trait,
-				},
-				.tr = &box_trait,
-			},
 			.tr = &seq_trait,
-			.elem_tr = elem_tr
+			.env = {
+				.one = {
+					.base = base,
+					.scope = NULL,
+					.sindex = 0
+				},
+				.elem_tr = elem_tr
+			},
 		},
-		.one_env = {
-			.scope = NULL,
-			.sindex = 0
-		},
+		
 		.buff = buff
 	};
 

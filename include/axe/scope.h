@@ -25,7 +25,7 @@
 #include "one.h"
 #include "debug.h"
 
-#define AX_SCOPE_NAME "one.scope"
+#define AX_SCOPE_NAME AX_ONE_NAME ".scope"
 
 typedef union
 {

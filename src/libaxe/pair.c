@@ -56,7 +56,6 @@ static const ax_one_trait one_trait =
 {
 	.name = "one:pair",
 	.free = one_free,
-	.envp = offsetof(ax_pair, one_env) 
 };
 
 ax_pair *__ax_pair_construct(ax_base *base, const void *key, void *value)
@@ -67,14 +66,14 @@ ax_pair *__ax_pair_construct(ax_base *base, const void *key, void *value)
 	ax_pair *pair = ax_pool_alloc(pool, sizeof(ax_pair));
 	ax_pair pair_init = {
 		._one = {
-			.base = base,
 			.tr = &one_trait,
-
+			.env = {
+				.base = base,
+				.scope = NULL,
+				.sindex = 0
+			},
 		},
-		.one_env = {
-			.scope = NULL,
-			.sindex = 0
-		},
+		
 		.key = key,
 		.value = value
 	};

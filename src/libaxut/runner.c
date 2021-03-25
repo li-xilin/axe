@@ -45,8 +45,7 @@
 
 struct axut_runner_st
 {
-	ax_one __one;
-	ax_one_env one_env;
+	ax_one _one;
 	char *name;
 	axut_output_f output_cb;
 	ax_avl_r smap; // for removing suite
@@ -81,8 +80,7 @@ static void one_free(ax_one *one)
 
 static const ax_one_trait one_trait = {
 	.name = "one.suite",
-	.free = one_free,
-	.envp = offsetof(axut_runner, one_env)
+	.free = one_free
 };
 
 
@@ -133,13 +131,13 @@ ax_one *__axut_runner_construct(ax_base *base, axut_output_f output_cb)
 		goto fail;
 
 	axut_runner runner_init = {
-		.__one = {
-			.base = base,
-			.tr = &one_trait
-		},
-		.one_env = {
-			.scope = NULL,
-			.sindex = 0,
+		._one = {
+			.tr = &one_trait,
+			.env = {
+				.base = base,
+				.scope = NULL,
+				.sindex = 0,
+			},
 		},
 		.statistic = {
 			.pass = 0,
@@ -242,7 +240,7 @@ void axut_runner_run(axut_runner *r)
 	ax_foreach(axut_suite * const*, ppsuite, r->suites.box) {
 		const ax_seq *case_tab = axut_suite_all_case(*ppsuite);
 		r->arg = axut_suite_arg(*ppsuite);
-		ax_foreach(const axut_case *, test_case, &case_tab->_box) {
+		ax_foreach(const axut_case *, test_case, ax_cr(seq, case_tab).box) {
 			jmp_buf jmp;
 			axut_case *tc = (axut_case *)test_case;
 			if (tc->state != AXUT_CS_READY)

@@ -29,6 +29,8 @@
 #include "../axe/base.h"
 #include "../axe/str.h"
 
+#define AXUT_RUNNER_NAME AX_ONE_NAME ".runner"
+
 #ifndef AXUT_RUNNER_DEFINED
 #define AXUT_RUNNER_DEFINED
 typedef struct axut_runner_st axut_runner;

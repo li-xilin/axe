@@ -36,7 +36,6 @@
 struct ax_scope_st
 {
 	ax_one _one;
-	ax_one_env one_env;
 	ax_one **tab;
 	size_t tab_size;
 	size_t tab_capacity;
@@ -61,9 +60,8 @@ static void one_free(ax_one *one)
 }
 
 static const ax_one_trait one_trait = {
-	.name = "one.scope",
-	.free = one_free,
-	.envp = offsetof(ax_scope, one_env) 
+	.name = AX_SCOPE_NAME,
+	.free = one_free
 };
 
 ax_one *__ax_scope_construct(ax_base *base)
@@ -74,14 +72,15 @@ ax_one *__ax_scope_construct(ax_base *base)
 	ax_scope *scope = ax_pool_alloc(pool, sizeof(ax_scope));
 	if (scope == NULL)
 		return NULL;
+
 	ax_scope scope_init = {
 		._one = {
-			.base = base,
-			.tr = &one_trait
-		},
-		.one_env = {
-			.scope = NULL,
-			.sindex = 0,
+			.tr = &one_trait,
+			.env = {
+				.base = base,
+				.scope = NULL,
+				.sindex = 0,
+			},
 		},
 		.tab = NULL,
 		.tab_size = 0,

@@ -25,6 +25,8 @@
 #include "iter.h"
 #include "any.h"
 
+#define AX_BOX_NAME AX_ANY_NAME ".box"
+
 #ifndef AX_BOX_TRAIT_DEFINED
 #define AX_BOX_TRAIT_DEFINED
 typedef struct ax_box_trait_st ax_box_trait;
@@ -46,6 +48,7 @@ typedef const ax_stuff_trait *(*ax_box_elem_tr_f) (const ax_box* box);
 
 struct ax_box_trait_st
 {
+	const ax_any_trait any;
 	const ax_box_size_f   size;
 	const ax_box_size_f   maxsize;
 
@@ -60,8 +63,8 @@ struct ax_box_trait_st
 
 struct ax_box_st
 {
-	ax_any _any;
 	const ax_box_trait *const tr;
+	ax_one_env env;
 };
 
 typedef union

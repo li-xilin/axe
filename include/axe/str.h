@@ -26,7 +26,7 @@
 #include "def.h"
 #include <stdarg.h>
 
-#define AX_STR_NAME "one.any.box.seq.str"
+#define AX_STR_NAME AX_SEQ_NAME ".str"
 
 #ifndef AX_STR_DEFINED
 #define AX_STR_DEFINED
@@ -38,31 +38,32 @@ typedef struct ax_str_st ax_str;
 typedef struct ax_str_trait_st ax_str_trait;
 #endif
 
-typedef ax_fail     (*ax_str_append_f) (      ax_str *str, const char *s);
-typedef size_t      (*ax_str_length_f) (const ax_str *str);
-typedef ax_fail     (*ax_str_insert_f) (      ax_str *str, size_t start, const char *s);
-typedef char       *(*ax_str_strz_f)   (      ax_str *str);
-typedef int         (*ax_str_comp_f)   (const ax_str *str, const char *s);
-typedef ax_str     *(*ax_str_substr_f) (const ax_str *str, size_t start, size_t len);
-typedef ax_seq     *(*ax_str_split_f)  (const ax_str *str, const char ch);
-typedef ax_fail     (*ax_str_sprintf_f)(      ax_str *str, const char *fmt, va_list args); 
+typedef ax_fail  (*ax_str_append_f) (      ax_str *str, const char *s);
+typedef size_t   (*ax_str_length_f) (const ax_str *str);
+typedef ax_fail  (*ax_str_insert_f) (      ax_str *str, size_t start, const char *s);
+typedef char    *(*ax_str_strz_f)   (      ax_str *str);
+typedef int      (*ax_str_comp_f)   (const ax_str *str, const char *s);
+typedef ax_str  *(*ax_str_substr_f) (const ax_str *str, size_t start, size_t len);
+typedef ax_seq  *(*ax_str_split_f)  (const ax_str *str, const char ch);
+typedef ax_fail  (*ax_str_sprintf_f)(      ax_str *str, const char *fmt, va_list args); 
 
 struct ax_str_trait_st
 {
-	ax_str_append_f  append;
-	ax_str_length_f  length;
-	ax_str_insert_f  insert;
-	ax_str_strz_f    strz;
-	ax_str_comp_f    comp;
-	ax_str_substr_f  substr;
-	ax_str_split_f   split;
-	ax_str_sprintf_f sprintf;
+	const ax_seq_trait seq;
+	const ax_str_append_f  append;
+	const ax_str_length_f  length;
+	const ax_str_insert_f  insert;
+	const ax_str_strz_f    strz;
+	const ax_str_comp_f    comp;
+	const ax_str_substr_f  substr;
+	const ax_str_split_f   split;
+	const ax_str_sprintf_f sprintf;
 };
 
 struct ax_str_st
 {
-	ax_seq _seq;
 	const ax_str_trait* tr;
+	ax_seq_env env;
 };
 
 typedef union

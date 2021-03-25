@@ -26,7 +26,7 @@
 #include "pair.h"
 #include "def.h"
 
-#define AX_MAP_NAME "one.any.box.map"
+#define AX_MAP_NAME AX_BOX_NAME ".map"
 
 typedef struct ax_map_st ax_map;
 typedef struct ax_map_trait_st ax_map_trait;
@@ -38,18 +38,24 @@ typedef ax_fail (*ax_map_erase_f)(ax_map *map, const void *key);
 
 struct ax_map_trait_st
 {
+	const ax_box_trait box;
 	const ax_map_put_f put;
 	const ax_map_get_f get;
 	const ax_map_exist_f exist;
 	const ax_map_erase_f erase;
 };
 
+typedef struct ax_map_env_st
+{
+	ax_one_env one;
+	const ax_stuff_trait *key_tr;
+	const ax_stuff_trait *val_tr;
+} ax_map_env;
+
 struct ax_map_st
 {
-	ax_box _box;
 	const ax_map_trait *const tr;
-	const ax_stuff_trait *const key_tr;
-	const ax_stuff_trait *const val_tr;
+	ax_map_env env;
 };
 
 typedef union

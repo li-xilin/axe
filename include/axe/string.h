@@ -25,7 +25,7 @@
 #include "str.h"
 #include "debug.h"
 
-#define AX_STRING_NAME "one.any.box.str.string"
+#define AX_STRING_NAME AX_STR_NAME ".string"
 
 typedef struct ax_string_st ax_string;
 
