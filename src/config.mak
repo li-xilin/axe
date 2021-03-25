@@ -27,7 +27,7 @@ RM = rm -f
 CC = gcc
 CFLAGS = -Wall --pedantic -Werror -I$(ROOT)/src/include -I$(INCLUDE) -std=c99
 
-ifeq ($(ENABLE_DEBUG), 1)
+ifeq ($(DEBUG), 1)
 	CFLAGS += -O0 -DAX_DEBUG -g
 else
 	CFLAGS += -O2

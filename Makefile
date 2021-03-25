@@ -21,6 +21,6 @@
 DEBUG ?= 1
 
 all clean:
-	$(MAKE) -C src/libaxe $@ ENABLE_DEBUG=$(DEBUG)
-	$(MAKE) -C src/libaxut $@ ENABLE_DEBUG=$(DEBUG)
+	$(MAKE) -C src/libaxe $@
+	$(MAKE) -C src/libaxut $@
 	$(MAKE) -C test $@
