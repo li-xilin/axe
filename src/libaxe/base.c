@@ -52,32 +52,33 @@ ax_base* ax_base_create()
 
 	pool = ax_pool_create();
 	if (!pool)
-		goto fail;
+		goto pool_fail;
 
 	base = ax_pool_alloc(pool, (sizeof(struct ax_base_st)));
 	if (!base)
 		goto fail;
 
-	gscope = (ax_scope *)__ax_scope_construct(base);
-	if (!gscope)
-		goto fail;
-
 	ax_base base_init = {
 		.pool = pool,
-		.global_scope = gscope,
+		.global_scope = NULL,
 		.stack = NULL,
 		.stack_size = 0,
 		.stack_capacity = 0,
 		.err = AX_ERR_SUCCEED
 	};
-
 	memcpy(base, &base_init, sizeof base_init);
+
+	gscope = (ax_scope *)__ax_scope_construct(base);
+	if (!gscope)
+		goto fail;
+	base->global_scope = gscope;
 
 	return base;
 fail:
-	ax_pool_destroy(base_init.pool);
-	ax_scope_destroy(base->global_scope);
+	ax_scope_destroy(gscope);
 	ax_pool_free(base);
+pool_fail:
+	ax_pool_destroy(pool);
 	return NULL;
 }
 
