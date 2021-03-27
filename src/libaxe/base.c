@@ -41,42 +41,48 @@ struct ax_base_st
 	ax_scope **stack;
 	size_t stack_size;
 	size_t stack_capacity;
-	int errno;
+	int err;
 };
 
 ax_base* ax_base_create()
 {
+	ax_pool *pool = NULL;
+	ax_base* base = NULL;
+	ax_scope *gscope = NULL;
+
+	pool = ax_pool_create();
+	if (!pool)
+		goto fail;
+
+	base = ax_pool_alloc(pool, (sizeof(struct ax_base_st)));
+	if (!base)
+		goto fail;
+
+	gscope = (ax_scope *)__ax_scope_construct(base);
+	if (!gscope)
+		goto fail;
+
 	ax_base base_init = {
-		.pool = ax_pool_create(),
-		.global_scope = NULL,
+		.pool = pool,
+		.global_scope = gscope,
 		.stack = NULL,
 		.stack_size = 0,
 		.stack_capacity = 0,
-		.errno = AX_ERR_SUCCEED
+		.err = AX_ERR_SUCCEED
 	};
-	if (base_init.pool == NULL)
-		return NULL;
-
-	ax_base* base = ax_pool_alloc(base_init.pool, (sizeof(struct ax_base_st)));
-	if (base == NULL)
-		goto failed;
 
 	memcpy(base, &base_init, sizeof base_init);
 
-	base->global_scope = (ax_scope *)__ax_scope_construct(base);
-	if (base->global_scope == NULL)
-		goto failed;
 	return base;
-failed:
-	if (base_init.pool) ax_pool_destroy(base_init.pool);
-	if (base->global_scope) ax_scope_destroy(base->global_scope);
-	if (base) ax_pool_free(base);
+fail:
+	ax_pool_destroy(base_init.pool);
+	ax_scope_destroy(base->global_scope);
+	ax_pool_free(base);
 	return NULL;
 }
 
 void ax_base_destroy(ax_base* base)
 {
-	ax_pwarning_if(base->stack_size != 0, "less leave");
 	ax_scope_destroy(base->global_scope);
 	ax_pool *pool = base->pool;
 	free(base->stack);
@@ -106,6 +112,7 @@ ax_scope *ax_base_local(ax_base *base)
 int ax_base_enter(ax_base *base)
 {
 	CHECK_PARAM_NULL(base);
+
 	if (base->stack_size == base->stack_capacity) {
 		base->stack_capacity <<= 1;
 		base->stack_capacity |= 1;
@@ -113,7 +120,7 @@ int ax_base_enter(ax_base *base)
 	}
 
 	ax_scope *scope = ax_scope_create(base->global_scope).scope;
-	if (scope == NULL) {
+	if (!scope) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
 		return -1;
 	}
@@ -138,12 +145,12 @@ void ax_base_leave(ax_base *base, int depth)
 }
 
 
-void ax_base_set_errno(ax_base *base, int errno)
+void ax_base_set_errno(ax_base *base, int err)
 {
-	base->errno = errno;
+	base->err = err;
 }
 
 int ax_base_errno(ax_base *base)
 {
-	return base->errno;
+	return base->err;
 }

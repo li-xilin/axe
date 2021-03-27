@@ -520,7 +520,9 @@ ax_pool_create()
 void
 ax_pool_destroy(ax_pool* pool)
 {
-	CHECK_PARAM_NULL(pool);
+	if (!pool)
+		return;
+
 	for (uint8_t g = 0; g != GROUP_MAX; g++) {
 		struct group* group = pool->grouptab[g];
 		if (!group) continue;
