@@ -95,9 +95,9 @@ static inline ax_bool iter_if_valid(const ax_citer *it)
 {
 
 	const ax_vector *self = it->owner;
-	const ax_stuff_trait *etr = vector->_seq.env.elem_tr;
-	ax_byte *ptr = ax_buff_ptr(vector->buff);
-	size_t size = ax_buff_size(vector->buff, NULL);
+	const ax_stuff_trait *etr = self->_seq.env.elem_tr;
+	ax_byte *ptr = ax_buff_ptr(self->buff);
+	size_t size = ax_buff_size(self->buff, NULL);
 
 	return  (ax_citer_norm(it)
 		? ((ax_byte *)it->point >= ptr && (ax_byte *)it->point <= ptr + size)
@@ -108,8 +108,8 @@ static inline ax_bool iter_if_valid(const ax_citer *it)
 static inline ax_bool iter_if_have_value(const ax_citer *it)
 {
 	const ax_vector *self = it->owner;
-	const ax_byte *ptr = ax_buff_ptr(vector->buff);
-	size_t size = ax_buff_size(vector->buff, NULL);
+	const ax_byte *ptr = ax_buff_ptr(self->buff);
+	size_t size = ax_buff_size(self->buff, NULL);
 	return (ax_byte *)it->point >= ptr && (ax_byte *)it->point < ptr + size;
 }
 #endif
@@ -624,6 +624,8 @@ static const ax_seq_trait seq_trait =
 	},
 	.push = seq_push,
 	.pop = seq_pop,
+	.pushf = NULL,
+	.popf = NULL,
 	.invert = seq_invert,
 	.trunc = seq_trunc,
 	.at = seq_at,

@@ -56,6 +56,8 @@ struct ax_list_st
 
 static ax_fail     seq_push(ax_seq *seq, const void *val);
 static ax_fail     seq_pop(ax_seq *seq);
+static ax_fail     seq_pushf(ax_seq *seq, const void *val);
+static ax_fail     seq_popf(ax_seq *seq);
 static ax_fail     seq_trunc(ax_seq *seq, size_t size);
 static ax_iter     seq_at(ax_seq *seq, size_t index);
 static ax_fail     seq_insert(ax_seq *seq, ax_iter *it, const void *val);
@@ -558,6 +560,27 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	return ax_false;
 }
 
+inline static struct node_st *make_node(ax_pool *pool, const ax_stuff_trait *etr, const void *val)
+{
+	struct node_st *node = NULL;
+	node = ax_pool_alloc(pool, sizeof(struct node_st) + etr->size);
+	if (!node)
+		goto fail;
+
+	const void *pval = etr->link ? &val : val;
+
+	ax_fail fail = (val != NULL)
+		? etr->copy(pool, node->data, pval, etr->size)
+		: etr->init(pool, node->data, etr->size);
+	if (fail)
+		goto fail;
+
+	return node;
+fail:
+	ax_pool_free(node);
+	return NULL;
+}
+
 static ax_fail seq_push(ax_seq *seq, const void *val)
 {
 	CHECK_PARAM_NULL(seq);
@@ -568,18 +591,8 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 	ax_base *base = ax_one_base(self_r.one);
 	ax_pool *pool = ax_base_pool(base);
 
-	struct node_st *node = ax_pool_alloc(pool, sizeof(struct node_st) + etr->size);
-	if (node == NULL) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return ax_true;
-	}
-
-	const void *pval = etr->link ? &val : val;
-
-	ax_fail fail = (val != NULL)
-		? etr->copy(pool, node->data, pval, etr->size)
-		: etr->init(pool, node->data, etr->size);
-	if (fail) {
+	struct node_st *node = make_node(pool, etr, val);
+	if (!node) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
 		ax_pool_free(node);
 		return ax_true;
@@ -625,6 +638,67 @@ static ax_fail seq_pop(ax_seq *seq)
 	list->size --;
 	return ax_false;
 }
+
+static ax_fail seq_pushf(ax_seq *seq, const void *val)
+{
+	CHECK_PARAM_NULL(seq);
+
+	ax_list_r self_r = { .seq = seq };
+
+	const ax_stuff_trait *etr = seq->env.elem_tr;
+	ax_base *base = ax_one_base(self_r.one);
+	ax_pool *pool = ax_base_pool(base);
+
+	struct node_st *node = make_node(pool, etr, val);
+	if (!node) {
+		ax_base_set_errno(base, AX_ERR_NOMEM);
+		ax_pool_free(node);
+		return ax_true;
+	}
+
+	if (self_r.list->head) {
+		node->pre = self_r.list->head->pre;
+		node->next = self_r.list->head;
+		self_r.list->head->pre->next = node;
+		self_r.list->head->pre = node;
+		self_r.list->head = node;
+	} else {
+		node->pre = node;
+		node->next = node;
+		self_r.list->head = node;
+	}
+
+	self_r.list->size ++;
+
+	return ax_false;
+}
+
+static ax_fail seq_popf(ax_seq *seq)
+{
+	CHECK_PARAM_NULL(seq);
+
+	ax_list *list = (ax_list *)seq;
+	ax_base *base = ax_one_base(ax_r(list, list).one);
+	if (list->size == 0)
+	{
+		ax_base_set_errno(base, AX_ERR_EMPTY);
+		return ax_false;
+	}
+	struct node_st *node =  list->head;
+	if (list->size > 1) {
+		list->head = node->next;
+		node->pre->next = node->next;
+		node->next->pre = node->pre;
+	} else {
+		list->head = NULL;
+	}
+	seq->env.elem_tr->free(node->data);
+	ax_pool_free(node);
+
+	list->size --;
+	return ax_false;
+}
+
 
 static void seq_invert(ax_seq *seq)
 {
@@ -727,6 +801,8 @@ static const ax_seq_trait seq_trait =
 	},
 	.push = seq_push,
 	.pop = seq_pop,
+	.pushf = seq_pushf,
+	.popf = seq_popf,
 	.invert = seq_invert,
 	.trunc = seq_trunc,
 	.at = seq_at,

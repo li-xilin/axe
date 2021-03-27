@@ -51,6 +51,8 @@ struct ax_seq_trait_st
 	const ax_box_trait box; /* Keep this first */
 	const ax_seq_push_f   push;
 	const ax_seq_pop_f    pop;
+	const ax_seq_push_f   pushf;
+	const ax_seq_pop_f    popf;
 	const ax_seq_invert_f invert;
 	const ax_seq_trunc_f  trunc;
 	const ax_seq_at_f     at;
@@ -96,6 +98,18 @@ inline static ax_fail ax_seq_pop(ax_seq *seq)
 {
 	ax_trait_require(seq, seq->tr->pop);
 	return seq->tr->pop(seq);
+}
+
+inline static ax_fail ax_seq_pushf(ax_seq *seq, const void *val)
+{
+	ax_trait_optional(seq, seq->tr->pushf);
+	return seq->tr->pushf(seq, val);
+}
+
+inline static ax_fail ax_seq_popf(ax_seq *seq)
+{
+	ax_trait_optional(seq, seq->tr->popf);
+	return seq->tr->popf(seq);
 }
 
 inline static void ax_seq_invert(ax_seq *seq)
