@@ -2,7 +2,6 @@
 
 #include "axe/avl.h"
 #include "axe/iter.h"
-#include "axe/pair.h"
 #include "axe/base.h"
 
 #include <assert.h>
@@ -28,15 +27,14 @@ static void insert(axut_runner *r)
 	}
 
 	int i = 0;
-	ax_foreach(const ax_pair *, pair, avl_r.box) {
-		 axut_assert(r, *(int32_t*)ax_pair_key(pair) == i++);
+	ax_map_foreach(avl_r.map, const int32_t *, key, int32_t *, val) {
+		 axut_assert(r, *key == i++);
 	}
 
 	i = N-1;
 	ax_iter it = ax_box_rbegin(avl_r.box), end = ax_box_rend(avl_r.box);
 	while (!ax_iter_equal(&it, &end)) {
-		ax_pair *pair = ax_iter_get(&it);
-		int *k = (int*)ax_pair_key(pair);
+		uint32_t *k = (uint32_t*)ax_map_iter_key(&it);
 		axut_assert(r, *k == i);
 		ax_iter_next(&it);
 		i--;
@@ -62,9 +60,8 @@ static void complex(axut_runner *r)
 	int table[N] = {0};
 	ax_iter it = ax_box_begin(avl_r.box), end = ax_box_end(avl_r.box);
 	while (!ax_iter_equal(&it, &end)) {
-		ax_pair *pair = ax_iter_get(&it);
-		int *k = (int*)ax_pair_key(pair);
-		int *v = (int*)ax_pair_value(pair);
+		uint32_t *k = (uint32_t*)ax_map_iter_key(&it);
+		uint32_t *v = (uint32_t*)ax_iter_get(&it);
 		axut_assert(r, *k == *v);
 		table[*k] = 1;
 		ax_iter_next(&it);

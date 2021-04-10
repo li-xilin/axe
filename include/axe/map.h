@@ -23,18 +23,42 @@
 #ifndef AXE_MAP_H_
 #define AXE_MAP_H_
 #include "box.h"
-#include "pair.h"
 #include "def.h"
 
 #define AX_MAP_NAME AX_BOX_NAME ".map"
 
+#define ax_map_foreach(_map, _key_type, _key, _val_type, _val)                           \
+	for ( int __ax_foreach_##_key##_flag = 1 ; __ax_foreach_##_key##_flag ; )        \
+	for (_key_type _key; __ax_foreach_##_key##_flag ; )                              \
+	for (_val_type _val; __ax_foreach_##_key##_flag ; __ax_foreach_##_key##_flag = 0)\
+	ax_box_iterate(ax_r(map, _map).box, _key##_iter)                                 \
+	for (__ax_foreach_##_key##_flag = 1;                                             \
+			_key = ax_map_iter_key(&_key##_iter),                   \
+				_val = ax_iter_get(&_key##_iter),             \
+				__ax_foreach_##_key##_flag;                              \
+			__ax_foreach_##_key##_flag = 0)
+
+#define ax_map_cforeach(_map, _key_type, _key, _val_type, _val)                           \
+	for ( int __ax_foreach_##_key##_flag = 1 ; __ax_foreach_##_key##_flag ; )        \
+	for (_key_type _key; __ax_foreach_##_key##_flag ; )                              \
+	for (_val_type _val; __ax_foreach_##_key##_flag ; __ax_foreach_##_key##_flag = 0)\
+	ax_box_citerate(ax_r(map, _map).box, _key##_iter)                                 \
+	for (__ax_foreach_##_key##_flag = 1;                                             \
+			_key = ax_map_citer_key(&_key##_iter),                               \
+				_val = ax_citer_get(&_key##_iter),                         \
+				__ax_foreach_##_key##_flag;                              \
+			__ax_foreach_##_key##_flag = 0)
+
+
+
 typedef struct ax_map_st ax_map;
 typedef struct ax_map_trait_st ax_map_trait;
 
-typedef ax_fail (*ax_map_put_f)  (ax_map *map, const void *key, const void *val);
-typedef void  * (*ax_map_get_f)  (const ax_map *map, const void *key);
-typedef ax_bool (*ax_map_exist_f)(const ax_map *map, const void *key);
-typedef ax_fail (*ax_map_erase_f)(ax_map *map, const void *key);
+typedef ax_fail     (*ax_map_put_f)   (ax_map *map, const void *key, const void *val);
+typedef void  *     (*ax_map_get_f)   (const ax_map *map, const void *key);
+typedef ax_bool     (*ax_map_exist_f) (const ax_map *map, const void *key);
+typedef ax_fail     (*ax_map_erase_f) (ax_map *map, const void *key);
+typedef const void *(*ax_map_it_key_f)(ax_citer *it);
 
 struct ax_map_trait_st
 {
@@ -43,6 +67,7 @@ struct ax_map_trait_st
 	const ax_map_get_f get;
 	const ax_map_exist_f exist;
 	const ax_map_erase_f erase;
+	const ax_map_it_key_f itkey;
 };
 
 typedef struct ax_map_env_st
@@ -104,6 +129,16 @@ inline static ax_bool ax_map_exist(const ax_map *map, const void *key)
 {
 	ax_trait_require(map, map->tr->exist);
 	return map->tr->exist(map, key);
+}
+
+inline static const void *ax_map_citer_key(ax_citer *it)
+{
+	return ((const ax_map *)it->owner)->tr->itkey(it);
+}
+
+inline static const void *ax_map_iter_key(ax_iter *it)
+{
+	return ((const ax_map *)it->owner)->tr->itkey(ax_iter_c(it));
 }
 
 #endif

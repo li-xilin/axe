@@ -63,10 +63,11 @@ struct ax_hmap_st
 	struct bucket_st *bucket_tab;
 };
 
-static ax_bool  map_put (ax_map *map, const void *key, const void *val);
-static ax_bool  map_erase (ax_map *map, const void *key);
-static void    *map_get (const ax_map *map, const void *key);
-static ax_bool  map_exist (const ax_map *map, const void *key);
+static ax_bool  map_put(ax_map *map, const void *key, const void *val);
+static ax_bool  map_erase(ax_map *map, const void *key);
+static void    *map_get(const ax_map *map, const void *key);
+static ax_bool  map_exist(const ax_map *map, const void *key);
+static const void *map_it_key(ax_citer *it);
 
 static size_t   box_size(const ax_box *box);
 static size_t   box_maxsize(const ax_box *box);
@@ -83,7 +84,6 @@ static void     one_free(ax_one *one);
 
 static void     citer_next(ax_citer *it);
 static void    *iter_get(const ax_iter *it);
-
 static ax_fail  iter_set(const ax_iter *it, const void *p);
 static void     iter_erase(ax_iter *it);
 
@@ -230,6 +230,7 @@ static void free_node(ax_map *map, struct node_st **pp_node)
 
 static void citer_next(ax_citer *it)
 {
+	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
 
 	const ax_hmap *hmap= it->owner;
@@ -246,19 +247,15 @@ static void citer_next(ax_citer *it)
 
 static void *iter_get(const ax_iter *it)
 {
+	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
 
 	ax_hmap_cr hmap_r = { .hmap = it->owner };
-	ax_base *base = ax_one_base(hmap_r.one);
 	struct node_st **pp_node = it->point;
 
 	const ax_stuff_trait
 		*key_tr = hmap_r.map->env.key_tr,
 		*val_tr = hmap_r.map->env.val_tr;
-
-	void *key = (key_tr->link)
-		? *(void**)(*pp_node)->kvbuffer
-		: (*pp_node)->kvbuffer;
 
 	void *pval = (*pp_node)->kvbuffer + key_tr->size;
 
@@ -266,16 +263,13 @@ static void *iter_get(const ax_iter *it)
 		? *(void**)pval
 		: pval;
 
-
-	ax_pair_r pair_r = ax_pair_create(ax_base_local(base), key, val);
-
-	return pair_r.pair;
+	return val;
 }
 
 static ax_fail iter_set(const ax_iter *it, const void *p)
 {
-	CHECK_PARAM_VALIDITY(it, it->owner);
-	CHECK_PARAM_VALIDITY(it, it->point);
+	CHECK_PARAM_NULL(it);
+	CHECK_PARAM_VALIDITY(it, it->owner && it->point);
 
 	struct node_st **pp_node = it->point;
 
@@ -423,6 +417,21 @@ static ax_bool map_exist (const ax_map *map, const void *key)
 	return ax_false;
 }
 
+static const void *map_it_key(ax_citer *it)
+{
+	CHECK_PARAM_NULL(it);
+	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
+
+	ax_hmap_cr hmap_r = { .hmap = it->owner };
+	struct node_st **pp_node = it->point;
+
+	const ax_stuff_trait *key_tr = hmap_r.map->env.key_tr;
+
+	return (key_tr->link)
+		? *(void**)(*pp_node)->kvbuffer
+		: (*pp_node)->kvbuffer;
+}
+
 static void one_free(ax_one *one)
 {
 	if (!one)
@@ -451,9 +460,8 @@ static ax_any *any_copy(const ax_any *any)
 	const ax_stuff_trait *ktr = src_r.map->env.key_tr;
 	const ax_stuff_trait *vtr = src_r.map->env.val_tr;
 	ax_hmap_r dst_r = { .map = __ax_hmap_construct(base, ktr, vtr)};
-
-	ax_foreach(const ax_pair *, pair, src_r.box) {
-		if (ax_map_put(dst_r.map, ax_pair_key(pair), ax_pair_cvalue(pair))) {
+	ax_map_cforeach(src_r.map, const void *, key, const void *, val) {
+		if (ax_map_put(dst_r.map, key, val)) {
 			ax_one_free(dst_r.one);
 			return NULL;
 		}
@@ -582,6 +590,7 @@ static const ax_map_trait map_trait =
 	.get   = map_get,
 	.erase = map_erase,
 	.exist = map_exist,
+	.itkey = map_it_key
 };
 
 static const ax_iter_trait iter_trait =

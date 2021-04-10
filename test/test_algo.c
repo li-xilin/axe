@@ -20,17 +20,17 @@
 static void all_any_none_of(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_vector_r role = ax_vector_create(
+	ax_vector_r vec_r = ax_vector_create(
 		ax_base_local(base),
 		ax_stuff_traits(AX_ST_I32));
-	for (int i = 0; i < 18; i++) { ax_seq_push(role.seq, &i); }
-	ax_iter first = ax_box_begin(role.box), last = ax_box_end(role.box);
+	for (int i = 0; i < 18; i++) { ax_seq_push(vec_r.seq, &i); }
+	ax_iter first = ax_box_begin(vec_r.box), last = ax_box_end(vec_r.box);
 	int32_t one = 1;
 	ax_pred pred = ax_pred_binary_make(ax_oper_for(AX_ST_I32)->add, NULL, &one, NULL);
 	ax_transform(ax_iter_c(&first), ax_iter_c(&last), &first, &pred);
 
 	int i = 0;
-	ax_foreach(const int32_t *, p, role.box) {
+	ax_box_cforeach(vec_r.box, const int32_t *, p) {
 		axut_assert(r, *p == i + 1);
 		i++;
 	}
@@ -55,10 +55,10 @@ static void partation(axut_runner *r)
 {
 	ax_base *base = ax_base_create();
 
-	ax_vector_r role = ax_vector_init(ax_base_local(base),
+	ax_vector_r vec_r = ax_vector_init(ax_base_local(base),
 			"i32x9", 1, 8, 2, 4, 9, 5, 3, 6, 7);
-	ax_iter first = ax_box_begin(role.box);
-	ax_iter last = ax_box_end(role.box);
+	ax_iter first = ax_box_begin(vec_r.box);
+	ax_iter last = ax_box_end(vec_r.box);
 	int32_t pivot = 5;
 	ax_pred pred = ax_pred_binary_make(ax_oper_for(AX_ST_I32)->lt, NULL, &pivot, NULL);
 	
@@ -83,18 +83,18 @@ static void partation(axut_runner *r)
 
 static void quick_sort(axut_runner *r)
 {
-	ax_vector_r role;
+	ax_vector_r vec_r;
 	ax_base *base = ax_base_create();
 
-	 role = ax_vector_init(ax_base_local(base),
+	 vec_r = ax_vector_init(ax_base_local(base),
 			"i32x10", 1, 8, 2, 4, 9, 5, 3, 6, 7, 0);
 
-	ax_iter first = ax_box_begin(role.box);
-	ax_iter last = ax_box_end(role.box);
+	ax_iter first = ax_box_begin(vec_r.box);
+	ax_iter last = ax_box_end(vec_r.box);
 	ax_quick_sort(&first, &last);
 	
 	int32_t i = 0;
-	ax_foreach(const int32_t*, v, role.box) {
+	ax_box_cforeach(vec_r.box, const int32_t*, v) {
 		axut_assert(r, *v == i);
 		i++;
 	}
@@ -127,32 +127,32 @@ static void merge(axut_runner *r)
 
 static void merge_sort(axut_runner *r)
 {
-	ax_vector_r role;
+	ax_vector_r vec_r;
 	ax_base *base = ax_base_create();
 
-	 role = ax_vector_init(ax_base_local(base),
+	 vec_r = ax_vector_init(ax_base_local(base),
 			"i32x10", 1, 8, 2, 4, 9, 5, 3, 6, 7, 0);
 
-	ax_iter first = ax_box_begin(role.box);
-	ax_iter last = ax_box_end(role.box);
+	ax_iter first = ax_box_begin(vec_r.box);
+	ax_iter last = ax_box_end(vec_r.box);
 	ax_merge_sort(&first, &last);
 	
 	uint32_t table1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-	axut_assert(r, seq_equal_array(role.seq, table1, sizeof table1));
+	axut_assert(r, seq_equal_array(vec_r.seq, table1, sizeof table1));
 
 	ax_base_destroy(base);
 }
 
 static void binary_search(axut_runner *r)
 {
-	ax_vector_r role;
+	ax_vector_r vec_r;
 	ax_base *base = ax_base_create();
 
-	role = ax_vector_init(ax_base_local(base),
+	vec_r = ax_vector_init(ax_base_local(base),
 			"i32x4", 1, 2, 3, 4);
 
-	ax_iter first = ax_box_begin(role.box);
-	ax_iter last = ax_box_end(role.box);
+	ax_iter first = ax_box_begin(vec_r.box);
+	ax_iter last = ax_box_end(vec_r.box);
 
 	uint32_t num;
 	ax_iter res;
@@ -173,14 +173,14 @@ static void binary_search(axut_runner *r)
 
 static void binary_search_if_not(axut_runner *r)
 {
-	ax_vector_r role;
+	ax_vector_r vec_r;
 	ax_base *base = ax_base_create();
 
-	role = ax_vector_init(ax_base_local(base),
+	vec_r = ax_vector_init(ax_base_local(base),
 			"i32x4", 1, 3, 5, 7);
 
-	ax_citer first = ax_box_cbegin(role.box);
-	ax_citer last = ax_box_cend(role.box);
+	ax_citer first = ax_box_cbegin(vec_r.box);
+	ax_citer last = ax_box_cend(vec_r.box);
 
 	uint32_t num;
 	ax_citer res;
@@ -212,18 +212,18 @@ static void binary_search_if_not(axut_runner *r)
 
 static void insertion_sort(axut_runner *r)
 {
-	ax_vector_r role;
+	ax_vector_r vec_r;
 	ax_base *base = ax_base_create();
 
-	role = ax_vector_init(ax_base_local(base),
+	vec_r = ax_vector_init(ax_base_local(base),
 			"i32x10", 1, 8, 2, 4, 9, 5, 3, 6, 7, 0);
 
-	ax_iter first = ax_box_begin(role.box);
-	ax_iter last = ax_box_end(role.box);
+	ax_iter first = ax_box_begin(vec_r.box);
+	ax_iter last = ax_box_end(vec_r.box);
 	ax_insertion_sort(&first, &last);
 	
 	uint32_t table1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-	axut_assert(r, seq_equal_array(role.seq, table1, sizeof table1));
+	axut_assert(r, seq_equal_array(vec_r.seq, table1, sizeof table1));
 
 	ax_base_destroy(base);
 }
@@ -284,6 +284,7 @@ static void sort_time(axut_runner *r) {
 		axut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
 	}
 
+	/*
 	{
 		first = ax_box_begin(role3.box);
 		last = ax_box_end(role3.box);
@@ -293,6 +294,7 @@ static void sort_time(axut_runner *r) {
 		printf("ax_insertion_sort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
 		axut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
 	}
+	*/
 
 	{
 		time_before = clock();

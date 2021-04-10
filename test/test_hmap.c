@@ -23,9 +23,8 @@ static void test_complex(axut_runner* r)
 	int table[N] = {0};
 	ax_iter it = ax_box_begin(hmap_r.box), end = ax_box_end(hmap_r.box);
 	while (!ax_iter_equal(&it, &end)) {
-		ax_pair *pair = ax_iter_get(&it);
-		int *k = (int*)ax_pair_key(pair);
-		int *v = (int*)ax_pair_value(pair);
+		int *k = (int*)ax_map_iter_key(&it);
+		int *v = (int*)ax_iter_get(&it);
 		axut_assert(r, *k == *v);
 		table[*k] = 1;
 		ax_iter_next(&it);
@@ -56,11 +55,11 @@ static void test_foreach(axut_runner *r)
 
 	int32_t check_table[count];
 	for (int i = 0; i < count; i++) check_table[i] = -1;
-	ax_foreach(const ax_pair *, pair, hmap_r.box) {
-		int key;
-		sscanf((char*)ax_pair_key(pair), "%d", &key);
-		axut_assert(r, key == *(uint32_t*)ax_pair_cvalue(pair));
-		check_table[key] = 0;
+	ax_map_cforeach(hmap_r.map, const char *, key, const uint32_t *, val) {
+		int k;
+		sscanf(key, "%d", &k);
+		axut_assert(r, k == *val);
+		check_table[k] = 0;
 	}
 	for (int i = 0; i < count; i++) 
 		axut_assert(r, check_table[i] == 0);

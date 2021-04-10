@@ -16,15 +16,15 @@
 static void create(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_vector_r role;
+	ax_vector_r vec_r;
 
-	role = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
-	axut_assert(r, role.any != NULL);
-	axut_assert(r, ax_box_size(role.box) == 0);
+	vec_r = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	axut_assert(r, vec_r.any != NULL);
+	axut_assert(r, ax_box_size(vec_r.box) == 0);
 
 	ax_seq *seq = ax_seq_init(ax_base_local(base), __ax_vector_construct, "i32x3", 1, 2, 3);
 	int i = 1;
-	ax_foreach(const int*, v, ax_r(seq, seq).box) {
+	ax_box_cforeach(ax_r(seq, seq).box, const int*, v) {
 		axut_assert(r, *v == i++);
 	}
 
@@ -34,20 +34,20 @@ static void create(axut_runner *r)
 static void push(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_vector_r role = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r vec_r = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	for (int i = 0; i < 20; i++) {
-		ax_seq_push(role.seq, &i);
+		ax_seq_push(vec_r.seq, &i);
 	}
 
 	for (int i = 0; i < 20; i++) {
-		ax_iter it = ax_seq_at(role.seq, i);
+		ax_iter it = ax_seq_at(vec_r.seq, i);
 		axut_assert(r, *(int*)ax_iter_get(&it) == i);
 	}
 
 	for (int i = 0; i < 20; i++) {
-		ax_seq_pop(role.seq);
+		ax_seq_pop(vec_r.seq);
 	}
-	axut_assert(r, ax_box_size(role.box) == 0);
+	axut_assert(r, ax_box_size(vec_r.box) == 0);
 
 	ax_base_destroy(base);
 }
@@ -59,25 +59,25 @@ static void iter(axut_runner *r)
 
 	ax_base* base = ax_base_create();
 
-	ax_vector_r role = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r vec_r = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	for (i = 0; i < 20; i++) {
-		ax_seq_push(role.seq, &i);
+		ax_seq_push(vec_r.seq, &i);
 	}
 
 	i = 0;
-	ax_foreach(const int*, v, role.box) {
+	ax_box_cforeach(vec_r.box, const int*, v) {
 		axut_assert(r, *v == i++);
 	}
 
 	i = 0;
-	cur = ax_box_begin(role.box);
-	last = ax_box_end(role.box);
+	cur = ax_box_begin(vec_r.box);
+	last = ax_box_end(vec_r.box);
 	while (!ax_iter_equal(&cur, &last)) {
 		axut_assert(r, *(int32_t*)ax_iter_get(&cur) == i++);
 		ax_iter_next(&cur);
 	}
 
-	ax_one_free(role.one);
+	ax_one_free(vec_r.one);
 	ax_base_destroy(base);
 }
 
@@ -87,36 +87,36 @@ static void riter(axut_runner *r)
 	int i;
 
 	ax_base* base = ax_base_create();
-	ax_vector_r role = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
+	ax_vector_r vec_r = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	for (i = 0; i < 20; i++) {
-		ax_seq_push(role.seq, &i);
+		ax_seq_push(vec_r.seq, &i);
 	}
 
 	i = 20 - 1;
-	cur = ax_box_rbegin(role.box);
-	last = ax_box_rend(role.box);
+	cur = ax_box_rbegin(vec_r.box);
+	last = ax_box_rend(vec_r.box);
 	while (!ax_iter_equal(&cur, &last)) {
 		axut_assert(r, *(int32_t*)ax_iter_get(&cur) == i--);
 		ax_iter_next(&cur);
 	}
 
 	i = 20 - 1;
-	cur = ax_box_end(role.box);
-	last = ax_box_begin(role.box);
+	cur = ax_box_end(vec_r.box);
+	last = ax_box_begin(vec_r.box);
 	do {
 		ax_iter_prev(&cur);
 		axut_assert(r, *(int32_t*)ax_iter_get(&cur) == i--);
 	} while (!ax_iter_equal(&cur, &last));
 
 	i = 0;
-	cur = ax_box_rend(role.box);
-	last = ax_box_rbegin(role.box);
+	cur = ax_box_rend(vec_r.box);
+	last = ax_box_rbegin(vec_r.box);
 	do {
 		ax_iter_prev(&cur);
 		axut_assert(r, *(int32_t*)ax_iter_get(&cur) == i++);
 	} while (!ax_iter_equal(&cur, &last));
 
-	ax_one_free(role.one);
+	ax_one_free(vec_r.one);
 	ax_base_destroy(base);
 }
 
@@ -125,25 +125,25 @@ static void seq_insert(axut_runner *r)
 {
 	int ins;
 	ax_base* base = ax_base_create();
-	ax_vector_r role = ax_vector_init(ax_base_local(base), "i32x2", 1, 2);
+	ax_vector_r vec_r = ax_vector_init(ax_base_local(base), "i32x2", 1, 2);
 
-	ax_iter it = ax_box_begin(role.box);
+	ax_iter it = ax_box_begin(vec_r.box);
 
 	ins = 3;
-	ax_seq_insert(role.seq, &it, &ins);
+	ax_seq_insert(vec_r.seq, &it, &ins);
 	int32_t table1[] = {3, 1, 2};
-	axut_assert(r, seq_equal_array(role.seq, table1, sizeof table1));
+	axut_assert(r, seq_equal_array(vec_r.seq, table1, sizeof table1));
 
 	ins = 4;
-	ax_seq_insert(role.seq, &it, &ins);
+	ax_seq_insert(vec_r.seq, &it, &ins);
 	int32_t table2[] = {3, 4, 1, 2};
-	axut_assert(r, seq_equal_array(role.seq, table2, sizeof table2));
+	axut_assert(r, seq_equal_array(vec_r.seq, table2, sizeof table2));
 
-	it = ax_box_end(role.box);
+	it = ax_box_end(vec_r.box);
 	ins = 5;
-	ax_seq_insert(role.seq, &it, &ins);
+	ax_seq_insert(vec_r.seq, &it, &ins);
 	int32_t table3[] = {3, 4, 1, 2, 5};
-	axut_assert(r, seq_equal_array(role.seq, table3, sizeof table3));
+	axut_assert(r, seq_equal_array(vec_r.seq, table3, sizeof table3));
 
 	ax_base_destroy(base);
 }
@@ -152,25 +152,25 @@ static void seq_insert_for_riter(axut_runner *r)
 {
 	int ins;
 	ax_base* base = ax_base_create();
-	ax_vector_r role = ax_vector_init(ax_base_local(base), "i32x2", 2, 1);
+	ax_vector_r vec_r = ax_vector_init(ax_base_local(base), "i32x2", 2, 1);
 
-	ax_iter it = ax_box_rbegin(role.box);
+	ax_iter it = ax_box_rbegin(vec_r.box);
 
 	ins = 3;
-	ax_seq_insert(role.seq, &it, &ins);
+	ax_seq_insert(vec_r.seq, &it, &ins);
 	int32_t table1[] = {2, 1, 3};
-	axut_assert(r, seq_equal_array(role.seq, table1, sizeof table1));
+	axut_assert(r, seq_equal_array(vec_r.seq, table1, sizeof table1));
 
 	ins = 4;
-	ax_seq_insert(role.seq, &it, &ins);
+	ax_seq_insert(vec_r.seq, &it, &ins);
 	int32_t table2[] = {2, 1, 4, 3};
-	axut_assert(r, seq_equal_array(role.seq, table2, sizeof table2));
+	axut_assert(r, seq_equal_array(vec_r.seq, table2, sizeof table2));
 
-	it = ax_box_rend(role.box);
+	it = ax_box_rend(vec_r.box);
 	ins = 5;
-	ax_seq_insert(role.seq, &it, &ins);
+	ax_seq_insert(vec_r.seq, &it, &ins);
 	int32_t table3[] = {5, 2, 1, 4, 3};
-	axut_assert(r, seq_equal_array(role.seq, table3, sizeof table3));
+	axut_assert(r, seq_equal_array(vec_r.seq, table3, sizeof table3));
 
 	ax_base_destroy(base);
 }
@@ -213,18 +213,18 @@ static void seq_trunc(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
 
-	ax_vector_r role = ax_vector_init(ax_base_local(base), "i32x3", 1, 2, 3);
+	ax_vector_r vec_r = ax_vector_init(ax_base_local(base), "i32x3", 1, 2, 3);
 
 	int32_t table1[] = {1, 2, 3, 0, 0};
-	ax_seq_trunc(role.seq, 5);
-	axut_assert(r, seq_equal_array(role.seq, table1, sizeof table1));
+	ax_seq_trunc(vec_r.seq, 5);
+	axut_assert(r, seq_equal_array(vec_r.seq, table1, sizeof table1));
 
-	ax_seq_trunc(role.seq, 0);
-	axut_assert(r, seq_equal_array(role.seq, NULL, 0));
+	ax_seq_trunc(vec_r.seq, 0);
+	axut_assert(r, seq_equal_array(vec_r.seq, NULL, 0));
 
 	int32_t table3[] = {0, 0, 0, 0, 0};
-	ax_seq_trunc(role.seq, 5);
-	axut_assert(r, seq_equal_array(role.seq, table3, sizeof table3));
+	ax_seq_trunc(vec_r.seq, 5);
+	axut_assert(r, seq_equal_array(vec_r.seq, table3, sizeof table3));
 
 	ax_base_destroy(base);
 }
@@ -232,22 +232,22 @@ static void seq_trunc(axut_runner *r)
 static void seq_invert(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
-	ax_vector_r role = ax_vector_init(ax_base_local(base), "i32x5", 1, 2, 3, 4, 5);
+	ax_vector_r vec_r = ax_vector_init(ax_base_local(base), "i32x5", 1, 2, 3, 4, 5);
 
 	int32_t table1[] = {5, 4, 3, 2, 1};
-	ax_seq_invert(role.seq);
-	axut_assert(r, seq_equal_array(role.seq, table1, sizeof table1));
+	ax_seq_invert(vec_r.seq);
+	axut_assert(r, seq_equal_array(vec_r.seq, table1, sizeof table1));
 
-	ax_box_clear(role.box);
-	axut_assert(r, ax_box_size(role.box) == 0);
+	ax_box_clear(vec_r.box);
+	axut_assert(r, ax_box_size(vec_r.box) == 0);
 
-	ax_seq_invert(role.seq);
-	axut_assert(r, ax_box_size(role.box) == 0);
+	ax_seq_invert(vec_r.seq);
+	axut_assert(r, ax_box_size(vec_r.box) == 0);
 
 	int32_t table3[] = {1};
-	ax_seq_push(role.seq, table3);
-	ax_seq_invert(role.seq);
-	axut_assert(r, seq_equal_array(role.seq, table3, sizeof table3));
+	ax_seq_push(vec_r.seq, table3);
+	ax_seq_invert(vec_r.seq);
+	axut_assert(r, seq_equal_array(vec_r.seq, table3, sizeof table3));
 
 	ax_base_destroy(base);
 }

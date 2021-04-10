@@ -62,6 +62,7 @@ static ax_fail  map_put (ax_map* map, const void *key, const void *val);
 static ax_fail  map_erase (ax_map* map, const void *key);
 static void    *map_get (const ax_map* map, const void *key);
 static ax_bool  map_exist (const ax_map* map, const void *key);
+static const void *map_itkey(ax_citer *it);
 
 static size_t   box_size(const ax_box* box);
 static size_t   box_maxsize(const ax_box* box);
@@ -426,18 +427,11 @@ static void *iter_get(const ax_iter *it)
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
 
 	const ax_avl *avl= it->owner;
-	ax_base *base = ax_one_base(ax_cr(avl, avl).one);
-
 	struct node_st *node = it->point;
-
-	void *pkey = node->kvbuffer;
 	void *pval = get_node_value(it->owner, node);
-
-	void *key = avl->_map.env.key_tr->link ? *(void**)pkey : pkey;
-	void *val = avl->_map.env.val_tr->link ? *(void**)pval : pval;
-
-	ax_pair_r pair_r = ax_pair_create(ax_base_local(base), key, val);
-	return pair_r.pair;
+	return avl->_map.env.val_tr->link
+		? *(void**)pval
+		: pval;
 }
 
 static ax_fail iter_set(const ax_iter *it, const void *val)
@@ -612,7 +606,7 @@ static void *map_get (const ax_map* map, const void *key)
 	return val;
 }
 
-static ax_bool map_exist (const ax_map* map, const void *key)
+static ax_bool map_exist(const ax_map* map, const void *key)
 {
 	CHECK_PARAM_NULL(map);
 	CHECK_PARAM_NULL(key);
@@ -622,6 +616,17 @@ static ax_bool map_exist (const ax_map* map, const void *key)
 	return !!find_node(map, avl_r.avl->root, pkey);
 }
 
+static const void *map_itkey(ax_citer *it)
+{
+	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
+
+	const ax_avl *avl= it->owner;
+	const ax_stuff_trait *key_tr = avl->_map.env.key_tr;
+	struct node_st *node = it->point;
+	void *pkey = node->kvbuffer;
+
+	return key_tr->link ? *(void**)pkey : pkey;
+}
 
 static void one_free(ax_one* one)
 {
@@ -631,7 +636,6 @@ static void one_free(ax_one* one)
 	ax_scope_detach(one);
 	box_clear(avl_r.box);
 	ax_pool_free(one);
-
 }
 
 static void any_dump(const ax_any* any, int ind)
@@ -649,8 +653,8 @@ static ax_any *any_copy(const ax_any *any)
 	const ax_stuff_trait *vtr = src_r.map->env.val_tr;
 	ax_avl_r dst_r = { .map = __ax_avl_construct(base, ktr, vtr)};
 
-	ax_foreach(const ax_pair *, pair, src_r.box) {
-		if (ax_map_put(dst_r.map, ax_pair_key(pair), ax_pair_cvalue(pair))) {
+	ax_map_cforeach(src_r.map, const void *, key, const void *, val) {
+		if (ax_map_put(dst_r.map, key, val)) {
 			ax_one_free(dst_r.one);
 			return NULL;
 		}
@@ -814,6 +818,7 @@ static const ax_map_trait map_trait =
 	.get   = map_get,
 	.erase = map_erase,
 	.exist = map_exist,
+	.itkey = map_itkey
 };
 
 static const ax_iter_trait iter_trait =

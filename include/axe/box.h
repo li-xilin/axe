@@ -32,13 +32,32 @@
 typedef struct ax_box_trait_st ax_box_trait;
 #endif
 
-#define ax_foreach(_type, _var, _box)                                                   \
+#define ax_box_iterate(_box, _it)                                           \
+	for (ax_iter _it = ax_box_begin(_box), _it##_end= ax_box_end(_box); \
+		!ax_iter_equal(&_it, &_it##_end);                           \
+		ax_iter_next(&_it))
+
+#define ax_box_citerate(_box, _it)                                             \
+	for (ax_citer _it = ax_box_cbegin(_box), _it##_end= ax_box_cend(_box); \
+		!ax_citer_equal(&_it, &_it##_end);                             \
+		ax_citer_next(&_it))
+
+#define ax_box_foreach(_box, _type, _var)                                               \
+	for ( int __ax_foreach_##_var##_flag = 1 ; __ax_foreach_##_var##_flag ; )       \
+	for (_type  _var ; __ax_foreach_##_var##_flag ; __ax_foreach_##_var##_flag = 0) \
+	for ( ax_iter __##_var##_iter = ax_box_begin(_box),                             \
+			__##_var##_end_iter = ax_box_end(_box);                         \
+		!ax_iter_equal(&__##_var##_iter, &__##_var##_end_iter)                  \
+			&& ((_var) = ax_iter_get(&__##_var##_iter), 1);                 \
+		ax_iter_next(&__##_var##_iter))
+
+#define ax_box_cforeach(_box, _type, _var)                                              \
 	for ( int __ax_foreach_##_var##_flag = 1 ; __ax_foreach_##_var##_flag ; )       \
 	for (_type  _var ; __ax_foreach_##_var##_flag ; __ax_foreach_##_var##_flag = 0) \
 	for ( ax_citer __##_var##_iter = ax_box_cbegin(_box),                           \
 			__##_var##_end_iter = ax_box_cend(_box);                        \
 		!ax_citer_equal(&__##_var##_iter, &__##_var##_end_iter)                 \
-			&& ((_var) = ax_citer_get(&__##_var##_iter), 1);                  \
+			&& ((_var) = ax_citer_get(&__##_var##_iter), 1);                \
 		ax_citer_next(&__##_var##_iter))
 
 typedef size_t  (*ax_box_size_f)  (const ax_box* box);
