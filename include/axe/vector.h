@@ -24,7 +24,7 @@
 #define AXE_VECTOR_H_
 #include "seq.h"
 
-#define AX_VECTOR_NAME "one.any.box.seq.vector"
+#define AX_VECTOR_NAME AX_SEQ_NAME ".vector"
 
 typedef struct ax_vector_st ax_vector;
 
