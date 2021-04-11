@@ -95,7 +95,6 @@ static struct bucket_st *unlink_bucket(struct bucket_st *head, struct bucket_st 
 static struct node_st **find_node(const ax_map *map, struct bucket_st *bucket, const void *key);
 static void free_node(ax_map *map, struct node_st **pp_node);
 
-static const ax_iter_trait iter_trait;
 static const ax_map_trait map_trait;
 
 static ax_fail rehash(ax_hmap *hmap, size_t new_size)
@@ -520,8 +519,8 @@ static ax_iter box_begin(ax_box *box)
 
 	ax_iter it = {
 		.owner = (void *)box,
-		.point = pp_node ? pp_node : NULL,
-		.tr = &iter_trait
+		.tr = &map_trait.box.iter,
+		.point = pp_node ? pp_node : NULL
 	};
 	return it;
 }
@@ -532,8 +531,8 @@ static ax_iter box_end(ax_box *box)
 
 	ax_iter it = {
 		.owner = box,
-		.point = NULL,
-		.tr = &iter_trait
+		.tr = &map_trait.box.iter,
+		.point = NULL
 	};
 	return it;
 }
@@ -577,6 +576,23 @@ static const ax_map_trait map_trait =
 			.copy = any_copy,
 			.move = any_move,
 		},
+		
+		.iter = {
+			.ctr = {
+				.norm  = ax_true,
+				.type  = AX_IT_FORW,
+				.move = NULL,
+				.prev = NULL,
+				.next = citer_next,
+				.less  = NULL,
+				.dist  = NULL,
+			},
+			.get   = iter_get,
+			.set   = iter_set,
+			.erase = iter_erase,
+		},
+		.riter = { { NULL } },
+
 		.size    = box_size,
 		.maxsize = box_maxsize,
 		.begin   = box_begin,
@@ -591,22 +607,6 @@ static const ax_map_trait map_trait =
 	.erase = map_erase,
 	.exist = map_exist,
 	.itkey = map_it_key
-};
-
-static const ax_iter_trait iter_trait =
-{
-	.ctr = {
-		.norm  = ax_true,
-		.type  = AX_IT_FORW,
-		.move = NULL,
-		.prev = NULL,
-		.next = citer_next,
-		.less  = NULL,
-		.dist  = NULL,
-	},
-	.get   = iter_get,
-	.set   = iter_set,
-	.erase = iter_erase,
 };
 
 ax_map *__ax_hmap_construct(ax_base *base, const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)

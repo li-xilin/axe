@@ -93,8 +93,6 @@ static void    *iter_get(const ax_iter *it);
 static ax_fail  iter_set(const ax_iter *it, const void *val);
 static void     iter_erase(ax_iter *it);
 
-static const ax_iter_trait iter_trait;
-static const ax_iter_trait riter_trait;
 static const ax_map_trait map_trait;
 
 inline static void *get_node_value(const ax_map *map, struct node_st *node)
@@ -679,7 +677,6 @@ static ax_any *any_move(ax_any *any)
 	memcpy(dst, src_r.avl, sizeof(ax_avl));
 	src_r.avl->size = 0;
 
-
 	dst->_map.env.one.scope = NULL;
 	dst->_map.env.one.sindex = 0;
 
@@ -687,7 +684,6 @@ static ax_any *any_move(ax_any *any)
 
 	return (ax_any *) dst;
 }
-
 
 static size_t box_size(const ax_box* box)
 {
@@ -717,8 +713,8 @@ static ax_iter box_begin(ax_box* box)
 
 	ax_iter it = {
 		.owner = box,
-		.point = node,
-		.tr = &iter_trait
+		.tr = &map_trait.box.iter,
+		.point = node
 	};
 
 	return it;
@@ -730,8 +726,8 @@ static ax_iter box_end(ax_box* box)
 
 	ax_iter it = {
 		.owner = box,
-		.point = NULL,
-		.tr = &iter_trait,
+		.tr = &map_trait.box.iter,
+		.point = NULL
 	};
 	return it;
 }
@@ -749,8 +745,8 @@ static ax_iter box_rbegin(ax_box* box)
 
 	ax_iter it = {
 		.owner = box,
-		.point = node,
-		.tr = &riter_trait
+		.tr = &map_trait.box.riter,
+		.point = node
 	};
 	return it;
 }
@@ -761,8 +757,8 @@ static ax_iter box_rend(ax_box* box)
 
 	ax_iter it = {
 		.owner = box,
-		.point = NULL,
-		.tr = &riter_trait,
+		.tr = &map_trait.box.riter,
+		.point = NULL
 	};
 	return it;
 }
@@ -804,6 +800,35 @@ static const ax_map_trait map_trait =
 			.copy = any_copy,
 			.move = any_move,
 		},
+		.iter = {
+			.ctr = {
+				.norm = ax_true,
+				.type = AX_IT_BID,
+				.move = NULL,
+				.prev = citer_prev,
+				.next = citer_next,
+				.less = citer_less,
+				.dist = citer_dist
+			},
+			.get    = iter_get,
+			.set    = iter_set,
+			.erase  = iter_erase,
+		},
+		.riter = {
+			.ctr = {
+				.norm = ax_false,
+				.type = AX_IT_BID,
+				.move = NULL,
+				.prev = rciter_prev,
+				.next = rciter_next,
+				.less = rciter_less,
+				.dist = rciter_dist,
+			},
+			.get    = iter_get,
+			.set    = iter_set,
+			.erase  = iter_erase,
+		},
+
 		.size    = box_size,
 		.maxsize = box_maxsize,
 		.begin   = box_begin,
@@ -821,38 +846,6 @@ static const ax_map_trait map_trait =
 	.itkey = map_itkey
 };
 
-static const ax_iter_trait iter_trait =
-{
-	.ctr = {
-		.norm = ax_true,
-		.type = AX_IT_BID,
-		.move = NULL,
-		.prev = citer_prev,
-		.next = citer_next,
-		.less = citer_less,
-		.dist = citer_dist
-	},
-	.get    = iter_get,
-	.set    = iter_set,
-	.erase  = iter_erase,
-};
-
-static const ax_iter_trait riter_trait =
-{
-	.ctr = {
-		.norm = ax_false,
-		.type = AX_IT_BID,
-		.move = NULL,
-		.prev = rciter_prev,
-		.next = rciter_next,
-		.less = rciter_less,
-		.dist = rciter_dist,
-	},
-	.get    = iter_get,
-	.set    = iter_set,
-	.erase  = iter_erase,
-};
-
 ax_map *__ax_avl_construct(ax_base* base, const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr)
 {
 	CHECK_PARAM_NULL(base);
@@ -865,7 +858,6 @@ ax_map *__ax_avl_construct(ax_base* base, const ax_stuff_trait* key_tr, const ax
 	CHECK_PARAM_NULL(val_tr);
 	CHECK_PARAM_NULL(val_tr->copy);
 	CHECK_PARAM_NULL(val_tr->free);
-
 
 	ax_avl *avl = ax_pool_alloc(ax_base_pool(base), sizeof(ax_avl));
 	if (avl == NULL)

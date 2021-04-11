@@ -68,15 +68,18 @@ typedef const ax_stuff_trait *(*ax_box_elem_tr_f) (const ax_box* box);
 struct ax_box_trait_st
 {
 	const ax_any_trait any;
-	const ax_box_size_f   size;
-	const ax_box_size_f   maxsize;
+	const ax_iter_trait iter;
+	const ax_iter_trait riter;
 
-	const ax_box_iter_f   begin;
-	const ax_box_iter_f   end;
-	const ax_box_iter_f   rbegin;
-	const ax_box_iter_f   rend;
+	const ax_box_size_f size;
+	const ax_box_size_f maxsize;
 
-	const ax_box_clear_f  clear;
+	const ax_box_iter_f begin;
+	const ax_box_iter_f end;
+	const ax_box_iter_f rbegin;
+	const ax_box_iter_f rend;
+
+	const ax_box_clear_f clear;
 	const ax_box_elem_tr_f elem_tr;
 };
 

@@ -91,8 +91,6 @@ static ax_fail     iter_set(const ax_iter *it, const void *val);
 static void        iter_erase(ax_iter *it);
 
 static const ax_seq_trait seq_trait;
-static const ax_iter_trait reverse_iter_trait;
-static const ax_iter_trait iter_trait;
 
 static void citer_prev(ax_citer *it)
 {
@@ -429,7 +427,8 @@ static ax_iter box_begin(ax_box *box)
 	ax_iter it = {
 		.owner = box,
 		.point = self_r.list->head,
-		.tr = &iter_trait };
+		.tr = &seq_trait.box.iter
+	};
 	return it;
 }
 
@@ -440,7 +439,7 @@ static ax_iter box_end(ax_box *box)
 	ax_iter it = {
 		.owner = box,
 		.point = NULL,
-		.tr = &iter_trait
+		.tr = &seq_trait.box.iter
 	};
 	return it;
 	
@@ -455,7 +454,7 @@ static ax_iter box_rbegin(ax_box *box)
 	ax_iter it = {
 		.owner = (void *)box,
 		.point = right_end,
-		.tr = &reverse_iter_trait,
+		.tr = &seq_trait.box.riter,
 	};
 	return it;
 }
@@ -467,7 +466,7 @@ static ax_iter box_rend(ax_box *box)
 	ax_iter it = {
 		.owner = box,
 		.point = NULL,
-		.tr = &reverse_iter_trait,
+		.tr = &seq_trait.box.riter,
 	};
 	return it;
 }
@@ -760,7 +759,11 @@ static ax_iter seq_at(ax_seq *seq, size_t index) /* Could optimized to mean time
 
 	ax_list *list = (ax_list *)seq;
 	struct node_st *cur = list->head;
-	ax_iter it = { .owner = (void *)seq, .tr = &iter_trait, .point = cur };
+	ax_iter it = {
+		.owner = seq,
+		.tr = &seq_trait.box.iter,
+		.point = cur
+	};
 
 	if (index == 0)
 		return it;
@@ -787,6 +790,35 @@ static const ax_seq_trait seq_trait =
 			.copy = any_copy,
 			.move = any_move
 		},
+		.iter = {
+			.ctr = {
+				.norm = ax_true,
+				.type = AX_IT_RAND,
+				.move = NULL,
+				.next = citer_next,
+				.prev = citer_prev,
+				.less = citer_less,
+				.dist = citer_dist,
+			},
+			.get = iter_get,
+			.set = iter_set,
+			.erase = iter_erase
+		},
+		.riter = {
+			.ctr = {
+				.norm = ax_false,
+				.type = AX_IT_RAND,
+				.move = NULL,
+				.prev = rciter_prev,
+				.next = rciter_next,
+				.less = rciter_less,
+				.dist = rciter_dist,
+			},
+			.get = iter_get,
+			.set = iter_set,
+			.erase = iter_erase
+		},
+
 		.size = box_size,
 		.maxsize = box_maxsize,
 
@@ -809,37 +841,6 @@ static const ax_seq_trait seq_trait =
 	.insert = seq_insert,
 };
 
-static const ax_iter_trait iter_trait =
-{
-	.ctr = {
-		.norm = ax_true,
-		.type = AX_IT_RAND,
-		.move = NULL,
-		.next = citer_next,
-		.prev = citer_prev,
-		.less = citer_less,
-		.dist = citer_dist,
-	},
-	.get = iter_get,
-	.set = iter_set,
-	.erase = iter_erase
-};
-
-static const ax_iter_trait reverse_iter_trait =
-{
-	.ctr = {
-		.norm = ax_false,
-		.type = AX_IT_RAND,
-		.move = NULL,
-		.prev = rciter_prev,
-		.next = rciter_next,
-		.less = rciter_less,
-		.dist = rciter_dist,
-	},
-	.get = iter_get,
-	.set = iter_set,
-	.erase = iter_erase
-};
 
 ax_seq* __ax_list_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 {

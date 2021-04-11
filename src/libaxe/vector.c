@@ -51,44 +51,42 @@ struct ax_vector_st
 	ax_buff *buff;
 };
 
-static ax_fail     seq_push(ax_seq *seq, const void *val);
-static ax_fail     seq_pop(ax_seq *seq);
-static void        seq_invert(ax_seq *seq);
-static ax_fail     seq_trunc(ax_seq *seq, size_t size);
-static ax_iter     seq_at(ax_seq *seq, size_t index);
-static ax_fail     seq_insert(ax_seq *seq, ax_iter *it, const void *val);
+static ax_fail seq_push(ax_seq *seq, const void *val);
+static ax_fail seq_pop(ax_seq *seq);
+static void    seq_invert(ax_seq *seq);
+static ax_fail seq_trunc(ax_seq *seq, size_t size);
+static ax_iter seq_at(ax_seq *seq, size_t index);
+static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val);
 
-static size_t      box_size(const ax_box *box);
-static size_t      box_maxsize(const ax_box *box);
-static ax_iter     box_begin(ax_box *box);
-static ax_iter     box_end(ax_box *box);
-static ax_iter     box_rbegin(ax_box *box);
-static ax_iter     box_rend(ax_box *box);
-static void        box_clear(ax_box *box);
+static size_t  box_size(const ax_box *box);
+static size_t  box_maxsize(const ax_box *box);
+static ax_iter box_begin(ax_box *box);
+static ax_iter box_end(ax_box *box);
+static ax_iter box_rbegin(ax_box *box);
+static ax_iter box_rend(ax_box *box);
+static void    box_clear(ax_box *box);
 static const ax_stuff_trait *box_elem_tr(const ax_box *box);
 
-static ax_any     *any_copy(const ax_any *any);
-static ax_any     *any_move(ax_any *any);
+static ax_any *any_copy(const ax_any *any);
+static ax_any *any_move(ax_any *any);
 
-static void        one_free(ax_one *one);
+static void    one_free(ax_one *one);
 
-static void        citer_move(ax_citer *it, long i);
-static void        citer_prev(ax_citer *it);
-static void        citer_next(ax_citer *it);
-static ax_bool     citer_less(const ax_citer *it1, const ax_citer *it2);
-static long        citer_dist(const ax_citer *it1, const ax_citer *it2);
+static void    citer_move(ax_citer *it, long i);
+static void    citer_prev(ax_citer *it);
+static void    citer_next(ax_citer *it);
+static ax_bool citer_less(const ax_citer *it1, const ax_citer *it2);
+static long    citer_dist(const ax_citer *it1, const ax_citer *it2);
 
-static void        rciter_move(ax_citer *it, long i);
-static void        rciter_prev(ax_citer *it);
-static void        rciter_next(ax_citer *it);
+static void    rciter_move(ax_citer *it, long i);
+static void    rciter_prev(ax_citer *it);
+static void    rciter_next(ax_citer *it);
 
-static void       *iter_get(const ax_iter *it);
-static void        iter_erase(ax_iter *it);
-static ax_fail     iter_set(const ax_iter *it, const void *val);
+static void   *iter_get(const ax_iter *it);
+static void    iter_erase(ax_iter *it);
+static ax_fail iter_set(const ax_iter *it, const void *val);
 
 static const ax_seq_trait seq_trait;
-static const ax_iter_trait reverse_iter_trait;
-static const ax_iter_trait iter_trait;
 
 #ifdef AX_DEBUG
 static inline ax_bool iter_if_valid(const ax_citer *it)
@@ -362,7 +360,7 @@ static ax_iter box_begin(ax_box *box)
 	ax_iter it = {
 		.owner = (void*)box,
 		.point = ax_buff_ptr(self_r.vector->buff),
-		.tr = &iter_trait
+		.tr = &seq_trait.box.iter
 	};
 	return it;
 }
@@ -375,7 +373,7 @@ static ax_iter box_end(ax_box *box)
 	ax_iter it = {
 		.owner = (void*)box,
 		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff) + ax_buff_size(self_r.vector->buff, NULL),
-		.tr = &iter_trait
+		.tr = &seq_trait.box.iter
 	};
 	return it;
 }
@@ -389,7 +387,7 @@ static ax_iter box_rbegin(ax_box *box)
 		.owner = (void*)box,
 		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff)
 			+ ax_buff_size(self_r.vector->buff, NULL) - self_r.seq->env.elem_tr->size,
-		.tr = &reverse_iter_trait
+		.tr = &seq_trait.box.riter
 	};
 	return it;
 }
@@ -402,7 +400,7 @@ static ax_iter box_rend(ax_box *box)
 	ax_iter it = {
 		.owner = (void *)box,
 		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff) - self_r.seq->env.elem_tr->size,
-		.tr = &reverse_iter_trait
+		.tr = &seq_trait.box.riter
 	};
 	return it;
 }
@@ -591,7 +589,7 @@ static ax_iter seq_at(ax_seq *seq, size_t index)
 
 	ax_iter it = {
 		.owner = self,
-		.tr = &iter_trait,
+		.tr = &seq_trait.box.iter,
 		.point =  ptr + index * etr->size
 	};
 	return it;
@@ -610,6 +608,35 @@ static const ax_seq_trait seq_trait =
 			.move = any_move
 
 		},
+		.iter = {
+			.ctr = {
+				.norm = ax_true,
+				.type = AX_IT_RAND,
+				.move = citer_move,
+				.next = citer_next,
+				.prev = citer_prev,
+				.less = citer_less,
+				.dist = citer_dist,
+			},
+			.get = iter_get,
+			.set = iter_set,
+			.erase = iter_erase,
+		},
+		.riter = {
+			.ctr = {
+				.norm = ax_false,
+				.type = AX_IT_RAND,
+				.move = rciter_move,
+				.next = rciter_next,
+				.prev = rciter_prev,
+				.less = citer_less,
+				.dist = citer_dist,
+			},
+			.get = iter_get,
+			.set = iter_set,
+			.erase = iter_erase,
+		},
+
 		.size = box_size,
 		.maxsize = box_maxsize,
 		.elem_tr = box_elem_tr,
@@ -630,38 +657,6 @@ static const ax_seq_trait seq_trait =
 	.trunc = seq_trunc,
 	.at = seq_at,
 	.insert = seq_insert,
-};
-
-static const ax_iter_trait iter_trait =
-{
-	.ctr = {
-		.norm = ax_true,
-		.type = AX_IT_RAND,
-		.move = citer_move,
-		.next = citer_next,
-		.prev = citer_prev,
-		.less = citer_less,
-		.dist = citer_dist,
-	},
-	.get = iter_get,
-	.set = iter_set,
-	.erase = iter_erase,
-};
-
-static const ax_iter_trait reverse_iter_trait =
-{
-	.ctr = {
-		.norm = ax_false,
-		.type = AX_IT_RAND,
-		.move = rciter_move,
-		.next = rciter_next,
-		.prev = rciter_prev,
-		.less = citer_less,
-		.dist = citer_dist,
-	},
-	.get = iter_get,
-	.set = iter_set,
-	.erase = iter_erase,
 };
 
 ax_seq *__ax_vector_construct(ax_base *base,const ax_stuff_trait *elem_tr)
