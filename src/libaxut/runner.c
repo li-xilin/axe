@@ -28,7 +28,6 @@
 #include <axe/vector.h>
 #include <axe/mem.h>
 #include <axe/avl.h>
-#include <axe/pair.h>
 #include <axe/seq.h>
 #include <axe/scope.h>
 #include <axe/pool.h>
@@ -237,10 +236,10 @@ void axut_runner_run(axut_runner *r)
 	r->statistic.pass = 0;
 	r->statistic.fail = 0;
 	r->statistic.term = 0;
-	ax_foreach(axut_suite * const*, ppsuite, r->suites.box) {
+	ax_box_foreach(r->suites.box, axut_suite * const*, ppsuite) {
 		const ax_seq *case_tab = axut_suite_all_case(*ppsuite);
 		r->arg = axut_suite_arg(*ppsuite);
-		ax_foreach(const axut_case *, test_case, ax_cr(seq, case_tab).box) {
+		ax_box_cforeach(ax_cr(seq, case_tab).box, const axut_case *, test_case) {
 			jmp_buf jmp;
 			axut_case *tc = (axut_case *)test_case;
 			if (tc->state != AXUT_CS_READY)
