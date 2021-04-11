@@ -86,8 +86,6 @@ static void   *iter_get(const ax_iter *it);
 static void    iter_erase(ax_iter *it);
 static ax_fail iter_set(const ax_iter *it, const void *val);
 
-static const ax_seq_trait seq_trait;
-
 #ifdef AX_DEBUG
 static inline ax_bool iter_if_valid(const ax_citer *it)
 {
@@ -360,7 +358,7 @@ static ax_iter box_begin(ax_box *box)
 	ax_iter it = {
 		.owner = (void*)box,
 		.point = ax_buff_ptr(self_r.vector->buff),
-		.tr = &seq_trait.box.iter
+		.tr = &ax_vector_tr.box.iter
 	};
 	return it;
 }
@@ -373,7 +371,7 @@ static ax_iter box_end(ax_box *box)
 	ax_iter it = {
 		.owner = (void*)box,
 		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff) + ax_buff_size(self_r.vector->buff, NULL),
-		.tr = &seq_trait.box.iter
+		.tr = &ax_vector_tr.box.iter
 	};
 	return it;
 }
@@ -387,7 +385,7 @@ static ax_iter box_rbegin(ax_box *box)
 		.owner = (void*)box,
 		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff)
 			+ ax_buff_size(self_r.vector->buff, NULL) - self_r.seq->env.elem_tr->size,
-		.tr = &seq_trait.box.riter
+		.tr = &ax_vector_tr.box.riter
 	};
 	return it;
 }
@@ -400,7 +398,7 @@ static ax_iter box_rend(ax_box *box)
 	ax_iter it = {
 		.owner = (void *)box,
 		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff) - self_r.seq->env.elem_tr->size,
-		.tr = &seq_trait.box.riter
+		.tr = &ax_vector_tr.box.riter
 	};
 	return it;
 }
@@ -589,13 +587,13 @@ static ax_iter seq_at(ax_seq *seq, size_t index)
 
 	ax_iter it = {
 		.owner = self,
-		.tr = &seq_trait.box.iter,
+		.tr = &ax_vector_tr.box.iter,
 		.point =  ptr + index * etr->size
 	};
 	return it;
 }
 
-static const ax_seq_trait seq_trait =
+const ax_seq_trait ax_vector_tr =
 {
 	.box = {
 		.any = {
@@ -685,7 +683,7 @@ ax_seq *__ax_vector_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 
 	ax_vector vec_init = {
 		._seq = {
-			.tr = &seq_trait,
+			.tr = &ax_vector_tr,
 			.env = {
 				.one = {
 					.base = base,

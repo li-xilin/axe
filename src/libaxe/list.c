@@ -90,8 +90,6 @@ static void       *iter_get(const ax_iter *it);
 static ax_fail     iter_set(const ax_iter *it, const void *val);
 static void        iter_erase(ax_iter *it);
 
-static const ax_seq_trait seq_trait;
-
 static void citer_prev(ax_citer *it)
 {
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr);
@@ -427,7 +425,7 @@ static ax_iter box_begin(ax_box *box)
 	ax_iter it = {
 		.owner = box,
 		.point = self_r.list->head,
-		.tr = &seq_trait.box.iter
+		.tr = &ax_list_tr.box.iter
 	};
 	return it;
 }
@@ -439,7 +437,7 @@ static ax_iter box_end(ax_box *box)
 	ax_iter it = {
 		.owner = box,
 		.point = NULL,
-		.tr = &seq_trait.box.iter
+		.tr = &ax_list_tr.box.iter
 	};
 	return it;
 	
@@ -454,7 +452,7 @@ static ax_iter box_rbegin(ax_box *box)
 	ax_iter it = {
 		.owner = (void *)box,
 		.point = right_end,
-		.tr = &seq_trait.box.riter,
+		.tr = &ax_list_tr.box.riter,
 	};
 	return it;
 }
@@ -466,7 +464,7 @@ static ax_iter box_rend(ax_box *box)
 	ax_iter it = {
 		.owner = box,
 		.point = NULL,
-		.tr = &seq_trait.box.riter,
+		.tr = &ax_list_tr.box.riter,
 	};
 	return it;
 }
@@ -761,7 +759,7 @@ static ax_iter seq_at(ax_seq *seq, size_t index) /* Could optimized to mean time
 	struct node_st *cur = list->head;
 	ax_iter it = {
 		.owner = seq,
-		.tr = &seq_trait.box.iter,
+		.tr = &ax_list_tr.box.iter,
 		.point = cur
 	};
 
@@ -778,7 +776,7 @@ static ax_iter seq_at(ax_seq *seq, size_t index) /* Could optimized to mean time
 	return it;
 }
 
-static const ax_seq_trait seq_trait =
+const ax_seq_trait ax_list_tr =
 {
 	.box = {
 		.any = {
@@ -859,7 +857,7 @@ ax_seq* __ax_list_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 
 	ax_list list_init = {
 		._seq = {
-			.tr = &seq_trait,
+			.tr = &ax_list_tr,
 			.env = {
 				.one = {
 					.base = base,

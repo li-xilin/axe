@@ -95,8 +95,6 @@ static struct bucket_st *unlink_bucket(struct bucket_st *head, struct bucket_st 
 static struct node_st **find_node(const ax_map *map, struct bucket_st *bucket, const void *key);
 static void free_node(ax_map *map, struct node_st **pp_node);
 
-static const ax_map_trait map_trait;
-
 static ax_fail rehash(ax_hmap *hmap, size_t new_size)
 {
 	ax_hmap_r hmap_r = { hmap };
@@ -519,7 +517,7 @@ static ax_iter box_begin(ax_box *box)
 
 	ax_iter it = {
 		.owner = (void *)box,
-		.tr = &map_trait.box.iter,
+		.tr = &ax_hmap_tr.box.iter,
 		.point = pp_node ? pp_node : NULL
 	};
 	return it;
@@ -531,7 +529,7 @@ static ax_iter box_end(ax_box *box)
 
 	ax_iter it = {
 		.owner = box,
-		.tr = &map_trait.box.iter,
+		.tr = &ax_hmap_tr.box.iter,
 		.point = NULL
 	};
 	return it;
@@ -564,7 +562,7 @@ static const ax_stuff_trait *box_elem_tr(const ax_box *box)
 	return hmap_r.map->env.val_tr;
 }
 
-static const ax_map_trait map_trait =
+const ax_map_trait ax_hmap_tr =
 {
 	.box = {
 		.any = {
@@ -632,7 +630,7 @@ ax_map *__ax_hmap_construct(ax_base *base, const ax_stuff_trait *key_tr, const a
 	
 	ax_hmap hmap_init = {
 		._map = {
-			.tr = &map_trait,
+			.tr = &ax_hmap_tr,
 			.env = {
 				.one = {
 					.base = base,

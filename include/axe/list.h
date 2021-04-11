@@ -47,6 +47,8 @@ typedef union
 	ax_list_cr c;
 } ax_list_r;
 
+extern const ax_seq_trait ax_list_tr;
+
 ax_seq *__ax_list_construct(ax_base *base, const ax_stuff_trait *elem_tr);
 
 ax_list_r ax_list_create(ax_scope *scope, const ax_stuff_trait *elem_tr);

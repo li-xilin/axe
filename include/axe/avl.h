@@ -50,6 +50,8 @@ typedef union
 	ax_avl_cr c;
 } ax_avl_r;
 
+extern const ax_map_trait ax_avl_tr;
+
 ax_map *__ax_avl_construct(ax_base* base,
 		const ax_stuff_trait* key_tr,
 		const ax_stuff_trait* val_tr);

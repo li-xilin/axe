@@ -93,8 +93,6 @@ static void    *iter_get(const ax_iter *it);
 static ax_fail  iter_set(const ax_iter *it, const void *val);
 static void     iter_erase(ax_iter *it);
 
-static const ax_map_trait map_trait;
-
 inline static void *get_node_value(const ax_map *map, struct node_st *node)
 {
 	assert(node);
@@ -713,7 +711,7 @@ static ax_iter box_begin(ax_box* box)
 
 	ax_iter it = {
 		.owner = box,
-		.tr = &map_trait.box.iter,
+		.tr = &ax_avl_tr.box.iter,
 		.point = node
 	};
 
@@ -726,7 +724,7 @@ static ax_iter box_end(ax_box* box)
 
 	ax_iter it = {
 		.owner = box,
-		.tr = &map_trait.box.iter,
+		.tr = &ax_avl_tr.box.iter,
 		.point = NULL
 	};
 	return it;
@@ -745,7 +743,7 @@ static ax_iter box_rbegin(ax_box* box)
 
 	ax_iter it = {
 		.owner = box,
-		.tr = &map_trait.box.riter,
+		.tr = &ax_avl_tr.box.riter,
 		.point = node
 	};
 	return it;
@@ -757,7 +755,7 @@ static ax_iter box_rend(ax_box* box)
 
 	ax_iter it = {
 		.owner = box,
-		.tr = &map_trait.box.riter,
+		.tr = &ax_avl_tr.box.riter,
 		.point = NULL
 	};
 	return it;
@@ -788,7 +786,7 @@ static const ax_stuff_trait *box_elem_tr(const ax_box *box)
 	return avl_r.map->env.val_tr;
 }
 
-static const ax_map_trait map_trait =
+const ax_map_trait ax_avl_tr =
 {
 	.box = {
 		.any = {
@@ -865,7 +863,7 @@ ax_map *__ax_avl_construct(ax_base* base, const ax_stuff_trait* key_tr, const ax
 	
 	ax_avl avl_init = {
 		._map = {
-			.tr = &map_trait,
+			.tr = &ax_avl_tr,
 			.env = {
 				.one = {
 					.base = base,
