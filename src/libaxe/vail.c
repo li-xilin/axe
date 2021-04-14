@@ -273,6 +273,7 @@ ax_vail *ax_vail_vcreate(ax_base *base, const char* fmt, va_list valist)
 	CHECK_PARAM_NULL(fmt);
 
 	struct format_st argfmt;
+	argfmt.size = 0;;
 	make_format(fmt, &argfmt);
 		
 	ax_vail *vail = create_vail(&argfmt, valist);
