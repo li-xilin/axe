@@ -63,9 +63,10 @@ struct ax_hmap_st
 	struct bucket_st *bucket_tab;
 };
 
-static ax_bool  map_put(ax_map *map, const void *key, const void *val);
-static ax_bool  map_erase(ax_map *map, const void *key);
+static void    *map_put(ax_map *map, const void *key, const void *val);
+static ax_fail  map_erase(ax_map *map, const void *key);
 static void    *map_get(const ax_map *map, const void *key);
+static ax_iter  map_at(const ax_map *map, const void *key);
 static ax_bool  map_exist(const ax_map *map, const void *key);
 static const void *map_it_key(ax_citer *it);
 
@@ -317,7 +318,15 @@ static void iter_erase(ax_iter *it)
 	it->point = pp_next;
 }
 
-static ax_fail map_put (ax_map *map, const void *key, const void *val)
+inline static void *node_val(const ax_map* map, struct node_st *node)
+{
+	void *val = map->env.val_tr->link
+		? *(void **) (node->kvbuffer + map->env.key_tr->size)
+		: (node->kvbuffer + map->env.key_tr->size);
+	return val;
+}
+
+static void *map_put (ax_map *map, const void *key, const void *val)
 {
 	CHECK_PARAM_NULL(map);
 	CHECK_PARAM_NULL(key);
@@ -326,33 +335,38 @@ static ax_fail map_put (ax_map *map, const void *key, const void *val)
 	ax_base *base  = ax_one_base(hmap_r.one);
 	ax_pool *pool = ax_base_pool(base);
 
-	const void *pkey = map->env.key_tr->link ? &key : key;
-	const void *pval = map->env.val_tr->link ? &val : val;
+	const ax_stuff_trait
+		*ktr = map->env.key_tr,
+		*vtr = map->env.val_tr;
+
+	const void *pkey = ktr->link ? &key : key;
+	const void *pval = vtr->link ? &val : val;
 
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
 	struct node_st **pp_find_result = find_node(hmap_r.map, bucket, pkey);
 	if (pp_find_result) {
-		ax_byte *value_ptr = (*pp_find_result)->kvbuffer + map->env.key_tr->size;
-		map->env.val_tr->free(value_ptr);
-		map->env.val_tr->copy(pool, value_ptr, pval, map->env.val_tr->size);
+		ax_byte *value_ptr = (*pp_find_result)->kvbuffer + ktr->size;
+		vtr->free(value_ptr);
+		vtr->copy(pool, value_ptr, pval, vtr->size);
+		return node_val(map, *pp_find_result);
 	} else {
 		if (hmap_r.hmap->size == hmap_r.hmap->capacity * REALLOC_THRESHOLD) {
 			if (hmap_r.hmap->capacity == ax_box_maxsize(ax_r(map, map).box)) {
 				ax_base_set_errno(base, AX_ERR_FULL);
-				return ax_true;
+				return NULL;
 			}
 			size_t new_size = hmap_r.hmap->capacity << 1 | 1;
 			if(rehash(hmap_r.hmap, new_size))
-				return ax_true;
+				return NULL;
 			bucket = locate_bucket(hmap_r.hmap, pkey);//bucket is invalid
 		}
 		struct node_st *new_node = make_node(hmap_r.map, pkey, pval);
 		if (!new_node)
-			return ax_true;
+			return NULL;
 		bucket_push_node(hmap_r.hmap, bucket, new_node);
 		hmap_r.hmap->size ++;
+		return node_val(map, new_node);
 	}
-	return ax_false;
 }
 
 static ax_fail map_erase (ax_map *map, const void *key)
@@ -398,6 +412,28 @@ static void *map_get (const ax_map *map, const void *key)
 		return NULL;
 	}
 	return  (*pp_find_result)->kvbuffer + hmap_r.map->env.key_tr->size;
+}
+
+
+static ax_iter  map_at(const ax_map *map, const void *key)
+{
+	CHECK_PARAM_NULL(map);
+	CHECK_PARAM_NULL(key);
+
+	const ax_hmap_cr hmap_r = { .map = map };
+	const void *pkey = map->env.key_tr->link ? &key : key;
+
+	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
+	struct node_st **pp_find_result = find_node(hmap_r.map, bucket, pkey);
+	if (!pp_find_result) {
+		return box_end((ax_box *)hmap_r.box);
+	}
+	return (ax_iter) {
+		.owner = (void *)map,
+		.tr = &ax_hmap_tr.box.iter,
+		.point = pp_find_result
+	};
+
 }
 
 static ax_bool map_exist (const ax_map *map, const void *key)
@@ -458,7 +494,7 @@ static ax_any *any_copy(const ax_any *any)
 	const ax_stuff_trait *vtr = src_r.map->env.val_tr;
 	ax_hmap_r dst_r = { .map = __ax_hmap_construct(base, ktr, vtr)};
 	ax_map_cforeach(src_r.map, const void *, key, const void *, val) {
-		if (ax_map_put(dst_r.map, key, val)) {
+		if (!ax_map_put(dst_r.map, key, val)) {
 			ax_one_free(dst_r.one);
 			return NULL;
 		}
@@ -602,6 +638,7 @@ const ax_map_trait ax_hmap_tr =
 	},
 	.put   = map_put,
 	.get   = map_get,
+	.at    = map_at,
 	.erase = map_erase,
 	.exist = map_exist,
 	.itkey = map_it_key

@@ -17,7 +17,8 @@ static void test_complex(axut_runner* r)
 	ax_hmap_r hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
 			ax_stuff_traits(AX_ST_I32));
 	for (int k = 0, v = 0; k < N; k++, v++) {
-		ax_map_put(hmap_r.map, &k, &v);
+		int32_t *ret = ax_map_put(hmap_r.map, &k, &v);
+		axut_assert(r, *ret == v);
 	}
 
 	int table[N] = {0};

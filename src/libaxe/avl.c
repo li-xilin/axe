@@ -58,10 +58,11 @@ struct ax_avl_st
 
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
-static ax_fail  map_put (ax_map* map, const void *key, const void *val);
-static ax_fail  map_erase (ax_map* map, const void *key);
-static void    *map_get (const ax_map* map, const void *key);
-static ax_bool  map_exist (const ax_map* map, const void *key);
+static void *map_put(ax_map* map, const void *key, const void *val);
+static ax_fail  map_erase(ax_map* map, const void *key);
+static void    *map_get(const ax_map* map, const void *key);
+static ax_iter  map_at(const ax_map* map, const void *key);
+static ax_bool  map_exist(const ax_map* map, const void *key);
 static const void *map_itkey(ax_citer *it);
 
 static size_t   box_size(const ax_box* box);
@@ -93,7 +94,7 @@ static void    *iter_get(const ax_iter *it);
 static ax_fail  iter_set(const ax_iter *it, const void *val);
 static void     iter_erase(ax_iter *it);
 
-inline static void *get_node_value(const ax_map *map, struct node_st *node)
+inline static void *node_pval(const ax_map *map, struct node_st *node)
 {
 	assert(node);
 	return node->kvbuffer + map->env.key_tr->size;
@@ -237,7 +238,7 @@ static struct node_st *make_node(ax_map *map, struct node_st *parent, const void
 	node->right = NULL;
 	if(map->env.key_tr->copy(pool, node->kvbuffer, key, map->env.key_tr->size))
 		goto failed;
-	if(map->env.val_tr->copy(pool, get_node_value(map, node), value, map->env.val_tr->size))
+	if(map->env.val_tr->copy(pool, node_pval(map, node), value, map->env.val_tr->size))
 		goto failed;
 	return node;
 failed:
@@ -324,7 +325,7 @@ static struct node_st* remove_node(ax_map *map, struct node_st* node)
 		}
 	}
 	map->env.key_tr->free(node->kvbuffer);
-	map->env.val_tr->free(get_node_value(map, node));
+	map->env.val_tr->free(node_pval(map, node));
 	ax_pool_free(node);
 	return new_node;
 }
@@ -424,7 +425,7 @@ static void *iter_get(const ax_iter *it)
 
 	const ax_avl *avl= it->owner;
 	struct node_st *node = it->point;
-	void *pval = get_node_value(it->owner, node);
+	void *pval = node_pval(it->owner, node);
 	return avl->_map.env.val_tr->link
 		? *(void**)pval
 		: pval;
@@ -440,7 +441,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	ax_pool *pool = ax_base_pool(base);
 	const ax_stuff_trait *val_tr = avl_r.map->env.val_tr;
 	const void *psrc = val_tr->link ? &val : val;
-	void *pdst = get_node_value(avl_r.map, it->point);
+	void *pdst = node_pval(avl_r.map, it->point);
 	val_tr->free(pdst);
 	if (val_tr->copy(pool, pdst, psrc,  val_tr->size)) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
@@ -478,7 +479,15 @@ static void iter_erase(ax_iter *it)
 	avl_r.avl->size --;
 }
 
-static ax_fail map_put (ax_map* map, const void *key, const void *val)
+inline static void *node_val(const ax_map* map, struct node_st *node)
+{
+	void *val = map->env.val_tr->link
+		? *(void **) (node->kvbuffer + map->env.key_tr->size)
+		: (node->kvbuffer + map->env.key_tr->size);
+	return val;
+}
+
+static void *map_put (ax_map* map, const void *key, const void *val)
 {
 	CHECK_PARAM_NULL(map);
 	CHECK_PARAM_NULL(key);
@@ -493,15 +502,17 @@ static ax_fail map_put (ax_map* map, const void *key, const void *val)
 
 	struct node_st *current = avl_r.avl->root;
 
+	struct node_st *new_node = NULL;
 
 	if(avl_r.avl->size == 0) {
-		avl_r.avl->root = make_node(map, NULL, pkey, pval);
-		if (avl_r.avl->root == NULL) {
+		new_node = make_node(map, NULL, pkey, pval);
+		if (new_node == NULL) {
 			ax_base_set_errno(base, AX_ERR_NOMEM);
 			return ax_false;
 		}
+		avl_r.avl->root = new_node;
 		avl_r.avl->size = 1;
-		return ax_false;
+		return node_val(map, new_node);
 	}
 
 	ax_bool greater, lesser;
@@ -514,11 +525,12 @@ static ax_fail map_put (ax_map* map, const void *key, const void *val)
 			if (current->left)
 				current = current->left;
 			else {
-				current->left = make_node(map, current, pkey, pval);
-				if (current->left == NULL) {
+				new_node = make_node(map, current, pkey, pval);
+				if (!new_node) {
 					ax_base_set_errno(base, AX_ERR_NOMEM);
-					return ax_true;
+					return NULL;
 				}
+				current->left = new_node;
 				current = current->left;
 				break;
 			}
@@ -526,17 +538,18 @@ static ax_fail map_put (ax_map* map, const void *key, const void *val)
 			if (current->right) 
 				current = current->right;
 			else {
-				current->right = make_node(map, current, pkey, pval);
-				if (current->right == NULL) {
+				new_node = make_node(map, current, pkey, pval);
+				if (!new_node) {
 					ax_base_set_errno(base, AX_ERR_NOMEM);
-					return ax_true;
+					return NULL;
 				}
+				current->right = new_node;
 				current = current->right;
 				break;
 			}
 		} else {
-			map->env.val_tr->copy(pool, get_node_value(map, current), pval, map->env.val_tr->size);
-			return ax_false;
+			map->env.val_tr->copy(pool, node_pval(map, current), pval, map->env.val_tr->size);
+			return node_val(map, current);
 		}
 	}
 	do {
@@ -548,7 +561,7 @@ static ax_fail map_put (ax_map* map, const void *key, const void *val)
 	avl_r.avl->root = current;
 	avl_r.avl->size ++;
 
-	return ax_false;
+	return node_val(map, new_node);;
 }
 
 static ax_fail map_erase (ax_map* map, const void *key)
@@ -596,10 +609,26 @@ static void *map_get (const ax_map* map, const void *key)
 	if(!node)
 		return NULL;
 
-	void *pval = get_node_value(map, node);
-	void *val = map->env.key_tr->link ? *(void **)pval : pval;
+	return node_val(map, node);
+}
 
-	return val;
+
+static ax_iter  map_at(const ax_map* map, const void *key)
+{
+	CHECK_PARAM_NULL(map);
+	CHECK_PARAM_NULL(key);
+
+	ax_avl_r avl_r = { .map = (ax_map*)map };
+	const void *pkey = map->env.key_tr->link ? &key : key;
+
+	struct node_st *node = find_node(map, avl_r.avl->root, pkey);
+	if(!node)
+		return box_end(avl_r.box);
+	return (ax_iter) {
+		.owner = (void *)map,
+			.tr = &ax_avl_tr.box.iter,
+			.point = node
+	};
 }
 
 static ax_bool map_exist(const ax_map* map, const void *key)
@@ -650,7 +679,7 @@ static ax_any *any_copy(const ax_any *any)
 	ax_avl_r dst_r = { .map = __ax_avl_construct(base, ktr, vtr)};
 
 	ax_map_cforeach(src_r.map, const void *, key, const void *, val) {
-		if (ax_map_put(dst_r.map, key, val)) {
+		if (!ax_map_put(dst_r.map, key, val)) {
 			ax_one_free(dst_r.one);
 			return NULL;
 		}
@@ -839,6 +868,7 @@ const ax_map_trait ax_avl_tr =
 	},
 	.put   = map_put,
 	.get   = map_get,
+	.at    = map_at,
 	.erase = map_erase,
 	.exist = map_exist,
 	.itkey = map_itkey

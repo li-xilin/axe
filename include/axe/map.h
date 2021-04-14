@@ -54,8 +54,9 @@
 typedef struct ax_map_st ax_map;
 typedef struct ax_map_trait_st ax_map_trait;
 
-typedef ax_fail     (*ax_map_put_f)   (ax_map *map, const void *key, const void *val);
-typedef void  *     (*ax_map_get_f)   (const ax_map *map, const void *key);
+typedef void       *(*ax_map_put_f)   (ax_map *map, const void *key, const void *val);
+typedef void       *(*ax_map_get_f)   (const ax_map *map, const void *key);
+typedef ax_iter     (*ax_map_at_f)    (const ax_map *map, const void *key);
 typedef ax_bool     (*ax_map_exist_f) (const ax_map *map, const void *key);
 typedef ax_fail     (*ax_map_erase_f) (ax_map *map, const void *key);
 typedef const void *(*ax_map_it_key_f)(ax_citer *it);
@@ -65,6 +66,7 @@ struct ax_map_trait_st
 	const ax_box_trait box;
 	const ax_map_put_f put;
 	const ax_map_get_f get;
+	const ax_map_at_f at;
 	const ax_map_exist_f exist;
 	const ax_map_erase_f erase;
 	const ax_map_it_key_f itkey;
@@ -101,7 +103,7 @@ typedef union
 } ax_map_r;
 
 
-inline static ax_fail ax_map_put(ax_map *map, const void *key, const void *val)
+inline static void *ax_map_put(ax_map *map, const void *key, const void *val)
 {
 	ax_trait_require(map, map->tr->put);
 	return map->tr->put(map, key, val);
@@ -117,6 +119,20 @@ inline static void *ax_map_get(ax_map *map, const void *key)
 {
 	ax_trait_require(map, map->tr->get);
 	return map->tr->get(map, key);
+}
+
+inline static ax_iter ax_map_at(ax_map *map, const void *key)
+{
+	ax_trait_require(map, map->tr->at);
+	return map->tr->at(map, key);
+}
+
+inline static ax_citer ax_map_cat(const ax_map *map, const void *key)
+{
+	ax_trait_require(map, map->tr->at);
+	ax_iter it = map->tr->at(map, key);
+	void *p = &it;
+	return *(ax_citer *)p;
 }
 
 inline static void *ax_map_cget(const ax_map *map, const void *key)

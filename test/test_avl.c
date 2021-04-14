@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define N 5000
+#define N 50
 
 static void insert(axut_runner *r)
 {
@@ -18,7 +18,9 @@ static void insert(axut_runner *r)
 	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
 			ax_stuff_traits(AX_ST_I32));
 	for (int k = 0, v = 0; k < N; k++, v++) {
-		ax_map_put(avl_r.map, &k, &v);
+		int32_t *ret = ax_map_put(avl_r.map, &k, &v);
+		axut_assert(r, *ret == v);
+
 	}
 
 	for (int k = 0; k < N; k++) {
