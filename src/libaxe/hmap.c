@@ -454,6 +454,7 @@ static const void *map_it_key(ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
+	CHECK_ITER_TYPE(it, AX_HMAP_NAME);
 
 	ax_hmap_cr hmap_r = { .hmap = it->owner };
 	struct node_st **pp_node = it->point;

@@ -206,10 +206,9 @@ ax_fail axut_runner_add(axut_runner *r, axut_suite* s)
 	ax_iter last = ax_box_end(r->suites.box);
 	ax_iter_prev(&last);
 
-	fail = ax_map_put(r->smap.map, &s, &last.point);
-	if (fail) {
+	if (!ax_map_put(r->smap.map, &s, &last.point)) {
 		ax_seq_pop(r->suites.seq);
-		return fail;
+		return ax_true;
 	}
 
 	return ax_false;

@@ -44,7 +44,7 @@ typedef struct ax_box_trait_st ax_box_trait;
 
 #define ax_box_foreach(_box, _type, _var)                                               \
 	for ( int __ax_foreach_##_var##_flag = 1 ; __ax_foreach_##_var##_flag ; )       \
-	for (_type  _var ; __ax_foreach_##_var##_flag ; __ax_foreach_##_var##_flag = 0) \
+	for (_type  _var = NULL; __ax_foreach_##_var##_flag ; __ax_foreach_##_var##_flag = 0) \
 	for ( ax_iter __##_var##_iter = ax_box_begin(_box),                             \
 			__##_var##_end_iter = ax_box_end(_box);                         \
 		!ax_iter_equal(&__##_var##_iter, &__##_var##_end_iter)                  \
@@ -53,7 +53,7 @@ typedef struct ax_box_trait_st ax_box_trait;
 
 #define ax_box_cforeach(_box, _type, _var)                                              \
 	for ( int __ax_foreach_##_var##_flag = 1 ; __ax_foreach_##_var##_flag ; )       \
-	for (_type  _var ; __ax_foreach_##_var##_flag ; __ax_foreach_##_var##_flag = 0) \
+	for (_type  _var = NULL; __ax_foreach_##_var##_flag ; __ax_foreach_##_var##_flag = 0) \
 	for ( ax_citer __##_var##_iter = ax_box_cbegin(_box),                           \
 			__##_var##_end_iter = ax_box_cend(_box);                        \
 		!ax_citer_equal(&__##_var##_iter, &__##_var##_end_iter)                 \

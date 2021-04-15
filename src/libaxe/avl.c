@@ -58,12 +58,12 @@ struct ax_avl_st
 
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
-static void *map_put(ax_map* map, const void *key, const void *val);
+static void     *map_put(ax_map* map, const void *key, const void *val);
 static ax_fail  map_erase(ax_map* map, const void *key);
 static void    *map_get(const ax_map* map, const void *key);
 static ax_iter  map_at(const ax_map* map, const void *key);
 static ax_bool  map_exist(const ax_map* map, const void *key);
-static const void *map_itkey(ax_citer *it);
+static const void *map_it_key(ax_citer *it);
 
 static size_t   box_size(const ax_box* box);
 static size_t   box_maxsize(const ax_box* box);
@@ -641,9 +641,10 @@ static ax_bool map_exist(const ax_map* map, const void *key)
 	return !!find_node(map, avl_r.avl->root, pkey);
 }
 
-static const void *map_itkey(ax_citer *it)
+static const void *map_it_key(ax_citer *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
+	CHECK_ITER_TYPE(it, AX_HMAP_NAME);
 
 	const ax_avl *avl= it->owner;
 	const ax_stuff_trait *key_tr = avl->_map.env.key_tr;
@@ -871,7 +872,7 @@ const ax_map_trait ax_avl_tr =
 	.at    = map_at,
 	.erase = map_erase,
 	.exist = map_exist,
-	.itkey = map_itkey
+	.itkey = map_it_key
 };
 
 ax_map *__ax_avl_construct(ax_base* base, const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr)
@@ -879,9 +880,9 @@ ax_map *__ax_avl_construct(ax_base* base, const ax_stuff_trait* key_tr, const ax
 	CHECK_PARAM_NULL(base);
 
 	CHECK_PARAM_NULL(key_tr);
-	CHECK_PARAM_NULL(val_tr->less);
-	CHECK_PARAM_NULL(val_tr->copy);
-	CHECK_PARAM_NULL(val_tr->free);
+	CHECK_PARAM_NULL(key_tr->less);
+	CHECK_PARAM_NULL(key_tr->copy);
+	CHECK_PARAM_NULL(key_tr->free);
 
 	CHECK_PARAM_NULL(val_tr);
 	CHECK_PARAM_NULL(val_tr->copy);
