@@ -170,9 +170,7 @@ inline static ax_fail ax_iter_set(const ax_iter *it, const void *val)
 
 inline static ax_bool ax_citer_equal(const ax_citer *it1, const ax_citer *it2)
 {
-	ax_assert(it1->owner == it2->owner && it1->tr == it2->tr,
-			"iterators is not comparable");
-	return it1->point == it2->point;
+	return it1->owner == it2->owner && it1->tr == it2->tr && it1->point == it2->point;
 }
 
 inline static ax_bool ax_iter_equal(const ax_iter *it1, const ax_iter *it2)
