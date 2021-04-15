@@ -291,8 +291,8 @@ static ax_any *any_copy(const ax_any *any)
 
 	new_vector->buff = new_buff;
 
-	new_vector->_seq.env.one.sindex = 0;
-	new_vector->_seq.env.one.scope = NULL;
+	new_vector->_seq.env.one.scope.macro = NULL;
+	new_vector->_seq.env.one.scope.micro = 0;
 	ax_scope_attach(ax_base_local(base), ax_r(vector, new_vector).one);
 	return ax_r(vector, new_vector).any;
 fail:
@@ -324,8 +324,8 @@ static ax_any *any_move(ax_any *any)
 
 	dest->buff = dst_buff;
 
-	dest->_seq.env.one.sindex = 0;
-	dest->_seq.env.one.scope = NULL;
+	dest->_seq.env.one.scope.macro = NULL;
+	dest->_seq.env.one.scope.micro = 0;
 	ax_scope_attach(ax_base_local(base), ax_r(vector, dest).one);
 
 	return ax_r(vector, dest).any;
@@ -687,8 +687,7 @@ ax_seq *__ax_vector_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 			.env = {
 				.one = {
 					.base = base,
-					.scope = NULL,
-					.sindex = 0
+					.scope = { NULL }
 				},
 				.elem_tr = elem_tr
 			},

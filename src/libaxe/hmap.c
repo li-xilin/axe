@@ -501,8 +501,8 @@ static ax_any *any_copy(const ax_any *any)
 		}
 	}
 
-	dst_r.hmap->_map.env.one.scope = NULL;
-	dst_r.hmap->_map.env.one.sindex = 0;
+	dst_r.hmap->_map.env.one.scope.macro = NULL;
+	dst_r.hmap->_map.env.one.scope.micro = 0;
 	ax_scope_attach(ax_base_local(base), dst_r.one);
 
 	return dst_r.any;
@@ -522,8 +522,8 @@ static ax_any *any_move(ax_any *any)
 	src_r.hmap->size = 0;
 
 
-	dst->_map.env.one.scope = NULL;
-	dst->_map.env.one.sindex = 0;
+	dst->_map.env.one.scope.macro = NULL;
+	dst->_map.env.one.scope.micro = 0;
 	ax_scope_attach(ax_base_local(base), ax_r(hmap, dst).one);
 
 	return (ax_any *) dst;
@@ -672,8 +672,7 @@ ax_map *__ax_hmap_construct(ax_base *base, const ax_stuff_trait *key_tr, const a
 			.env = {
 				.one = {
 					.base = base,
-					.scope = NULL,
-					.sindex = 0
+					.scope = { NULL },
 				},
 				.key_tr = key_tr,
 				.val_tr = val_tr,

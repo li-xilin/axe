@@ -78,8 +78,10 @@ typedef union
 struct ax_one_env_st
 {
 	ax_base *const base;
-	ax_scope *scope;
-	size_t sindex;
+	struct {
+		ax_one *macro;
+		uintptr_t micro;
+	} scope;
 };
 
 struct ax_one_st
@@ -103,11 +105,6 @@ static inline void ax_one_free(ax_one *one) {
 static inline ax_one_env *ax_one_envp(const ax_one *one)
 {
 	return (ax_one_env *)((char*)one + sizeof (ax_one_trait *));
-}
-
-static inline ax_scope *ax_one_scope(const ax_one *one)
-{
-	return ax_one_envp(one)->scope;
 }
 
 static inline ax_base *ax_one_base(const ax_one *one)

@@ -90,8 +90,8 @@ static ax_any *any_copy(const ax_any *any)
 	dst_buff->real = src_buff->used;
 	dst_buff->buf = buffer;
 
-	dst_buff->_any.env.sindex = 0;
-	dst_buff->_any.env.scope = NULL;
+	dst_buff->_any.env.scope.macro = NULL;
+	dst_buff->_any.env.scope.micro = 0;
 	ax_scope_attach(ax_base_local(base), ax_r(buff, dst_buff).one);
 	return ax_r(buff, dst_buff).any;
 fail:
@@ -128,8 +128,8 @@ static ax_any *any_move(ax_any *any)
 	src_buff->real = src_buff->min;
 	src_buff->buf = buf;
 	
-	dst_buff->_any.env.sindex = 0;
-	dst_buff->_any.env.scope = NULL;
+	dst_buff->_any.env.scope.micro = 0;
+	dst_buff->_any.env.scope.macro = NULL;
 	ax_scope_attach(ax_base_local(base), ax_r(buff,dst_buff).one);
 	return ax_r(buff, dst_buff).any;
 fail:
@@ -192,8 +192,7 @@ ax_any *__ax_buff_construct(ax_base *base)
 			.tr = &any_trait,
 			.env = {
 				.base = base,
-				.scope = NULL,
-				.sindex = 0
+				.scope = { NULL },
 			}
 		},
 		

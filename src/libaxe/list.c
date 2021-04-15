@@ -374,8 +374,8 @@ static ax_any *any_copy(const ax_any *any)
 		ax_citer_next(&it);
 	}
 
-	new_r.list->_seq.env.one.sindex = 0;
-	new_r.list->_seq.env.one.scope = NULL;
+	new_r.list->_seq.env.one.scope.macro = NULL;
+	new_r.list->_seq.env.one.scope.micro = 0;
 	ax_scope_attach(ax_base_local(base), new_r.one);
 	return (ax_any*)new_r.any;
 }
@@ -399,8 +399,8 @@ static ax_any *any_move(ax_any *any)
 	self_r.list->head = NULL;
 	self_r.list->size = 0;
 
-	new->_seq.env.one.sindex = 0;
-	new->_seq.env.one.scope = NULL;
+	new->_seq.env.one.scope.macro = NULL;
+	new->_seq.env.one.scope.micro = 0;
 	ax_scope_attach(ax_base_local(base), ax_r(list, new).one);
 	return (ax_any*)new;}
 
@@ -861,8 +861,7 @@ ax_seq* __ax_list_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 			.env = {
 				.one = {
 					.base = base,
-					.scope = NULL,
-					.sindex = 0
+					.scope = { NULL },
 				},
 				.elem_tr = elem_tr
 			},

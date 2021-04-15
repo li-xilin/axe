@@ -686,8 +686,8 @@ static ax_any *any_copy(const ax_any *any)
 		}
 	}
 
-	dst_r.avl->_map.env.one.scope = NULL;
-	dst_r.avl->_map.env.one.sindex = 0;
+	dst_r.avl->_map.env.one.scope.macro = NULL;
+	dst_r.avl->_map.env.one.scope.micro = 0;
 	ax_scope_attach(ax_base_local(base), dst_r.one);
 
 	return dst_r.any;
@@ -705,8 +705,8 @@ static ax_any *any_move(ax_any *any)
 	memcpy(dst, src_r.avl, sizeof(ax_avl));
 	src_r.avl->size = 0;
 
-	dst->_map.env.one.scope = NULL;
-	dst->_map.env.one.sindex = 0;
+	dst->_map.env.one.scope.macro = NULL;
+	dst->_map.env.one.scope.micro = 0;
 
 	ax_scope_attach(ax_base_local(base), ax_r(avl, dst).one);
 
@@ -898,8 +898,7 @@ ax_map *__ax_avl_construct(ax_base* base, const ax_stuff_trait* key_tr, const ax
 			.env = {
 				.one = {
 					.base = base,
-					.scope = NULL,
-					.sindex = 0
+					.scope = { NULL },
 				},
 				.key_tr = key_tr,
 				.val_tr = val_tr,

@@ -78,8 +78,7 @@ ax_one *__ax_scope_construct(ax_base *base)
 			.tr = &one_trait,
 			.env = {
 				.base = base,
-				.scope = NULL,
-				.sindex = 0,
+				.scope = { NULL },
 			},
 		},
 		.tab = NULL,
@@ -107,10 +106,13 @@ void ax_scope_attach(ax_scope *scope_attach, ax_one *one)
 {
 	CHECK_PARAM_NULL(scope_attach);
 	CHECK_PARAM_NULL(one);
+	/* TODO: check first 4 bytes(base pointer) that if it equals to base which scope is created from */
 
-	if (ax_one_envp(one)->scope == scope_attach)
+	ax_assert(ax_one_envp(one)->scope && ax_one_is(ax_one_envp(one)->scope, AX_SCOPE_NAME), "object can not be detached");
+	
+	if (ax_one_envp(one)->scope.macro == ax_r(scope, scope_attach).one)
 		return;
-	if (ax_one_envp(one)->scope != NULL)
+	if (ax_one_envp(one)->scope.macro != NULL)
 		ax_scope_detach(one);
 	if (scope_attach->tab_size == scope_attach->tab_capacity) {
 		scope_attach->tab_capacity <<= 1;
@@ -118,8 +120,8 @@ void ax_scope_attach(ax_scope *scope_attach, ax_one *one)
 		scope_attach->tab = realloc(scope_attach->tab, scope_attach->tab_capacity * sizeof(*scope_attach->tab));
 	}
 	scope_attach->tab[scope_attach->tab_size] = one;
-	ax_one_envp(one)->scope = scope_attach;
-	ax_one_envp(one)->sindex = scope_attach->tab_size;
+	ax_one_envp(one)->scope.macro = ax_r(scope, scope_attach).one;
+	ax_one_envp(one)->scope.micro = scope_attach->tab_size;
 	scope_attach->tab_size ++;
 }
 
@@ -140,16 +142,18 @@ void ax_scope_detach(ax_one *one)
 	CHECK_PARAM_NULL(one);
 
 	ax_one_env *envp_detach = ax_one_envp(one);
-	if (envp_detach->scope == NULL)
+	if (envp_detach->scope.macro == NULL)
 		return;
-	ax_scope * scope = envp_detach->scope;
+	ax_assert(ax_one_envp(one)->scope && ax_one_is(ax_one_envp(one)->scope, AX_SCOPE_NAME), "object can not be detached");
 
-	assert(scope->tab[envp_detach->sindex] == one);
-	ax_one *last = scope->tab[envp_detach->sindex] = scope->tab[--scope->tab_size];
+	ax_scope * scope = (ax_scope *)envp_detach->scope.macro;
+
+	assert(scope->tab[envp_detach->scope.micro] == one);
+	ax_one *last = scope->tab[envp_detach->scope.micro] = scope->tab[--scope->tab_size];
 	ax_one_env *last_envp = ax_one_envp(last);
-	last_envp->sindex = envp_detach->sindex;
-	envp_detach->scope = NULL;
-
+	last_envp->scope.micro = envp_detach->scope.micro;
+	envp_detach->scope.macro = NULL;
+	envp_detach->scope.micro = 0;
 }
 
 void ax_scope_destroy(ax_scope *scope)

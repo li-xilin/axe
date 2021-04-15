@@ -296,8 +296,8 @@ static ax_any* any_copy(const ax_any* any)
 
 	memcpy(new_str_r.string, self_r.string, sizeof(ax_string));
 
-	new_str_r.string->_str.env.one.scope = NULL;
-	new_str_r.string->_str.env.one.sindex = 0;
+	new_str_r.string->_str.env.one.scope.macro = NULL;
+	new_str_r.string->_str.env.one.scope.micro = 0;
 	ax_scope_attach(ax_base_local(base), new_str_r.one);
 
 	return new_str_r.any;
@@ -330,8 +330,8 @@ static ax_any* any_move(ax_any* any)
 
 	memcpy(new_str_r.string, self_r.string, sizeof(ax_string));
 
-	new_str_r.string->_str.env.one.scope = NULL;
-	new_str_r.string->_str.env.one.sindex = 0;
+	new_str_r.string->_str.env.one.scope.macro = NULL;
+	new_str_r.string->_str.env.one.scope.micro = 0;
 	ax_scope_attach(ax_base_local(base), new_str_r.one);
 
 	return new_str_r.any;
@@ -822,8 +822,7 @@ ax_str *__ax_string_construct(ax_base* base)
 			.env = {
 				.one = {
 					.base = base,
-					.scope = NULL,
-					.sindex = 0
+					.scope = { NULL },
 				},
 				.elem_tr = ax_stuff_traits(AX_ST_I8)
 			},

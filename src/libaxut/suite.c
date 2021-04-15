@@ -133,8 +133,7 @@ ax_one *__axut_suite_construct(ax_base *base, const char* name)
 			.tr = &one_trait,
 				.env = {
 					.base = base,
-					.scope = NULL,
-					.sindex = 0,
+					.scope = { NULL },
 				},
 		},
 		.tctab = {

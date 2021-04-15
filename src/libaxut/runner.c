@@ -134,8 +134,7 @@ ax_one *__axut_runner_construct(ax_base *base, axut_output_f output_cb)
 			.tr = &one_trait,
 			.env = {
 				.base = base,
-				.scope = NULL,
-				.sindex = 0,
+				.scope = { NULL },
 			},
 		},
 		.statistic = {
