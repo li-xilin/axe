@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #include <axe/scope.h>
 
 #include <axe/base.h>
@@ -108,12 +109,12 @@ void ax_scope_attach(ax_scope *scope_attach, ax_one *one)
 	CHECK_PARAM_NULL(one);
 	/* TODO: check first 4 bytes(base pointer) that if it equals to base which scope is created from */
 
-	ax_assert(ax_one_envp(one)->scope && ax_one_is(ax_one_envp(one)->scope, AX_SCOPE_NAME), "object can not be detached");
-	
 	if (ax_one_envp(one)->scope.macro == ax_r(scope, scope_attach).one)
 		return;
-	if (ax_one_envp(one)->scope.macro != NULL)
-		ax_scope_detach(one);
+	int ret = ax_scope_detach(one);
+	(void)ret;
+	ax_assert(ret, "object can not be detached");
+
 	if (scope_attach->tab_size == scope_attach->tab_capacity) {
 		scope_attach->tab_capacity <<= 1;
 		scope_attach->tab_capacity |= 1;
@@ -137,14 +138,17 @@ void ax_scope_clean(ax_scope *scope)
 	scope_r.scope->tab_size = 0;
 }
 
-void ax_scope_detach(ax_one *one)
+ax_bool ax_scope_detach(ax_one *one)
 {
 	CHECK_PARAM_NULL(one);
 
 	ax_one_env *envp_detach = ax_one_envp(one);
 	if (envp_detach->scope.macro == NULL)
-		return;
-	ax_assert(ax_one_envp(one)->scope && ax_one_is(ax_one_envp(one)->scope, AX_SCOPE_NAME), "object can not be detached");
+		return ax_true;;
+	//ax_assert(!ax_one_envp(one)->scope.macro || ax_one_is(ax_one_envp(one)->scope.macro, AX_SCOPE_NAME), "object can not be detached");
+	
+	if (!ax_one_is(ax_one_envp(one)->scope.macro, AX_SCOPE_NAME))
+		return ax_false;
 
 	ax_scope * scope = (ax_scope *)envp_detach->scope.macro;
 
@@ -154,6 +158,7 @@ void ax_scope_detach(ax_one *one)
 	last_envp->scope.micro = envp_detach->scope.micro;
 	envp_detach->scope.macro = NULL;
 	envp_detach->scope.micro = 0;
+	return ax_true;
 }
 
 void ax_scope_destroy(ax_scope *scope)
