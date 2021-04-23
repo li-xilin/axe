@@ -48,10 +48,12 @@ typedef union
 	ax_btrie_cr c;
 } ax_btrie_r;
 
-extern const ax_trie_trait ax_trie_tr;
+extern const ax_trie_trait ax_btrie_tr;
 
 ax_trie *__ax_btrie_construct(ax_base* base, const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr);
 
 ax_btrie_r ax_btrie_create(ax_scope* scope, const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr);
+
+void ax_btrie_dump(ax_btrie *btrie);
 
 #endif

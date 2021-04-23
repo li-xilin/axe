@@ -135,7 +135,7 @@ static ax_bool equal_ptr(const void* p1, const void* p2, size_t size)
 
 static ax_bool less_nil(const void* p1, const void* p2, size_t size)
 {
-	return ax_true;
+	return ax_false;
 }
 
 static ax_bool less_i8(const void* p1, const void* p2, size_t size)
