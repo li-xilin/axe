@@ -58,11 +58,12 @@ typedef struct ax_iter_trait_st ax_iter_trait;
 typedef struct ax_box_st ax_box;
 #endif
 
-typedef void    *(*ax_iter_get_f)  (const ax_iter *it);
-typedef ax_bool  (*ax_iter_comp_f) (const ax_citer *it1, const ax_citer *it2);
-typedef long     (*ax_iter_dist_f) (const ax_citer *it1, const ax_citer *it2);
-typedef void     (*ax_iter_creep_f)(      ax_citer *it);
-typedef void     (*ax_iter_move_f) (      ax_citer *it, long i);
+typedef void    *(*ax_iter_get_f)   (const ax_iter *it);
+typedef ax_bool  (*ax_iter_comp_f)  (const ax_citer *it1, const ax_citer *it2);
+typedef long     (*ax_iter_dist_f)  (const ax_citer *it1, const ax_citer *it2);
+typedef void     (*ax_iter_creep_f) (      ax_citer *it);
+typedef void     (*ax_iter_move_f)  (      ax_citer *it, long i);
+typedef ax_box  *(*ax_iter_box_f)   (const ax_citer *it);
 
 typedef void     (*ax_iter_erase_f)(      ax_iter *it);
 typedef ax_fail  (*ax_iter_set_f)  (const ax_iter *it, const void *p);
@@ -74,6 +75,7 @@ struct ax_citer_trait_st
 	ax_iter_creep_f next;
 	ax_iter_comp_f  less;
 	ax_iter_dist_f  dist;
+	ax_iter_box_f   box;
 	ax_bool         norm;
 	unsigned char   type;
 };
@@ -206,6 +208,16 @@ inline static ax_bool ax_citer_is(const ax_citer *it, int type)
 inline static ax_bool ax_iter_is(const ax_iter *it, int type)
 {
 	return ax_citer_is(ax_iter_c(it), type);
+}
+
+inline static const ax_box *ax_citer_box(const ax_citer *it)
+{
+	return it->tr->box(it);
+}
+
+inline static ax_box *ax_iter_box(const ax_iter *it)
+{
+	return it->tr->ctr.box(ax_iter_c(it));
 }
 
 void ax_iter_swap(const ax_iter *it1, const ax_iter *it2);
