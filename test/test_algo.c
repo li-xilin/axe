@@ -235,26 +235,29 @@ static int qsort_compare_cb(const void* p1, const void* p2)
 
 }
 
+/**
+ * history :
+ * 0x3FFFFF 5.07, 6.88
+ * 0x3FFFFF 4.24, 5.14
+ * 0x3FFFFF 3.59, 4.01
+ * 0x3FFFFF 3.64, 4.15
+ * 0x3FFFFF 2.53, 3.01
+ * 0x3FFFFF 1.96, 2.24
+ */
+
 static void sort_time(axut_runner *r) {
-	const size_t length = 0x3FF;
+	const size_t length = 0xFFFF;
 	ax_iter first, last;
 	clock_t time_before;
 	srand(20);
-	puts("history :");
-	printf("\t0x3FFFFF 5.07, 6.88\n");
-	printf("\t0x3FFFFF 4.24, 5.14\n");
-	printf("\t0x3FFFFF 3.59, 4.01\n");
-	printf("\t0x3FFFFF 3.64, 4.15\n");
-	printf("\t0x3FFFFF 2.53, 3.01\n");
-	printf("\t0x3FFFFF 1.96, 2.24\n");
-
+	
 	ax_base *base = ax_base_create();
 	ax_vector_r role1 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	ax_vector_r role2 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	ax_vector_r role3 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	ax_vector_r role4 = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32));
 	
-	printf("Sorting 0x%lX numbers\n", length);
+	//printf("Sorting 0x%lX numbers\n", length);
 	for (int i = 0; i < length; i++) {
 		int32_t n = rand() % 0xFFFFFF;
 		ax_seq_push(role1.seq, &n);
@@ -270,7 +273,7 @@ static void sort_time(axut_runner *r) {
 
 		time_before = clock();
 		ax_quick_sort(&first, &last);
-		printf("ax_quick_sort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
+		//printf("ax_quick_sort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
 		axut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
 	}
 
@@ -280,7 +283,7 @@ static void sort_time(axut_runner *r) {
 
 		time_before = clock();
 		ax_merge_sort(&first, &last);
-		printf("ax_merge_sort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
+		//printf("ax_merge_sort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
 		axut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
 	}
 

@@ -27,7 +27,7 @@ static void pool(axut_runner *r)
 		ax_pool_free(table[i]);
 	}
 	ax_pool_destroy(pool);
-	printf("test memory pool spent %lfs\n", (double)(clock() - begin) / CLOCKS_PER_SEC);
+	//printf("test memory pool spent %lfs\n", (double)(clock() - begin) / CLOCKS_PER_SEC);
 	free(table);
 	
 }

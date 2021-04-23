@@ -14,7 +14,7 @@
 
 static void insert(axut_runner *r)
 {
-	ax_base* base = ax_base_create();
+	ax_base *base = axut_runner_arg(r);
 	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
 			ax_stuff_traits(AX_ST_I32));
 	for (int k = 0, v = 0; k < N; k++, v++) {
@@ -47,12 +47,11 @@ static void insert(axut_runner *r)
 	ax_iter_prev(&it_end);
 	axut_assert(r, ax_iter_dist(&it_begin, &it_end) == N-1);
 
-	ax_base_destroy(base);
 }
 
 static void complex(axut_runner *r)
 {
-	ax_base* base = ax_base_create();
+	ax_base *base = axut_runner_arg(r);
 	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
 			ax_stuff_traits(AX_ST_I32));
 	for (int k = 0, v = 0; k < N; k++, v++) {
@@ -77,12 +76,11 @@ static void complex(axut_runner *r)
 	for (int i = 0; i < N; i++) {
 		axut_assert(r, table[i] == 1);
 	}
-	ax_base_destroy(base);
 }
 
 static void foreach(axut_runner *r)
 {
-	ax_base* base = ax_base_create();
+	ax_base *base = axut_runner_arg(r);
 	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
 			ax_stuff_traits(AX_ST_I32));
 	for (int32_t i = 0; i < 50; i++) {
@@ -95,16 +93,39 @@ static void foreach(axut_runner *r)
 	}
 	axut_assert_uint_equal(r, ax_box_size(avl_r.box), 0);
 
+}
+
+static void clear(axut_runner *r)
+{
+	ax_base *base = axut_runner_arg(r);
+	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
+			ax_stuff_traits(AX_ST_I32));
+	for (int32_t i = 0; i < 50; i++) {
+		ax_map_put(avl_r.map, &i, &i);
+	}
+	ax_box_clear(avl_r.box);
+	axut_assert_uint_equal(r, ax_box_size(avl_r.box), 0);
+}
+
+
+static void clean(axut_runner *r)
+{
+	ax_base *base = axut_runner_arg(r);
 	ax_base_destroy(base);
 }
+
 
 axut_suite* suite_for_avl(ax_base *base)
 {
 	axut_suite *suite = axut_suite_create(ax_base_local(base), "avl");
 
+	axut_suite_set_arg(suite, ax_base_create());
+
 	axut_suite_add(suite, complex, 0);
 	axut_suite_add(suite, insert, 0);
 	axut_suite_add(suite, foreach, 0);
+	axut_suite_add(suite, clear, 0);
+	axut_suite_add(suite, clean, 0xFF);
 
 	return suite;
 }
