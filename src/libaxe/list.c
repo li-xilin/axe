@@ -59,8 +59,10 @@ static ax_fail     seq_pop(ax_seq *seq);
 static ax_fail     seq_pushf(ax_seq *seq, const void *val);
 static ax_fail     seq_popf(ax_seq *seq);
 static ax_fail     seq_trunc(ax_seq *seq, size_t size);
-static ax_iter     seq_at(ax_seq *seq, size_t index);
 static ax_fail     seq_insert(ax_seq *seq, ax_iter *it, const void *val);
+static ax_iter     seq_at(const ax_seq *seq, size_t index);
+static void       *seq_last(const ax_seq *seq);
+
 
 static size_t      box_size(const ax_box *box);
 static size_t      box_maxsize(const ax_box *box);
@@ -750,15 +752,15 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 	return ax_false;
 }
 
-static ax_iter seq_at(ax_seq *seq, size_t index) /* Could optimized to mean time O(n/4) */
+static ax_iter seq_at(const ax_seq *seq, size_t index) /* Could optimized to mean time O(n/4) */
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(ax_r(seq, seq).box));
+	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(ax_cr(seq, seq).box));
 
 	ax_list *list = (ax_list *)seq;
 	struct node_st *cur = list->head;
 	ax_iter it = {
-		.owner = seq,
+		.owner = (void *)seq,
 		.tr = &ax_list_tr.box.iter,
 		.point = cur
 	};
@@ -774,6 +776,20 @@ static ax_iter seq_at(ax_seq *seq, size_t index) /* Could optimized to mean time
 	ax_assert(index == 0, "index boundary exceed");
 	it.point = cur;
 	return it;
+}
+
+static void *seq_last(const ax_seq *seq)
+{
+	CHECK_PARAM_NULL(seq);
+	ax_list *list = (ax_list *)seq;
+	struct node_st *head = list->head;
+	ax_assert(head, "empty list");
+	const ax_stuff_trait *etr = list->_seq.env.elem_tr;
+	void *pval = head->pre->data;
+	
+	return etr->link
+		? *(void **) pval
+		: pval;
 }
 
 const ax_seq_trait ax_list_tr =
@@ -835,8 +851,9 @@ const ax_seq_trait ax_list_tr =
 	.popf = seq_popf,
 	.invert = seq_invert,
 	.trunc = seq_trunc,
-	.at = seq_at,
 	.insert = seq_insert,
+	.at = seq_at,
+	.last = seq_last
 };
 
 

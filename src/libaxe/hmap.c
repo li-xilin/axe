@@ -68,7 +68,7 @@ static ax_fail  map_erase(ax_map *map, const void *key);
 static void    *map_get(const ax_map *map, const void *key);
 static ax_iter  map_at(const ax_map *map, const void *key);
 static ax_bool  map_exist(const ax_map *map, const void *key);
-static const void *map_it_key(ax_citer *it);
+static const void *map_it_key(const ax_citer *it);
 
 static size_t   box_size(const ax_box *box);
 static size_t   box_maxsize(const ax_box *box);
@@ -329,7 +329,6 @@ inline static void *node_val(const ax_map* map, struct node_st *node)
 static void *map_put (ax_map *map, const void *key, const void *val)
 {
 	CHECK_PARAM_NULL(map);
-	CHECK_PARAM_NULL(key);
 
 	ax_hmap_r hmap_r = { .map = map };
 	ax_base *base  = ax_one_base(hmap_r.one);
@@ -372,7 +371,6 @@ static void *map_put (ax_map *map, const void *key, const void *val)
 static ax_fail map_erase (ax_map *map, const void *key)
 {
 	CHECK_PARAM_NULL(map);
-	CHECK_PARAM_NULL(key);
 
 	ax_hmap_r hmap_r = { .map = map };
 	const void *pkey = map->env.key_tr->link ? &key : key;
@@ -399,7 +397,6 @@ static ax_fail map_erase (ax_map *map, const void *key)
 static void *map_get (const ax_map *map, const void *key)
 {
 	CHECK_PARAM_NULL(map);
-	CHECK_PARAM_NULL(key);
 
 	const ax_hmap_cr hmap_r = { .map = map };
 	const void *pkey = map->env.key_tr->link ? &key : key;
@@ -418,7 +415,6 @@ static void *map_get (const ax_map *map, const void *key)
 static ax_iter  map_at(const ax_map *map, const void *key)
 {
 	CHECK_PARAM_NULL(map);
-	CHECK_PARAM_NULL(key);
 
 	const ax_hmap_cr hmap_r = { .map = map };
 	const void *pkey = map->env.key_tr->link ? &key : key;
@@ -439,7 +435,6 @@ static ax_iter  map_at(const ax_map *map, const void *key)
 static ax_bool map_exist (const ax_map *map, const void *key)
 {
 	CHECK_PARAM_NULL(map);
-	CHECK_PARAM_NULL(key);
 
 	ax_hmap_r hmap_r = { .map = (ax_map*)map };
 	const void *pkey = map->env.key_tr->link ? &key : key;
@@ -450,7 +445,7 @@ static ax_bool map_exist (const ax_map *map, const void *key)
 	return ax_false;
 }
 
-static const void *map_it_key(ax_citer *it)
+static const void *map_it_key(const ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);

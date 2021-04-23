@@ -24,27 +24,26 @@
 #define AXE_LIST_H_
 #include "seq.h"
 
-#define AX_LIST_NAME "one.any.box.seq.list"
+#define AX_LIST_NAME AX_SEQ_NAME ".list"
 
 typedef struct ax_list_st ax_list;
 
 typedef union
 {
-	const ax_one *one;
-	const ax_any *any;
-	const ax_box *box;
-	const ax_seq *seq;
 	const ax_list *list;
+	const ax_seq *seq;
+	const ax_box *box;
+	const ax_any *any;
+	const ax_one *one;
 } ax_list_cr;
 
 typedef union
 {
-	ax_one *one;
-	ax_any *any;
-	ax_box *box;
-	ax_seq *seq;
 	ax_list *list;
-	ax_list_cr c;
+	ax_seq *seq;
+	ax_box *box;
+	ax_any *any;
+	ax_one *one;
 } ax_list_r;
 
 extern const ax_seq_trait ax_list_tr;
@@ -54,6 +53,5 @@ ax_seq *__ax_list_construct(ax_base *base, const ax_stuff_trait *elem_tr);
 ax_list_r ax_list_create(ax_scope *scope, const ax_stuff_trait *elem_tr);
 
 ax_list_r ax_list_init(ax_scope *scope, const char *fmt, ...);
-
 
 #endif

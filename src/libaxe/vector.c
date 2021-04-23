@@ -55,7 +55,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val);
 static ax_fail seq_pop(ax_seq *seq);
 static void    seq_invert(ax_seq *seq);
 static ax_fail seq_trunc(ax_seq *seq, size_t size);
-static ax_iter seq_at(ax_seq *seq, size_t index);
+static ax_iter seq_at(const ax_seq *seq, size_t index);
 static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val);
 
 static size_t  box_size(const ax_box *box);
@@ -576,10 +576,10 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 	return ax_false;
 }
 
-static ax_iter seq_at(ax_seq *seq, size_t index)
+static ax_iter seq_at(const ax_seq *seq, size_t index)
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(ax_r(seq, seq).box));
+	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(ax_cr(seq, seq).box));
 
 	ax_vector *self = (ax_vector *) seq;
 	const ax_stuff_trait *etr = seq->env.elem_tr;

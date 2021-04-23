@@ -75,7 +75,7 @@ static ax_fail str_sprintf(ax_str* str, const char *fmt, va_list args);
 static ax_fail seq_push(ax_seq *seq, const void *val);
 static ax_fail seq_pop(ax_seq *seq);
 static ax_fail seq_trunc(ax_seq *seq, size_t size);
-static ax_iter seq_at(ax_seq *seq, size_t index);
+static ax_iter seq_at(const ax_seq *seq, size_t index);
 static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val);
 
 static size_t  box_size(const ax_box* box);
@@ -705,18 +705,18 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 	return ax_false;
 }
 
-static ax_iter seq_at(ax_seq *seq, size_t index)
+static ax_iter seq_at(const ax_seq *seq, size_t index)
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(ax_r(seq, seq).box));
+	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(ax_cr(seq, seq).box));
 
-	ax_string_r self_r = { .seq = seq };
+	ax_string_cr self_r = { .seq = seq };
 	ax_buff *buff = self_r.string->buff_r.buff;
 
 	char *ptr = ax_buff_ptr(buff);
 
 	ax_iter it = {
-		.owner = self_r.one,
+		.owner = (void *)self_r.one,
 		.tr = &iter_trait,
 		.point =  ptr + index
 	};

@@ -63,7 +63,7 @@ static ax_fail  map_erase(ax_map* map, const void *key);
 static void    *map_get(const ax_map* map, const void *key);
 static ax_iter  map_at(const ax_map* map, const void *key);
 static ax_bool  map_exist(const ax_map* map, const void *key);
-static const void *map_it_key(ax_citer *it);
+static const void *map_it_key(const ax_citer *it);
 
 static size_t   box_size(const ax_box* box);
 static size_t   box_maxsize(const ax_box* box);
@@ -159,7 +159,6 @@ static struct node_st *get_right_node(const ax_map *map, struct node_st *node)
 
 static struct node_st *find_node(const ax_map *map, struct node_st *node, const void *key)
 {
-
 	if (node == NULL) return NULL;
 	if (map->env.key_tr->less(key, node->kvbuffer, map->env.key_tr->size))
 		return find_node(map, node->left, key);
@@ -271,12 +270,26 @@ static struct node_st *balance(struct node_st *root)
 
 static void swap_node(ax_map *map, struct node_st *node1, struct node_st *node2)
 {
-	ax_avl_r avl_r = { .map = map };
-	size_t node_size = sizeof(struct node_st) + avl_r.map->env.key_tr->size + avl_r.map->env.val_tr->size;
+	//ax_avl_r avl_r = { .map = map };
+	//size_t node_size = sizeof(struct node_st) + avl_r.map->env.key_tr->size + avl_r.map->env.val_tr->size;
 
+	ax_memxor(node1->parent, node2->parent, sizeof(void *));
+	ax_memxor(node2->parent, node1->parent, sizeof(void *));
+	ax_memxor(node1->parent, node2->parent, sizeof(void *));
+
+	ax_memxor(node1->left, node2->left, sizeof(void *));
+	ax_memxor(node2->left, node1->left, sizeof(void *));
+	ax_memxor(node1->left, node2->left, sizeof(void *));
+
+	ax_memxor(node1->right, node2->right, sizeof(void *));
+	ax_memxor(node2->right, node1->right, sizeof(void *));
+	ax_memxor(node1->right, node2->right, sizeof(void *));
+
+	/*
 	ax_memxor(node1, node2, node_size);
 	ax_memxor(node2, node1, node_size);
 	ax_memxor(node1, node2, node_size);
+	*/
 }
 
 static struct node_st* remove_node(ax_map *map, struct node_st* node)
@@ -309,6 +322,10 @@ static struct node_st* remove_node(ax_map *map, struct node_st* node)
 		while(greater_node->left) greater_node = greater_node->left;
 
 		swap_node(map, greater_node, node);
+		void *tmp = greater_node;
+		greater_node = node;
+		node = tmp;
+
 		if (node->parent == greater_node)
 		{
 			greater_node->right = node->right;
@@ -490,7 +507,6 @@ inline static void *node_val(const ax_map* map, struct node_st *node)
 static void *map_put (ax_map* map, const void *key, const void *val)
 {
 	CHECK_PARAM_NULL(map);
-	CHECK_PARAM_NULL(key);
 	CHECK_PARAM_NULL(val);
 
 	ax_avl_r avl_r = { .map = map };
@@ -567,7 +583,6 @@ static void *map_put (ax_map* map, const void *key, const void *val)
 static ax_fail map_erase (ax_map* map, const void *key)
 {
 	CHECK_PARAM_NULL(map);
-	CHECK_PARAM_NULL(key);
 
 	ax_avl_r avl_r = { .map = map };
 	const void *pkey = map->env.key_tr->link ? &key : key;
@@ -600,7 +615,6 @@ static ax_fail map_erase (ax_map* map, const void *key)
 static void *map_get (const ax_map* map, const void *key)
 {
 	CHECK_PARAM_NULL(map);
-	CHECK_PARAM_NULL(key);
 
 	ax_avl_r avl_r = { .map = (ax_map*)map };
 	const void *pkey = map->env.key_tr->link ? &key : key;
@@ -616,7 +630,6 @@ static void *map_get (const ax_map* map, const void *key)
 static ax_iter  map_at(const ax_map* map, const void *key)
 {
 	CHECK_PARAM_NULL(map);
-	CHECK_PARAM_NULL(key);
 
 	ax_avl_r avl_r = { .map = (ax_map*)map };
 	const void *pkey = map->env.key_tr->link ? &key : key;
@@ -634,17 +647,16 @@ static ax_iter  map_at(const ax_map* map, const void *key)
 static ax_bool map_exist(const ax_map* map, const void *key)
 {
 	CHECK_PARAM_NULL(map);
-	CHECK_PARAM_NULL(key);
 
 	const void *pkey = map->env.key_tr->link ? &key : key;
 	ax_avl_r avl_r = { .map = (ax_map *)map };
 	return !!find_node(map, avl_r.avl->root, pkey);
 }
 
-static const void *map_it_key(ax_citer *it)
+static const void *map_it_key(const ax_citer *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
-	CHECK_ITER_TYPE(it, AX_HMAP_NAME);
+	CHECK_ITER_TYPE(it, AX_AVL_NAME);
 
 	const ax_avl *avl= it->owner;
 	const ax_stuff_trait *key_tr = avl->_map.env.key_tr;
@@ -807,6 +819,7 @@ static void box_clear(ax_box* box)
 	}
 
 	remove_child(avl_r.avl->root);
+	avl_r.avl->root = NULL;
 	avl_r.avl->size = 0;
 }
 

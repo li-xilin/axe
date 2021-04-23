@@ -59,7 +59,7 @@ typedef void       *(*ax_map_get_f)   (const ax_map *map, const void *key);
 typedef ax_iter     (*ax_map_at_f)    (const ax_map *map, const void *key);
 typedef ax_bool     (*ax_map_exist_f) (const ax_map *map, const void *key);
 typedef ax_fail     (*ax_map_erase_f) (ax_map *map, const void *key);
-typedef const void *(*ax_map_it_key_f)(ax_citer *it);
+typedef const void *(*ax_map_it_key_f)(const ax_citer *it);
 
 struct ax_map_trait_st
 {
