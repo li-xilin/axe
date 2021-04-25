@@ -34,6 +34,10 @@
 #include <inttypes.h>
 #include <assert.h>
 
+#include "check.h"
+
+
+inline static int int_fixed_type(int bits);
 
 size_t ax_stuff_size(int type)
 {
@@ -534,9 +538,69 @@ static const ax_stuff_trait trait_ws = {
 	.link  = ax_true
 };
 
+inline static int int_fixed_type(int bits)
+{
+	switch(bits) {
+		case 0: return AX_ST_NIL;
+		case 8: return AX_ST_I8;
+		case 16: return AX_ST_I16;
+		case 32: return AX_ST_I32;
+		case 64: return AX_ST_I64;
+		default: ax_assert(0, "invalid bits value");
+			 return -1;
+	}
+}
+
+inline static int uint_fixed_type(int bits)
+{
+	switch(bits) {
+		case 0: return AX_ST_NIL;
+		case 8: return AX_ST_U8;
+		case 16: return AX_ST_U16;
+		case 32: return AX_ST_U32;
+		case 64: return AX_ST_U64;
+		default: ax_assert(0, "invalid bits value");
+			 return -1;
+	}
+}
+
 /* -- Define functions that get trait structure pointer -- */
 const ax_stuff_trait* ax_stuff_traits(int type)
 {
+	CHECK_PARAM_VALIDITY(type, type >= 0);
+	switch(type) {
+		case AX_ST_C:
+			type = int_fixed_type(AX_IMAX_BITS((unsigned char)-1));
+			break;
+		case AX_ST_H:
+			type = int_fixed_type(AX_IMAX_BITS((unsigned short int)-1));
+			break;
+		case AX_ST_I:
+			type = int_fixed_type(AX_IMAX_BITS((unsigned int)-1));
+			break;
+		case AX_ST_L:
+			type = int_fixed_type(AX_IMAX_BITS((unsigned long int)-1));
+			break;
+		case AX_ST_LL:
+			type = int_fixed_type(AX_IMAX_BITS((unsigned long long int)-1));
+			break;
+		case AX_ST_UC:
+			type = uint_fixed_type(AX_IMAX_BITS((unsigned char)-1));
+			break;
+		case AX_ST_UH:
+			type = uint_fixed_type(AX_IMAX_BITS((unsigned short int)-1));
+			break;
+		case AX_ST_U:
+			type = uint_fixed_type(AX_IMAX_BITS((unsigned int)-1));
+			break;
+		case AX_ST_UL:
+			type = uint_fixed_type(AX_IMAX_BITS((unsigned long int)-1));
+			break;
+		case AX_ST_ULL:
+			type = uint_fixed_type(AX_IMAX_BITS((unsigned long long int)-1));
+			break;
+	}
+
 	switch(type) {
 		case AX_ST_NIL:  return &trait_nil;
 		case AX_ST_I8:   return &trait_i8;
