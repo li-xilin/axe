@@ -43,7 +43,7 @@ typedef void    (*ax_seq_invert_f) (ax_seq *seq);
 typedef ax_fail (*ax_seq_trunc_f)  (ax_seq *seq, size_t size);
 typedef ax_iter (*ax_seq_at_f)     (const ax_seq *seq, size_t index);
 typedef ax_fail (*ax_seq_insert_f) (ax_seq *seq, ax_iter *iter, const void *val);
-typedef void   *(*ax_seq_last_f)   (const ax_seq *seq);
+typedef void   *(*ax_seq_end_f)    (const ax_seq *seq);
 
 typedef ax_seq *(ax_seq_construct_f)(ax_base *base, const ax_stuff_trait *tr);
 
@@ -58,7 +58,8 @@ struct ax_seq_trait_st
 	const ax_seq_trunc_f  trunc;
 	const ax_seq_at_f     at;
 	const ax_seq_insert_f insert;
-	const ax_seq_last_f   last;
+	const ax_seq_end_f   first;
+	const ax_seq_end_f   last;
 };
 
 typedef struct ax_seq_env_st
@@ -144,6 +145,18 @@ static inline ax_fail ax_seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 {
 	ax_trait_optional(seq, seq->tr->at);
 	return seq->tr->insert(seq, it, val);
+}
+
+static inline void *ax_seq_first(ax_seq *seq)
+{
+	ax_trait_optional(seq, seq->tr->first);
+	return seq->tr->first(seq);
+}
+
+static inline const void *ax_seq_cfirst(const ax_seq *seq)
+{
+	ax_trait_optional(seq, seq->tr->first);
+	return seq->tr->first(seq);
 }
 
 static inline void *ax_seq_last(ax_seq *seq)
