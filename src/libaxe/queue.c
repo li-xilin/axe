@@ -20,8 +20,8 @@
  * THE SOFTWARE.
  */
 
-#include <axe/stack.h>
-#include <axe/vector.h>
+#include <axe/queue.h>
+#include <axe/list.h>
 #include <axe/tube.h>
 #include <axe/base.h>
 #include <axe/pool.h>
@@ -41,10 +41,10 @@
 
 #define MIN_SIZE
 
-struct ax_stack_st
+struct ax_queue_st
 {
 	ax_tube tube;
-	ax_vector_r vector;
+	ax_list_r list;
 };
 
 static ax_fail tube_push(ax_tube *tube, const void *val);
@@ -55,11 +55,11 @@ static ax_any *any_copy(const ax_any *any);
 static ax_any *any_move(ax_any *any);
 static void    one_free(ax_one *one);
 
-const ax_tube_trait ax_stack_tr =
+const ax_tube_trait ax_queue_tr =
 {
 		.any = {
 			.one = {
-				.name = AX_STACK_NAME,
+				.name = AX_QUEUE_NAME,
 				.free = one_free,
 			},
 			.copy = any_copy,
@@ -76,32 +76,32 @@ static ax_fail tube_push(ax_tube *tube, const void *val)
 {
 	CHECK_PARAM_NULL(tube);
 
-	ax_stack_cr self_r = { .tube = tube };
-	return ax_vector_tr.push(self_r.stack->vector.seq, val);
+	ax_queue_cr self_r = { .tube = tube };
+	return ax_list_tr.push(self_r.queue->list.seq, val);
 }
 
 static void tube_pop(ax_tube *tube)
 {
 	CHECK_PARAM_NULL(tube);
 
-	ax_stack_cr self_r = { .tube = tube };
-	ax_vector_tr.pop(self_r.stack->vector.seq);
+	ax_queue_cr self_r = { .tube = tube };
+	ax_list_tr.popf(self_r.queue->list.seq);
 }
 
 static size_t tube_size(const ax_tube *tube)
 {
 	CHECK_PARAM_NULL(tube);
 
-	ax_stack_cr self_r = { .tube = tube };
-	return ax_vector_tr.box.size(self_r.stack->vector.box);
+	ax_queue_cr self_r = { .tube = tube };
+	return ax_list_tr.box.size(self_r.queue->list.box);
 }
 
 static void *tube_prime(const ax_tube *tube)
 {
 	CHECK_PARAM_NULL(tube);
 
-	ax_stack_cr self_r = { .tube = tube };
-	return ax_vector_tr.last(self_r.stack->vector.seq);
+	ax_queue_cr self_r = { .tube = tube };
+	return ax_list_tr.first(self_r.queue->list.seq);
 }
 
 static ax_any *any_copy(const ax_any *any)
@@ -119,13 +119,13 @@ static void one_free(ax_one *one)
 	if (!one)
 		return;
 
-	ax_stack_r self_r = { .one = one };
+	ax_queue_r self_r = { .one = one };
 	ax_scope_detach(one);
-	ax_vector_tr.box.any.one.free(self_r.stack->vector.one);
+	ax_list_tr.box.any.one.free(self_r.queue->list.one);
 	ax_pool_free(one);
 }
 
-ax_tube *__ax_stack_construct(ax_base *base, const ax_stuff_trait *elem_tr)
+ax_tube *__ax_queue_construct(ax_base *base, const ax_stuff_trait *elem_tr)
 {
 	CHECK_PARAM_NULL(base);
 	CHECK_PARAM_NULL(elem_tr);
@@ -133,19 +133,19 @@ ax_tube *__ax_stack_construct(ax_base *base, const ax_stuff_trait *elem_tr)
 	ax_pool *pool = ax_base_pool(base);
 
 	ax_tube *self= NULL;
-	ax_seq *vector = __ax_vector_construct(base, elem_tr);
-	if (!vector)
+	ax_seq *list = __ax_list_construct(base, elem_tr);
+	if (!list)
 		goto fail;
 
-	self = ax_pool_alloc(pool, sizeof(ax_stack));
+	self = ax_pool_alloc(pool, sizeof(ax_queue));
 	if (!self) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 
-	ax_stack stack_init = {
+	ax_queue queue_init = {
 		.tube = {
-			.tr = &ax_stack_tr,
+			.tr = &ax_queue_tr,
 			.env = {
 				.one = {
 					.base = base,
@@ -154,26 +154,26 @@ ax_tube *__ax_stack_construct(ax_base *base, const ax_stuff_trait *elem_tr)
 				.elem_tr = elem_tr
 			},
 		},
-		.vector = {
-			.seq = vector
+		.list = {
+			.seq = list
 		}
 	};
 
-	memcpy(self, &stack_init, sizeof stack_init);
+	memcpy(self, &queue_init, sizeof queue_init);
 	return self;
 fail:
-	ax_one_free(ax_r(seq, vector).one);
+	ax_one_free(ax_r(seq, list).one);
 	ax_pool_free(self);
 	return NULL;
 }
 
-ax_stack_r ax_stack_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
+ax_queue_r ax_queue_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
 {
 	CHECK_PARAM_NULL(scope);
 	CHECK_PARAM_NULL(elem_tr);
 
 	ax_base *base = ax_one_base(ax_r(scope, scope).one);
-	ax_stack_r self_r = { .tube = __ax_stack_construct(base, elem_tr) };
+	ax_queue_r self_r = { .tube = __ax_queue_construct(base, elem_tr) };
 	if (!self_r.one)
 		return self_r;
 	ax_scope_attach(scope, self_r.one);

@@ -23,15 +23,16 @@
 #ifndef AXE_QUEUE_H_
 #define AXE_QUEUE_H_
 #include "seq.h"
-#include "any.h"
+#include "tube.h"
 
-#define AX_QUEUE_NAME AX_ANY_NAME ".queue"
+#define AX_QUEUE_NAME AX_TUBE_NAME ".queue"
 
 typedef struct ax_queue_st ax_queue;
 
 typedef union
 {
 	const ax_queue *queue;
+	const ax_tube *tube;
 	const ax_any *any;
 	const ax_one *one;
 } ax_queue_cr;
@@ -39,11 +40,12 @@ typedef union
 typedef union
 {
 	ax_queue *queue;
+	ax_tube *tube;
 	ax_any *any;
 	ax_one *one;
 } ax_queue_r;
 
-ax_any *__ax_queue_construct(ax_base *base, const ax_stuff_trait *elem_tr);
+ax_tube *__ax_queue_construct(ax_base *base, const ax_stuff_trait *elem_tr);
 
 ax_queue_r ax_queue_create(ax_scope *scope, const ax_stuff_trait *elem_tr);
 
