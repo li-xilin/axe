@@ -56,6 +56,8 @@ static ax_fail seq_pop(ax_seq *seq);
 static void    seq_invert(ax_seq *seq);
 static ax_fail seq_trunc(ax_seq *seq, size_t size);
 static ax_iter seq_at(const ax_seq *seq, size_t index);
+static void   *seq_last(const ax_seq *seq);
+
 static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val);
 
 static size_t  box_size(const ax_box *box);
@@ -367,7 +369,7 @@ static ax_iter box_end(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_vector_r self_r = { .box = box};
+	ax_vector_r self_r = { .box = box };
 	ax_iter it = {
 		.owner = (void*)box,
 		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff) + ax_buff_size(self_r.vector->buff, NULL),
@@ -380,7 +382,7 @@ static ax_iter box_rbegin(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_vector_r self_r = { .box = box};
+	ax_vector_r self_r = { .box = box };
 	ax_iter it = {
 		.owner = (void*)box,
 		.point = (ax_byte *)ax_buff_ptr(self_r.vector->buff)
@@ -593,6 +595,17 @@ static ax_iter seq_at(const ax_seq *seq, size_t index)
 	return it;
 }
 
+static void *seq_last(const ax_seq *seq)
+{
+	CHECK_PARAM_NULL(seq);
+	ax_assert(ax_box_size(ax_cr(seq, seq).box) > 0, "empty");
+
+	
+	ax_vector_cr self_r = { .seq = seq };
+
+	return (ax_byte *)ax_buff_ptr(self_r.vector->buff) + ax_buff_size(self_r.vector->buff, NULL) - self_r.vector->_seq.env.elem_tr->size;
+}
+
 const ax_seq_trait ax_vector_tr =
 {
 	.box = {
@@ -654,6 +667,7 @@ const ax_seq_trait ax_vector_tr =
 	.invert = seq_invert,
 	.trunc = seq_trunc,
 	.at = seq_at,
+	.last = seq_last,
 	.insert = seq_insert,
 };
 
