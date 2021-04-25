@@ -62,6 +62,7 @@ static ax_fail     seq_trunc(ax_seq *seq, size_t size);
 static ax_fail     seq_insert(ax_seq *seq, ax_iter *it, const void *val);
 static ax_iter     seq_at(const ax_seq *seq, size_t index);
 static void       *seq_last(const ax_seq *seq);
+static void       *seq_first(const ax_seq *seq);
 
 
 static size_t      box_size(const ax_box *box);
@@ -792,6 +793,20 @@ static void *seq_last(const ax_seq *seq)
 		: pval;
 }
 
+static void *seq_first(const ax_seq *seq)
+{
+	CHECK_PARAM_NULL(seq);
+	ax_list *list = (ax_list *)seq;
+	struct node_st *head = list->head;
+	ax_assert(head, "empty list");
+	const ax_stuff_trait *etr = list->_seq.env.elem_tr;
+	void *pval = head->data;
+	
+	return etr->link
+		? *(void **) pval
+		: pval;
+}
+
 const ax_seq_trait ax_list_tr =
 {
 	.box = {
@@ -853,6 +868,7 @@ const ax_seq_trait ax_list_tr =
 	.trunc = seq_trunc,
 	.insert = seq_insert,
 	.at = seq_at,
+	.first = seq_first,
 	.last = seq_last
 };
 

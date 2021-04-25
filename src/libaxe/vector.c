@@ -57,6 +57,7 @@ static void    seq_invert(ax_seq *seq);
 static ax_fail seq_trunc(ax_seq *seq, size_t size);
 static ax_iter seq_at(const ax_seq *seq, size_t index);
 static void   *seq_last(const ax_seq *seq);
+static void   *seq_first(const ax_seq *seq);
 
 static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val);
 
@@ -600,10 +601,19 @@ static void *seq_last(const ax_seq *seq)
 	CHECK_PARAM_NULL(seq);
 	ax_assert(ax_box_size(ax_cr(seq, seq).box) > 0, "empty");
 
-	
 	ax_vector_cr self_r = { .seq = seq };
 
 	return (ax_byte *)ax_buff_ptr(self_r.vector->buff) + ax_buff_size(self_r.vector->buff, NULL) - self_r.vector->_seq.env.elem_tr->size;
+}
+
+static void *seq_first(const ax_seq *seq)
+{
+	CHECK_PARAM_NULL(seq);
+	ax_assert(ax_box_size(ax_cr(seq, seq).box) > 0, "empty");
+	
+	ax_vector_cr self_r = { .seq = seq };
+
+	return (ax_byte *)ax_buff_ptr(self_r.vector->buff);
 }
 
 const ax_seq_trait ax_vector_tr =
@@ -668,6 +678,7 @@ const ax_seq_trait ax_vector_tr =
 	.trunc = seq_trunc,
 	.at = seq_at,
 	.last = seq_last,
+	.first = seq_first,
 	.insert = seq_insert,
 };
 
