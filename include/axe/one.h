@@ -97,6 +97,8 @@ static inline const char *ax_one_name(const ax_one *one)
 }
 
 static inline void ax_one_free(ax_one *one) {
+	if (!one) 
+		return;
 	ax_trait_require(one, one->tr->free);
 	one->tr->free(one);
 }
