@@ -198,6 +198,7 @@ static void iter_erase(ax_iter *it)
 	if (node->val) {
 		const ax_stuff_trait *etr = self->_trie.env.val_tr;
 		etr->free(node->val);
+		ax_pool_free(node->val);
 		node->val = NULL;
 		self->size --;
 	}
