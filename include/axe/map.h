@@ -32,23 +32,20 @@
 	for (_key_type _key; __ax_foreach_##_key##_flag ; )                              \
 	for (_val_type _val; __ax_foreach_##_key##_flag ; __ax_foreach_##_key##_flag = 0)\
 	ax_box_iterate(ax_r(map, _map).box, _key##_iter)                                 \
-	for (__ax_foreach_##_key##_flag = 1;                                             \
-			_key = ax_map_iter_key(&_key##_iter),                   \
-				_val = ax_iter_get(&_key##_iter),             \
-				__ax_foreach_##_key##_flag;                              \
-			__ax_foreach_##_key##_flag = 0)
+	for (	__ax_foreach_##_key##_flag = 1, _key = ax_map_iter_key(&_key##_iter),    \
+      			_val = ax_iter_get(&_key##_iter);                                \
+		__ax_foreach_##_key##_flag ;                                             \
+		__ax_foreach_##_key##_flag = 0)
 
-#define ax_map_cforeach(_map, _key_type, _key, _val_type, _val)                           \
+#define ax_map_cforeach(_map, _key_type, _key, _val_type, _val)                          \
 	for ( int __ax_foreach_##_key##_flag = 1 ; __ax_foreach_##_key##_flag ; )        \
 	for (_key_type _key; __ax_foreach_##_key##_flag ; )                              \
 	for (_val_type _val; __ax_foreach_##_key##_flag ; __ax_foreach_##_key##_flag = 0)\
-	ax_box_citerate(ax_r(map, _map).box, _key##_iter)                                 \
-	for (__ax_foreach_##_key##_flag = 1;                                             \
-			_key = ax_map_citer_key(&_key##_iter),                               \
-				_val = ax_citer_get(&_key##_iter),                         \
-				__ax_foreach_##_key##_flag;                              \
-			__ax_foreach_##_key##_flag = 0)
-
+	ax_box_citerate(ax_cr(map, _map).box, _key##_iter)                               \
+	for (	__ax_foreach_##_key##_flag = 1, _key = ax_map_citer_key(&_key##_iter),   \
+      			_val = ax_citer_get(&_key##_iter);                               \
+		__ax_foreach_##_key##_flag ;                                             \
+		__ax_foreach_##_key##_flag = 0)
 
 
 typedef struct ax_map_st ax_map;
@@ -58,6 +55,7 @@ typedef void       *(*ax_map_put_f)   (ax_map *map, const void *key, const void 
 typedef void       *(*ax_map_get_f)   (const ax_map *map, const void *key);
 typedef ax_iter     (*ax_map_at_f)    (const ax_map *map, const void *key);
 typedef ax_bool     (*ax_map_exist_f) (const ax_map *map, const void *key);
+typedef void       *(*ax_map_chkey_f) (ax_map *map, const void *key, const void *new_key);
 typedef ax_fail     (*ax_map_erase_f) (ax_map *map, const void *key);
 typedef const void *(*ax_map_it_key_f)(const ax_citer *it);
 
@@ -68,6 +66,7 @@ struct ax_map_trait_st
 	const ax_map_get_f get;
 	const ax_map_at_f at;
 	const ax_map_exist_f exist;
+	const ax_map_chkey_f chkey;
 	const ax_map_erase_f erase;
 	const ax_map_it_key_f itkey;
 };
@@ -145,6 +144,12 @@ inline static ax_bool ax_map_exist(const ax_map *map, const void *key)
 {
 	ax_trait_require(map, map->tr->exist);
 	return map->tr->exist(map, key);
+}
+
+inline static void *ax_map_chkey(ax_map *map, const void *key, const void *new_key)
+{
+	ax_trait_require(map, map->tr->chkey);
+	return map->tr->chkey(map, key, new_key);
 }
 
 inline static const void *ax_map_citer_key(ax_citer *it)
