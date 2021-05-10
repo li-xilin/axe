@@ -365,6 +365,11 @@ static ax_fail map_erase (ax_map *map, const void *key)
 
 	ax_hmap_r hmap_r = { .map = map };
 	const void *pkey = map->env.key_tr->link ? &key : key;
+
+	if (!hmap_r.hmap->buckets) {
+		return ax_true; //TODO
+	}
+
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
 	struct node_st **findpp = find_node(hmap_r.map, bucket, pkey);
 	ax_assert(findpp, "invalid iterator");
@@ -388,6 +393,9 @@ static void *map_get (const ax_map *map, const void *key)
 	const ax_hmap_cr hmap_r = { .map = map };
 	const void *pkey = map->env.key_tr->link ? &key : key;
 
+	if (!hmap_r.hmap->buckets)
+		return NULL;
+
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
 	struct node_st **findpp = find_node(hmap_r.map, bucket, pkey);
 
@@ -401,6 +409,9 @@ static ax_iter  map_at(const ax_map *map, const void *key)
 
 	const ax_hmap_cr hmap_r = { .map = map };
 	const void *pkey = map->env.key_tr->link ? &key : key;
+
+	if (!hmap_r.hmap->buckets)
+		return box_end((ax_box *)hmap_r.box);
 
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
 	struct node_st **findpp = find_node(hmap_r.map, bucket, pkey);
@@ -436,6 +447,9 @@ static void *map_chkey(ax_map *map, const void *key, const void *new_key)
 
 	const ax_stuff_trait *ktr = hmap_r.hmap->_map.env.key_tr;
 	const void *pkey = ktr->link ? &key : key;
+
+	if (!hmap_r.hmap->buckets)
+		return NULL;
 
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
 	struct node_st **findpp = find_node(hmap_r.map, bucket, pkey);
