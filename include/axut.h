@@ -20,8 +20,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef AXUT_H_
-#define AXUT_H_
+#ifndef AXUT_H
+#define AXUT_H
 
 #include "axut/runner.h"
 #include "axut/suite.h"

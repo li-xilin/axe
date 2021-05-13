@@ -20,13 +20,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef AXUT_SUITE_H_
-#define AXUT_SUITE_H_
+#ifndef AXUT_SUITE_H
+#define AXUT_SUITE_H
 
 #include "def.h"
-#include "../axe/base.h"
-#include "../axe/str.h"
-#include "../axe/box.h"
+#include "../ax/base.h"
+#include "../ax/str.h"
+#include "../ax/box.h"
 
 #define AXUT_SUITE_NAME AX_ONE_NAME ".one"
 

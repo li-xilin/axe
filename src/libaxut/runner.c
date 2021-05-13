@@ -23,15 +23,15 @@
 #include <axut/runner.h>
 #include <axut/suite.h>
 
-#include <axe/base.h>
-#include <axe/string.h>
-#include <axe/vector.h>
-#include <axe/mem.h>
-#include <axe/avl.h>
-#include <axe/seq.h>
-#include <axe/scope.h>
-#include <axe/pool.h>
-#include <axe/error.h>
+#include <ax/base.h>
+#include <ax/string.h>
+#include <ax/vector.h>
+#include <ax/mem.h>
+#include <ax/avl.h>
+#include <ax/seq.h>
+#include <ax/scope.h>
+#include <ax/pool.h>
+#include <ax/error.h>
 
 #include <setjmp.h>
 #include <stdlib.h>

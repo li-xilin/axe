@@ -10,7 +10,7 @@ endif
 
 LDFLAGS = -L$(ROOT)/lib\
 	  -laxut \
-	  -laxe \
+	  -lax \
 	  -fsanitize=address
 
 OBJS = test_all.o test_scope.o test_vail.o test_pool.o test_pred.o test_vector.o \

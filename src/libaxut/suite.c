@@ -1,12 +1,12 @@
 #include <axut/suite.h>
 
-#include <axe/one.h>
-#include <axe/vector.h>
-#include <axe/algo.h>
-#include <axe/seq.h>
-#include <axe/scope.h>
-#include <axe/pool.h>
-#include <axe/mem.h>
+#include <ax/one.h>
+#include <ax/vector.h>
+#include <ax/algo.h>
+#include <ax/seq.h>
+#include <ax/scope.h>
+#include <ax/pool.h>
+#include <ax/mem.h>
 
 #include <stdarg.h>
 #include <string.h>

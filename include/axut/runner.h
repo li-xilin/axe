@@ -20,14 +20,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef AXUT_RUNNER_H_
-#define AXUT_RUNNER_H_
+#ifndef AXUT_RUNNER_H
+#define AXUT_RUNNER_H
 
 #include "def.h"
 
-#include "../axe/def.h"
-#include "../axe/base.h"
-#include "../axe/str.h"
+#include "../ax/def.h"
+#include "../ax/base.h"
+#include "../ax/str.h"
 
 #define AXUT_RUNNER_NAME AX_ONE_NAME ".runner"
 

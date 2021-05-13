@@ -23,18 +23,20 @@ DEBUG ?= 1
 DESTDIR ?= /usr/local
 
 all clean:
-	$(MAKE) -C src/libaxe $@
+	$(MAKE) -C src/libax $@
 	$(MAKE) -C src/libaxut $@
 	$(MAKE) -C test $@
 
 install:
-	install -m 755 -d $(DESTDIR)/lib $(DESTDIR)/include $(DESTDIR)/include/axe
+	install -m 755 -d $(DESTDIR)/lib $(DESTDIR)/include $(DESTDIR)/include/ax $(DESTDIR)/include/axut
 	install -m 644 lib/libaxe.a lib/libaxut.a $(DESTDIR)/lib
-	install -m 644 include/axe.h $(DESTDIR)/include
-	install -m 644 include/axe/*.h $(DESTDIR)/include/axe
+	install -m 644 include/ax.h $(DESTDIR)/include
+	install -m 644 include/ax/*.h $(DESTDIR)/include/ax
+	install -m 644 include/axut.h $(DESTDIR)/include
+	install -m 644 include/axut/*.h $(DESTDIR)/include/axut
 
 uninstall:
-	rm -r $(DESTDIR)/include/axe
-	rm $(DESTDIR)/include/axe.h $(DESTDIR)/lib/libaxe.a $(DESTDIR)/lib/libaxut.a
+	rm -r $(DESTDIR)/include/ax $(DESTDIR)/include/axut
+	rm $(DESTDIR)/include/ax.h $(DESTDIR)/include/axut.h $(DESTDIR)/lib/libax.a $(DESTDIR)/lib/libaxut.a
 
 .PHONY: all clean install uninstall
