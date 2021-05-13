@@ -39,6 +39,7 @@ extern axut_suite *suite_for_btrie(ax_base *base);
 extern axut_suite *suite_for_seq(ax_base *base);
 extern axut_suite *suite_for_stack(ax_base *base);
 extern axut_suite *suite_for_queue(ax_base *base);
+extern axut_suite *suite_for_arr(ax_base *base);
 
 
 int main()
@@ -60,6 +61,7 @@ int main()
 	axut_runner_add(r, suite_for_btrie(base));
 	axut_runner_add(r, suite_for_stack(base));
 	axut_runner_add(r, suite_for_queue(base));
+	axut_runner_add(r, suite_for_arr(base));
 
 	axut_runner_run(r);
 

@@ -25,7 +25,7 @@ TARGET = $(LIB)/libax.a
 
 OBJS = stuff.o scope.o debug.o any.o vail.o vector.o base.o pool.o mem.o \
        one.o error.o log.o algo.o oper.o seq.o iter.o list.o avl.o hmap.o \
-       uintk.o buff.o string.o btrie.o trie.o stack.o queue.o
+       uintk.o buff.o string.o btrie.o trie.o stack.o queue.o arr.o
 
 all: $(TARGET)
 $(TARGET): $(OBJS)

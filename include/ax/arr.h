@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Li hsilin <lihsilyn@gmail.com>
+ * Copyright (c) 2020 Li hsilin <lihsilyn@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +20,45 @@
  * THE SOFTWARE.
  */
 
-#ifndef AX_CHECK_H
-#define AX_CHECK_H
-#include <ax/debug.h>
+#ifndef AX_ARR_H
+#define AX_ARR_H
+#include "seq.h"
 
-#define CHECK_PARAM_NULL(_param) ax_assert((_param), "parameter `%s' is NULL", #_param)
+#define AX_ARR_NAME AX_SEQ_NAME ".arr"
 
-#define CHECK_PARAM_VALIDITY(_param, _cond) ax_assert((_cond), "parameter `%s' is invalid", #_param)
+typedef struct ax_arr_st 
+{
+	ax_seq seq;
+	size_t size;
+	void *arr;
+} ax_arr;
 
-#define CHECK_ITERATOR_VALIDITY(_param, _cond) ax_assert((_cond), "iterator `%s' is invalid", #_param)
+typedef union
+{
+	const ax_arr* arr;
+	const ax_seq* seq;
+	const ax_box* box;
+	const ax_any* any;
+	const ax_one* one;
+} ax_arr_cr;
 
-#define CHECK_TRAIT_VALIDITY(_trait, _fun) ax_assert((_cond), "trait `%s' is not specified", #_trait)
+typedef union
+{
+	ax_arr* arr;
+	ax_seq* seq;
+	ax_box* box;
+	ax_any* any;
+	ax_one* one;
+	ax_arr_cr c;
+} ax_arr_r;
 
-#define CHECK_ITER_COMPARABLE(_it1, _it2) \
-{ \
-	ax_assert((_it1)->owner == (_it2)->owner, "different owner for two iterators"); \
-	ax_assert((_it1)->tr == (_it2)->tr, "different direction for two iterators"); \
+extern const ax_seq_trait ax_arr_tr;
+
+inline static void* ax_arr_ptr(ax_arr *arr)
+{
+	return arr->arr;
 }
 
-#define CHECK_ITER_TYPE(_it, _type) ax_assert(ax_one_is(it->owner, _type), "it->owner is not " _type);
-
-#define UNSUPPORTED() ax_assert(false, "trait unsupported");
+ax_arr_r ax_arr_make(ax_arr *arr, ax_base *base, const ax_stuff_trait *elem_tr, void *ptr, size_t size);
 
 #endif
