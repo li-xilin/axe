@@ -54,7 +54,7 @@ typedef struct ax_map_trait_st ax_map_trait;
 typedef void       *(*ax_map_put_f)   (ax_map *map, const void *key, const void *val);
 typedef void       *(*ax_map_get_f)   (const ax_map *map, const void *key);
 typedef ax_iter     (*ax_map_at_f)    (const ax_map *map, const void *key);
-typedef ax_bool     (*ax_map_exist_f) (const ax_map *map, const void *key);
+typedef bool     (*ax_map_exist_f) (const ax_map *map, const void *key);
 typedef void       *(*ax_map_chkey_f) (ax_map *map, const void *key, const void *new_key);
 typedef ax_fail     (*ax_map_erase_f) (ax_map *map, const void *key);
 typedef const void *(*ax_map_it_key_f)(const ax_citer *it);
@@ -140,7 +140,7 @@ inline static void *ax_map_cget(const ax_map *map, const void *key)
 	return map->tr->get(map, key);
 }
 
-inline static ax_bool ax_map_exist(const ax_map *map, const void *key)
+inline static bool ax_map_exist(const ax_map *map, const void *key)
 {
 	ax_trait_require(map, map->tr->exist);
 	return map->tr->exist(map, key);

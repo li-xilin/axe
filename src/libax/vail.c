@@ -47,7 +47,7 @@ struct vail_item_st
 {
 	ax_stuff value;
 	size_t size;
-	ax_bool is_array;
+	bool is_array;
 	uint8_t type;
 };
 
@@ -83,7 +83,7 @@ static ax_vail* create_vail(struct format_st *vfmt, va_list va)
 			size_t arr_elems = va_arg(va, size_t);
 			item->type = vfmt->table[node_i].type;
 			item->value.ptr = arr_ptr;
-			item->is_array = ax_true;
+			item->is_array = true;
 			item->size = arr_elems;
 		} else {
 			switch (vfmt->table[node_i].type) {
@@ -104,7 +104,7 @@ static ax_vail* create_vail(struct format_st *vfmt, va_list va)
 			}
 			item->type = vfmt->table[node_i].type;
 			item->size = 0;
-			item->is_array = ax_false;
+			item->is_array = false;
 		}
 	}
 	return vail;
@@ -252,7 +252,7 @@ end_type_scan:
 	return vfmt->size;
 
 too_many_arg:
-	ax_assert(ax_false, "too many argument, limited to 127");
+	ax_assert(false, "too many argument, limited to 127");
 	return -1;
 bad_char:
 #ifdef AX_DEBUG
@@ -260,7 +260,7 @@ bad_char:
 		char badch[3] = {fmt[pos]};
 		if (fmt[pos] == '\0')
 			badch[0] = '\\', badch[1] = '0';
-		ax_assert(ax_false, "at colume %d, unexpected char '%s' in format string \"%s\"", pos + 1, badch, fmt);
+		ax_assert(false, "at colume %d, unexpected char '%s' in format string \"%s\"", pos + 1, badch, fmt);
 	}
 #endif
 	return -1;

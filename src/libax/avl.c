@@ -62,7 +62,7 @@ static void     *map_put(ax_map* map, const void *key, const void *val);
 static ax_fail  map_erase(ax_map* map, const void *key);
 static void    *map_get(const ax_map* map, const void *key);
 static ax_iter  map_at(const ax_map* map, const void *key);
-static ax_bool  map_exist(const ax_map* map, const void *key);
+static bool  map_exist(const ax_map* map, const void *key);
 static const void *map_it_key(const ax_citer *it);
 
 static size_t   box_size(const ax_box* box);
@@ -82,12 +82,12 @@ static void     one_free(ax_one* one);
 
 static void     citer_prev(ax_citer *it);
 static void     citer_next(ax_citer *it);
-static ax_bool  citer_less(const ax_citer *it1, const ax_citer *it2);
+static bool  citer_less(const ax_citer *it1, const ax_citer *it2);
 static long     citer_dist(const ax_citer *it1, const ax_citer *it2);
 
 static void     rciter_prev(ax_citer *it);
 static void     rciter_next(ax_citer *it);
-static ax_bool  rciter_less(const ax_citer *it1, const ax_citer *it2);
+static bool  rciter_less(const ax_citer *it1, const ax_citer *it2);
 static long     rciter_dist(const ax_citer *it1, const ax_citer *it2);
 
 static void    *iter_get(const ax_iter *it);
@@ -373,10 +373,10 @@ static void citer_next(ax_citer *it)
 	it->point =  get_right_node(&avl->_map, it->point);
 }
 
-static ax_bool citer_less(const ax_citer *it1, const ax_citer *it2)
+static bool citer_less(const ax_citer *it1, const ax_citer *it2)
 {
 	UNSUPPORTED();
-	return ax_false;
+	return false;
 }
 
 static long citer_dist(const ax_citer *it1, const ax_citer *it2)
@@ -425,10 +425,10 @@ static void rciter_next(ax_citer *it)
 	it->point =  get_left_node(&avl->_map, it->point);
 }
 
-static ax_bool rciter_less(const ax_citer *it1, const ax_citer *it2)
+static bool rciter_less(const ax_citer *it1, const ax_citer *it2)
 {
 	UNSUPPORTED();
-	return ax_false;
+	return false;
 }
 
 static long rciter_dist(const ax_citer *it1, const ax_citer *it2)
@@ -462,9 +462,9 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	val_tr->free(pdst);
 	if (val_tr->copy(pool, pdst, psrc,  val_tr->size)) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return ax_true;
+		return true;
 	}
-	return ax_false;
+	return false;
 }
 
 static void iter_erase(ax_iter *it)
@@ -524,15 +524,15 @@ static void *map_put (ax_map* map, const void *key, const void *val)
 		new_node = make_node(map, NULL, pkey, pval);
 		if (new_node == NULL) {
 			ax_base_set_errno(base, AX_ERR_NOMEM);
-			return ax_false;
+			return false;
 		}
 		avl_r.avl->root = new_node;
 		avl_r.avl->size = 1;
 		return node_val(map, new_node);
 	}
 
-	ax_bool greater, lesser;
-	while (ax_true) {
+	bool greater, lesser;
+	while (true) {
 		lesser = map->env.key_tr->less(pkey, current->kvbuffer, map->env.key_tr->size);
 		greater = map->env.key_tr->less(current->kvbuffer, pkey, map->env.key_tr->size);
 		if (!lesser && !greater) {
@@ -591,7 +591,7 @@ static ax_fail map_erase (ax_map* map, const void *key)
 	if (!node) {
 		ax_base *base = ax_one_base(avl_r.one);
 		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return ax_true;
+		return true;
 	}
 
 	struct node_st * current = remove_node(map, node);
@@ -609,7 +609,7 @@ static ax_fail map_erase (ax_map* map, const void *key)
 	avl_r.avl->root = current;
 	avl_r.avl->size --;
 
-	return ax_false;
+	return false;
 }
 
 static void *map_get (const ax_map* map, const void *key)
@@ -644,7 +644,7 @@ static ax_iter  map_at(const ax_map* map, const void *key)
 	};
 }
 
-static ax_bool map_exist(const ax_map* map, const void *key)
+static bool map_exist(const ax_map* map, const void *key)
 {
 	CHECK_PARAM_NULL(map);
 
@@ -843,7 +843,7 @@ const ax_map_trait ax_avl_tr =
 		},
 		.iter = {
 			.ctr = {
-				.norm = ax_true,
+				.norm = true,
 				.type = AX_IT_BID,
 				.move = NULL,
 				.prev = citer_prev,
@@ -857,7 +857,7 @@ const ax_map_trait ax_avl_tr =
 		},
 		.riter = {
 			.ctr = {
-				.norm = ax_false,
+				.norm = false,
 				.type = AX_IT_BID,
 				.move = NULL,
 				.prev = rciter_prev,

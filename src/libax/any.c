@@ -32,7 +32,7 @@
 
 #undef free
 
-static ax_bool stuff_equal(const void* p1, const void* p2, size_t size)
+static bool stuff_equal(const void* p1, const void* p2, size_t size)
 {
 	CHECK_PARAM_NULL(p1);
 	CHECK_PARAM_NULL(p2);
@@ -40,7 +40,7 @@ static ax_bool stuff_equal(const void* p1, const void* p2, size_t size)
 	return (void*)p1 == (void*)p2;
 }
 
-static ax_bool stuff_less(const void* p1, const void* p2, size_t size)
+static bool stuff_less(const void* p1, const void* p2, size_t size)
 {
 	CHECK_PARAM_NULL(p1);
 	CHECK_PARAM_NULL(p2);
@@ -72,13 +72,13 @@ static ax_fail stuff_copy(ax_pool* pool, void* dst, const void* src, size_t size
 	return !(*(void**)dst = anys->tr->copy(src));
 }
 
-static ax_bool stuff_init(ax_pool* pool, void *p, size_t size)
+static bool stuff_init(ax_pool* pool, void *p, size_t size)
 {
 	CHECK_PARAM_NULL(pool);
 	CHECK_PARAM_NULL(p);
 
 	*(void**)p = NULL;
-	return ax_true;
+	return true;
 }
 
 static const ax_stuff_trait any_stuff_trait = {
@@ -89,7 +89,7 @@ static const ax_stuff_trait any_stuff_trait = {
 	.free = stuff_free,
 	.copy = stuff_copy,
 	.init = stuff_init,
-	.link = ax_false
+	.link = false
 
 };
 

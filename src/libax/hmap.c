@@ -67,7 +67,7 @@ static void    *map_put(ax_map *map, const void *key, const void *val);
 static ax_fail  map_erase(ax_map *map, const void *key);
 static void    *map_get(const ax_map *map, const void *key);
 static ax_iter  map_at(const ax_map *map, const void *key);
-static ax_bool  map_exist(const ax_map *map, const void *key);
+static bool  map_exist(const ax_map *map, const void *key);
 static void    *map_chkey(ax_map *map, const void *key, const void *new_key);
 
 static const void *map_it_key(const ax_citer *it);
@@ -107,7 +107,7 @@ static ax_fail rehash(ax_hmap *hmap, size_t new_size)
 	struct bucket_st *new_tab = ax_pool_alloc(pool, (new_size * sizeof(struct bucket_st)));
 	if (!new_tab) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return ax_true;
+		return true;
 	}
 	for (size_t i = 0; i != new_size; i++)
 		new_tab[i].node_list = NULL;
@@ -137,7 +137,7 @@ static ax_fail rehash(ax_hmap *hmap, size_t new_size)
 	ax_pool_free(hmap->bucket_tab);
 	hmap->buckets = new_size;
 	hmap->bucket_tab = new_tab;
-	return ax_false;
+	return false;
 }
 
 static struct node_st *make_node(ax_map *map, const void *key, const void *val)
@@ -270,9 +270,9 @@ static ax_fail iter_set(const ax_iter *it, const void *p)
 	if (val_tr->copy(pool, node->kvbuffer + hmap_r.map->env.key_tr->size,
 				p, hmap_r.map->env.val_tr->size)) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return ax_true;
+		return true;
 	}
-	return ax_false;
+	return false;
 }
 
 static void iter_erase(ax_iter *it)
@@ -367,7 +367,7 @@ static ax_fail map_erase (ax_map *map, const void *key)
 	const void *pkey = map->env.key_tr->link ? &key : key;
 
 	if (!hmap_r.hmap->buckets) {
-		return ax_true; //TODO
+		return true; //TODO
 	}
 
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
@@ -383,7 +383,7 @@ static ax_fail map_erase (ax_map *map, const void *key)
 	if (hmap_r.hmap->size <= (hmap_r.hmap->buckets >> 2) * hmap_r.hmap->threshold)
 		return (rehash(hmap_r.hmap, hmap_r.hmap->buckets >>= 1));
 
-	return ax_false;
+	return false;
 }
 
 static void *map_get (const ax_map *map, const void *key)
@@ -426,7 +426,7 @@ static ax_iter  map_at(const ax_map *map, const void *key)
 
 }
 
-static ax_bool map_exist (const ax_map *map, const void *key)
+static bool map_exist (const ax_map *map, const void *key)
 {
 	CHECK_PARAM_NULL(map);
 
@@ -435,8 +435,8 @@ static ax_bool map_exist (const ax_map *map, const void *key)
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
 	struct node_st **findpp = find_node(hmap_r.map, bucket, pkey);
 	if (findpp)
-		return ax_true;
-	return ax_false;
+		return true;
+	return false;
 }
 
 static void *map_chkey(ax_map *map, const void *key, const void *new_key)
@@ -633,7 +633,7 @@ const ax_map_trait ax_hmap_tr =
 		
 		.iter = {
 			.ctr = {
-				.norm  = ax_true,
+				.norm  = true,
 				.type  = AX_IT_FORW,
 				.move = NULL,
 				.prev = NULL,

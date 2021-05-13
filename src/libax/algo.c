@@ -28,46 +28,46 @@ void ax_transform(const ax_citer *first1, const ax_citer *last1, const ax_iter *
 	}
 }
 
-ax_bool ax_all_of(const ax_citer *first, const ax_citer *last, const ax_pred *upred)
+bool ax_all_of(const ax_citer *first, const ax_citer *last, const ax_pred *upred)
 {
 	CHECK_PARAM_NULL(upred);
 	CHECK_ITER_COMPARABLE(first, last);
 
-	ax_bool out;
+	bool out;
 	for (ax_citer it = *first; !ax_citer_equal(&it, last); ax_citer_next(&it)) {
 		ax_pred_do(upred, &out, ax_citer_get(&it), NULL);
 		if (!out)
-			return ax_false;
+			return false;
 	}
-	return ax_true;
+	return true;
 }
 
-ax_bool ax_any_of(const ax_citer *first, const ax_citer *last, const ax_pred *upred)
+bool ax_any_of(const ax_citer *first, const ax_citer *last, const ax_pred *upred)
 {
 	CHECK_PARAM_NULL(upred);
 	CHECK_ITER_COMPARABLE(first, last);
 
-	ax_bool out;
+	bool out;
 	for (ax_citer it = *first; !ax_citer_equal(&it, last); ax_citer_next(&it)) {
 		ax_pred_do(upred, &out, ax_citer_get(&it), NULL);
 		if (out)
-			return ax_true;
+			return true;
 	}
-	return ax_false;
+	return false;
 }
 
-ax_bool ax_none_of(const ax_citer *first, const ax_citer *last, const ax_pred *upred)
+bool ax_none_of(const ax_citer *first, const ax_citer *last, const ax_pred *upred)
 {
 	CHECK_PARAM_NULL(upred);
 	CHECK_ITER_COMPARABLE(first, last);
 
-	ax_bool out;
+	bool out;
 	for (ax_citer it = *first; !ax_citer_equal(&it, last); ax_citer_next(&it)) {
 		ax_pred_do(upred, &out, ax_citer_get(&it), NULL);
 		if (out)
-			return ax_false;
+			return false;
 	}
-	return ax_true;
+	return true;
 }
 
 size_t ax_count_if(const ax_citer *first, const ax_citer *last, const ax_pred *upred)
@@ -76,7 +76,7 @@ size_t ax_count_if(const ax_citer *first, const ax_citer *last, const ax_pred *u
 	CHECK_ITER_COMPARABLE(first, last);
 
 	size_t count = 0;
-	ax_bool out = ax_false;
+	bool out = false;
 	for (ax_citer it = *first; !ax_citer_equal(&it, last); ax_citer_next(&it)) {
 		ax_pred_do(upred, &out, ax_citer_get(&it), NULL);
 		count += out ? 1 : 0;
@@ -121,7 +121,7 @@ void ax_find_if(ax_citer *first, const ax_citer *last, const ax_pred *upred)
 	CHECK_PARAM_NULL(upred);
 	CHECK_ITER_COMPARABLE(first, last);
 
-	ax_bool retval;
+	bool retval;
 	while (!ax_citer_equal(first, last)) {
 		if (ax_pred_do(upred, &retval, ax_citer_get(first), NULL), retval)
 			return;
@@ -134,7 +134,7 @@ void ax_find_if_not(ax_citer *first, const ax_citer *last, const ax_pred *upred)
 	CHECK_PARAM_NULL(upred);
 	CHECK_ITER_COMPARABLE(first, last);
 
-	ax_bool retval;
+	bool retval;
 	while (!ax_citer_equal(first, last)) {
 		if (ax_pred_do(upred, &retval, ax_citer_get(first), NULL), !retval)
 			return;
@@ -142,25 +142,25 @@ void ax_find_if_not(ax_citer *first, const ax_citer *last, const ax_pred *upred)
 	}
 }
 
-ax_bool ax_sorted(const ax_citer *first, const ax_citer *last, const ax_pred *bpred)
+bool ax_sorted(const ax_citer *first, const ax_citer *last, const ax_pred *bpred)
 {
 	CHECK_PARAM_NULL(bpred);
 	CHECK_ITER_COMPARABLE(first, last);
 
 	if (ax_citer_equal(first, last))
-		return ax_true;
+		return true;
 
-	ax_bool retval;
+	bool retval;
 	ax_citer it1 = *first, it2 = it1;
 	ax_citer_next(&it2);
 
 	while (!ax_citer_equal(&it2, last)) {
 		if (ax_pred_do(bpred, &retval, ax_citer_get(&it1), ax_citer_get(&it2)), !retval)
-			return ax_false;
+			return false;
 		it1 = it2;
 		ax_citer_next(&it2);
 	}
-	return ax_true;
+	return true;
 }
 
 void ax_partition(ax_iter *first, const ax_iter *last, const ax_pred *pred)
@@ -177,7 +177,7 @@ void ax_partition(ax_iter *first, const ax_iter *last, const ax_pred *pred)
 
 	ax_iter it = *first;
 	for (ax_iter_next(&it); !ax_iter_equal(&it, last); ax_iter_next(&it)) {
-		ax_bool retval;
+		bool retval;
 		ax_pred_do(pred, &retval, ax_iter_get(&it), NULL);
 		if (retval) {
 			ax_iter_swap(&it, first);
@@ -192,7 +192,7 @@ struct quick_sort_context_st {
 	ax_pred pred;
 };
 
-static void less_then(ax_bool *out, void *in1, void *in2, const ax_stuff_trait *tr)
+static void less_then(bool *out, void *in1, void *in2, const ax_stuff_trait *tr)
 {
 	*out = tr->less(in1, in2, tr->size);
 }
@@ -238,7 +238,7 @@ ax_fail ax_quick_sort(const ax_iter *first, const ax_iter *last)
 		.tr = tr
 	};
 	quick_sort(&ext, first, last);
-	return ax_false;
+	return false;
 }
 
 void ax_merge(const ax_citer *first1, const ax_citer *last1, const ax_citer *first2, const ax_citer *last2, ax_iter *dest)
@@ -354,7 +354,7 @@ ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 	void **imap = malloc((size + 1) * sizeof *imap);
 	if (!imap) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return ax_true;
+		return true;
 	}
 	
 	size_t pos = 0;
@@ -368,7 +368,7 @@ ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 	ax_seq *aux = __ax_vector_construct(base, etr);
 	if (!aux) {
 		free(imap);
-		return ax_true;
+		return true;
 	}
 	ax_seq_trunc(aux, size);
 
@@ -383,10 +383,10 @@ ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 	free(imap);
 	ax_one_free((ax_one *)aux);
 	
-	return ax_false;
+	return false;
 }
 
-ax_bool ax_equal_to_arr(const ax_iter *first, const ax_iter *last, void *arr, size_t size)
+bool ax_equal_to_arr(const ax_iter *first, const ax_iter *last, void *arr, size_t size)
 {
 	CHECK_PARAM_VALIDITY(arr, !!arr == !!size);
 
@@ -398,7 +398,7 @@ ax_bool ax_equal_to_arr(const ax_iter *first, const ax_iter *last, void *arr, si
 	ax_iter cur = *first;
 	while (!ax_iter_equal(&cur, last) && pos < size) {
 		if (!tr->equal(ax_iter_get(&cur), (ax_byte*)arr + pos, tr->size))
-			return ax_false;
+			return false;
 		ax_iter_next(&cur);
 		pos += tr->size;
 	}
@@ -444,7 +444,7 @@ void ax_binary_search_if_not(ax_citer *first, const ax_citer *last, const ax_pre
 
 	ax_citer left = *first, right = *last, middle = { .owner = first->owner, .tr = first->tr };
 	while (!ax_citer_equal(&left, &right)) {
-		ax_bool ret;
+		bool ret;
 		long length = ax_citer_dist(&left, &right);
 		long m = length / 2;
 		middle.point = left.point;
@@ -473,7 +473,7 @@ ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 	void *tmp = ax_pool_alloc(pool, tr->size);
 	if (!tmp) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return ax_true;
+		return true;
 	}
 
 	void (*search_if_not)(ax_citer *first, const ax_citer *last, const ax_pred *upred)
@@ -505,7 +505,7 @@ ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 		ax_iter_next(&cur);
 	}
 	ax_pool_free(tmp);
-	return ax_false;
+	return false;
 }
 
 void ax_find_first_unsorted(ax_citer *first, const ax_citer *last, const ax_pred *bpred)
@@ -518,7 +518,7 @@ void ax_find_first_unsorted(ax_citer *first, const ax_citer *last, const ax_pred
 		return;
 	}
 
-	ax_bool retval;
+	bool retval;
 	ax_citer it1 = *first, it2 = *first;
 	ax_citer_next(&it2);
 	while (!ax_citer_equal(&it2, last)) {

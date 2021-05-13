@@ -81,12 +81,12 @@ static void        one_free(ax_one *one);
 
 static void        citer_prev(ax_citer *it);
 static void        citer_next(ax_citer *it);
-static ax_bool     citer_less(const ax_citer *it1, const ax_citer *it2);
+static bool     citer_less(const ax_citer *it1, const ax_citer *it2);
 static long        citer_dist(const ax_citer *it1, const ax_citer *it2);
 
 static void        rciter_prev(ax_citer *it);
 static void        rciter_next(ax_citer *it);
-static ax_bool     rciter_less(const ax_citer *it1, const ax_citer *it2);
+static bool     rciter_less(const ax_citer *it1, const ax_citer *it2);
 static long        rciter_dist(const ax_citer *it1, const ax_citer *it2);
 
 static void       *iter_get(const ax_iter *it);
@@ -132,24 +132,24 @@ static void *iter_get(const ax_iter *it)
 	return etr->link ? *(void**) node->data : node->data;
 }
 
-static ax_bool citer_less(const ax_citer *it1, const ax_citer *it2)
+static bool citer_less(const ax_citer *it1, const ax_citer *it2)
 {
 	CHECK_ITER_COMPARABLE(it1, it2);
 
 	const ax_list *list = it1->owner;
 
 	if (it2->point == NULL)
-		return it1->point ? ax_true : ax_false;
+		return it1->point ? true : false;
 	else if (it1->point == NULL)
-		return ax_false;
+		return false;
 
 	const struct node_st *node = it1->point;
 	node = node->next;
 	while (node != list->head) {
 		if (node == it2->point)
-			return ax_true;
+			return true;
 	}
-	return ax_false;
+	return false;
 }
 
 static long citer_dist(const ax_citer *it1, const ax_citer *it2)
@@ -189,7 +189,7 @@ static long citer_dist(const ax_citer *it1, const ax_citer *it2)
 			return -d;
 	}
 
-	ax_assert(ax_false, "invalid iterator");
+	ax_assert(false, "invalid iterator");
 	return 0;
 }
 
@@ -223,24 +223,24 @@ static void rciter_next(ax_citer *it)
 	}
 }
 
-static ax_bool rciter_less(const ax_citer *it1, const ax_citer *it2)
+static bool rciter_less(const ax_citer *it1, const ax_citer *it2)
 {
 	CHECK_ITER_COMPARABLE(it1, it2);
 
 	const ax_list *list = it1->owner;
 
 	if (it2->point == NULL)
-		return it1->point ? ax_true : ax_false;
+		return it1->point ? true : false;
 	else if (it1->point == NULL)
-		return ax_false;
+		return false;
 
 	const struct node_st *node = it1->point;
 	node = node->pre;
 	while (node != list->head->pre) {
 		if (node == it2->point)
-			return ax_true;
+			return true;
 	}
-	return ax_false;
+	return false;
 }
 
 static long rciter_dist(const ax_citer *it1, const ax_citer *it2)
@@ -280,7 +280,7 @@ static long rciter_dist(const ax_citer *it1, const ax_citer *it2)
 			return - d;
 	}
 
-	ax_assert(ax_false, "invalid iterator");
+	ax_assert(false, "invalid iterator");
 	return 0;
 }
 
@@ -305,10 +305,10 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	if (fail) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
 		ax_pool_free(node);
-		return ax_true;
+		return true;
 	}
 
-	return ax_false;
+	return false;
 }
 
 static void iter_erase(ax_iter *it)
@@ -516,7 +516,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	struct node_st *node = ax_pool_alloc(pool, sizeof(struct node_st) + etr->size);
 	if (node == NULL) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return ax_true;
+		return true;
 	}
 
 	const void *pval = etr->link ? &pval : val;
@@ -526,7 +526,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	if (fail) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
 		ax_pool_free(node);
-		return ax_true;
+		return true;
 	}
 
 	if (self_r.list->head) {
@@ -557,7 +557,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	self_r.list->size ++;
 	
 	it->point = ax_iter_norm(it) ? node->next : node->pre;
-	return ax_false;
+	return false;
 }
 
 inline static struct node_st *make_node(ax_pool *pool, const ax_stuff_trait *etr, const void *val)
@@ -595,7 +595,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 	if (!node) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
 		ax_pool_free(node);
-		return ax_true;
+		return true;
 	}
 
 	if (self_r.list->head) {
@@ -611,7 +611,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 
 	self_r.list->size ++;
 
-	return ax_false;
+	return false;
 }
 
 static ax_fail seq_pop(ax_seq *seq)
@@ -623,7 +623,7 @@ static ax_fail seq_pop(ax_seq *seq)
 	if (list->size == 0)
 	{
 		ax_base_set_errno(base, AX_ERR_EMPTY);
-		return ax_false;
+		return false;
 	}
 	struct node_st *node =  list->head->pre;
 	if (list->size > 1) {
@@ -636,7 +636,7 @@ static ax_fail seq_pop(ax_seq *seq)
 	ax_pool_free(node);
 
 	list->size --;
-	return ax_false;
+	return false;
 }
 
 static ax_fail seq_pushf(ax_seq *seq, const void *val)
@@ -653,7 +653,7 @@ static ax_fail seq_pushf(ax_seq *seq, const void *val)
 	if (!node) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
 		ax_pool_free(node);
-		return ax_true;
+		return true;
 	}
 
 	if (self_r.list->head) {
@@ -670,7 +670,7 @@ static ax_fail seq_pushf(ax_seq *seq, const void *val)
 
 	self_r.list->size ++;
 
-	return ax_false;
+	return false;
 }
 
 static ax_fail seq_popf(ax_seq *seq)
@@ -682,7 +682,7 @@ static ax_fail seq_popf(ax_seq *seq)
 	if (list->size == 0)
 	{
 		ax_base_set_errno(base, AX_ERR_EMPTY);
-		return ax_false;
+		return false;
 	}
 	struct node_st *node =  list->head;
 	if (list->size > 1) {
@@ -696,7 +696,7 @@ static ax_fail seq_popf(ax_seq *seq)
 	ax_pool_free(node);
 
 	list->size --;
-	return ax_false;
+	return false;
 }
 
 
@@ -739,7 +739,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 				while (npush++ < size - list->size) {
 					ax_seq_pop(seq);
 				}
-				return ax_true;
+				return true;
 			}
 		}
 	} else {
@@ -750,7 +750,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 
 	}
 
-	return ax_false;
+	return false;
 }
 
 static ax_iter seq_at(const ax_seq *seq, size_t index) /* Could optimized to mean time O(n/4) */
@@ -821,7 +821,7 @@ const ax_seq_trait ax_list_tr =
 		},
 		.iter = {
 			.ctr = {
-				.norm = ax_true,
+				.norm = true,
 				.type = AX_IT_BID,
 				.move = NULL,
 				.next = citer_next,
@@ -835,7 +835,7 @@ const ax_seq_trait ax_list_tr =
 		},
 		.riter = {
 			.ctr = {
-				.norm = ax_false,
+				.norm = false,
 				.type = AX_IT_BID,
 				.move = NULL,
 				.prev = rciter_prev,

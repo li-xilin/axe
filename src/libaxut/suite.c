@@ -72,7 +72,7 @@ static void case_free(void *p)
 	ax_pool_free(tc->log);
 }
 
-static ax_bool case_less(const void *p1, const void *p2, size_t size)
+static bool case_less(const void *p1, const void *p2, size_t size)
 {
 
 	const axut_case *tc1 = p1;
@@ -80,7 +80,7 @@ static ax_bool case_less(const void *p1, const void *p2, size_t size)
 	return tc1->priority < tc2->priority;
 }
 
-static ax_bool case_equal(const void *p1, const void *p2, size_t size)
+static bool case_equal(const void *p1, const void *p2, size_t size)
 {
 
 	const axut_case *tc1 = p1;
@@ -111,12 +111,12 @@ static ax_fail case_copy(ax_pool* pool, void* dst, const void* src, size_t size)
 
 	}
 
-	return ax_false;
+	return false;
 out:
 	ax_pool_free(dst_tc->name);
 	ax_pool_free(dst_tc->log);
 	ax_pool_free(dst_tc->file);
-	return ax_true;
+	return true;
 }
 
 static const ax_stuff_trait case_trait = {
@@ -128,7 +128,7 @@ static const ax_stuff_trait case_trait = {
 	.equal = case_equal,
 	.free = case_free,
 	.size = sizeof(axut_case),
-	.link = ax_false
+	.link = false
 
 };
 
@@ -203,7 +203,7 @@ ax_fail axut_suite_add_case(axut_suite *suite, const char *name, axut_case_proc_
 	ax_iter first = ax_box_begin(suite->tctab.box);
 	ax_iter last = ax_box_end(suite->tctab.box);
 	ax_insertion_sort(&first, &last);
-	return ax_false;
+	return false;
 }
 
 const ax_seq *axut_suite_all_case(const axut_suite *suite)

@@ -58,156 +58,156 @@ size_t ax_stuff_size(int type)
 		case AX_ST_WS:
 		case AX_ST_PTR:  return sizeof(void*);
 	}
-	ax_assert(ax_false, "unrecognized type %d", type);
+	ax_assert(false, "unrecognized type %d", type);
 	return 0;
 }
 
-static ax_bool equal_nil(const void* p1, const void* p2, size_t size)
+static bool equal_nil(const void* p1, const void* p2, size_t size)
 {
-	return ax_true;
+	return true;
 }
 
-static ax_bool equal_i8(const void* p1, const void* p2, size_t size)
-{
-	return *(int8_t*) p1 == *(int8_t*) p2;
-}
-
-static ax_bool equal_i16(const void* p1, const void* p2, size_t size)
-{
-	return *(int16_t*)p1 == *(int16_t*)p2;
-}
-
-static ax_bool equal_i32(const void* p1, const void* p2, size_t size)
-{
-	return *(int32_t*)p1 == *(int32_t*)p2;
-}
-
-static ax_bool equal_i64(const void* p1, const void* p2, size_t size)
-{
-	return *(int64_t*)p1 == *(int64_t*)p2;
-}
-
-static ax_bool equal_u8(const void* p1, const void* p2, size_t size)
+static bool equal_i8(const void* p1, const void* p2, size_t size)
 {
 	return *(int8_t*) p1 == *(int8_t*) p2;
 }
 
-static ax_bool equal_u16(const void* p1, const void* p2, size_t size)
+static bool equal_i16(const void* p1, const void* p2, size_t size)
 {
 	return *(int16_t*)p1 == *(int16_t*)p2;
 }
 
-static ax_bool equal_u32(const void* p1, const void* p2, size_t size)
+static bool equal_i32(const void* p1, const void* p2, size_t size)
 {
 	return *(int32_t*)p1 == *(int32_t*)p2;
 }
 
-static ax_bool equal_u64(const void* p1, const void* p2, size_t size)
+static bool equal_i64(const void* p1, const void* p2, size_t size)
 {
 	return *(int64_t*)p1 == *(int64_t*)p2;
 }
 
-static ax_bool equal_f(const void* p1, const void* p2, size_t size)
+static bool equal_u8(const void* p1, const void* p2, size_t size)
+{
+	return *(int8_t*) p1 == *(int8_t*) p2;
+}
+
+static bool equal_u16(const void* p1, const void* p2, size_t size)
+{
+	return *(int16_t*)p1 == *(int16_t*)p2;
+}
+
+static bool equal_u32(const void* p1, const void* p2, size_t size)
+{
+	return *(int32_t*)p1 == *(int32_t*)p2;
+}
+
+static bool equal_u64(const void* p1, const void* p2, size_t size)
+{
+	return *(int64_t*)p1 == *(int64_t*)p2;
+}
+
+static bool equal_f(const void* p1, const void* p2, size_t size)
 {
 	return *(float*)  p1 == *(float*)  p2;
 }
 
-static ax_bool equal_lf(const void* p1, const void* p2, size_t size)
+static bool equal_lf(const void* p1, const void* p2, size_t size)
 {
 	return *(double*) p1 == *(double*) p2;
 }
 
-static ax_bool equal_z(const void* p1, const void* p2, size_t size)
+static bool equal_z(const void* p1, const void* p2, size_t size)
 {
 	return *(size_t*) p1 == *(size_t*) p2;
 }
 
-static ax_bool equal_s(const void* p1, const void* p2, size_t size)
+static bool equal_s(const void* p1, const void* p2, size_t size)
 {
 	return strcmp(*(char**)p1, *(char**)p2) == 0;
 }
 
-static ax_bool equal_ws(const void* p1, const void* p2, size_t size)
+static bool equal_ws(const void* p1, const void* p2, size_t size)
 {
 	return wcscmp(*(wchar_t**)p1, *(wchar_t**)p2) == 0;
 }
 
-static ax_bool equal_ptr(const void* p1, const void* p2, size_t size)
+static bool equal_ptr(const void* p1, const void* p2, size_t size)
 {
 	return *(void**) p1 == *(void**) p2;
 }
 
-static ax_bool less_nil(const void* p1, const void* p2, size_t size)
+static bool less_nil(const void* p1, const void* p2, size_t size)
 {
-	return ax_false;
+	return false;
 }
 
-static ax_bool less_i8(const void* p1, const void* p2, size_t size)
-{
-	return *(int8_t*) p1 < *(int8_t*) p2;
-}
-
-static ax_bool less_i16(const void* p1, const void* p2, size_t size)
-{
-	return *(int16_t*)p1 < *(int16_t*)p2;
-}
-
-static ax_bool less_i32(const void* p1, const void* p2, size_t size)
-{
-	return *(int32_t*)p1 < *(int32_t*)p2;
-}
-
-static ax_bool less_i64(const void* p1, const void* p2, size_t size)
-{
-	return *(int64_t*)p1 < *(int64_t*)p2;
-}
-
-static ax_bool less_u8(const void* p1, const void* p2, size_t size)
+static bool less_i8(const void* p1, const void* p2, size_t size)
 {
 	return *(int8_t*) p1 < *(int8_t*) p2;
 }
 
-static ax_bool less_u16(const void* p1, const void* p2, size_t size)
+static bool less_i16(const void* p1, const void* p2, size_t size)
 {
 	return *(int16_t*)p1 < *(int16_t*)p2;
 }
 
-static ax_bool less_u32(const void* p1, const void* p2, size_t size)
+static bool less_i32(const void* p1, const void* p2, size_t size)
 {
 	return *(int32_t*)p1 < *(int32_t*)p2;
 }
 
-static ax_bool less_u64(const void* p1, const void* p2, size_t size)
+static bool less_i64(const void* p1, const void* p2, size_t size)
 {
 	return *(int64_t*)p1 < *(int64_t*)p2;
 }
 
-static ax_bool less_f(const void* p1, const void* p2, size_t size)
+static bool less_u8(const void* p1, const void* p2, size_t size)
+{
+	return *(int8_t*) p1 < *(int8_t*) p2;
+}
+
+static bool less_u16(const void* p1, const void* p2, size_t size)
+{
+	return *(int16_t*)p1 < *(int16_t*)p2;
+}
+
+static bool less_u32(const void* p1, const void* p2, size_t size)
+{
+	return *(int32_t*)p1 < *(int32_t*)p2;
+}
+
+static bool less_u64(const void* p1, const void* p2, size_t size)
+{
+	return *(int64_t*)p1 < *(int64_t*)p2;
+}
+
+static bool less_f(const void* p1, const void* p2, size_t size)
 {
 	return *(float*)  p1 < *(float*)  p2;
 }
 
-static ax_bool less_lf(const void* p1, const void* p2, size_t size)
+static bool less_lf(const void* p1, const void* p2, size_t size)
 {
 	return *(double*) p1 < *(double*) p2;
 }
 
-static ax_bool less_z(const void* p1, const void* p2, size_t size)
+static bool less_z(const void* p1, const void* p2, size_t size)
 {
 	return *(size_t*) p1 < *(size_t*) p2;
 }
 
-static ax_bool less_s(const void* p1, const void* p2, size_t size)
+static bool less_s(const void* p1, const void* p2, size_t size)
 {
 	return strcmp(*(char**)p1, *(char**)p2) < 0;
 }
 
-static ax_bool less_ws(const void* p1, const void* p2, size_t size)
+static bool less_ws(const void* p1, const void* p2, size_t size)
 {
 	return wcscmp(*(wchar_t**)p1, *(wchar_t**)p2) < 0;
 }
 
-static ax_bool less_ptr(const void* p1, const void* p2, size_t size)
+static bool less_ptr(const void* p1, const void* p2, size_t size)
 {
 	return *(intptr_t**) p1 < *(intptr_t**) p2;
 }
@@ -240,19 +240,19 @@ static void move_ws  (void* dst, const void* src, size_t size)
 static ax_fail init_s  (ax_pool *pool, void* p, size_t size) {
 	char *s = ax_pool_alloc(pool, sizeof(char));
 	if (s == NULL)
-		return ax_true;
+		return true;
 	*s = '\0';
 	*(void**)  p = s;
-	return ax_false;
+	return false;
 }
 
-static ax_bool init_ws  (ax_pool *pool, void* p, size_t size) {
+static bool init_ws  (ax_pool *pool, void* p, size_t size) {
 	wchar_t *s = ax_pool_alloc(pool, sizeof(wchar_t));
 	if (s == NULL)
-		return ax_true;
+		return true;
 	*s = L'\0';
 	*(void**)  p = s;
-	return ax_false;
+	return false;
 }
 
 
@@ -270,12 +270,12 @@ void ax_stuff_mem_free(void* p) {
 
 }
 
-ax_bool ax_stuff_mem_less(const void* p1, const void* p2, size_t size)
+bool ax_stuff_mem_less(const void* p1, const void* p2, size_t size)
 {
 	return memcmp(p1, p2, size);
 }
 
-ax_bool ax_stuff_mem_equal(const void* p1, const void* p2, size_t size)
+bool ax_stuff_mem_equal(const void* p1, const void* p2, size_t size)
 {
 	return memcmp(p1, p2, size) == 0;
 }
@@ -294,7 +294,7 @@ ax_fail ax_stuff_mem_copy(ax_pool* pool, void* dst, const void* src, size_t size
 		case 8: *(uint64_t *)dst = *(uint64_t *)src; break;
 		default: memcpy(dst, src, size); break;
 	}
-	return ax_false;
+	return false;
 }
 
 void ax_stuff_mem_move(void* dst, const void* src, size_t size)
@@ -329,7 +329,7 @@ void ax_stuff_mem_swap(void* dst, void* src, size_t size)
 ax_fail ax_stuff_mem_init(ax_pool* pool, void* p, size_t size)
 {
 	memset(p, 0, size);
-	return ax_false;
+	return false;
 }
 
 static void free_s(void* p)
@@ -352,7 +352,7 @@ static const ax_stuff_trait trait_nil = {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 
@@ -366,7 +366,7 @@ static const ax_stuff_trait trait_i8 = {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 static const ax_stuff_trait trait_i16 = { 
@@ -379,7 +379,7 @@ static const ax_stuff_trait trait_i16 = {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 static const ax_stuff_trait trait_i32 = { 
@@ -392,7 +392,7 @@ static const ax_stuff_trait trait_i32 = {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 static const ax_stuff_trait trait_i64 = { 
@@ -405,7 +405,7 @@ static const ax_stuff_trait trait_i64 = {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 static const ax_stuff_trait trait_u8 = { 
@@ -418,7 +418,7 @@ static const ax_stuff_trait trait_u8 = {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 static const ax_stuff_trait trait_u16 = { 
@@ -431,7 +431,7 @@ static const ax_stuff_trait trait_u16 = {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 static const ax_stuff_trait trait_u32 = { 
@@ -444,7 +444,7 @@ static const ax_stuff_trait trait_u32 = {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 static const ax_stuff_trait trait_u64 = { 
@@ -457,7 +457,7 @@ static const ax_stuff_trait trait_u64 = {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 static const ax_stuff_trait trait_z = { 
@@ -470,7 +470,7 @@ static const ax_stuff_trait trait_z = {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 static const ax_stuff_trait trait_f = { 
@@ -483,7 +483,7 @@ static const ax_stuff_trait trait_f = {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 static const ax_stuff_trait trait_lf = { 
@@ -496,7 +496,7 @@ static const ax_stuff_trait trait_lf = {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 static const ax_stuff_trait trait_ptr= { 
@@ -509,7 +509,7 @@ static const ax_stuff_trait trait_ptr= {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 static const ax_stuff_trait trait_s = { 
@@ -522,7 +522,7 @@ static const ax_stuff_trait trait_s = {
 	.move  = move_s,
 	.swap  = ax_stuff_mem_swap,
 	.init  = init_s,
-	.link  = ax_true
+	.link  = true
 };
 
 static const ax_stuff_trait trait_ws = { 
@@ -535,7 +535,7 @@ static const ax_stuff_trait trait_ws = {
 	.move  = move_ws,
 	.swap  = ax_stuff_mem_swap,
 	.init  = init_ws,
-	.link  = ax_true
+	.link  = true
 };
 
 inline static int int_fixed_type(int bits)

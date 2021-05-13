@@ -149,20 +149,20 @@ static ax_fail mem_resize(const ax_buff *buff, size_t require, size_t *alloc)
 	if (require > buff->max) {
 		ax_base *base = ax_one_base(ax_cr(buff, buff).one);
 		ax_base_set_errno(base, AX_ERR_FULL);
-		return ax_true;
+		return true;
 	}
 
 	if (require > buff->real) {
 		*alloc = buff->max >> 1 <= require ? buff->max : (require << 1) | 1;
-		return ax_false;
+		return false;
 	}
 	if (buff->real >> 2 >= require) {
 		size_t new_size = buff->real >> 1;
 		*alloc = new_size < buff->min ? buff->min : new_size;
-		return ax_false;
+		return false;
 	}
 	*alloc = buff->real;
-	return ax_false;
+	return false;
 }
 
 static const ax_any_trait any_trait =
@@ -236,7 +236,7 @@ ax_fail ax_buff_set_max(ax_buff *buff, size_t max)
 		void *new_buf = ax_pool_alloc(pool, max);
 		if (!new_buf) {
 			ax_base_set_errno(base, AX_ERR_NOMEM);
-			return ax_true;
+			return true;
 		}
 		memcpy(new_buf, buff->buf, size_copy);
 		ax_pool_free(buff->buf);
@@ -246,7 +246,7 @@ ax_fail ax_buff_set_max(ax_buff *buff, size_t max)
 	}
 
 	buff->max = max;
-	return ax_false;
+	return false;
 }
 
 ax_fail ax_buff_adapt(ax_buff *buff, size_t size)
@@ -255,7 +255,7 @@ ax_fail ax_buff_adapt(ax_buff *buff, size_t size)
 
 	size_t size_realloc;
 	if (mem_resize(buff, size, &size_realloc))
-		return ax_true;
+		return true;
 
 	if (size_realloc != buff->real) {
 		ax_base *base = ax_one_base(ax_r(buff, buff).one);
@@ -263,14 +263,14 @@ ax_fail ax_buff_adapt(ax_buff *buff, size_t size)
 		void *buf = ax_pool_realloc(pool, buff->buf, size_realloc);
 		if (!buf) {
 			ax_base_set_errno(base, AX_ERR_NOMEM);
-			return ax_true;
+			return true;
 		}
 		buff->buf = buf;
 		buff->real = size_realloc;
 	}
 
 	buff->used = size;
-	return ax_false;
+	return false;
 }
 
 ax_fail ax_buff_resize(ax_buff *buff, size_t size)
@@ -279,7 +279,7 @@ ax_fail ax_buff_resize(ax_buff *buff, size_t size)
 
 	if (size <= buff->real) {
 		buff->used = size;
-		return ax_false;
+		return false;
 	}
 
 	return ax_buff_adapt(buff, size);
@@ -292,7 +292,7 @@ ax_fail ax_buff_alloc(ax_buff *buff, size_t size, void **obuf)
 
 	size_t size_alloc;
 	if (mem_resize(buff, size, &size_alloc))
-		return ax_true;
+		return true;
 
 	if (size_alloc != buff->real) {
 		ax_base *base = ax_one_base(ax_r(buff, buff).one);
@@ -300,7 +300,7 @@ ax_fail ax_buff_alloc(ax_buff *buff, size_t size, void **obuf)
 		void *buf = ax_pool_alloc(pool, size_alloc);
 		if (!buf) {
 			ax_base_set_errno(base, AX_ERR_NOMEM);
-			return ax_true;
+			return true;
 		}
 		*obuf = buff->buf;
 		buff->buf = buf;
@@ -308,7 +308,7 @@ ax_fail ax_buff_alloc(ax_buff *buff, size_t size, void **obuf)
 	}
 
 	buff->used = size;
-	return ax_false;
+	return false;
 }
 
 ax_fail ax_buff_shrink(ax_buff *buff)
@@ -318,13 +318,13 @@ ax_fail ax_buff_shrink(ax_buff *buff)
 	void *new_buf = NULL;
 	new_buf = ax_pool_realloc(pool, buff->buf, buff->used);
 	if (!new_buf)
-		return ax_true;
+		return true;
 	buff->buf = new_buf;
 	buff->real = buff->used;
 	if (buff->min > buff->used)
 		buff->min = buff->used;
 
-	return ax_false;
+	return false;
 }
 
 ax_fail ax_buff_reserve(ax_buff *buff, size_t size)
@@ -344,7 +344,7 @@ ax_fail ax_buff_reserve(ax_buff *buff, size_t size)
 	} else {
 		new_buf = ax_pool_alloc(pool, size);
 		if (!new_buf)
-			return ax_true;
+			return true;
 
 		memcpy(new_buf, buff->buf, buff->used);
 		free(buff->buf);
@@ -355,10 +355,10 @@ ax_fail ax_buff_reserve(ax_buff *buff, size_t size)
 	if (buff->used > size)
 		buff->used = size;
 	buff->min = size;
-	return ax_false;
+	return false;
 fail:
 	ax_base_set_errno(base, AX_ERR_NOMEM);
-	return ax_true;
+	return true;
 }
 
 size_t ax_buff_size(const ax_buff *buff, size_t *real)

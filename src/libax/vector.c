@@ -78,7 +78,7 @@ static void    one_free(ax_one *one);
 static void    citer_move(ax_citer *it, long i);
 static void    citer_prev(ax_citer *it);
 static void    citer_next(ax_citer *it);
-static ax_bool citer_less(const ax_citer *it1, const ax_citer *it2);
+static bool citer_less(const ax_citer *it1, const ax_citer *it2);
 static long    citer_dist(const ax_citer *it1, const ax_citer *it2);
 
 static void    rciter_move(ax_citer *it, long i);
@@ -90,7 +90,7 @@ static void    iter_erase(ax_iter *it);
 static ax_fail iter_set(const ax_iter *it, const void *val);
 
 #ifdef AX_DEBUG
-static inline ax_bool iter_if_valid(const ax_citer *it)
+static inline bool iter_if_valid(const ax_citer *it)
 {
 
 	const ax_vector *self = it->owner;
@@ -104,7 +104,7 @@ static inline ax_bool iter_if_valid(const ax_citer *it)
 		&& ((intptr_t)it->point - (intptr_t)ptr) % etr->size == 0;
 }
 
-static inline ax_bool iter_if_have_value(const ax_citer *it)
+static inline bool iter_if_have_value(const ax_citer *it)
 {
 	const ax_vector *self = it->owner;
 	const ax_byte *ptr = ax_buff_ptr(self->buff);
@@ -147,7 +147,7 @@ static void citer_next(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
 
-static ax_bool citer_less(const ax_citer *it1, const ax_citer *it2)
+static bool citer_less(const ax_citer *it1, const ax_citer *it2)
 {
 	CHECK_PARAM_NULL(it1);
 	CHECK_PARAM_NULL(it2);
@@ -228,10 +228,10 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 		: etr->init(pool, it->point, etr->size);
 	if (fail) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return ax_true;
+		return true;
 	}
 	
-	return ax_false;
+	return false;
 }
 
 static void iter_erase(ax_iter *it)
@@ -444,7 +444,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	long offset = (ax_byte *)it->point - ptr; //backup offset before realloc
 
 	if (ax_buff_adapt(self->buff, size + etr->size))
-		return ax_true;
+		return true;
 
 	ptr = ax_buff_ptr(self->buff);
 	it->point = ptr + offset; //restore offset
@@ -462,12 +462,12 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	if (fail) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
 		ax_buff_resize(self->buff, size);
-		return ax_true;
+		return true;
 	}
 
 	if(ax_iter_norm(it))
 		it->point = (ax_byte*)it->point + etr->size;
-	return ax_false;
+	return false;
 }
 
 static ax_fail seq_push(ax_seq *seq, const void *val)
@@ -482,7 +482,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 	size_t size = ax_buff_size(self->buff, NULL);
 
 	if (ax_buff_adapt(self->buff, size + etr->size))
-		return ax_true;
+		return true;
 
 	const void *pval = seq->env.elem_tr->link ? &val: val;
 	ax_byte *ptr = ax_buff_ptr(self->buff);
@@ -493,10 +493,10 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 	if (fail) {
 		ax_base_set_errno(base, AX_ERR_NOMEM);
 		ax_buff_resize(self->buff, size);
-		return ax_true;
+		return true;
 	}
 
-	return ax_false;
+	return false;
 }
 
 static ax_fail seq_pop(ax_seq *seq)
@@ -511,13 +511,13 @@ static ax_fail seq_pop(ax_seq *seq)
 	if (size == 0) {
 		ax_base *base = ax_one_base(ax_r(vector, self).one);
 		ax_base_set_errno(base, AX_ERR_EMPTY);
-		return ax_false;
+		return false;
 	}
 	seq->env.elem_tr->free(ptr + size - etr->size);
 
 	if (ax_buff_adapt(self->buff, size - etr->size))
-		return ax_true;
-	return ax_false;
+		return true;
+	return false;
 }
 
 static void seq_invert(ax_seq *seq)
@@ -556,7 +556,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 	size *= etr->size;
 
 	if (size == old_size) 
-		return ax_false;
+		return false;
 
 	if (size < old_size) {
 		ax_byte *ptr = ax_buff_ptr(self->buff);
@@ -564,19 +564,19 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 			etr->free(ptr + off);
 		}
 		if (ax_buff_adapt(self->buff, size))
-			return ax_true;
+			return true;
 	} else {
 		ax_base *base = ax_one_base(self_r.one);
 		ax_pool *pool = ax_base_pool(base);
 		if (ax_buff_adapt(self->buff, size))
-			return ax_true;
+			return true;
 		ax_byte *ptr = ax_buff_ptr(self->buff);
 
 		for (size_t off = old_size; off < size ; off += etr->size) {
 			etr->init(pool, ptr + off, etr->size);
 		}
 	}
-	return ax_false;
+	return false;
 }
 
 static ax_iter seq_at(const ax_seq *seq, size_t index)
@@ -631,7 +631,7 @@ const ax_seq_trait ax_vector_tr =
 		},
 		.iter = {
 			.ctr = {
-				.norm = ax_true,
+				.norm = true,
 				.type = AX_IT_RAND,
 				.move = citer_move,
 				.next = citer_next,
@@ -645,7 +645,7 @@ const ax_seq_trait ax_vector_tr =
 		},
 		.riter = {
 			.ctr = {
-				.norm = ax_false,
+				.norm = false,
 				.type = AX_IT_RAND,
 				.move = rciter_move,
 				.next = rciter_next,

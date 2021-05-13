@@ -102,7 +102,7 @@ ax_fail ax_seq_vpushl(ax_seq *seq, const char *fmt, va_list varg)
 	vail = ax_vail_vcreate(base, fmt, varg);
 
 	if (!vail) {
-		return ax_true;
+		return true;
 	}
 	int vail_size = ax_vail_size(vail);
 	ax_assert(vail_size != 0, "initial list is empty");
@@ -134,13 +134,13 @@ ax_fail ax_seq_vpushl(ax_seq *seq, const char *fmt, va_list varg)
 		npush ++;
 	}
 	ax_vail_destroy(vail);
-	return ax_false;
+	return false;
 fail:
 	for (int i = 0; i < npush; i++) {
 		ax_seq_pop(seq);
 	}
 	ax_vail_destroy(vail);
-	return ax_true;
+	return true;
 }
 
 ax_fail ax_seq_pushl(ax_seq *seq, const char *fmt, ...)

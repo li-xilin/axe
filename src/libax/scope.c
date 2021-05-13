@@ -138,17 +138,17 @@ void ax_scope_clean(ax_scope *scope)
 	scope_r.scope->tab_size = 0;
 }
 
-ax_bool ax_scope_detach(ax_one *one)
+bool ax_scope_detach(ax_one *one)
 {
 	CHECK_PARAM_NULL(one);
 
 	ax_one_env *envp_detach = ax_one_envp(one);
 	if (envp_detach->scope.macro == NULL)
-		return ax_true;;
+		return true;;
 	//ax_assert(!ax_one_envp(one)->scope.macro || ax_one_is(ax_one_envp(one)->scope.macro, AX_SCOPE_NAME), "object can not be detached");
 	
 	if (!ax_one_is(ax_one_envp(one)->scope.macro, AX_SCOPE_NAME))
-		return ax_false;
+		return false;
 
 	ax_scope * scope = (ax_scope *)envp_detach->scope.macro;
 
@@ -158,7 +158,7 @@ ax_bool ax_scope_detach(ax_one *one)
 	last_envp->scope.micro = envp_detach->scope.micro;
 	envp_detach->scope.macro = NULL;
 	envp_detach->scope.micro = 0;
-	return ax_true;
+	return true;
 }
 
 void ax_scope_destroy(ax_scope *scope)

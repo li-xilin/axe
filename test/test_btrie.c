@@ -81,7 +81,7 @@ struct enum_context_st {
 	struct check_table_st *check_table;
 };
 
-ax_bool iterator_enum_cb(ax_trie *trie, const ax_seq *key, const void *val, void *ctx)
+bool iterator_enum_cb(ax_trie *trie, const ax_seq *key, const void *val, void *ctx)
 {
 	struct enum_context_st *ectx = ctx;
 	char path[1024];
@@ -91,7 +91,7 @@ ax_bool iterator_enum_cb(ax_trie *trie, const ax_seq *key, const void *val, void
 	axut_assert_str_equal(ectx->runner, ex_key, path);
 	axut_assert_int_equal(ectx->runner, ex_value, *(int *)val);
 	ectx->check_table->index ++;
-	return ax_false;
+	return false;
 }
 
 static ax_btrie_r make_test_btrie(ax_base *base) {

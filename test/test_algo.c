@@ -58,17 +58,17 @@ static void all_any_none_of(axut_runner *r)
 	}
 
 	int32_t twenty = 20;
-	ax_bool ret;
+	bool ret;
 	pred = ax_pred_binary_make(ax_oper_for(AX_ST_I32)->lt, NULL, &twenty, NULL);
 
 	ret = ax_all_of(ax_iter_c(&first), ax_iter_c(&last), &pred);
-	axut_assert(r, ret == ax_true);
+	axut_assert(r, ret == true);
 
 	ret = ax_any_of(ax_iter_c(&first), ax_iter_c(&last), &pred);
-	axut_assert(r, ret == ax_true);
+	axut_assert(r, ret == true);
 
 	ret = ax_none_of(ax_iter_c(&first), ax_iter_c(&last), &pred);
-	axut_assert(r, ret == ax_false);
+	axut_assert(r, ret == false);
 
 	ax_base_destroy(base);
 }

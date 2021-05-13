@@ -207,10 +207,10 @@ ax_fail axut_runner_add(axut_runner *r, axut_suite* s)
 
 	if (!ax_map_put(r->smap.map, &s, &last.point)) {
 		ax_seq_pop(r->suites.seq);
-		return ax_true;
+		return true;
 	}
 
-	return ax_false;
+	return false;
 }
 
 void axut_runner_remove(axut_runner *r, axut_suite* s)
@@ -296,7 +296,7 @@ static void leave(axut_runner *r, axut_case_state cs, const char *file, int line
 		longjmp(*r->jump_ptr, 2);
 }
 
-void __axut_assert(axut_runner *r, ax_bool cond, const char *file, int line, const char *fmt, ...)
+void __axut_assert(axut_runner *r, bool cond, const char *file, int line, const char *fmt, ...)
 {
 	if (cond)
 		return;

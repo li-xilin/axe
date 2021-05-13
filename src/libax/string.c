@@ -98,10 +98,10 @@ static const ax_iter_trait iter_trait;
 static const ax_iter_trait riter_trait;
 
 #ifdef AX_DEBUG
-ax_bool iter_if_valid(const ax_citer *it);
-ax_bool iter_if_have_value(const ax_citer *it);
+bool iter_if_valid(const ax_citer *it);
+bool iter_if_have_value(const ax_citer *it);
 
-ax_bool iter_if_valid(const ax_citer *it)
+bool iter_if_valid(const ax_citer *it)
 {
 	const ax_string *self = it->owner;
 	const ax_buff *buff = self->buff_r.buff;
@@ -114,7 +114,7 @@ ax_bool iter_if_valid(const ax_citer *it)
 
 }
 
-ax_bool iter_if_have_value(const ax_citer *it)
+bool iter_if_have_value(const ax_citer *it)
 {
 	const ax_string *self = it->owner;
 	const ax_buff *buff = self->buff_r.buff;
@@ -149,7 +149,7 @@ static void citer_next(ax_citer *it)
 	CHECK_PARAM_VALIDITY(i, iter_if_valid(it));
 }
 
-static ax_bool citer_less(const ax_citer *it1, const ax_citer *it2)
+static bool citer_less(const ax_citer *it1, const ax_citer *it2)
 {
 	CHECK_PARAM_NULL(it1);
 	CHECK_PARAM_NULL(it2);
@@ -234,7 +234,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
 
 	*(char *)it->point = *(char *) val;
-	return ax_false;
+	return false;
 }
 
 static void iter_erase(ax_iter *it)
@@ -447,9 +447,9 @@ static ax_fail str_append(ax_str* str, const char *s)
 	char *ptr = ax_buff_ptr(buff);
 	memcpy(ptr + old_size - sizeof(char), s, append_len + sizeof(char));
 	
-	return ax_false;
+	return false;
 fail:
-	return ax_true;
+	return true;
 }
 
 static size_t str_length(const ax_str* str)
@@ -474,7 +474,7 @@ static ax_fail str_insert(ax_str* str, size_t start, const char *s)
 	memmove(ptr + (start + insert_len), ptr + start, old_bsize - start);
 	memcpy(ptr + start, s, insert_len);
 
-	return ax_true;
+	return true;
 }
 
 static char *str_strz(ax_str* str)
@@ -571,11 +571,11 @@ static ax_fail str_sprintf(ax_str* str, const char *fmt, va_list args)
 	if (ret == -1 || ret >= max_size) {
 		ax_base *base = ax_one_base(ax_r(str, str).one);
 		ax_base_set_errno(base, AX_ERR_TOOLONG);
-	       return ax_true;	
+	       return true;	
 	}
 	if (ax_str_append(str, buf))
-		return ax_true;
-	return ax_false;
+		return true;
+	return false;
 }
 
 static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
@@ -585,7 +585,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	CHECK_PARAM_VALIDITY(it, it->owner == seq && iter_if_valid(ax_iter_c(it)));
 
 	if (!val || *(char *)val == '\0')
-		return ax_false;
+		return false;
 
 	ax_string *self = (ax_string *) seq;
 	ax_buff *buff = self->buff_r.buff;
@@ -596,7 +596,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	long offset = (char *)it->point - ptr; //backup offset before realloc
 
 	if (ax_buff_adapt(self->buff_r.buff, old_size + sizeof(char)))
-		return ax_true;
+		return true;
 
 	ptr = ax_buff_ptr(self->buff_r.buff);
 	it->point = ptr + offset; //restore offset
@@ -609,7 +609,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 
 	if(ax_iter_norm(it))
 		it->point = (ax_byte*)it->point + sizeof(char);
-	return ax_false;
+	return false;
 }
 
 static ax_fail seq_push(ax_seq *seq, const void *val)
@@ -618,7 +618,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 	CHECK_PARAM_NULL(val);
 
 	if (!val || *(char *)val == '\0')
-		return ax_false;
+		return false;
 
 	ax_string *self = (ax_string *) seq;
 
@@ -626,7 +626,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 
 	size += sizeof(char);
 	if (ax_buff_adapt(self->buff_r.buff, size))
-		return ax_true;
+		return true;
 
 	char *ptr = ax_buff_ptr(self->buff_r.buff);
 
@@ -635,7 +635,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 	ptr[nchar - 2] = *(char *)val;
 	ptr[nchar - 1] = '\0';
 
-	return ax_false;
+	return false;
 }
 
 static ax_fail seq_pop(ax_seq *seq)
@@ -649,16 +649,16 @@ static ax_fail seq_pop(ax_seq *seq)
 	if (size == sizeof('\0')) {
 		ax_base *base = ax_one_base(ax_r(string, self).one);
 		ax_base_set_errno(base, AX_ERR_EMPTY);
-		return ax_false;
+		return false;
 	}
 
 	size -= sizeof(char);
 	if (ax_buff_adapt(self->buff_r.buff, size))
-		return ax_true;
+		return true;
 	size_t nchar = size / sizeof(char);
 	ptr[nchar - 1] = '\0';
 
-	return ax_false;
+	return false;
 }
 
 static void seq_invert(ax_seq *seq)
@@ -691,18 +691,18 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 	size_t old_size = ax_str_length(self_r.str);
 
 	if (size == old_size) 
-		return ax_false;
+		return false;
 
 
 	if (ax_buff_adapt(buff, size + sizeof(char)))
-		return ax_true;
+		return true;
 	char *ptr = ax_buff_ptr(buff);
 
 	if (size < old_size)
 		ptr[size - 1] =  '\0';
 	else
 		memset(ptr + old_size, '\0', size - old_size + sizeof(char));
-	return ax_false;
+	return false;
 }
 
 static ax_iter seq_at(const ax_seq *seq, size_t index)
@@ -769,7 +769,7 @@ static const ax_str_trait str_trait =
 static const ax_iter_trait iter_trait =
 {
 	.ctr = {
-		.norm   = ax_true,
+		.norm   = true,
 		.type   = AX_IT_RAND,
 		.move   = citer_move,
 		.prev   = citer_prev,
@@ -786,7 +786,7 @@ static const ax_iter_trait iter_trait =
 static const ax_iter_trait riter_trait =
 {
 	.ctr = {
-		.norm   = ax_false,
+		.norm   = false,
 		.type   = AX_IT_RAND,
 		.move   = rciter_move,
 		.prev   = rciter_prev,

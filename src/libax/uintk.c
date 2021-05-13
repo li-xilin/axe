@@ -214,10 +214,10 @@ void ax_uintk_div(const ax_uintk* a, const ax_uintk* b, ax_uintk* c)
 	ax_uintk_assign(&tmp, a);                                  // tmp   = a
 
 	const uint64_t half_max = 1 + (uint64_t)(AX_UINTK_MAX / 2);
-	ax_bool overflow = ax_false;
+	bool overflow = false;
 	while (ax_uintk_cmp(&denom, a) != AX_UINTK_LARGER) {        // while (denom <= a) {
 		if (denom.array[AX_UINTK_ARR_LEN - 1] >= half_max) {
-			overflow = ax_true;
+			overflow = true;
 			break;
 		}
 		uintk_lshift_one_bit(&current);                     //   current <<= 1;

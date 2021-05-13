@@ -59,16 +59,16 @@ struct ax_btrie_st
 static ax_fail  trie_put(ax_trie *trie, const ax_seq *key, const void *val);
 static void    *trie_get(const ax_trie *trie, const ax_seq *key);
 static ax_iter  trie_at(const ax_trie *trie, const ax_seq *key);
-static ax_bool  trie_exist(const ax_trie *trie, const ax_seq *key);
-static ax_bool  trie_erase(ax_trie *trie, const ax_seq *key);
-static ax_bool  trie_prune(ax_trie *trie, const ax_seq *key);
+static bool  trie_exist(const ax_trie *trie, const ax_seq *key);
+static bool  trie_erase(ax_trie *trie, const ax_seq *key);
+static bool  trie_prune(ax_trie *trie, const ax_seq *key);
 static ax_fail  trie_rekey(ax_trie *trie, const ax_seq *key_from, const ax_seq *key_to);
 
 static const void *trie_it_word(const ax_citer *it);
 static ax_iter  trie_it_begin(const ax_citer *it);
 static ax_iter  trie_it_end(const ax_citer *it);
-static ax_bool  trie_it_parent(const ax_citer *it, ax_iter *parent);
-static ax_bool  trie_it_valued(const ax_citer *it);
+static bool  trie_it_parent(const ax_citer *it, ax_iter *parent);
+static bool  trie_it_valued(const ax_citer *it);
 
 static size_t   box_size(const ax_box *box);
 static size_t   box_maxsize(const ax_box *box);
@@ -94,7 +94,7 @@ static void     iter_erase(ax_iter *it);
 
 static int match_key(const ax_btrie *self, const ax_seq *key, ax_citer *it_mismatched, struct node_st **last_node);
 static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *val);
-static ax_bool clean_path(ax_map *last);
+static bool clean_path(ax_map *last);
 static void rec_remove(ax_btrie *self, ax_map *map);
 inline static ax_btrie *iter_get_self(const ax_iter *it);
 
@@ -163,7 +163,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 		node->val = ax_pool_alloc(pool, etr->size);
 		if (!node->val) {
 			ax_base_set_errno(base, AX_ERR_NOMEM);
-			return ax_true;
+			return true;
 		}
 	}
 
@@ -172,7 +172,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 
 #if 0
 /* return value : if map is freed */
-static ax_bool node_remove_value(ax_btrie *self, struct node_st *node)
+static bool node_remove_value(ax_btrie *self, struct node_st *node)
 {
 	if (node->val) {
 		const ax_stuff_trait *etr = self->_trie.env.val_tr;
@@ -451,10 +451,10 @@ static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *
 	}
 	node->val = value;
 
-	return ax_false;
+	return false;
 fail:
 	ax_pool_free(value);
-	return ax_true;
+	return true;
 }
 
 static struct node_st *make_path(ax_trie *trie, const ax_seq *key)
@@ -534,11 +534,11 @@ static ax_fail trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 
 	struct node_st *node = make_path(trie, key);
 	if (!node)
-		return ax_true;
+		return true;
 	
 	if (node_set_value(self_r.btrie, node, val))
-		return ax_true;
-	return ax_false;
+		return true;
+	return false;
 }
 
 static void *trie_get(const ax_trie *trie, const ax_seq *key)
@@ -578,7 +578,7 @@ static ax_iter trie_at(const ax_trie *trie, const ax_seq *key)
 	return it;
 }
 
-static ax_bool trie_exist(const ax_trie *trie, const ax_seq *key)
+static bool trie_exist(const ax_trie *trie, const ax_seq *key)
 {
 	CHECK_PARAM_NULL(trie);
 	CHECK_PARAM_NULL(key);
@@ -586,15 +586,15 @@ static ax_bool trie_exist(const ax_trie *trie, const ax_seq *key)
 	ax_iter it = trie_at(trie, key);
 	ax_iter end = box_end((ax_box *)trie);
 	if (ax_iter_equal(&it, &end))
-		return ax_false;
+		return false;
 	struct node_st *node = ax_avl_tr.box.iter.get(&it);
 	return !!node->val;
 
 }
 
-static ax_bool clean_path(ax_map *last) {
+static bool clean_path(ax_map *last) {
 	ax_map_r parent_r = { .map = last };
-	ax_bool retval = ax_false;
+	bool retval = false;
 
 	if (last == NULL)
 		return retval;
@@ -618,12 +618,12 @@ static ax_bool clean_path(ax_map *last) {
 		ax_one_free(node->submap_r.one);
 		ax_box_clear(parent_r.box);
 		parent_r.one = (ax_one *)parent_r.one->env.scope.micro;
-		retval = ax_true;
+		retval = true;
 	}
 	return retval;
 }
 
-static ax_bool trie_erase(ax_trie *trie, const ax_seq *key)
+static bool trie_erase(ax_trie *trie, const ax_seq *key)
 {
 	CHECK_PARAM_NULL(trie);
 	CHECK_PARAM_NULL(key);
@@ -631,9 +631,9 @@ static ax_bool trie_erase(ax_trie *trie, const ax_seq *key)
 	ax_iter it = trie_at(trie, key);
 	ax_iter end = box_end((ax_box *)trie);
 	if (ax_iter_equal(&it, &end))
-		return ax_false;
+		return false;
 	iter_erase(&it);
-	return ax_true;
+	return true;
 }
 
 static void rec_remove(ax_btrie *self, ax_map *map)
@@ -655,7 +655,7 @@ static void rec_remove(ax_btrie *self, ax_map *map)
 	}
 }
 
-static ax_bool trie_prune(ax_trie *trie, const ax_seq *key)
+static bool trie_prune(ax_trie *trie, const ax_seq *key)
 {
 	CHECK_PARAM_NULL(trie);
 	CHECK_PARAM_NULL(key);
@@ -664,11 +664,11 @@ static ax_bool trie_prune(ax_trie *trie, const ax_seq *key)
 	ax_iter it = trie_at(trie, key);
 	ax_iter end = box_end((ax_box *)trie);
 	if (ax_iter_equal(&it, &end))
-		return ax_false;
+		return false;
 	struct node_st *node = ax_avl_tr.box.iter.get(&it);
 	rec_remove(self, node->submap_r.map);
 	iter_erase(&it);
-	return ax_true;
+	return true;
 }
 
 static ax_fail trie_rekey(ax_trie *trie, const ax_seq *key_from, const ax_seq *key_to)
@@ -681,23 +681,23 @@ static ax_fail trie_rekey(ax_trie *trie, const ax_seq *key_from, const ax_seq *k
 	ax_iter it = trie_at(trie, key_from);
 	ax_iter end = box_end((ax_box *)trie);
 	if (ax_iter_equal(&it, &end))
-		return ax_false;
+		return false;
 
 	struct node_st *old_node = ax_avl_tr.box.iter.get(&it);
 	if (!old_node->val)
-		return ax_false;
+		return false;
 
 	void *value = old_node->val;
 
 	struct node_st *new_node = make_path(trie, key_to);
 	if (!new_node)
-		return ax_true;
+		return true;
 
 	new_node->val = value;
 	old_node->val = NULL;
 	iter_erase(&it);
 
-	return ax_true;
+	return true;
 }
 
 static const void *trie_it_word(const ax_citer *it)
@@ -730,16 +730,16 @@ static ax_iter trie_it_end(const ax_citer *it)
 	return ret;
 }
 
-static ax_bool  trie_it_parent(const ax_citer *it, ax_iter *parent)
+static bool  trie_it_parent(const ax_citer *it, ax_iter *parent)
 {
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, AX_AVL_NAME));
 	UNSUPPORTED();
 
-	return ax_false;
+	return false;
 }
 
-static ax_bool trie_it_valued(const ax_citer *it)
+static bool trie_it_valued(const ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, AX_AVL_NAME));
@@ -759,7 +759,7 @@ static const ax_stuff_trait node_tr = {
 	.move  = ax_stuff_mem_move,
 	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
-	.link  = ax_false
+	.link  = false
 };
 
 const ax_trie_trait ax_btrie_tr =
@@ -776,7 +776,7 @@ const ax_trie_trait ax_btrie_tr =
 		},
 		.iter = {
 			.ctr = {
-				.norm = ax_true,
+				.norm = true,
 				.type = AX_IT_RAND,
 				.move = NULL,
 				.next = citer_next,

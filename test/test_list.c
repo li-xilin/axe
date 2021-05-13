@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static ax_bool seq_equal_array(ax_seq *seq, void *arr, size_t mem_size)
+static bool seq_equal_array(ax_seq *seq, void *arr, size_t mem_size)
 {
 	ax_box *box = ax_r(seq, seq).box;
 	ax_iter first = ax_box_begin(box);

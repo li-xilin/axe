@@ -24,14 +24,9 @@
 #define AX_DEF_H
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
-typedef char ax_bool;
-#define ax_true 1
-#define ax_false 0
-
-inline static ax_bool ax_bool_equal(ax_bool b1, ax_bool b2) { return  !!b1 == !!b2; }
-
-typedef ax_bool ax_fail;
+typedef bool ax_fail;
 
 typedef uint8_t ax_byte;
 

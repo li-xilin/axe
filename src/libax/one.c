@@ -23,13 +23,13 @@
 #include <ax/one.h>
 #include "check.h"
 
-ax_bool ax_one_is (const ax_one *one, const char *type)
+bool ax_one_is (const ax_one *one, const char *type)
 {
 	CHECK_PARAM_NULL(one);
 	CHECK_PARAM_NULL(type);
 	const char *type1 = ax_one_name(one), *p, *q;
 	for (p = type, q = type1; *p && *q; p++, q++)
 		if (*p != *q)
-			return ax_false;
+			return false;
 	return (*p == '\0' && (*q == '.' || *q == '\0'));
 }

@@ -102,7 +102,7 @@ node_detach(struct node* header, struct node* node);
 static void
 suspend_node(struct group* group, struct node* node);
 
-static ax_bool
+static bool
 prepare_buffer(struct node* node);
 
 static struct block*
@@ -121,7 +121,7 @@ static void
 group_decrease(struct group* group);
 
 #ifdef AX_DEBUG
-static inline ax_bool
+static inline bool
 check_double_free(struct node *node, uint16_t shift);
 #endif
 
@@ -215,13 +215,13 @@ prepare_buffer(struct node* node)
 
 	node->blocktab = malloc(blocktab_bsize + freetab_bsize);
 	if (node->blocktab == NULL) {
-		return ax_true;
+		return true;
 	}
 
 	node->freetab = node->blocktab + blocktab_bsize;
 	node->blocktab_used = 0;
 	node->freetab_used = 0;
-	return ax_false;
+	return false;
 }
 
 static inline void*
@@ -336,15 +336,15 @@ node_freed_size(struct node* node)
 }
 
 #ifdef AX_DEBUG
-static ax_bool
+static bool
 check_double_free(struct node *node, uint16_t shift)
 {
 	for (int i = 0; i < node->freetab_used; i++)
 		if (node->freetab[i] == shift) {
 			ax_pwarning("double free");
-			return ax_true;
+			return true;
 		}
-	return ax_false;
+	return false;
 }
 #endif
 

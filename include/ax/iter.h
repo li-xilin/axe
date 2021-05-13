@@ -59,7 +59,7 @@ typedef struct ax_box_st ax_box;
 #endif
 
 typedef void    *(*ax_iter_get_f)   (const ax_iter *it);
-typedef ax_bool  (*ax_iter_comp_f)  (const ax_citer *it1, const ax_citer *it2);
+typedef bool  (*ax_iter_comp_f)  (const ax_citer *it1, const ax_citer *it2);
 typedef long     (*ax_iter_dist_f)  (const ax_citer *it1, const ax_citer *it2);
 typedef void     (*ax_iter_creep_f) (      ax_citer *it);
 typedef void     (*ax_iter_move_f)  (      ax_citer *it, long i);
@@ -76,7 +76,7 @@ struct ax_citer_trait_st
 	ax_iter_comp_f  less;
 	ax_iter_dist_f  dist;
 	ax_iter_box_f   box;
-	ax_bool         norm;
+	bool         norm;
 	unsigned char   type;
 };
 
@@ -109,12 +109,12 @@ inline static ax_citer *ax_iter_c(const ax_iter *it)
 	return (ax_citer*) p;
 }
 
-inline static ax_bool ax_citer_norm (const ax_citer *it)
+inline static bool ax_citer_norm (const ax_citer *it)
 {
 	return it->tr->norm;
 }
 
-inline static ax_bool ax_iter_norm (const ax_iter *it)
+inline static bool ax_iter_norm (const ax_iter *it)
 {
 	return ax_citer_norm(ax_iter_c(it));
 }
@@ -170,22 +170,22 @@ inline static ax_fail ax_iter_set(const ax_iter *it, const void *val)
 	return it->tr->set(it, val);
 }
 
-inline static ax_bool ax_citer_equal(const ax_citer *it1, const ax_citer *it2)
+inline static bool ax_citer_equal(const ax_citer *it1, const ax_citer *it2)
 {
 	return it1->owner == it2->owner && it1->tr == it2->tr && it1->point == it2->point;
 }
 
-inline static ax_bool ax_iter_equal(const ax_iter *it1, const ax_iter *it2)
+inline static bool ax_iter_equal(const ax_iter *it1, const ax_iter *it2)
 {
 	return ax_citer_equal(ax_iter_c(it1), ax_iter_c(it2));
 }
 
-inline static ax_bool ax_citer_less(const ax_citer *it1, const ax_citer *it2)
+inline static bool ax_citer_less(const ax_citer *it1, const ax_citer *it2)
 {
 	return it1->tr->less(it1, it2);
 }
 
-inline static ax_bool ax_iter_less(const ax_iter *it1, const ax_iter *it2)
+inline static bool ax_iter_less(const ax_iter *it1, const ax_iter *it2)
 {
 	return ax_citer_less(ax_iter_c(it1), ax_iter_c(it2));
 }
@@ -200,12 +200,12 @@ inline static long ax_iter_dist(const ax_iter *it1, const ax_iter *it2)
 	return ax_citer_dist(ax_iter_c(it1), ax_iter_c(it2));
 }
 
-inline static ax_bool ax_citer_is(const ax_citer *it, int type)
+inline static bool ax_citer_is(const ax_citer *it, int type)
 {
 	return (it->tr->type & type) == type;
 }
 
-inline static ax_bool ax_iter_is(const ax_iter *it, int type)
+inline static bool ax_iter_is(const ax_iter *it, int type)
 {
 	return ax_citer_is(ax_iter_c(it), type);
 }

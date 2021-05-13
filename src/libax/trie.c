@@ -26,7 +26,7 @@
 
 ax_fail ax_trie_enum(ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx)
 {
-	ax_fail retval = ax_false;
+	ax_fail retval = false;
 	ax_trie_r self_r = { trie };
 	ax_base *base = ax_one_base(self_r.one);
 	
@@ -42,12 +42,12 @@ ax_fail ax_trie_enum(ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx)
 
 	list_r = ax_list_create(ax_base_local(base), &iter_tr);
 	if (!list_r.one) {
-		retval = ax_true;
+		retval = true;
 		goto out;
 	}
 	key_r = ax_list_create(ax_base_local(base), ax_box_elem_tr(self_r.box));
 	if (!key_r.one) {
-		retval = ax_true;
+		retval = true;
 		goto out;
 	}
 
@@ -56,18 +56,18 @@ ax_fail ax_trie_enum(ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx)
 	do {
 		if (!ax_iter_equal(&cur, &end)) {
 			if (ax_seq_push(list_r.seq, &cur)) {
-				retval = ax_true;
+				retval = true;
 				goto out;
 			}
 
 			if (ax_seq_push(list_r.seq, &end)) {
-				retval = ax_true;
+				retval = true;
 				goto out;
 			}
 
 			if (ax_box_size(list_r.box) > 2)
 				if (ax_seq_push(key_r.seq, ax_trie_iter_word(&cur))) {
-					retval = ax_true;
+					retval = true;
 					goto out;
 				}
 			end = ax_trie_iter_end(&cur); /* Keep this upper */

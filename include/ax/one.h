@@ -114,7 +114,7 @@ static inline ax_base *ax_one_base(const ax_one *one)
 	return ax_one_envp(one)->base;
 }
 
-ax_bool ax_one_is(const ax_one *one, const char *type);
+bool ax_one_is(const ax_one *one, const char *type);
 
 #define ax_r(type, ptr) ((ax_##type##_r){ .type = ptr })
 #define ax_cr(type, ptr) ((ax_##type##_cr){ .type = ptr })

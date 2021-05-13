@@ -41,16 +41,16 @@ typedef struct ax_trie_trait_st ax_trie_trait;
 typedef ax_fail (*ax_trie_put_f)  (ax_trie *trie, const ax_seq *key, const void *val);
 typedef void   *(*ax_trie_get_f)  (const ax_trie *trie, const ax_seq *key);
 typedef ax_iter (*ax_trie_at_f)   (const ax_trie *trie, const ax_seq *key);
-typedef ax_bool (*ax_trie_exist_f)(const ax_trie *trie, const ax_seq *key);
-typedef ax_bool (*ax_trie_erase_f)(ax_trie *trie, const ax_seq *key);
-typedef ax_bool (*ax_trie_prune_f)(ax_trie *trie, const ax_seq *key);
+typedef bool (*ax_trie_exist_f)(const ax_trie *trie, const ax_seq *key);
+typedef bool (*ax_trie_erase_f)(ax_trie *trie, const ax_seq *key);
+typedef bool (*ax_trie_prune_f)(ax_trie *trie, const ax_seq *key);
 typedef ax_fail (*ax_trie_rekey_f)(ax_trie *trie, const ax_seq *key_from, const ax_seq *key_to);
 
 typedef const void *(*ax_trie_it_word_f)(const ax_citer *it);
 typedef ax_iter (*ax_trie_it_begin_f)(const ax_citer *it);
 typedef ax_iter (*ax_trie_it_end_f)(const ax_citer *it);
-typedef ax_bool (*ax_trie_it_parent_f)(const ax_citer *it, ax_iter *parent);
-typedef ax_bool (*ax_trie_it_valued_f)(const ax_citer *it);
+typedef bool (*ax_trie_it_parent_f)(const ax_citer *it, ax_iter *parent);
+typedef bool (*ax_trie_it_valued_f)(const ax_citer *it);
 
 
 struct ax_trie_trait_st
@@ -109,13 +109,13 @@ inline static ax_fail ax_trie_put(ax_trie *trie, const ax_seq *key, const void *
 	return trie->tr->put(trie, key, val);
 }
 
-inline static ax_bool ax_trie_erase(ax_trie *trie, const ax_seq *key)
+inline static bool ax_trie_erase(ax_trie *trie, const ax_seq *key)
 {
 	ax_trait_require(trie, trie->tr->erase);
 	return trie->tr->erase(trie, key);
 }
 
-inline static ax_bool ax_trie_prune(ax_trie *trie, const ax_seq *key)
+inline static bool ax_trie_prune(ax_trie *trie, const ax_seq *key)
 {
 	ax_trait_require(trie, trie->tr->prune);
 	return trie->tr->prune(trie, key);
@@ -147,7 +147,7 @@ inline static void *ax_trie_cget(const ax_trie *trie, const ax_seq *key)
 	return trie->tr->get(trie, key);
 }
 
-inline static ax_bool ax_trie_exist(const ax_trie *trie, const ax_seq *key)
+inline static bool ax_trie_exist(const ax_trie *trie, const ax_seq *key)
 {
 	ax_trait_require(trie, trie->tr->exist);
 	return trie->tr->exist(trie, key);
@@ -196,20 +196,20 @@ inline static ax_fail ax_trie_rekey(ax_trie *trie,
 	return trie->tr->rekey(trie, key_from, key_to);
 }
 
-inline static ax_bool ax_trie_iter_valued(const ax_iter *it)
+inline static bool ax_trie_iter_valued(const ax_iter *it)
 {
 	ax_trie_cr self_r = { .box = ax_iter_box(it) };
 	return self_r.trie->tr->it_valued(ax_iter_c(it));
 }
 
-inline static ax_bool ax_trie_citer_valued(const ax_citer *it)
+inline static bool ax_trie_citer_valued(const ax_citer *it)
 {
 	ax_trie_cr self_r = { .box = ax_citer_box(it) };
 	return self_r.trie->tr->it_valued(it);
 }
 
 /*
-inline static ax_bool ax_trie_iter_top(const ax_citer *it)
+inline static bool ax_trie_iter_top(const ax_citer *it)
 {
 	ax_trie_cr self_r = { .box = ax_citer_box(it) };
 	return self_r.trie->tr->valued(it);
@@ -222,7 +222,7 @@ inline static const ax_stuff_trait *ax_trie_key_tr(const ax_trie *trie)
 	return self_r.trie->env.key_tr;
 }
 
-typedef ax_bool (*ax_trie_enum_cb_f)(ax_trie *trie, const ax_seq *key, const void *val, void *ctx);
+typedef bool (*ax_trie_enum_cb_f)(ax_trie *trie, const ax_seq *key, const void *val, void *ctx);
 
 ax_fail ax_trie_enum(ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx);
 

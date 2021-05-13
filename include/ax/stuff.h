@@ -89,7 +89,7 @@ union ax_stuff_un
 typedef union ax_stuff_un ax_stuff;
 
 typedef void   (*ax_stuff_free_f) (void* p);
-typedef ax_bool(*ax_stuff_compare_f) (const void* p1, const void* p2, size_t size);
+typedef bool(*ax_stuff_compare_f) (const void* p1, const void* p2, size_t size);
 typedef size_t (*ax_stuff_hash_f) (const void* p, size_t size);
 typedef void   (*ax_stuff_move_f) (void* dst, const void* src, size_t size);
 typedef void   (*ax_stuff_swap_f) (void* dst, void* src, size_t size);
@@ -107,11 +107,11 @@ struct ax_stuff_trait_st
 	ax_stuff_move_f    move;
 	ax_stuff_swap_f    swap;
 	ax_stuff_init_f    init;
-	ax_bool            link;
+	bool               link;
 };
 
-ax_bool ax_stuff_mem_equal(const void* p1, const void* p2, size_t size);
-ax_bool ax_stuff_mem_less(const void* p1, const void* p2, size_t size);
+bool ax_stuff_mem_equal(const void* p1, const void* p2, size_t size);
+bool ax_stuff_mem_less(const void* p1, const void* p2, size_t size);
 size_t  ax_stuff_mem_hash(const void* p, size_t size);
 void    ax_stuff_mem_move(void* dst, const void* src, size_t size);
 ax_fail ax_stuff_mem_copy(ax_pool* pool, void* dst, const void* src, size_t size);

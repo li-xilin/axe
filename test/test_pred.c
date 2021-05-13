@@ -36,10 +36,10 @@ static void pred_unary(axut_runner *r)
 	ax_pred_do(&pred, &out, &in, NULL);
 	axut_assert(r, out == 0xFFFFFFFE);
 
-	ax_bool bool_out;
+	bool bool_out;
 	pred = ax_pred_unary_make(ax_oper_for(AX_ST_U32)->not, &in, NULL);
 	ax_pred_do(&pred, &bool_out, NULL, NULL);
-	axut_assert(r, bool_out == ax_false);
+	axut_assert(r, bool_out == false);
 
 }
 

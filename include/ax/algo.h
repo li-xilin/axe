@@ -32,17 +32,17 @@ void ax_transform(
 		const ax_iter *first2,
 		const ax_pred *upred);
 
-ax_bool ax_all_of(
+bool ax_all_of(
 		const ax_citer *first,
 		const ax_citer *last,
 		const ax_pred *upred);
 
-ax_bool ax_any_of(
+bool ax_any_of(
 		const ax_citer *first,
 		const ax_citer *last,
 		const ax_pred *upred);
 
-ax_bool ax_none_of(
+bool ax_none_of(
 		const ax_citer *first,
 		const ax_citer *last,
 		const ax_pred *upred);
@@ -74,7 +74,7 @@ void ax_find_if_not(
 		const ax_pred *upred);
 
 
-ax_bool ax_sorted(
+bool ax_sorted(
 		const ax_citer *first,
 		const ax_citer *last,
 		const ax_pred *bpred);
@@ -88,7 +88,7 @@ ax_fail ax_quick_sort(
 		const ax_iter *first,
 		const ax_iter *last);
 
-ax_bool ax_equal_to_arr(
+bool ax_equal_to_arr(
 		const ax_iter *first, 
 		const ax_iter *last, 
 		void *arr, 

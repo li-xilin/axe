@@ -50,6 +50,6 @@ void ax_scope_clean(ax_scope *scope);
 
 void ax_scope_destroy(ax_scope *scope);
 
-ax_bool ax_scope_detach(ax_one *one);
+bool ax_scope_detach(ax_one *one);
 
 #endif

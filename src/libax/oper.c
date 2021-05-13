@@ -29,21 +29,21 @@
 #define ptr_div(_type, _in1, _in2, _out) (*(_type*)_out = *(_type*)_in1 / *(_type*)_in2)
 #define ptr_mod(_type, _in1, _in2, _out) (*(_type*)_out = *(_type*)_in1 % *(_type*)_in2)
 
-#define ptr_and(_type, _in1, _in2, _out) (*(ax_bool*)_out = *(_type*)_in1 && *(_type*)_in2)
-#define ptr_or(_type, _in1, _in2, _out) (*(ax_bool*)_out = *(_type*)_in1 || *(_type*)_in2)
-#define ptr_not(_type, _in, _out) (*(ax_bool*)_out = !*(_type*)_in)
+#define ptr_and(_type, _in1, _in2, _out) (*(bool*)_out = *(_type*)_in1 && *(_type*)_in2)
+#define ptr_or(_type, _in1, _in2, _out) (*(bool*)_out = *(_type*)_in1 || *(_type*)_in2)
+#define ptr_not(_type, _in, _out) (*(bool*)_out = !*(_type*)_in)
 
 #define ptr_bit_and(_type, _in1, _in2, _out) (*(_type*)_out = *(_type*)_in1 & *(_type*)_in2)
 #define ptr_bit_or(_type, _in1, _in2, _out) (*(_type*)_out = *(_type*)_in1 | *(_type*)_in2)
 #define ptr_bit_xor(_type, _in1, _in2, _out) (*(_type*)_out = *(_type*)_in1 ^ *(_type*)_in2)
 #define ptr_bit_not(_type, _in, _out) (*(_type*)_out = ~*(_type*)_in)
 
-#define ptr_gt(_type, _in1, _in2, _out) (*(ax_bool*)_out = *(_type*)_in1 > *(_type*)_in2)
-#define ptr_ge(_type, _in1, _in2, _out) (*(ax_bool*)_out = *(_type*)_in1 >= *(_type*)_in2)
-#define ptr_lt(_type, _in1, _in2, _out) (*(ax_bool*)_out = *(_type*)_in1 < *(_type*)_in2)
-#define ptr_le(_type, _in1, _in2, _out) (*(ax_bool*)_out = *(_type*)_in1 <= *(_type*)_in2)
-#define ptr_eq(_type, _in1, _in2, _out) (*(ax_bool*)_out = *(_type*)_in1 == *(_type*)_in2)
-#define ptr_ne(_type, _in1, _in2, _out) (*(ax_bool*)_out = *(_type*)_in1 != *(_type*)_in2)
+#define ptr_gt(_type, _in1, _in2, _out) (*(bool*)_out = *(_type*)_in1 > *(_type*)_in2)
+#define ptr_ge(_type, _in1, _in2, _out) (*(bool*)_out = *(_type*)_in1 >= *(_type*)_in2)
+#define ptr_lt(_type, _in1, _in2, _out) (*(bool*)_out = *(_type*)_in1 < *(_type*)_in2)
+#define ptr_le(_type, _in1, _in2, _out) (*(bool*)_out = *(_type*)_in1 <= *(_type*)_in2)
+#define ptr_eq(_type, _in1, _in2, _out) (*(bool*)_out = *(_type*)_in1 == *(_type*)_in2)
+#define ptr_ne(_type, _in1, _in2, _out) (*(bool*)_out = *(_type*)_in1 != *(_type*)_in2)
 
 #define DECLARE_UNARY_OPER(_type, _op) \
 	void _type##_op(void *out, const void *in, void *arg) { \
