@@ -56,19 +56,19 @@ struct ax_btrie_st
 	size_t capacity;
 };
 
-static ax_fail  trie_put(ax_trie *trie, const ax_seq *key, const void *val);
+static void    *trie_put(ax_trie *trie, const ax_seq *key, const void *val);
 static void    *trie_get(const ax_trie *trie, const ax_seq *key);
 static ax_iter  trie_at(const ax_trie *trie, const ax_seq *key);
-static bool  trie_exist(const ax_trie *trie, const ax_seq *key);
-static bool  trie_erase(ax_trie *trie, const ax_seq *key);
-static bool  trie_prune(ax_trie *trie, const ax_seq *key);
+static bool     trie_exist(const ax_trie *trie, const ax_seq *key);
+static bool     trie_erase(ax_trie *trie, const ax_seq *key);
+static bool     trie_prune(ax_trie *trie, const ax_seq *key);
 static ax_fail  trie_rekey(ax_trie *trie, const ax_seq *key_from, const ax_seq *key_to);
 
 static const void *trie_it_word(const ax_citer *it);
 static ax_iter  trie_it_begin(const ax_citer *it);
 static ax_iter  trie_it_end(const ax_citer *it);
-static bool  trie_it_parent(const ax_citer *it, ax_iter *parent);
-static bool  trie_it_valued(const ax_citer *it);
+static bool     trie_it_parent(const ax_citer *it, ax_iter *parent);
+static bool     trie_it_valued(const ax_citer *it);
 
 static size_t   box_size(const ax_box *box);
 static size_t   box_maxsize(const ax_box *box);
@@ -524,7 +524,7 @@ fail:
 	return NULL;
 }
 
-static ax_fail trie_put(ax_trie *trie, const ax_seq *key, const void *val)
+static void *trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 {
 	CHECK_PARAM_NULL(trie);
 	CHECK_PARAM_NULL(key);
@@ -534,11 +534,15 @@ static ax_fail trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 
 	struct node_st *node = make_path(trie, key);
 	if (!node)
-		return true;
+		return NULL;
 	
 	if (node_set_value(self_r.btrie, node, val))
-		return true;
-	return false;
+		return NULL;
+
+	const ax_stuff_trait *vtr = trie->env.val_tr;
+	return vtr->link
+		? *(void **)node->val
+		: node->val;
 }
 
 static void *trie_get(const ax_trie *trie, const ax_seq *key)

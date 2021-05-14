@@ -38,8 +38,8 @@ typedef struct ax_trie_st ax_trie;
 typedef struct ax_trie_trait_st ax_trie_trait;
 #endif
 
-typedef ax_fail (*ax_trie_put_f)  (ax_trie *trie, const ax_seq *key, const void *val);
-typedef void   *(*ax_trie_get_f)  (const ax_trie *trie, const ax_seq *key);
+typedef void *(*ax_trie_put_f)  (ax_trie *trie, const ax_seq *key, const void *val);
+typedef void *(*ax_trie_get_f)  (const ax_trie *trie, const ax_seq *key);
 typedef ax_iter (*ax_trie_at_f)   (const ax_trie *trie, const ax_seq *key);
 typedef bool (*ax_trie_exist_f)(const ax_trie *trie, const ax_seq *key);
 typedef bool (*ax_trie_erase_f)(ax_trie *trie, const ax_seq *key);
@@ -103,7 +103,7 @@ typedef union
 	ax_trie_cr c;
 } ax_trie_r;
 
-inline static ax_fail ax_trie_put(ax_trie *trie, const ax_seq *key, const void *val)
+inline static void *ax_trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 {
 	ax_trait_require(trie, trie->tr->put);
 	return trie->tr->put(trie, key, val);
