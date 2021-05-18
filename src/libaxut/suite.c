@@ -27,10 +27,10 @@
 #include <ax/algo.h>
 #include <ax/seq.h>
 #include <ax/scope.h>
-#include <ax/pool.h>
 #include <ax/mem.h>
 
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -55,8 +55,8 @@ static void one_free(ax_one *one)
 
 	ax_scope_detach(one);
 	ax_one_free(suite_rl.suite->tctab.one);
-	ax_pool_free(suite_rl.suite->name);
-	ax_pool_free(suite_rl.suite);
+	free(suite_rl.suite->name);
+	free(suite_rl.suite);
 }
 
 static const ax_one_trait one_trait = {
@@ -67,9 +67,9 @@ static const ax_one_trait one_trait = {
 static void case_free(void *p)
 {
 	axut_case *tc = p;
-	ax_pool_free(tc->name);
-	ax_pool_free(tc->file);
-	ax_pool_free(tc->log);
+	free(tc->name);
+	free(tc->file);
+	free(tc->log);
 }
 
 static bool case_less(const void *p1, const void *p2, size_t size)
@@ -88,24 +88,24 @@ static bool case_equal(const void *p1, const void *p2, size_t size)
 	return tc1->priority == tc2->priority;
 }
 
-static ax_fail case_copy(ax_pool* pool, void* dst, const void* src, size_t size)
+static ax_fail case_copy(void* dst, const void* src, size_t size)
 {
 	const axut_case *src_tc = src;
 	axut_case *dst_tc = dst;
 	memcpy(dst_tc, src_tc, sizeof *dst_tc);
 	dst_tc->name = dst_tc->log = dst_tc->file = NULL;
-	dst_tc->name = ax_strdup(pool, src_tc->name);
+	dst_tc->name = ax_strdup(src_tc->name);
 	if (!src_tc->name)
 		goto out;
 
 	if (src_tc->log) {
-		dst_tc->log =  ax_strdup(pool, src_tc->log);
+		dst_tc->log =  ax_strdup(src_tc->log);
 		if (!dst_tc->log)
 			goto out;
 
 	}
 	if (src_tc->file) {
-		dst_tc->file =  ax_strdup(pool, src_tc->file);
+		dst_tc->file =  ax_strdup(src_tc->file);
 		if (!dst_tc->file)
 			goto out;
 
@@ -113,9 +113,9 @@ static ax_fail case_copy(ax_pool* pool, void* dst, const void* src, size_t size)
 
 	return false;
 out:
-	ax_pool_free(dst_tc->name);
-	ax_pool_free(dst_tc->log);
-	ax_pool_free(dst_tc->file);
+	free(dst_tc->name);
+	free(dst_tc->log);
+	free(dst_tc->file);
 	return true;
 }
 
@@ -136,19 +136,17 @@ ax_one *__axut_suite_construct(ax_base *base, const char* name)
 {
 	CHECK_PARAM_NULL(base);
 
-	ax_pool *pool = ax_base_pool(base);
-
-	axut_suite *suite = ax_pool_alloc(pool, sizeof(axut_suite));
+	axut_suite *suite = malloc(sizeof(axut_suite));
 	if (suite == NULL)
 		return NULL;
 
 	ax_seq *tctab = __ax_vector_construct(base, &case_trait);
 	if (tctab == NULL) {
-		ax_pool_free(suite);
+		free(suite);
 		return NULL;
 	}
 
-	char *name_copy = ax_strdup(pool, name);
+	char *name_copy = ax_strdup(name);
 
 	axut_suite suite_init = {
 		._one = {

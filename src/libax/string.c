@@ -28,8 +28,6 @@
 #include <ax/scope.h>
 #include <ax/base.h>
 #include <ax/mem.h>
-#include <ax/pool.h>
-#include <ax/error.h>
 #include <ax/log.h>
 
 #include <string.h>
@@ -265,7 +263,7 @@ static void one_free(ax_one* one)
 	ax_string *self = (ax_string *) one;
 	ax_scope_detach(one);
 	ax_one_free(self->buff_r.one);
-	ax_pool_free(one);
+	free(one);
 }
 
 static void any_dump(const ax_any* any, int ind)
@@ -279,14 +277,12 @@ static ax_any* any_copy(const ax_any* any)
 
 	ax_string_r self_r = { .any = (ax_any*)any };
 	ax_base *base = ax_one_base(self_r.one);
-	ax_pool *pool = ax_base_pool(base);
 
 	ax_buff_r new_buf_r = { NULL };
 	ax_string_r new_str_r = { NULL };
 
-	new_str_r.string = ax_pool_alloc(pool, (sizeof(ax_string)));
+	new_str_r.string = malloc((sizeof(ax_string)));
 	if (!new_str_r.string) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 
@@ -313,14 +309,12 @@ static ax_any* any_move(ax_any* any)
 
 	ax_string_r self_r = { .any = (ax_any*)any };
 	ax_base *base = ax_one_base(self_r.one);
-	ax_pool *pool = ax_base_pool(base);
 
 	ax_buff_r new_buf_r = { NULL };
 	ax_string_r new_str_r = { NULL };
 
-	new_str_r.string = ax_pool_alloc(pool, (sizeof(ax_string)));
+	new_str_r.string = malloc((sizeof(ax_string)));
 	if (!new_str_r.string) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 
@@ -569,8 +563,6 @@ static ax_fail str_sprintf(ax_str* str, const char *fmt, va_list args)
 	char buf[max_size];
 	int ret = vsnprintf(buf, max_size, fmt, args);
 	if (ret == -1 || ret >= max_size) {
-		ax_base *base = ax_one_base(ax_r(str, str).one);
-		ax_base_set_errno(base, AX_ERR_TOOLONG);
 	       return true;	
 	}
 	if (ax_str_append(str, buf))
@@ -647,8 +639,6 @@ static ax_fail seq_pop(ax_seq *seq)
 	char *ptr = ax_buff_ptr(self->buff_r.buff);
 
 	if (size == sizeof('\0')) {
-		ax_base *base = ax_one_base(ax_r(string, self).one);
-		ax_base_set_errno(base, AX_ERR_EMPTY);
 		return false;
 	}
 
@@ -806,9 +796,8 @@ ax_str *__ax_string_construct(ax_base* base)
 	ax_string *self = NULL;
 	ax_buff_r buff_r = { NULL };
 
-	self = ax_pool_alloc(ax_base_pool(base), sizeof(ax_string));
+	self = malloc(sizeof(ax_string));
 	if (self == NULL) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 
@@ -839,7 +828,6 @@ ax_str *__ax_string_construct(ax_base* base)
 	return ax_r(string, self).str;
 fail:
 	ax_one_free(buff_r.one);
-	ax_pool_free(self);
 	return NULL;
 }
 

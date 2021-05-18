@@ -24,11 +24,6 @@
 #define AX_MEM_H
 #include "def.h"
 
-#ifndef AX_POOL_DEFINED
-#define AX_POOL_DEFINED
-typedef struct ax_pool_st ax_pool;
-#endif
-
 #define ax_mem_pswap(_a, _b, _type) \
 do { \
 	_type tmp = *(_type*)(_a); \
@@ -38,9 +33,9 @@ do { \
 
 void ax_memxor(void *ptr1, void *ptr2, size_t size);
 
-char *ax_strdup(ax_pool *pool, const char *str);
+char *ax_strdup(const char *str);
 
-wchar_t *ax_wcsdup(ax_pool *pool, const wchar_t* str);
+wchar_t *ax_wcsdup(const wchar_t* str);
 
 size_t ax_strhash(const char *s);
 

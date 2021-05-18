@@ -22,7 +22,6 @@
 
 #include <ax/scope.h>
 #include <ax/base.h>
-#include <ax/pool.h>
 #include <ax/one.h>
 
 #include "check.h"
@@ -57,7 +56,7 @@ static void one_free(ax_one *one)
 		elem->tr->free(elem);
 	}
 	free(role.scope->tab);
-	ax_pool_free(role.scope);
+	free(role.scope);
 }
 
 static const ax_one_trait one_trait = {
@@ -69,8 +68,7 @@ ax_one *__ax_scope_construct(ax_base *base)
 {
 	CHECK_PARAM_NULL(base);
 
-	ax_pool *pool = ax_base_pool(base);
-	ax_scope *scope = ax_pool_alloc(pool, sizeof(ax_scope));
+	ax_scope *scope = malloc( sizeof(ax_scope));
 	if (scope == NULL)
 		return NULL;
 

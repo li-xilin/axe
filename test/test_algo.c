@@ -268,7 +268,8 @@ static int qsort_compare_cb(const void* p1, const void* p2)
  */
 
 static void sort_time(axut_runner *r) {
-	const size_t length = 0xFFFF;
+	//const size_t length = 0xFFFF;
+	const size_t length = 0x3FFFFF;
 	ax_iter first, last;
 	clock_t time_before;
 	srand(20);
@@ -295,7 +296,7 @@ static void sort_time(axut_runner *r) {
 
 		time_before = clock();
 		ax_quick_sort(&first, &last);
-		//printf("ax_quick_sort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
+		printf("ax_quick_sort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
 		axut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
 	}
 
@@ -305,7 +306,7 @@ static void sort_time(axut_runner *r) {
 
 		time_before = clock();
 		ax_merge_sort(&first, &last);
-		//printf("ax_merge_sort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
+		printf("ax_merge_sort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
 		axut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
 	}
 

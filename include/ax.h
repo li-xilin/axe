@@ -31,7 +31,6 @@
 #include "ax/any.h"
 #include "ax/scope.h"
 #include "ax/one.h"
-#include "ax/pool.h"
 #include "ax/base.h"
 #include "ax/def.h"
 

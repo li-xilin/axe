@@ -25,7 +25,6 @@
 #include <ax/vail.h>
 #include <ax/scope.h>
 #include <ax/base.h>
-#include <ax/error.h>
 
 #include "check.h"
 

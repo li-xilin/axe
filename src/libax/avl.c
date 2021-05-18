@@ -26,11 +26,9 @@
 #include <ax/map.h>
 #include <ax/iter.h>
 #include <ax/scope.h>
-#include <ax/pool.h>
 #include <ax/debug.h>
 #include <ax/base.h>
 #include <ax/mem.h>
-#include <ax/error.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -224,10 +222,7 @@ static struct node_st *rotate_left(struct node_st *root)
 
 static struct node_st *make_node(ax_map *map, struct node_st *parent, const void *key, const void *value)
 {
-	ax_base *base = ax_one_base(ax_r(map, map).one);
-	ax_pool *pool = ax_base_pool(base);
-
-	struct node_st *node = ax_pool_alloc(pool, sizeof(struct node_st) + map->env.key_tr->size + map->env.val_tr->size);
+	struct node_st *node = malloc(sizeof(struct node_st) + map->env.key_tr->size + map->env.val_tr->size);
 	if (node == NULL)
 		goto failed;
 
@@ -235,15 +230,14 @@ static struct node_st *make_node(ax_map *map, struct node_st *parent, const void
 	node->height = 1;
 	node->left = NULL;
 	node->right = NULL;
-	if(map->env.key_tr->copy(pool, node->kvbuffer, key, map->env.key_tr->size))
+	if(map->env.key_tr->copy(node->kvbuffer, key, map->env.key_tr->size))
 		goto failed;
-	if(map->env.val_tr->copy(pool, node_pval(map, node), value, map->env.val_tr->size))
+	if(map->env.val_tr->copy(node_pval(map, node), value, map->env.val_tr->size))
 		goto failed;
 	return node;
 failed:
 	if (node)
-		ax_pool_free(node);
-	ax_base_set_errno(base, AX_ERR_NOMEM);
+		free(node);
 	return NULL;
 }
 
@@ -343,7 +337,7 @@ static struct node_st* remove_node(ax_map *map, struct node_st* node)
 	}
 	map->env.key_tr->free(node->kvbuffer);
 	map->env.val_tr->free(node_pval(map, node));
-	ax_pool_free(node);
+	free(node);
 	return new_node;
 }
 
@@ -351,7 +345,7 @@ static void remove_child(struct node_st *node) {
 	if (node) {
 		remove_child(node->left);
 		remove_child(node->right);
-		ax_pool_free(node);
+		free(node);
 	}
 }
 
@@ -454,14 +448,11 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
 
 	ax_avl_r avl_r = { .one = (ax_one *)it->owner };
-	ax_base *base = ax_one_base(avl_r.one);
-	ax_pool *pool = ax_base_pool(base);
 	const ax_stuff_trait *val_tr = avl_r.map->env.val_tr;
 	const void *psrc = val_tr->link ? &val : val;
 	void *pdst = node_pval(avl_r.map, it->point);
 	val_tr->free(pdst);
-	if (val_tr->copy(pool, pdst, psrc,  val_tr->size)) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
+	if (val_tr->copy(pdst, psrc,  val_tr->size)) {
 		return true;
 	}
 	return false;
@@ -510,8 +501,6 @@ static void *map_put (ax_map* map, const void *key, const void *val)
 	CHECK_PARAM_NULL(val);
 
 	ax_avl_r avl_r = { .map = map };
-	ax_base *base = ax_one_base(avl_r.one);
-	ax_pool* pool = ax_base_pool(base);
 
 	const void *pkey = map->env.key_tr->link ? &key : key;
 	const void *pval = map->env.val_tr->link ? &val : val;
@@ -523,7 +512,6 @@ static void *map_put (ax_map* map, const void *key, const void *val)
 	if(avl_r.avl->size == 0) {
 		new_node = make_node(map, NULL, pkey, pval);
 		if (new_node == NULL) {
-			ax_base_set_errno(base, AX_ERR_NOMEM);
 			return false;
 		}
 		avl_r.avl->root = new_node;
@@ -543,7 +531,6 @@ static void *map_put (ax_map* map, const void *key, const void *val)
 			else {
 				new_node = make_node(map, current, pkey, pval);
 				if (!new_node) {
-					ax_base_set_errno(base, AX_ERR_NOMEM);
 					return NULL;
 				}
 				current->left = new_node;
@@ -556,7 +543,6 @@ static void *map_put (ax_map* map, const void *key, const void *val)
 			else {
 				new_node = make_node(map, current, pkey, pval);
 				if (!new_node) {
-					ax_base_set_errno(base, AX_ERR_NOMEM);
 					return NULL;
 				}
 				current->right = new_node;
@@ -564,7 +550,7 @@ static void *map_put (ax_map* map, const void *key, const void *val)
 				break;
 			}
 		} else {
-			map->env.val_tr->copy(pool, node_pval(map, current), pval, map->env.val_tr->size);
+			map->env.val_tr->copy(node_pval(map, current), pval, map->env.val_tr->size);
 			return node_val(map, current);
 		}
 	}
@@ -589,8 +575,6 @@ static ax_fail map_erase (ax_map* map, const void *key)
 
 	struct node_st * node = find_node(map, avl_r.avl->root, pkey);
 	if (!node) {
-		ax_base *base = ax_one_base(avl_r.one);
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		return true;
 	}
 
@@ -673,7 +657,7 @@ static void one_free(ax_one* one)
 	ax_avl_r avl_r = { .one = one };
 	ax_scope_detach(one);
 	box_clear(avl_r.box);
-	ax_pool_free(one);
+	free(one);
 }
 
 static void any_dump(const ax_any* any, int ind)
@@ -711,9 +695,8 @@ static ax_any *any_move(ax_any *any)
 
 	ax_avl_r src_r = { .any = any };
 	ax_base *base = ax_one_base(src_r.one);
-	ax_pool *pool = ax_base_pool(base);
 
-	ax_avl *dst = ax_pool_alloc(pool, sizeof(ax_avl));
+	ax_avl *dst = malloc(sizeof(ax_avl));
 	memcpy(dst, src_r.avl, sizeof(ax_avl));
 	src_r.avl->size = 0;
 
@@ -901,7 +884,7 @@ ax_map *__ax_avl_construct(ax_base* base, const ax_stuff_trait* key_tr, const ax
 	CHECK_PARAM_NULL(val_tr->copy);
 	CHECK_PARAM_NULL(val_tr->free);
 
-	ax_avl *avl = ax_pool_alloc(ax_base_pool(base), sizeof(ax_avl));
+	ax_avl *avl = malloc(sizeof(ax_avl));
 	if (avl == NULL)
 		return NULL;
 	

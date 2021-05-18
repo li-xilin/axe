@@ -6,9 +6,7 @@
 #include <ax/one.h>
 #include <ax/seq.h>
 #include <ax/iter.h>
-#include <ax/pool.h>
 #include <ax/base.h>
-#include <ax/error.h>
 #include <ax/def.h>
 #include <string.h>
 #include <stdio.h>
@@ -107,12 +105,10 @@ void ax_generate(const ax_iter *first, const ax_iter *last, const void *ptr)
 	CHECK_ITER_COMPARABLE(first, last);
 
 	const ax_stuff_trait *etr = ax_box_elem_tr(first->owner);
-	ax_base *base = ax_one_base(first->owner);
-	ax_pool *pool = ax_base_pool(base);
 
 	for (ax_iter it = *first; !ax_iter_equal(&it, last); ax_iter_next(&it)) {
 		void *p = ax_iter_get(&it);
-		etr->copy(pool, p, ptr, etr->size);
+		etr->copy(p, ptr, etr->size);
 	}
 }
 
@@ -187,7 +183,6 @@ void ax_partition(ax_iter *first, const ax_iter *last, const ax_pred *pred)
 }
 
 struct quick_sort_context_st {
-	ax_pool *pool;
 	const ax_stuff_trait *tr;
 	ax_pred pred;
 };
@@ -228,13 +223,9 @@ ax_fail ax_quick_sort(const ax_iter *first, const ax_iter *last)
 	ax_assert(ax_iter_is(first, AX_IT_BID), "unsupported iterator type");
 
 	const ax_box *box = first->owner;
-	ax_one *one = (ax_one*) box;
-	ax_base *base = ax_one_base(one);
-	ax_pool *pool = ax_base_pool(base);
 	const ax_stuff_trait *tr = ax_box_elem_tr(box);
 
 	struct quick_sort_context_st ext = {
-		.pool = pool,
 		.tr = tr
 	};
 	quick_sort(&ext, first, last);
@@ -353,7 +344,6 @@ ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 	
 	void **imap = malloc((size + 1) * sizeof *imap);
 	if (!imap) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		return true;
 	}
 	
@@ -468,11 +458,8 @@ ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 
 	ax_pred pred;
 	const ax_stuff_trait* tr = ax_box_elem_tr(first->owner);
-	ax_base *base = ax_one_base(first->owner);
-	ax_pool *pool = ax_base_pool(base);
-	void *tmp = ax_pool_alloc(pool, tr->size);
+	void *tmp = malloc(tr->size);
 	if (!tmp) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		return true;
 	}
 
@@ -504,7 +491,7 @@ ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 
 		ax_iter_next(&cur);
 	}
-	ax_pool_free(tmp);
+	free(tmp);
 	return false;
 }
 

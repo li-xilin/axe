@@ -23,7 +23,6 @@
 #include <ax/stuff.h>
 #include <ax/debug.h>
 #include <ax/mem.h>
-#include <ax/pool.h>
 #include <ax/def.h>
 
 #include <stdlib.h>
@@ -213,32 +212,32 @@ static bool less_ptr(const void* p1, const void* p2, size_t size)
 }
 
 
-static ax_fail copy_s(ax_pool* pool, void* dst, const void* src, size_t size)
+static ax_fail copy_s(void* dst, const void* src, size_t size)
 {
-	return !(*(char**)dst = ax_strdup(pool, *(char**)src));
+	return !((*(char**)dst = ax_strdup(*(char**)src)));
 	
 }
 
-static ax_fail copy_ws  (ax_pool* pool, void* dst, const void* src, size_t size)
+static ax_fail copy_ws(void* dst, const void* src, size_t size)
 {
-	return !(*(wchar_t**)dst = ax_wcsdup(pool, *(wchar_t**)src));
+	return !(*(wchar_t**)dst = ax_wcsdup(*(wchar_t**)src));
 }
 
-static void move_s  (void* dst, const void* src, size_t size)
+static void move_s(void* dst, const void* src, size_t size)
 {
 	*(char**)dst = *(char**)src;
 	*(char**)src = NULL;
 }
 
-static void move_ws  (void* dst, const void* src, size_t size)
+static void move_ws(void* dst, const void* src, size_t size)
 {
 	*(wchar_t**)dst = *(wchar_t**)src;
 	*(wchar_t**)src = NULL;
 }
 
 
-static ax_fail init_s  (ax_pool *pool, void* p, size_t size) {
-	char *s = ax_pool_alloc(pool, sizeof(char));
+static ax_fail init_s(void* p, size_t size) {
+	char *s = malloc(sizeof(char));
 	if (s == NULL)
 		return true;
 	*s = '\0';
@@ -246,8 +245,8 @@ static ax_fail init_s  (ax_pool *pool, void* p, size_t size) {
 	return false;
 }
 
-static bool init_ws  (ax_pool *pool, void* p, size_t size) {
-	wchar_t *s = ax_pool_alloc(pool, sizeof(wchar_t));
+static bool init_ws(void* p, size_t size) {
+	wchar_t *s = malloc(sizeof(wchar_t));
 	if (s == NULL)
 		return true;
 	*s = L'\0';
@@ -285,7 +284,7 @@ size_t ax_stuff_mem_hash(const void* p, size_t size)
 	return ax_memhash(p, size);
 }
 
-ax_fail ax_stuff_mem_copy(ax_pool* pool, void* dst, const void* src, size_t size)
+ax_fail ax_stuff_mem_copy(void* dst, const void* src, size_t size)
 {
 	switch(size) {
 		case 1: *(uint8_t *)dst = *(uint8_t *)src; break;
@@ -299,7 +298,7 @@ ax_fail ax_stuff_mem_copy(ax_pool* pool, void* dst, const void* src, size_t size
 
 void ax_stuff_mem_move(void* dst, const void* src, size_t size)
 {
-	ax_stuff_mem_copy(NULL, dst, src, size);
+	ax_stuff_mem_copy(dst, src, size);
 }
 
 void ax_stuff_mem_swap(void* dst, void* src, size_t size)
@@ -326,7 +325,7 @@ void ax_stuff_mem_swap(void* dst, void* src, size_t size)
 }
 
 
-ax_fail ax_stuff_mem_init(ax_pool* pool, void* p, size_t size)
+ax_fail ax_stuff_mem_init(void* p, size_t size)
 {
 	memset(p, 0, size);
 	return false;
@@ -334,12 +333,12 @@ ax_fail ax_stuff_mem_init(ax_pool* pool, void* p, size_t size)
 
 static void free_s(void* p)
 {
-	ax_pool_free(*(char**)p);
+	free(*(char**)p);
 }
 
 static void free_ws(void* p)
 {
-	ax_pool_free(*(char**)p);
+	free(*(char**)p);
 }
 
 static const ax_stuff_trait trait_nil = { 

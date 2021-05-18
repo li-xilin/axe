@@ -24,10 +24,8 @@
 #include <ax/vector.h>
 #include <ax/tube.h>
 #include <ax/base.h>
-#include <ax/pool.h>
 #include <ax/scope.h>
 #include <ax/any.h>
-#include <ax/error.h>
 #include <ax/mem.h>
 
 #include <string.h>
@@ -122,7 +120,7 @@ static void one_free(ax_one *one)
 	ax_stack_r self_r = { .one = one };
 	ax_scope_detach(one);
 	ax_vector_tr.box.any.one.free(self_r.stack->vector.one);
-	ax_pool_free(one);
+	free(one);
 }
 
 ax_tube *__ax_stack_construct(ax_base *base, const ax_stuff_trait *elem_tr)
@@ -130,16 +128,13 @@ ax_tube *__ax_stack_construct(ax_base *base, const ax_stuff_trait *elem_tr)
 	CHECK_PARAM_NULL(base);
 	CHECK_PARAM_NULL(elem_tr);
 
-	ax_pool *pool = ax_base_pool(base);
-
 	ax_tube *self= NULL;
 	ax_seq *vector = __ax_vector_construct(base, elem_tr);
 	if (!vector)
 		goto fail;
 
-	self = ax_pool_alloc(pool, sizeof(ax_stack));
+	self = malloc(sizeof(ax_stack));
 	if (!self) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 
@@ -163,7 +158,7 @@ ax_tube *__ax_stack_construct(ax_base *base, const ax_stuff_trait *elem_tr)
 	return self;
 fail:
 	ax_one_free(ax_r(seq, vector).one);
-	ax_pool_free(self);
+	free(self);
 	return NULL;
 }
 

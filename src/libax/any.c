@@ -63,7 +63,7 @@ static size_t stuff_hash(const void* p, size_t size)
 	return ax_stuff_traits(AX_ST_PTR)->hash(p, size);
 }
 
-static ax_fail stuff_copy(ax_pool* pool, void* dst, const void* src, size_t size)
+static ax_fail stuff_copy(void* dst, const void* src, size_t size)
 {
 	CHECK_PARAM_NULL(dst);
 	CHECK_PARAM_NULL(src);
@@ -72,9 +72,8 @@ static ax_fail stuff_copy(ax_pool* pool, void* dst, const void* src, size_t size
 	return !(*(void**)dst = anys->tr->copy(src));
 }
 
-static bool stuff_init(ax_pool* pool, void *p, size_t size)
+static bool stuff_init(void *p, size_t size)
 {
-	CHECK_PARAM_NULL(pool);
 	CHECK_PARAM_NULL(p);
 
 	*(void**)p = NULL;

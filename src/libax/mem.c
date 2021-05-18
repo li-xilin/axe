@@ -21,7 +21,6 @@
  */
 
 #include <ax/def.h>
-#include <ax/pool.h>
 #include <ax/mem.h>
 
 #include <stdlib.h>
@@ -52,18 +51,22 @@ void ax_memxor(void *ptr1, void *ptr2, size_t size)
 	}
 }
 
-char* ax_strdup(ax_pool* pool, const char* str)
+char* ax_strdup(const char* str)
 {
 	size_t size = (strlen(str) + 1) * sizeof(char);
-	char* copy = ax_pool_alloc(pool, size);
+	char* copy = malloc(size);
+	if (!copy)
+		return NULL;
 	memcpy(copy, str, size);
 	return copy;
 }
 
-wchar_t* ax_wcsdup(ax_pool* pool, const wchar_t* str)
+wchar_t* ax_wcsdup(const wchar_t* str)
 {
 	size_t size = (wcslen(str) + 1) * sizeof(wchar_t);
-	wchar_t* copy = ax_pool_alloc(pool, size);
+	wchar_t* copy = malloc(size);
+	if (!copy)
+		return NULL;
 	memcpy(copy, str, size);
 	return copy;
 }

@@ -25,7 +25,9 @@ BIN = $(ROOT)/bin
 AR = ar
 RM = rm -f
 CC = gcc
-CFLAGS = -Wall --pedantic -Werror -I$(ROOT)/src/include -I$(INCLUDE) -std=c99
+CFLAGS = -Wall --pedantic -Werror -std=c99 -fPIC\
+	 -I$(ROOT)/src/include \
+	 -I$(INCLUDE)\
 
 ifeq ($(DEBUG), 1)
 	CFLAGS += -O0 -DAX_DEBUG -g

@@ -23,12 +23,10 @@
 #include <ax/arr.h>
 #include <ax/base.h>
 #include <ax/def.h>
-#include <ax/pool.h>
 #include <ax/iter.h>
 #include <ax/debug.h>
 #include <ax/vail.h>
 #include <ax/stuff.h>
-#include <ax/error.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -198,17 +196,13 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	const ax_arr *self = it->owner;
 	const ax_stuff_trait *etr = self->seq.env.elem_tr;
 
-	ax_base *base = ax_one_base(it->owner);
-	ax_pool *pool = ax_base_pool(base);
-	 
 	etr->free(it->point);
 
 	const void *pval = etr->link ? &val : val;
 	ax_fail fail = val
-		? etr->copy(pool, it->point, pval, etr->size)
-		: etr->init(pool, it->point, etr->size);
+		? etr->copy(it->point, pval, etr->size)
+		: etr->init(it->point, etr->size);
 	if (fail) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		return true;
 	}
 	

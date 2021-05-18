@@ -28,11 +28,6 @@
 #include <stdarg.h>
 #include <limits.h>
 
-#ifndef AX_POOL_DEFINED
-#define AX_POOL_DEFINED
-typedef struct ax_pool_st ax_pool;
-#endif
-
 #ifndef AX_STUFF_TRAIT_DEFINED
 #define AX_STUFF_TRAIT_DEFINED
 typedef struct ax_stuff_trait_st ax_stuff_trait;
@@ -93,8 +88,8 @@ typedef bool(*ax_stuff_compare_f) (const void* p1, const void* p2, size_t size);
 typedef size_t (*ax_stuff_hash_f) (const void* p, size_t size);
 typedef void   (*ax_stuff_move_f) (void* dst, const void* src, size_t size);
 typedef void   (*ax_stuff_swap_f) (void* dst, void* src, size_t size);
-typedef ax_fail(*ax_stuff_copy_f) (ax_pool* pool, void* dst, const void* src, size_t size);
-typedef ax_fail(*ax_stuff_init_f) (ax_pool* pool, void* p, size_t size);
+typedef ax_fail(*ax_stuff_copy_f) (void* dst, const void* src, size_t size);
+typedef ax_fail(*ax_stuff_init_f) (void* p, size_t size);
 
 struct ax_stuff_trait_st
 {
@@ -114,9 +109,9 @@ bool ax_stuff_mem_equal(const void* p1, const void* p2, size_t size);
 bool ax_stuff_mem_less(const void* p1, const void* p2, size_t size);
 size_t  ax_stuff_mem_hash(const void* p, size_t size);
 void    ax_stuff_mem_move(void* dst, const void* src, size_t size);
-ax_fail ax_stuff_mem_copy(ax_pool* pool, void* dst, const void* src, size_t size);
+ax_fail ax_stuff_mem_copy(void* dst, const void* src, size_t size);
 void    ax_stuff_mem_swap(void* dst, void* src, size_t size);
-ax_fail ax_stuff_mem_init(ax_pool* pool, void* p, size_t size);
+ax_fail ax_stuff_mem_init(void* p, size_t size);
 void    ax_stuff_mem_free(void* p);
 
 

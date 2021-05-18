@@ -29,11 +29,6 @@
 typedef struct ax_base_st ax_base;
 #endif
 
-#ifndef AX_POOL_DEFINED
-#define AX_POOL_DEFINED
-typedef struct ax_pool_st ax_pool;
-#endif
-
 #ifndef AX_SCOPE_DEFINED
 #define AX_SCOPE_DEFINED
 typedef struct ax_scope_st ax_scope;
@@ -45,8 +40,6 @@ ax_base *ax_base_create();
 
 void ax_base_destroy(ax_base* base);
 
-ax_pool *ax_base_pool(ax_base* base);
-
 ax_scope *ax_base_global(ax_base *base);
 
 ax_scope *ax_base_local(ax_base *base);
@@ -54,8 +47,6 @@ ax_scope *ax_base_local(ax_base *base);
 int ax_base_enter(ax_base *base);
 
 void ax_base_leave(ax_base *base, int depth);
-
-void ax_base_set_errno(ax_base *base, int errno);
 
 int ax_base_errno(ax_base *base);
 

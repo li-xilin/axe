@@ -24,10 +24,8 @@
 #include <ax/map.h>
 #include <ax/iter.h>
 #include <ax/scope.h>
-#include <ax/pool.h>
 #include <ax/debug.h>
 #include <ax/base.h>
-#include <ax/error.h>
 #include <ax/log.h>
 
 #include <string.h>
@@ -100,13 +98,8 @@ static void free_node(ax_map *map, struct node_st **pp_node);
 
 static ax_fail rehash(ax_hmap *hmap, size_t new_size)
 {
-	ax_hmap_r hmap_r = { hmap };
-	ax_base *base = ax_one_base(hmap_r.one);
-	ax_pool *pool = ax_base_pool(base);
-
-	struct bucket_st *new_tab = ax_pool_alloc(pool, (new_size * sizeof(struct bucket_st)));
+	struct bucket_st *new_tab = malloc((new_size * sizeof(struct bucket_st)));
 	if (!new_tab) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		return true;
 	}
 	for (size_t i = 0; i != new_size; i++)
@@ -134,7 +127,7 @@ static ax_fail rehash(ax_hmap *hmap, size_t new_size)
 		}
 		bucket->node_list = NULL;
 	}
-	ax_pool_free(hmap->bucket_tab);
+	free(hmap->bucket_tab);
 	hmap->buckets = new_size;
 	hmap->bucket_tab = new_tab;
 	return false;
@@ -142,21 +135,15 @@ static ax_fail rehash(ax_hmap *hmap, size_t new_size)
 
 static struct node_st *make_node(ax_map *map, const void *key, const void *val)
 {
-	ax_hmap_r hmap_r = { .map = map };
-
-	ax_base *base = ax_one_base(hmap_r.one);
-	ax_pool *pool = ax_base_pool(base);
-
 	size_t key_size = map->env.key_tr->size;
 	size_t node_size = sizeof(struct node_st) + key_size + map->env.val_tr->size;
 
-	struct node_st *node = ax_pool_alloc(pool, node_size);
+	struct node_st *node = malloc(node_size);
 	if (!node) {
-		ax_base_set_errno(base, AX_ERR_NOKEY);
 		return NULL;
 	}
-	map->env.key_tr->copy(pool, node->kvbuffer, key, map->env.key_tr->size);
-	map->env.val_tr->copy(pool, node->kvbuffer + key_size, val, map->env.val_tr->size);
+	map->env.key_tr->copy(node->kvbuffer, key, map->env.key_tr->size);
+	map->env.val_tr->copy(node->kvbuffer + key_size, val, map->env.val_tr->size);
 	return node;
 }
 
@@ -210,7 +197,7 @@ static void free_node(ax_map *map, struct node_st **pp_node)
 	map->env.val_tr->free(value_ptr);
 	struct node_st *node_to_free = *pp_node;
 	(*pp_node) = node_to_free->next;
-	ax_pool_free(node_to_free);
+	free(node_to_free);
 }
 
 static void citer_next(ax_citer *it)
@@ -262,14 +249,11 @@ static ax_fail iter_set(const ax_iter *it, const void *p)
 	ax_hmap *hmap= (ax_hmap*)it->owner;
 	assert(hmap->size != 0);
 
-	ax_base *base = ax_one_base(hmap_r.one);
-	ax_pool *pool = ax_base_pool(base);
 	const ax_stuff_trait *val_tr = hmap_r.map->env.val_tr;
 
 	val_tr->free(node->kvbuffer + hmap_r.map->env.key_tr->size);
-	if (val_tr->copy(pool, node->kvbuffer + hmap_r.map->env.key_tr->size,
+	if (val_tr->copy(node->kvbuffer + hmap_r.map->env.key_tr->size,
 				p, hmap_r.map->env.val_tr->size)) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		return true;
 	}
 	return false;
@@ -319,8 +303,6 @@ static void *map_put(ax_map *map, const void *key, const void *val)
 	CHECK_PARAM_NULL(map);
 
 	ax_hmap_r hmap_r = { .map = map };
-	ax_base *base  = ax_one_base(hmap_r.one);
-	ax_pool *pool = ax_base_pool(base);
 
 	const ax_stuff_trait
 		*ktr = map->env.key_tr,
@@ -334,8 +316,7 @@ static void *map_put(ax_map *map, const void *key, const void *val)
 	if (findpp) {
 		ax_byte *value_ptr = (*findpp)->kvbuffer + ktr->size;
 		vtr->free(value_ptr);
-		if (vtr->copy(pool, value_ptr, pval, vtr->size)) {
-			ax_base_set_errno(base, AX_ERR_NOMEM);
+		if (vtr->copy(value_ptr, pval, vtr->size)) {
 			return NULL;
 		}
 		return node_val(map, *findpp);
@@ -343,7 +324,6 @@ static void *map_put(ax_map *map, const void *key, const void *val)
 
 	if (hmap_r.hmap->size == hmap_r.hmap->buckets * hmap_r.hmap->threshold) {
 		if (hmap_r.hmap->buckets == ax_box_maxsize(ax_r(map, map).box)) {
-			ax_base_set_errno(base, AX_ERR_FULL);
 			return NULL;
 		}
 		size_t new_size = hmap_r.hmap->buckets << 1 | 1;
@@ -442,8 +422,6 @@ static bool map_exist (const ax_map *map, const void *key)
 static void *map_chkey(ax_map *map, const void *key, const void *new_key)
 {
 	const ax_hmap_r hmap_r = { .map = map };
-	ax_base *base  = ax_one_base(hmap_r.one);
-	ax_pool *pool = ax_base_pool(base);
 
 	const ax_stuff_trait *ktr = hmap_r.hmap->_map.env.key_tr;
 	const void *pkey = ktr->link ? &key : key;
@@ -457,9 +435,8 @@ static void *map_chkey(ax_map *map, const void *key, const void *new_key)
 
 	const void *pnewkey = ktr->link ? &new_key: new_key;
 	struct node_st *node = *findpp;
-	if (ktr->copy(pool, node->kvbuffer, pnewkey, ktr->size)) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
-	}
+	if (ktr->copy(node->kvbuffer, pnewkey, ktr->size))
+		return NULL;
 
 	(*findpp) = node->next;
 
@@ -494,8 +471,8 @@ static void one_free(ax_one *one)
 	ax_hmap_r hmap_r= { .one = one };
 	ax_scope_detach(hmap_r.one);
 	box_clear(hmap_r.box);
-	ax_pool_free(hmap_r.hmap->bucket_tab);
-	ax_pool_free(hmap_r.hmap);
+	free(hmap_r.hmap->bucket_tab);
+	free(hmap_r.hmap);
 }
 
 static void any_dump(const ax_any *any, int ind)
@@ -534,9 +511,8 @@ static ax_any *any_move(ax_any *any)
 
 	ax_hmap_r src_r = { .any = any };
 	ax_base *base = ax_one_base(src_r.one);
-	ax_pool *pool = ax_base_pool(base);
 
-	ax_hmap *dst = ax_pool_alloc(pool, sizeof(ax_hmap));
+	ax_hmap *dst = malloc(sizeof(ax_hmap));
 	memcpy(dst, src_r.hmap, sizeof(ax_hmap));
 	src_r.hmap->buckets = 0;
 	src_r.hmap->size = 0;
@@ -598,10 +574,7 @@ static void box_clear(ax_box *box)
 		for (struct node_st **pp_node = &bucket->node_list; *pp_node;)
 			free_node(hmap_r.map, pp_node);
 
-	ax_pool *pool = ax_base_pool(ax_one_base(hmap_r.one));
-	
-	void *new_bucket_tab = ax_pool_realloc(pool, hmap_r.hmap->bucket_tab,
-			sizeof(struct bucket_st));
+	void *new_bucket_tab = realloc(hmap_r.hmap->bucket_tab, sizeof(struct bucket_st));
 	if (new_bucket_tab) {
 		hmap_r.hmap->bucket_tab = new_bucket_tab;
 	}
@@ -680,9 +653,8 @@ ax_map *__ax_hmap_construct(ax_base *base, const ax_stuff_trait *key_tr, const a
 	CHECK_PARAM_NULL(val_tr->free);
 
 
-	ax_hmap *hmap = ax_pool_alloc(ax_base_pool(base), sizeof(ax_hmap));
+	ax_hmap *hmap = malloc(sizeof(ax_hmap));
 	if (!hmap) {
-		ax_base_set_errno(base, AX_ERR_NOKEY);
 		return NULL;
 	}
 	
@@ -705,9 +677,8 @@ ax_map *__ax_hmap_construct(ax_base *base, const ax_stuff_trait *key_tr, const a
 		.bucket_list = NULL,
 	};
 
-	hmap_init.bucket_tab = ax_pool_alloc(ax_base_pool(base), sizeof(struct bucket_st) * hmap_init.buckets);
+	hmap_init.bucket_tab = malloc(sizeof(struct bucket_st) * hmap_init.buckets);
 	if (!hmap_init.bucket_tab) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		return NULL;
 	}
 	hmap_init.bucket_tab->node_list = NULL;

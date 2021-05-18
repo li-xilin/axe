@@ -23,14 +23,12 @@
 #include <ax/vector.h>
 #include <ax/base.h>
 #include <ax/def.h>
-#include <ax/pool.h>
 #include <ax/scope.h>
 #include <ax/any.h>
 #include <ax/iter.h>
 #include <ax/debug.h>
 #include <ax/vail.h>
 #include <ax/stuff.h>
-#include <ax/error.h>
 #include <ax/mem.h>
 #include <ax/buff.h>
 
@@ -217,17 +215,13 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	const ax_vector *self = it->owner;
 	const ax_stuff_trait *etr = self->_seq.env.elem_tr;
 
-	ax_base *base = ax_one_base(it->owner);
-	ax_pool *pool = ax_base_pool(base);
-	 
 	etr->free(it->point);
 
 	const void *pval = etr->link ? &val : val;
 	ax_fail fail = val
-		? etr->copy(pool, it->point, pval, etr->size)
-		: etr->init(pool, it->point, etr->size);
+		? etr->copy(it->point, pval, etr->size)
+		: etr->init(it->point, etr->size);
 	if (fail) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		return true;
 	}
 	
@@ -264,7 +258,7 @@ static void one_free(ax_one *one)
 	ax_scope_detach(one);
 	box_clear(self_r.box);
 	ax_one_free(ax_r(buff, self_r.vector->buff).one);
-	ax_pool_free(one);
+	free(one);
 }
 
 static void any_dump(const ax_any *any, int ind)
@@ -278,13 +272,11 @@ static ax_any *any_copy(const ax_any *any)
 
 	ax_vector_r self_r = { .any = (ax_any*)any };
 	ax_base *base = ax_one_base(self_r.one);
-	ax_pool *pool = ax_base_pool(base);
 	ax_vector *new_vector = NULL;
 	ax_buff *new_buff = NULL;
 
-	new_vector = ax_pool_alloc(pool, (sizeof(ax_vector)));
+	new_vector = malloc(sizeof(ax_vector));
 	if (!new_vector) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 	memcpy(new_vector, self_r.vector, sizeof(ax_vector));
@@ -299,7 +291,7 @@ static ax_any *any_copy(const ax_any *any)
 	ax_scope_attach(ax_base_local(base), ax_r(vector, new_vector).one);
 	return ax_r(vector, new_vector).any;
 fail:
-	ax_pool_free(new_vector);
+	free(new_vector);
 	ax_one_free(ax_r(buff, new_buff).one);
 	return NULL;
 }
@@ -310,13 +302,11 @@ static ax_any *any_move(ax_any *any)
 
 	ax_vector *self = (ax_vector*)any;
 	ax_base *base = ax_one_base(ax_r(vector, self).one);
-	ax_pool *pool = ax_base_pool(base);
 	ax_buff *dst_buff= NULL;
 	ax_vector *dest = NULL;
 
-	dest = ax_pool_alloc(pool, (sizeof(ax_vector)));
+	dest = malloc(sizeof(ax_vector));
 	if (!dest) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 	memcpy(dest, self, sizeof(ax_vector));
@@ -333,7 +323,7 @@ static ax_any *any_move(ax_any *any)
 
 	return ax_r(vector, dest).any;
 fail:
-	ax_pool_free(dest);
+	free(dest);
 	ax_one_free(ax_r(buff, dst_buff).one);
 	return NULL;
 
@@ -436,8 +426,6 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 
 	ax_vector *self = (ax_vector *) seq;
 	const ax_stuff_trait *etr = seq->env.elem_tr;
-	ax_base *base = ax_one_base(ax_r(vector, self).one);
-	ax_pool *pool = ax_base_pool(base);
 	ax_byte *ptr = ax_buff_ptr(self->buff);
 	size_t size = ax_buff_size(self->buff, NULL);
 
@@ -457,10 +445,9 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 
 	const void *pval = etr->link ? &val : val;
 	ax_fail fail = (val != NULL)
-		? etr->copy(pool, ins, pval, etr->size)
-		: etr->init(pool, ins, etr->size);
+		? etr->copy(ins, pval, etr->size)
+		: etr->init(ins, etr->size);
 	if (fail) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		ax_buff_resize(self->buff, size);
 		return true;
 	}
@@ -476,8 +463,6 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 
 	ax_vector *self = (ax_vector *) seq;
 	const ax_stuff_trait *etr = seq->env.elem_tr;
-	ax_base *base = ax_one_base(ax_r(vector, self).one);
-	ax_pool *pool = ax_base_pool(base);
 
 	size_t size = ax_buff_size(self->buff, NULL);
 
@@ -488,10 +473,9 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 	ax_byte *ptr = ax_buff_ptr(self->buff);
 
 	ax_fail fail = (val != NULL)
-		? etr->copy(pool, ptr + size, pval, etr->size)
-		: etr->init(pool, ptr + size, etr->size);
+		? etr->copy(ptr + size, pval, etr->size)
+		: etr->init(ptr + size, etr->size);
 	if (fail) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		ax_buff_resize(self->buff, size);
 		return true;
 	}
@@ -509,8 +493,6 @@ static ax_fail seq_pop(ax_seq *seq)
 	ax_byte *ptr = ax_buff_ptr(self->buff);
 
 	if (size == 0) {
-		ax_base *base = ax_one_base(ax_r(vector, self).one);
-		ax_base_set_errno(base, AX_ERR_EMPTY);
 		return false;
 	}
 	seq->env.elem_tr->free(ptr + size - etr->size);
@@ -546,8 +528,6 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 	CHECK_PARAM_NULL(seq);
 	CHECK_PARAM_VALIDITY(size, size <= ax_box_maxsize(ax_r(seq, seq).box));
 
-	ax_vector_r self_r = { .seq = (ax_seq*)seq};
-
 	ax_vector *self = (ax_vector *) seq;
 	const ax_stuff_trait *etr = seq->env.elem_tr;
 	size_t old_size = ax_buff_size(self->buff, NULL);
@@ -566,14 +546,12 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 		if (ax_buff_adapt(self->buff, size))
 			return true;
 	} else {
-		ax_base *base = ax_one_base(self_r.one);
-		ax_pool *pool = ax_base_pool(base);
 		if (ax_buff_adapt(self->buff, size))
 			return true;
 		ax_byte *ptr = ax_buff_ptr(self->buff);
 
 		for (size_t off = old_size; off < size ; off += etr->size) {
-			etr->init(pool, ptr + off, etr->size);
+			etr->init(ptr + off, etr->size);
 		}
 	}
 	return false;
@@ -696,9 +674,8 @@ ax_seq *__ax_vector_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 	ax_buff *buff = NULL;
 	ax_seq *seq = NULL;
 
-	seq = ax_pool_alloc(ax_base_pool(base), sizeof(ax_vector));
+	seq = malloc(sizeof(ax_vector));
 	if (!seq) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 
@@ -724,7 +701,7 @@ ax_seq *__ax_vector_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 	memcpy(seq, &vec_init, sizeof vec_init);
 	return seq;
 fail:
-	ax_pool_free(seq);
+	free(seq);
 	ax_one_free(ax_r(buff, buff).one);
 	return NULL;
 }

@@ -25,14 +25,12 @@
 #include <ax/list.h>
 #include <ax/base.h>
 #include <ax/def.h>
-#include <ax/pool.h>
 #include <ax/scope.h>
 #include <ax/any.h>
 #include <ax/iter.h>
 #include <ax/debug.h>
 #include <ax/vail.h>
 #include <ax/stuff.h>
-#include <ax/error.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -151,8 +149,6 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	return ax_avl_tr.box.iter.set(it, val);
 
 	ax_btrie *self = iter_get_self(it);
-	ax_base *base = self->_trie.env.one.base;
-	ax_pool *pool = ax_base_pool(base);
 
 	struct node_st *node = ax_avl_tr.box.iter.get(it);
 	const ax_stuff_trait *etr = self->_trie.env.val_tr;
@@ -160,14 +156,13 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	if (node->val) {
 		etr->free(node->val);
 	} else {
-		node->val = ax_pool_alloc(pool, etr->size);
+		node->val = malloc(etr->size);
 		if (!node->val) {
-			ax_base_set_errno(base, AX_ERR_NOMEM);
 			return true;
 		}
 	}
 
-	return etr->copy(pool, node->val, pval, etr->size);
+	return etr->copy(node->val, pval, etr->size);
 }
 
 #if 0
@@ -198,7 +193,7 @@ static void iter_erase(ax_iter *it)
 	if (node->val) {
 		const ax_stuff_trait *etr = self->_trie.env.val_tr;
 		etr->free(node->val);
-		ax_pool_free(node->val);
+		free(node->val);
 		node->val = NULL;
 		self->size --;
 	}
@@ -220,7 +215,7 @@ static void one_free(ax_one *one)
 	ax_scope_detach(one);
 	box_clear(self_r.box);
 	ax_one_free(self_r.btrie->root_r.one);
-	ax_pool_free(one);
+	free(one);
 }
 
 static void any_dump(const ax_any *any, int ind)
@@ -421,31 +416,25 @@ static int match_key(const ax_btrie *self, const ax_seq *key, ax_citer *it_misma
 
 static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *val)
 {
-
-	ax_base *base = ax_one_base(ax_r(btrie, self).one);
-	ax_pool *pool = ax_base_pool(base);
-
 	const ax_stuff_trait *val_tr = self->_trie.env.val_tr;
 	void *value = NULL;
 
-	value = ax_pool_alloc(pool, val_tr->size);
+	value = malloc(val_tr->size);
 	if (!value) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 
 	const void *pval = val_tr->link ? &val : val;
 	ax_fail fail = (val == NULL)
-		? val_tr->init(pool, value, val_tr->size)
-		: val_tr->copy(pool, value, pval, val_tr->size);
+		? val_tr->init(value, val_tr->size)
+		: val_tr->copy(value, pval, val_tr->size);
 	if (fail) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 
 	if (node->val) {
 		val_tr->free(node->val);
-		ax_pool_free(node->val);
+		free(node->val);
 	} else {
 		self->size ++;
 	}
@@ -453,7 +442,7 @@ static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *
 
 	return false;
 fail:
-	ax_pool_free(value);
+	free(value);
 	return true;
 }
 
@@ -463,7 +452,6 @@ static struct node_st *make_path(ax_trie *trie, const ax_seq *key)
 
 	ax_btrie_r self_r = { .trie = trie };
 	ax_base *base = ax_one_base(self_r.one);
-	ax_pool *pool = ax_base_pool(base);
 
 	ax_citer key_it;
 	struct node_st *last_node;
@@ -474,9 +462,8 @@ static struct node_st *make_path(ax_trie *trie, const ax_seq *key)
 	
 	size_t ins_count = ax_box_size(ax_cr(seq, key).box) + 1 - match_len;
 
-	new_node_tab = ax_pool_alloc(pool, sizeof(struct node_st) * ins_count);
+	new_node_tab = malloc(sizeof(struct node_st) * ins_count);
 	if (!new_node_tab) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 	memset(new_node_tab, 0, sizeof(struct node_st) * ins_count);
@@ -486,7 +473,6 @@ static struct node_st *make_path(ax_trie *trie, const ax_seq *key)
 		ax_map *new_submap = __ax_avl_construct(base, self_r.btrie->_trie.env.key_tr, &node_tr);
 		new_submap->env.one.scope.macro = self_r.one;
 		if (!new_submap) {
-			ax_base_set_errno(base, AX_ERR_NOMEM);
 			goto fail;
 		}
 		new_node_tab[i].submap_r.map = new_submap;
@@ -512,15 +498,15 @@ static struct node_st *make_path(ax_trie *trie, const ax_seq *key)
 		ax_citer_next(&key_it);
 	}
 
-	ax_pool_free(new_node_tab);
+	free(new_node_tab);
 	return last_node;
 fail:
 	if (new_node_tab) {
 		for (size_t i = 0; i < ins_count; i++)
 			ax_one_free(new_node_tab[i].submap_r.one);
-		ax_pool_free(new_node_tab);
+		free(new_node_tab);
 	}
-	ax_pool_free(value);
+	free(value);
 	return NULL;
 }
 
@@ -651,7 +637,7 @@ static void rec_remove(ax_btrie *self, ax_map *map)
 		rec_remove(self, node->submap_r.map);
 		if (node->val) {
 			val_tr->free(node->val);
-			ax_pool_free(node->val);
+			free(node->val);
 			self->size--;
 		}
 		ax_one_free(node->submap_r.one);
@@ -839,9 +825,8 @@ ax_trie *__ax_btrie_construct(ax_base *base,const ax_stuff_trait *key_tr, const 
 	ax_map *root = NULL;
 	ax_btrie *self = NULL;
 
-	self = ax_pool_alloc(ax_base_pool(base), sizeof(ax_btrie));
+	self = malloc(sizeof(ax_btrie));
 	if (!self) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 
@@ -872,7 +857,7 @@ ax_trie *__ax_btrie_construct(ax_base *base,const ax_stuff_trait *key_tr, const 
 	return ax_r(btrie, self).trie;
 fail:
 	ax_one_free(ax_r(map, root).one);
-	ax_pool_free(self);
+	free(self);
 	return NULL;
 }
 

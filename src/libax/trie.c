@@ -53,10 +53,6 @@ ax_fail ax_trie_enum(ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx)
 
 	ax_iter cur = ax_box_begin(self_r.box);
 	ax_iter end = ax_box_end(self_r.box);
-
-	if (ax_iter_equal(&cur, &end))
-		goto out;
-
 	do {
 		if (!ax_iter_equal(&cur, &end)) {
 			if (ax_seq_push(list_r.seq, &cur)) {

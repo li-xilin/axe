@@ -30,8 +30,6 @@
 #include <ax/avl.h>
 #include <ax/seq.h>
 #include <ax/scope.h>
-#include <ax/pool.h>
-#include <ax/error.h>
 
 #include <setjmp.h>
 #include <stdlib.h>
@@ -74,7 +72,7 @@ static void one_free(ax_one *one)
 	ax_one_free(runner_r.runner->smap.one);
 	ax_one_free(runner_r.runner->output.one);
 	ax_one_free(runner_r.runner->suites.one);
-	ax_pool_free(runner_r.runner);
+	free(runner_r.runner);
 }
 
 static const ax_one_trait one_trait = {
@@ -105,17 +103,14 @@ ax_one *__axut_runner_construct(ax_base *base, axut_output_f output_cb)
 {
 	CHECK_PARAM_NULL(base);
 
-	ax_pool *pool = ax_base_pool(base);
 	axut_runner *runner = NULL;
 	ax_map *smap = NULL;
 	ax_seq *suites = NULL;
 	ax_str *output = NULL;
 
-	runner = ax_pool_alloc(pool, sizeof(axut_runner));
-	if (!runner) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
+	runner = malloc(sizeof(axut_runner));
+	if (!runner)
 		goto fail;
-	}
 
 	smap = __ax_avl_construct(base, ax_stuff_traits(AX_ST_PTR), ax_stuff_traits(AX_ST_PTR));
 	if (!smap)
@@ -158,7 +153,7 @@ ax_one *__axut_runner_construct(ax_base *base, axut_output_f output_cb)
 
 	return axut_cast(runner, runner).one;
 fail:
-	ax_pool_free(runner);
+	free(runner);
 	ax_one_free(ax_r(seq, suites).one);
 	ax_one_free(ax_r(map, smap).one);
 	ax_one_free(ax_r(str, output).one);
@@ -273,20 +268,17 @@ void *axut_runner_arg(const axut_runner *r)
 
 static void leave(axut_runner *r, axut_case_state cs, const char *file, int line, const char *fmt, va_list args)
 {
-	ax_base *base = ax_one_base(axut_cast(runner, r).one);
-	ax_pool *pool = ax_base_pool(base);
-
-	ax_pool_free(r->current->file);
-	r->current->file = ax_strdup(pool, file);
+	free(r->current->file);
+	r->current->file = ax_strdup(file);
 
 	r->current->line = line;
 
-	ax_pool_free(r->current->log);
+	free(r->current->log);
 	r->current->log = NULL;
 	if (fmt) {
 		char buf[1024];
 		vsprintf(buf, fmt, args);
-		r->current->log =  ax_strdup(pool, buf);
+		r->current->log =  ax_strdup(buf);
 	}
 
 	assert(cs == AXUT_CS_FAIL || cs == AXUT_CS_TERM);

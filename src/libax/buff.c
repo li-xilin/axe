@@ -24,8 +24,6 @@
 #include <ax/any.h>
 #include <ax/base.h>
 #include <ax/scope.h>
-#include <ax/pool.h>
-#include <ax/error.h>
 #include <ax/def.h>
 
 #include <stdlib.h>
@@ -57,8 +55,8 @@ static void one_free(ax_one *one)
 	if (!one)
 		return;
 	ax_scope_detach(one);
-	ax_pool_free(((ax_buff *)one)->buf);
-	ax_pool_free(one);
+	free(((ax_buff *)one)->buf);
+	free(one);
 }
 
 static ax_any *any_copy(const ax_any *any)
@@ -69,19 +67,16 @@ static ax_any *any_copy(const ax_any *any)
 	const ax_buff *src_buff = (const ax_buff *)any;
 
 	ax_base *base = ax_one_base(src_one);
-	ax_pool *pool = ax_base_pool(base);
 
 	ax_buff *dst_buff = NULL;
 	void *buffer = NULL;
 
-	dst_buff = ax_pool_alloc(pool, sizeof(ax_buff));
+	dst_buff = malloc(sizeof(ax_buff));
 	if (!dst_buff) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
-	buffer = ax_pool_alloc(pool, src_buff->used);
+	buffer = malloc(src_buff->used);
 	if (!buffer) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 	memcpy(dst_buff, src_buff, sizeof(ax_buff));
@@ -95,8 +90,8 @@ static ax_any *any_copy(const ax_any *any)
 	ax_scope_attach(ax_base_local(base), ax_r(buff, dst_buff).one);
 	return ax_r(buff, dst_buff).any;
 fail:
-	ax_pool_free(buffer);
-	ax_pool_free(dst_buff);
+	free(buffer);
+	free(dst_buff);
 	return NULL;
 }
 
@@ -109,17 +104,14 @@ static ax_any *any_move(ax_any *any)
 	void *buf = NULL;
 
 	ax_base *base = ax_one_base(src_one);
-	ax_pool *pool = ax_base_pool(base);
 
-	dst_buff = ax_pool_alloc(pool, sizeof(ax_buff));
+	dst_buff = malloc(sizeof(ax_buff));
 	if (!dst_buff) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 
-	buf = ax_pool_alloc(pool, src_buff->min);
+	buf = malloc(src_buff->min);
 	if (!buf) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
 		goto fail;
 	}
 
@@ -133,8 +125,8 @@ static ax_any *any_move(ax_any *any)
 	ax_scope_attach(ax_base_local(base), ax_r(buff,dst_buff).one);
 	return ax_r(buff, dst_buff).any;
 fail:
-	ax_pool_free(dst_buff);
-	ax_pool_free(buf);
+	free(dst_buff);
+	free(buf);
 	return NULL;
 
 }
@@ -147,8 +139,6 @@ static ax_fail mem_resize(const ax_buff *buff, size_t require, size_t *alloc)
 			, "invalid msize");
 
 	if (require > buff->max) {
-		ax_base *base = ax_one_base(ax_cr(buff, buff).one);
-		ax_base_set_errno(base, AX_ERR_FULL);
 		return true;
 	}
 
@@ -179,10 +169,9 @@ ax_any *__ax_buff_construct(ax_base *base)
 {
 	CHECK_PARAM_NULL(base);
 
-	ax_pool *pool = ax_base_pool(base);
 	ax_buff *buff = NULL;
 
-	buff = ax_pool_alloc(pool, sizeof(ax_buff));
+	buff = malloc(sizeof(ax_buff));
 
 	if (!buff)
 		goto fail;
@@ -205,7 +194,7 @@ ax_any *__ax_buff_construct(ax_base *base)
 	memcpy(buff, &buff_init, sizeof buff_init);
 	return ax_r(buff, buff).any;
 fail:
-	ax_pool_free(buff);
+	free(buff);
 	return NULL;
 }
 
@@ -229,17 +218,14 @@ ax_fail ax_buff_set_max(ax_buff *buff, size_t max)
 	ax_assert(buff->min <= max, "min is greater then max");
 
 	if (buff->real > max) {
-		ax_base *base = ax_one_base(ax_r(buff, buff).one);
-		ax_pool *pool = ax_base_pool(base);
 		size_t size_copy = buff->used < max ? buff->used : max;
 
-		void *new_buf = ax_pool_alloc(pool, max);
+		void *new_buf = malloc(max);
 		if (!new_buf) {
-			ax_base_set_errno(base, AX_ERR_NOMEM);
 			return true;
 		}
 		memcpy(new_buf, buff->buf, size_copy);
-		ax_pool_free(buff->buf);
+		free(buff->buf);
 		buff->buf = new_buf;
 		buff->real = max;
 		buff->used = size_copy;
@@ -258,11 +244,8 @@ ax_fail ax_buff_adapt(ax_buff *buff, size_t size)
 		return true;
 
 	if (size_realloc != buff->real) {
-		ax_base *base = ax_one_base(ax_r(buff, buff).one);
-		ax_pool *pool = ax_base_pool(base);
-		void *buf = ax_pool_realloc(pool, buff->buf, size_realloc);
+		void *buf = realloc(buff->buf, size_realloc);
 		if (!buf) {
-			ax_base_set_errno(base, AX_ERR_NOMEM);
 			return true;
 		}
 		buff->buf = buf;
@@ -295,11 +278,8 @@ ax_fail ax_buff_alloc(ax_buff *buff, size_t size, void **obuf)
 		return true;
 
 	if (size_alloc != buff->real) {
-		ax_base *base = ax_one_base(ax_r(buff, buff).one);
-		ax_pool *pool = ax_base_pool(base);
-		void *buf = ax_pool_alloc(pool, size_alloc);
+		void *buf = malloc(size_alloc);
 		if (!buf) {
-			ax_base_set_errno(base, AX_ERR_NOMEM);
 			return true;
 		}
 		*obuf = buff->buf;
@@ -313,10 +293,8 @@ ax_fail ax_buff_alloc(ax_buff *buff, size_t size, void **obuf)
 
 ax_fail ax_buff_shrink(ax_buff *buff)
 {
-	ax_base *base = ax_one_base(ax_r(buff, buff).one);
-	ax_pool *pool = ax_base_pool(base);
 	void *new_buf = NULL;
-	new_buf = ax_pool_realloc(pool, buff->buf, buff->used);
+	new_buf = realloc(buff->buf, buff->used);
 	if (!new_buf)
 		return true;
 	buff->buf = new_buf;
@@ -330,19 +308,16 @@ ax_fail ax_buff_shrink(ax_buff *buff)
 ax_fail ax_buff_reserve(ax_buff *buff, size_t size)
 {
 	ax_assert(size < buff->max, "size too large");
-
-	ax_base *base = ax_one_base(ax_r(buff, buff).one);
-	ax_pool *pool = ax_base_pool(base);
 	
 	void *new_buf = NULL;
 
 	if (size <= buff->real) {
-		new_buf = ax_pool_realloc(pool, buff->buf, size);
+		new_buf = realloc(buff->buf, size);
 		if (!new_buf)
 			goto fail;
 		buff->min = size;
 	} else {
-		new_buf = ax_pool_alloc(pool, size);
+		new_buf = malloc(size);
 		if (!new_buf)
 			return true;
 
@@ -357,7 +332,6 @@ ax_fail ax_buff_reserve(ax_buff *buff, size_t size)
 	buff->min = size;
 	return false;
 fail:
-	ax_base_set_errno(base, AX_ERR_NOMEM);
 	return true;
 }
 
