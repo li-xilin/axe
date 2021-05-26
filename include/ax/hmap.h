@@ -64,5 +64,8 @@ ax_hmap_r ax_hmap_create(
 		const ax_stuff_trait *val_tr
 );
 
+
+ax_fail ax_hmap_rehash(ax_hmap *hmap, size_t size);
+
 #endif
 

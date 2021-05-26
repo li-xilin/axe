@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "check.h"
 
@@ -96,22 +97,59 @@ static struct bucket_st *unlink_bucket(struct bucket_st *head, struct bucket_st 
 static struct node_st **find_node(const ax_map *map, struct bucket_st *bucket, const void *key);
 static void free_node(ax_map *map, struct node_st **pp_node);
 
-static ax_fail rehash(ax_hmap *hmap, size_t new_size)
+inline static int size_bit_find_last(size_t size, bool bit)
 {
-	struct bucket_st *new_tab = malloc((new_size * sizeof(struct bucket_st)));
-	if (!new_tab) {
-		return true;
+	if (!bit) {
+		size = ~size;
+		bit = !bit;
 	}
-	for (size_t i = 0; i != new_size; i++)
+	for (int i = sizeof size * 8 - 1; i > 0; i--) {
+		if (size & (1 << i))
+			return i;
+	}
+	return -1;
+}
+
+inline static void size_bit_set(size_t *size, bool bit, int len)
+{
+	size_t tmp = *size;
+	assert(len <= sizeof(size_t) * 8);
+	if (bit) {
+		for (int i = 0; i < len; i++) {
+			tmp |= 1 << i;
+		}
+	} else {
+		for (int i = 0; i < len; i++) {
+			tmp &= ~(1 << i);
+		}
+	}
+	*size = tmp;
+}
+
+static ax_fail rehash(ax_hmap *hmap, size_t nbucket)
+{
+	assert(nbucket > 0);
+	struct bucket_st *new_tab = malloc((nbucket * sizeof(struct bucket_st)));
+	if (!new_tab)
+		return true;
+	for (size_t i = 0; i != nbucket; i++)
 		new_tab[i].node_list = NULL;
 
+	if (nbucket * hmap->threshold < hmap->size) {
+		errno = EINVAL;
+		return true;
+	}
+
 	struct bucket_st *bucket = hmap->bucket_list;
-	hmap->bucket_list = NULL; //re-link
-	for (;bucket; bucket = bucket->next) {
+	hmap->bucket_list = NULL;
+	for (; bucket; bucket = bucket->next) {
 		for (struct node_st *currnode = bucket->node_list; currnode;) {
+			const ax_stuff_trait *ktr = hmap->_map.env.key_tr;
+
 			struct bucket_st *new_bucket = new_tab
-				+ hmap->_map.env.key_tr->hash(currnode->kvbuffer, hmap->_map.env.key_tr->size)
-				% new_size;
+				+ ktr->hash(currnode->kvbuffer, ktr->size)
+				% nbucket;
+
 			if (!new_bucket->node_list) {
 				new_bucket->next = hmap->bucket_list;
 				new_bucket->prev = NULL;
@@ -128,8 +166,32 @@ static ax_fail rehash(ax_hmap *hmap, size_t new_size)
 		bucket->node_list = NULL;
 	}
 	free(hmap->bucket_tab);
-	hmap->buckets = new_size;
+	hmap->buckets = nbucket;
 	hmap->bucket_tab = new_tab;
+	return false;
+}
+
+ax_fail ax_hmap_rehash(ax_hmap *hmap, size_t nbucket)
+{
+	CHECK_PARAM_NULL(hmap);
+	CHECK_PARAM_VALIDITY(nbucket, nbucket > 0);
+	return rehash(hmap, nbucket);
+}
+
+// TODO: Do unit test
+ax_fail ax_hmap_set_threshold(ax_hmap *hmap, size_t threshold)
+{
+	CHECK_PARAM_NULL(hmap);
+	CHECK_PARAM_VALIDITY(threshold, threshold > 0);
+
+	if (threshold * hmap->buckets < hmap->size) {
+		int n = size_bit_find_last(hmap->size / threshold + 1, 1);
+		size_t nbucket = 0;
+		size_bit_set(&nbucket, 1, n + 1);
+		if (rehash(hmap, nbucket))
+			return true;
+	}
+	hmap->threshold = threshold;
 	return false;
 }
 
@@ -346,22 +408,21 @@ static ax_fail map_erase (ax_map *map, const void *key)
 	ax_hmap_r hmap_r = { .map = map };
 	const void *pkey = map->env.key_tr->link ? &key : key;
 
-	if (!hmap_r.hmap->buckets) {
-		return true; //TODO
-	}
-
 	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
 	struct node_st **findpp = find_node(hmap_r.map, bucket, pkey);
-	ax_assert(findpp, "invalid iterator");
+	if (!findpp)
+		return true;
 
 	free_node(map, findpp);
 	if (!bucket->node_list)
 		hmap_r.hmap->bucket_list = unlink_bucket(hmap_r.hmap->bucket_list, bucket);
 
-	hmap_r.hmap->size --;
 
-	if (hmap_r.hmap->size <= (hmap_r.hmap->buckets >> 2) * hmap_r.hmap->threshold)
-		return (rehash(hmap_r.hmap, hmap_r.hmap->buckets >>= 1));
+	if (hmap_r.hmap->size <= (hmap_r.hmap->buckets >> 2) * hmap_r.hmap->threshold) {
+		rehash(hmap_r.hmap, hmap_r.hmap->buckets >>= 1);
+	}
+
+	hmap_r.hmap->size --;
 
 	return false;
 }
@@ -477,9 +538,7 @@ static void one_free(ax_one *one)
 
 static void any_dump(const ax_any *any, int ind)
 {
-	CHECK_PARAM_NULL(any);
-
-	ax_pinfo("have not implemented");
+	UNSUPPORTED();
 }
 
 static ax_any *any_copy(const ax_any *any)
