@@ -232,7 +232,8 @@ static struct node_st *make_node(ax_map *map, struct node_st *parent, const void
 	node->right = NULL;
 	if(map->env.key_tr->copy(node->kvbuffer, key, map->env.key_tr->size))
 		goto failed;
-	if(map->env.val_tr->copy(node_pval(map, node), value, map->env.val_tr->size))
+	if (value ?  map->env.val_tr->copy(node_pval(map, node), value, map->env.val_tr->size)
+		: map->env.val_tr->init(node_pval(map, node), map->env.val_tr->size))
 		goto failed;
 	return node;
 failed:
@@ -444,7 +445,6 @@ static void *iter_get(const ax_iter *it)
 
 static ax_fail iter_set(const ax_iter *it, const void *val)
 {
-	CHECK_PARAM_NULL(val);
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
 
 	ax_avl_r avl_r = { .one = (ax_one *)it->owner };
@@ -452,7 +452,8 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	const void *psrc = val_tr->link ? &val : val;
 	void *pdst = node_pval(avl_r.map, it->point);
 	val_tr->free(pdst);
-	if (val_tr->copy(pdst, psrc,  val_tr->size)) {
+	if (val ? val_tr->copy(pdst, psrc,  val_tr->size)
+			: val_tr->init(pdst, val_tr->size)) {
 		return true;
 	}
 	return false;
@@ -498,7 +499,6 @@ inline static void *node_val(const ax_map* map, struct node_st *node)
 static void *map_put (ax_map* map, const void *key, const void *val)
 {
 	CHECK_PARAM_NULL(map);
-	CHECK_PARAM_NULL(val);
 
 	ax_avl_r avl_r = { .map = map };
 
@@ -676,10 +676,8 @@ static ax_any *any_copy(const ax_any *any)
 	ax_avl_r dst_r = { .map = __ax_avl_construct(base, ktr, vtr)};
 
 	ax_map_cforeach(src_r.map, const void *, key, const void *, val) {
-		if (!ax_map_put(dst_r.map, key, val)) {
-			ax_one_free(dst_r.one);
-			return NULL;
-		}
+		if (!ax_map_put(dst_r.map, key, val))
+			goto fail;
 	}
 
 	dst_r.avl->_map.env.one.scope.macro = NULL;
@@ -687,6 +685,9 @@ static ax_any *any_copy(const ax_any *any)
 	ax_scope_attach(ax_base_local(base), dst_r.one);
 
 	return dst_r.any;
+fail:
+	ax_one_free(dst_r.one);
+	return NULL;
 }
 
 static ax_any *any_move(ax_any *any)
