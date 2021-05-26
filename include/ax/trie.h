@@ -41,7 +41,7 @@ typedef struct ax_trie_trait_st ax_trie_trait;
 typedef void *(*ax_trie_put_f)  (ax_trie *trie, const ax_seq *key, const void *val);
 typedef void *(*ax_trie_get_f)  (const ax_trie *trie, const ax_seq *key);
 typedef ax_iter (*ax_trie_at_f)   (const ax_trie *trie, const ax_seq *key);
-typedef bool (*ax_trie_exist_f)(const ax_trie *trie, const ax_seq *key);
+typedef bool (*ax_trie_exist_f)(const ax_trie *trie, const ax_seq *key, bool *valued);
 typedef bool (*ax_trie_erase_f)(ax_trie *trie, const ax_seq *key);
 typedef bool (*ax_trie_prune_f)(ax_trie *trie, const ax_seq *key);
 typedef ax_fail (*ax_trie_rekey_f)(ax_trie *trie, const ax_seq *key_from, const ax_seq *key_to);
@@ -147,10 +147,10 @@ inline static void *ax_trie_cget(const ax_trie *trie, const ax_seq *key)
 	return trie->tr->get(trie, key);
 }
 
-inline static bool ax_trie_exist(const ax_trie *trie, const ax_seq *key)
+inline static bool ax_trie_exist(const ax_trie *trie, const ax_seq *key, bool *valued)
 {
 	ax_trait_require(trie, trie->tr->exist);
-	return trie->tr->exist(trie, key);
+	return trie->tr->exist(trie, key, valued);
 }
 
 inline static const void *ax_trie_iter_word(const ax_iter *it)

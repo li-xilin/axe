@@ -57,7 +57,7 @@ struct ax_btrie_st
 static void    *trie_put(ax_trie *trie, const ax_seq *key, const void *val);
 static void    *trie_get(const ax_trie *trie, const ax_seq *key);
 static ax_iter  trie_at(const ax_trie *trie, const ax_seq *key);
-static bool     trie_exist(const ax_trie *trie, const ax_seq *key);
+static bool     trie_exist(const ax_trie *trie, const ax_seq *key, bool *valued);
 static bool     trie_erase(ax_trie *trie, const ax_seq *key);
 static bool     trie_prune(ax_trie *trie, const ax_seq *key);
 static ax_fail  trie_rekey(ax_trie *trie, const ax_seq *key_from, const ax_seq *key_to);
@@ -568,7 +568,7 @@ static ax_iter trie_at(const ax_trie *trie, const ax_seq *key)
 	return it;
 }
 
-static bool trie_exist(const ax_trie *trie, const ax_seq *key)
+static bool trie_exist(const ax_trie *trie, const ax_seq *key, bool *valued)
 {
 	CHECK_PARAM_NULL(trie);
 	CHECK_PARAM_NULL(key);
@@ -578,8 +578,8 @@ static bool trie_exist(const ax_trie *trie, const ax_seq *key)
 	if (ax_iter_equal(&it, &end))
 		return false;
 	struct node_st *node = ax_avl_tr.box.iter.get(&it);
-	return !!node->val;
-
+	*valued = !!node->val;
+	return true;
 }
 
 static bool clean_path(ax_map *last) {
