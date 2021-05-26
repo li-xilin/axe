@@ -23,19 +23,37 @@
 #ifndef AX_LOG_H
 #define AX_LOG_H
 
-#define AX_LM_INFO     0
-#define AX_LM_WARNING  1
-#define AX_LM_ERROR    2
+#define AX_LL_DEBUG    0
+#define AX_LL_INFO     1
+#define AX_LL_WARN     2
+#define AX_LL_ERROR    3
+#define AX_LL_FATAL    4
 
-void __ax_log_print (int level, const char*, ...);
+#define AX_LM_NODEBUG (1 << 0)
+#define AX_LM_NOINFO  (1 << 1)
+#define AX_LM_NOWARN  (1 << 2)
+#define AX_LM_NOERROR (1 << 3)
+#define AX_LM_NOFATAL (1 << 4)
 
-#define ax_pinfo(...)    __ax_log_print(AX_LM_INFO, __VA_ARGS__)
-#define ax_pwarning(...) __ax_log_print(AX_LM_WARNING, __VA_ARGS__)
-#define ax_perror(...)   __ax_log_print(AX_LM_ERROR, __VA_ARGS__)
+#define AX_LM_NOLOG \
+	( AX_LM_NODEBUG \
+	| AX_LM_NOINFO \
+	| AX_LM_NOWARN \
+	| AX_LM_NOERROR \
+	| AX_LM_NOFATAL)
 
-#define ax_pinfo_if(_cond, ...)      ((_cond) ? __ax_log_print(AX_LM_INFO, __VA_ARGS__) : (void)0)
-#define ax_pwarning_if(_cond, ...)   ((_cond) ? __ax_log_print(AX_LM_WARNING, __VA_ARGS__) : (void)0)
-#define ax_perror_if(_cond, ...)     ((_cond) ? __ax_log_print(AX_LM_ERROR, __VA_ARGS__) : (void)0)
-#define ax_panic_if(_cond, _lm, ...) ((_cond) ? __ax_log_print((_lm), __VA_ARGS__), abort(): (void)0)
+#define AX_LOG_MAX_LEN 1024
+
+int __ax_log_print(const char *file, const char *func, int level, const char* fmt, ...);
+void ax_log_set_mode(int mode);
+int ax_log_mode();
+void ax_log_set_fp(void *fp);
+void *ax_log_fp();
+
+#define ax_pdebug(...)   __ax_log_print(__FILE__, __func__, AX_LL_DEBUG, __VA_ARGS__)
+#define ax_pinfo(...)    __ax_log_print(__FILE__  __func__, AX_LL_INFO, __VA_ARGS__)
+#define ax_pwarn(...)    __ax_log_print(__FILE__  __func__, AX_LL_WARN, __VA_ARGS__)
+#define ax_perror(...)   __ax_log_print(__FILE__  __func__, AX_LL_ERROR, __VA_ARGS__)
+#define ax_pfatal(...)   __ax_log_print(__FILE__  __func__, AX_LL_FATAL, __VA_ARGS__)
 
 #endif

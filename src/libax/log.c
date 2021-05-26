@@ -26,38 +26,86 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
-static const char *type_info = "[INFO]";
-static const char *type_warn= "[WARN]";
-static const char *type_err= "[ERR]";
+static FILE *g_logfp = NULL;
+static int g_mode = 0;
+	
 
-void __ax_log_print(int level, const char* fmt, ...)
+void ax_log_set_fp(void *fp)
 {
-	va_list vl;
-	char type_buffer[32];
+	g_logfp = fp;
+}
+
+void *ax_log_fp()
+{
+	return g_logfp;
+}
+
+int ax_log_mode()
+{
+	return g_mode;
+}
+
+void ax_log_set_mode(int mode)
+{
+	g_mode = mode;
+}
+
+int __ax_log_print(const char *file, const char *func, int level, const char* fmt, ...)
+{
+
+	static const char *type_debug = "DEBUG";
+	static const char *type_info = "INFO";
+	static const char *type_warn= "WARN";
+	static const char *type_error = "ERR";
+	static const char *type_fatal = "DEBUG";
+
 	const char* type;
 	switch(level)
 	{
-		case AX_LM_INFO:
+		case AX_LL_DEBUG:
+			if (g_mode & AX_LM_NODEBUG)
+				return 0;
+			type = type_debug;
+			break;
+		case AX_LL_INFO:
+			if (g_mode & AX_LM_NOINFO)
+				return 0;
 			type = type_info;
 			break;
-		case AX_LM_WARNING:
+		case AX_LL_WARN:
+			if (g_mode & AX_LM_NOWARN)
+				return 0;
 			type = type_warn;
 			break;
-		case AX_LM_ERROR:
-			type = type_err;
+		case AX_LL_ERROR:
+			if (g_mode & AX_LM_NOERROR)
+				return 0;
+			type = type_error;
+			break;
+		case AX_LL_FATAL:
+			if (g_mode & AX_LM_NOFATAL)
+				return 0;
+			type = type_fatal;
 			break;
 		default:
-			sprintf(type_buffer, "[LOG %d]", level);
-			type = type_buffer;
-			break;
+			errno = EINVAL;
+			return -1;
 	}
 
-	fprintf(stdout, "%s ", type);
+	char buf[AX_LOG_MAX_LEN];
+	buf[sizeof buf - 1] = '\0';
 
+	va_list vl;
 	va_start(vl, fmt);
-	vfprintf(stdout, fmt, vl);
+	vsnprintf(buf, sizeof buf - 1, fmt, vl);
 	va_end(vl);
 
-	fputc('\n', stdout);
+	return fprintf(g_logfp ? g_logfp : stderr,
+			"[%s] %s:%s: %s\n",
+			type, file, func, buf) == -1
+		? -1
+		: 0;
 }
+
