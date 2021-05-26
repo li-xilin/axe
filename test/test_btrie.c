@@ -230,24 +230,28 @@ static void trie_at(axut_runner *r)
 		axut_term(r, "ax_seq_pushl");
 	it = ax_trie_at(btrie.trie, key.seq);
 	axut_assert_int_equal(r, 111, *(int32_t*)ax_iter_get(&it));
+	axut_assert(r, ax_trie_iter_valued(&it));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 2))
 		axut_term(r, "ax_seq_pushl");
 	it = ax_trie_at(btrie.trie, key.seq);
 	axut_assert_int_equal(r, 112, *(int32_t*)ax_iter_get(&it));
+	axut_assert(r, ax_trie_iter_valued(&it));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x2", 1, 1))
 		axut_term(r, "ax_seq_pushl");
 	it = ax_trie_at(btrie.trie, key.seq);
 	axut_assert_int_equal(r, 11, *(int32_t*)ax_iter_get(&it));
+	axut_assert(r, ax_trie_iter_valued(&it));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x1", 1))
 		axut_term(r, "ax_seq_pushl");
 	it = ax_trie_at(btrie.trie, key.seq);
 	axut_assert_int_equal(r, 1, *(int32_t*)ax_iter_get(&it));
+	axut_assert(r, ax_trie_iter_valued(&it));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x2", 1, 2))
@@ -255,6 +259,7 @@ static void trie_at(axut_runner *r)
 	it = ax_trie_at(btrie.trie, key.seq);
 	end = ax_box_end(btrie.box);
 	axut_assert(r, !ax_iter_equal(&it, &end));
+	axut_assert(r, !ax_trie_iter_valued(&it));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x4", 1, 1, 1, 1))
@@ -277,45 +282,48 @@ static void trie_exist(axut_runner *r)
 
 	key = ax_list_create(ax_base_local(base), ax_trie_key_tr(btrie.trie));
 
+	bool valued;
+
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 1))
 		axut_term(r, "ax_seq_pushl");
-	axut_assert(r, ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 2))
 		axut_term(r, "ax_seq_pushl");
-	axut_assert(r, ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x2", 1, 1))
 		axut_term(r, "ax_seq_pushl");
-	axut_assert(r, ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_box_clear(key.box);
 	key = ax_list_create(ax_base_local(base), ax_trie_key_tr(btrie.trie));
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 2, 1))
 		axut_term(r, "ax_seq_pushl");
-	axut_assert(r, ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x1", 1))
 		axut_term(r, "ax_seq_pushl");
-	axut_assert(r, ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_box_clear(key.box);
-	axut_assert(r, ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, ax_trie_exist(btrie.trie, key.seq, NULL));
 
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x2", 1, 2))
 		axut_term(r, "ax_seq_pushl");
-	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, ax_trie_exist(btrie.trie, key.seq, &valued));
+	axut_assert(r, !valued);
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 2, 2))
 		axut_term(r, "ax_seq_pushl");
-	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_base_leave(base, d);
 
@@ -336,36 +344,36 @@ static void trie_erase(axut_runner *r)
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 1))
 		axut_term(r, "ax_seq_pushl");
 	ax_trie_erase(btrie.trie, key.seq);
-	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 2))
 		axut_term(r, "ax_seq_pushl");
 	ax_trie_erase(btrie.trie, key.seq);
-	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x2", 1, 1))
 		axut_term(r, "ax_seq_pushl");
 	ax_trie_erase(btrie.trie, key.seq);
-	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_box_clear(key.box);
 	key = ax_list_create(ax_base_local(base), ax_trie_key_tr(btrie.trie));
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 2, 1))
 		axut_term(r, "ax_seq_pushl");
 	ax_trie_erase(btrie.trie, key.seq);
-	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x1", 1))
 		axut_term(r, "ax_seq_pushl");
 	ax_trie_erase(btrie.trie, key.seq);
-	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_box_clear(key.box);
 	ax_trie_erase(btrie.trie, key.seq);
-	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_base_leave(base, d);
 
@@ -387,7 +395,7 @@ static void trie_prune(axut_runner *r)
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 1))
 		axut_term(r, "ax_seq_pushl");
 	ax_trie_prune(btrie.trie, key.seq);
-	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 	axut_assert_uint_equal(r, 6, ax_box_size(btrie.box));
 
 	btrie = make_test_btrie(base);
@@ -395,7 +403,7 @@ static void trie_prune(axut_runner *r)
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 2))
 		axut_term(r, "ax_seq_pushl");
 	ax_trie_prune(btrie.trie, key.seq);
-	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 	axut_assert_uint_equal(r, 6, ax_box_size(btrie.box));
 
 	{
@@ -409,17 +417,17 @@ static void trie_prune(axut_runner *r)
 		ax_box_clear(key.box);
 		if (ax_seq_pushl(key.seq, "i32x2", 1, 1))
 			axut_term(r, "ax_seq_pushl");
-		axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+		axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 
 		ax_box_clear(key.box);
 		if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 1))
 			axut_term(r, "ax_seq_pushl");
-		axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+		axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 
 		ax_box_clear(key.box);
 		if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 2))
 			axut_term(r, "ax_seq_pushl");
-		axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+		axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 	}
 
 	{
@@ -431,12 +439,12 @@ static void trie_prune(axut_runner *r)
 		axut_assert_uint_equal(r, 2, ax_box_size(btrie.box));
 
 		ax_box_clear(key.box);
-		axut_assert(r, ax_trie_exist(btrie.trie, key.seq));
+		axut_assert(r, ax_trie_exist(btrie.trie, key.seq, NULL));
 
 		ax_box_clear(key.box);
 		if (ax_seq_pushl(key.seq, "i32x3", 2, 1, 1))
 			axut_term(r, "ax_seq_pushl");
-		axut_assert(r, ax_trie_exist(btrie.trie, key.seq));
+		axut_assert(r, ax_trie_exist(btrie.trie, key.seq, NULL));
 	}
 
 	{
@@ -446,7 +454,7 @@ static void trie_prune(axut_runner *r)
 		axut_assert_uint_equal(r, 0, ax_box_size(btrie.box));
 
 		ax_box_clear(key.box);
-		axut_assert(r, !ax_trie_exist(btrie.trie, key.seq));
+		axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 	}
 
 	ax_base_leave(base, d);
