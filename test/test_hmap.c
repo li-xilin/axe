@@ -57,7 +57,7 @@ static void map_erase(axut_runner* r)
 	for (int i = 0; i < N; i++) {
 		ax_map_erase(hmap_r.map, &i);
 	}
-	axut_assert(r, ax_box_size(hmap_r.box) == 0);
+	axut_assert_uint_equal(r, 0, ax_box_size(hmap_r.box));
 
 	for (int i = 0; i < N; i++) {
 		axut_assert(r, table[i] == 1);
@@ -87,7 +87,7 @@ static void iter_erase(axut_runner* r)
 		it = ax_box_begin(hmap_r.box);
 	}
 
-	axut_assert(r, ax_box_size(hmap_r.box) == 0);
+	axut_assert_uint_equal(r, 0, ax_box_size(hmap_r.box));
 
 	for (int i = 0; i < N; i++) {
 		axut_assert(r, table[i] == 1);
