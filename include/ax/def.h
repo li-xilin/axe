@@ -30,7 +30,7 @@ typedef bool ax_fail;
 
 typedef uint8_t ax_byte;
 
-typedef size_t ax_fast_uint;
+typedef uint_fast32_t ax_fast_uint;
 
 typedef void (*ax_unary_f)(void *out, const void *in, void *arg);
 
@@ -41,5 +41,7 @@ typedef void (*ax_binary_f)(void *out, const void *in1, const void *in2, void *a
 
 #define AX_IMAX_BITS(m) ((m) /((m)%0x3fffffffL+1) /0x3fffffffL %0x3fffffffL *30 \
                   + (m)%0x3fffffffL /((m)%31+1)/31%31*5 + 4-12/((m)%31+3))
+
+#define ax_block for(int __ax_block_flag = 0; __ax_block_flag != 1; __ax_block_flag = 1)
 
 #endif
