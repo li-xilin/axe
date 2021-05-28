@@ -105,9 +105,26 @@ static void foreach(axut_runner *r)
 	ax_base *base = axut_runner_arg(r);
 	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
 			ax_stuff_traits(AX_ST_I32));
-	for (int32_t i = 0; i < 50; i++) {
+
+	int max = 50;
+	for (int32_t i = 0; i < max; i++) {
 		ax_map_put(avl_r.map, &i, &i);
 	}
+
+	int count = 0;
+	ax_map_foreach(avl_r.map, const int *, k, int *, v) {
+		axut_assert_uint_equal(r, *k, *v);
+		count++;
+	}
+	axut_assert_int_equal(r, max, count);
+
+	count = 0;
+	ax_map_cforeach(avl_r.map, const int *, k, const int *, v) {
+		if (*k == 10)
+			break;
+		count++;
+	}
+	axut_assert_int_equal(r, 10, count);
 
 	ax_iter it = ax_box_begin(avl_r.box), end = ax_box_end(avl_r.box);
 	while (!ax_iter_equal(&it, &end)) {

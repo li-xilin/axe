@@ -27,26 +27,27 @@
 
 #define AX_MAP_NAME AX_BOX_NAME ".map"
 
-#define ax_map_foreach(_map, _key_type, _key, _val_type, _val)                           \
-	for ( int __ax_foreach_##_key##_flag = 1 ; __ax_foreach_##_key##_flag ; )        \
-	for (_key_type _key; __ax_foreach_##_key##_flag ; )                              \
-	for (_val_type _val; __ax_foreach_##_key##_flag ; __ax_foreach_##_key##_flag = 0)\
-	ax_box_iterate(ax_r(map, _map).box, _key##_iter)                                 \
-	for (	__ax_foreach_##_key##_flag = 1, _key = ax_map_iter_key(&_key##_iter),    \
-      			_val = ax_iter_get(&_key##_iter);                                \
-		__ax_foreach_##_key##_flag ;                                             \
-		__ax_foreach_##_key##_flag = 0)
+#define ax_map_foreach(_map, _key_type, _key, _val_type, _val)       \
+	for ( int _foreach_cont = 1; _foreach_cont; )                \
+	for (_key_type _key; _foreach_cont; _foreach_cont = 0)       \
+	for (_val_type _val; _foreach_cont--; _foreach_cont = 0)     \
+	_ax_box_iterate(ax_r(map, _map).box, _key, !_foreach_cont)   \
+	for (_key = ax_map_iter_key(&_key##_cur),                    \
+			_val = ax_iter_get(&_key##_cur),             \
+			_foreach_cont = 1;                           \
+			_foreach_cont;                               \
+			_foreach_cont = 0)
 
-#define ax_map_cforeach(_map, _key_type, _key, _val_type, _val)                          \
-	for ( int __ax_foreach_##_key##_flag = 1 ; __ax_foreach_##_key##_flag ; )        \
-	for (_key_type _key; __ax_foreach_##_key##_flag ; )                              \
-	for (_val_type _val; __ax_foreach_##_key##_flag ; __ax_foreach_##_key##_flag = 0)\
-	ax_box_citerate(ax_cr(map, _map).box, _key##_iter)                               \
-	for (	__ax_foreach_##_key##_flag = 1, _key = ax_map_citer_key(&_key##_iter),   \
-      			_val = ax_citer_get(&_key##_iter);                               \
-		__ax_foreach_##_key##_flag ;                                             \
-		__ax_foreach_##_key##_flag = 0)
-
+#define ax_map_cforeach(_map, _key_type, _key, _val_type, _val)      \
+	for ( int _foreach_cont = 1; _foreach_cont; )                \
+	for (_key_type _key; _foreach_cont; _foreach_cont = 0)       \
+	for (_val_type _val; _foreach_cont--; _foreach_cont = 0)     \
+	_ax_box_citerate(ax_cr(map, _map).box, _key, !_foreach_cont) \
+	for (_key = ax_map_citer_key(&_key##_cur),                   \
+			_val = ax_citer_get(&_key##_cur),            \
+			_foreach_cont = 1;                           \
+			_foreach_cont;                               \
+			_foreach_cont = 0)
 
 typedef struct ax_map_st ax_map;
 typedef struct ax_map_trait_st ax_map_trait;
@@ -54,7 +55,7 @@ typedef struct ax_map_trait_st ax_map_trait;
 typedef void       *(*ax_map_put_f)   (ax_map *map, const void *key, const void *val);
 typedef void       *(*ax_map_get_f)   (const ax_map *map, const void *key);
 typedef ax_iter     (*ax_map_at_f)    (const ax_map *map, const void *key);
-typedef bool     (*ax_map_exist_f) (const ax_map *map, const void *key);
+typedef bool        (*ax_map_exist_f) (const ax_map *map, const void *key);
 typedef void       *(*ax_map_chkey_f) (ax_map *map, const void *key, const void *new_key);
 typedef ax_fail     (*ax_map_erase_f) (ax_map *map, const void *key);
 typedef const void *(*ax_map_it_key_f)(const ax_citer *it);
@@ -100,7 +101,6 @@ typedef union
 	ax_one *one;
 	ax_map_cr c;
 } ax_map_r;
-
 
 inline static void *ax_map_put(ax_map *map, const void *key, const void *val)
 {
