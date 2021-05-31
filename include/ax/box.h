@@ -32,17 +32,17 @@
 typedef struct ax_box_trait_st ax_box_trait;
 #endif
 
-#define _ax_box_iterate(_box, _name, _cond)                          \
-	for (ax_iter _name##_cur = ax_box_begin(_box),               \
-			_name##_end= ax_box_end(_box);               \
-		!ax_iter_equal(&_name##_cur, &_name##_end) && _cond; \
-		ax_iter_next(&_name##_cur))
+#define _ax_box_iterate(_box, _it, _cond)                  \
+	for (ax_iter _it = ax_box_begin(_box),             \
+			_it_end = ax_box_end(_box);        \
+		!ax_iter_equal(&_it, &_it_end) && (_cond); \
+		ax_iter_next(&_it))
 
-#define _ax_box_citerate(_box, _name, _cond)                          \
-	for (ax_citer _name##_cur = ax_box_cbegin(_box),              \
-			_name##_end= ax_box_cend(_box);               \
-		!ax_citer_equal(&_name##_cur, &_name##_end) && _cond; \
-		ax_citer_next(&_name##_cur))
+#define _ax_box_citerate(_box, _it, _cond)                  \
+	for (ax_citer _it = ax_box_cbegin(_box),            \
+			_it_end = ax_box_cend(_box);        \
+		!ax_citer_equal(&_it, &_it_end) && (_cond); \
+		ax_citer_next(&_it))
 
 #define ax_box_iterate(_box, _it) _ax_box_iterate(_box, _it, true)
 
