@@ -51,6 +51,7 @@ typedef ax_iter (*ax_trie_it_begin_f)(const ax_citer *it);
 typedef ax_iter (*ax_trie_it_end_f)(const ax_citer *it);
 typedef bool (*ax_trie_it_parent_f)(const ax_citer *it, ax_iter *parent);
 typedef bool (*ax_trie_it_valued_f)(const ax_citer *it);
+typedef void (*ax_trie_it_clean_f)(const ax_iter *it);
 
 
 struct ax_trie_trait_st
@@ -71,6 +72,7 @@ struct ax_trie_trait_st
 	const ax_trie_it_end_f it_end;
 	const ax_trie_it_parent_f it_parent;
 	const ax_trie_it_valued_f it_valued;
+	const ax_trie_it_clean_f clean;
 };
 
 typedef struct ax_trie_env_st
