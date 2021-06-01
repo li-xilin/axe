@@ -29,7 +29,7 @@ all clean:
 
 install:
 	install -m 755 -d $(DESTDIR)/lib $(DESTDIR)/include $(DESTDIR)/include/ax $(DESTDIR)/include/axut
-	install -m 644 lib/libaxe.a lib/libaxut.a $(DESTDIR)/lib
+	install -m 644 lib/libax.a lib/libaxut.a $(DESTDIR)/lib
 	install -m 644 include/ax.h $(DESTDIR)/include
 	install -m 644 include/ax/*.h $(DESTDIR)/include/ax
 	install -m 644 include/axut.h $(DESTDIR)/include
