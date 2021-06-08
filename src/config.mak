@@ -29,10 +29,10 @@ CFLAGS = -Wall --pedantic -Werror -std=c99 -fPIC\
 	 -I$(ROOT)/src/include \
 	 -I$(INCLUDE)\
 
-ifeq ($(DEBUG), 1)
-	CFLAGS += -O0 -DAX_DEBUG -g
-else
+ifeq ($(DEBUG), 0)
 	CFLAGS += -O2
+else
+	CFLAGS += -O0 -DAX_DEBUG -g
 endif
 
 
