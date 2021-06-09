@@ -22,7 +22,6 @@
 
 #include <ax/buff.h>
 #include <ax/any.h>
-#include <ax/base.h>
 #include <ax/scope.h>
 #include <ax/def.h>
 
@@ -63,10 +62,7 @@ static ax_any *any_copy(const ax_any *any)
 {
 	CHECK_PARAM_NULL(any);
 
-	const ax_one *src_one = ax_cr(any, any).one;
 	const ax_buff *src_buff = (const ax_buff *)any;
-
-	ax_base *base = ax_one_base(src_one);
 
 	ax_buff *dst_buff = NULL;
 	void *buffer = NULL;
@@ -87,7 +83,6 @@ static ax_any *any_copy(const ax_any *any)
 
 	dst_buff->_any.env.scope.macro = NULL;
 	dst_buff->_any.env.scope.micro = 0;
-	ax_scope_attach(ax_base_local(base), ax_r(buff, dst_buff).one);
 	return ax_r(buff, dst_buff).any;
 fail:
 	free(buffer);
@@ -99,11 +94,8 @@ static ax_any *any_move(ax_any *any)
 {
 	CHECK_PARAM_NULL(any);
 
-	const ax_one *src_one = ax_cr(any, any).one;
 	ax_buff *src_buff = (ax_buff *) any, *dst_buff = NULL;
 	void *buf = NULL;
-
-	ax_base *base = ax_one_base(src_one);
 
 	dst_buff = malloc(sizeof(ax_buff));
 	if (!dst_buff) {
@@ -122,7 +114,6 @@ static ax_any *any_move(ax_any *any)
 	
 	dst_buff->_any.env.scope.micro = 0;
 	dst_buff->_any.env.scope.macro = NULL;
-	ax_scope_attach(ax_base_local(base), ax_r(buff,dst_buff).one);
 	return ax_r(buff, dst_buff).any;
 fail:
 	free(dst_buff);
@@ -165,10 +156,8 @@ static const ax_any_trait any_trait =
 	.copy = any_copy
 };
 
-ax_any *__ax_buff_construct(ax_base *base)
+ax_any *__ax_buff_construct()
 {
-	CHECK_PARAM_NULL(base);
-
 	ax_buff *buff = NULL;
 
 	buff = malloc(sizeof(ax_buff));
@@ -180,7 +169,6 @@ ax_any *__ax_buff_construct(ax_base *base)
 		._any = {
 			.tr = &any_trait,
 			.env = {
-				.base = base,
 				.scope = { NULL },
 			}
 		},
@@ -202,8 +190,7 @@ ax_buff_r ax_buff_create(ax_scope *scope)
 {
 	CHECK_PARAM_NULL(scope);
 
-	ax_base *base = ax_one_base(ax_r(scope, scope).one);
-	ax_any *any = __ax_buff_construct(base);
+	ax_any *any = __ax_buff_construct();
 	ax_buff_r buff_r = { .any = any };
 	if (!any)
 		return buff_r;

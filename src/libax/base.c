@@ -71,6 +71,8 @@ fail:
 
 void ax_base_destroy(ax_base* base)
 {
+	if (!base)
+		return;
 	ax_scope_destroy(base->global_scope);
 	free(base->stack);
 	free(base);

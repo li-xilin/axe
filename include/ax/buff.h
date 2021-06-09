@@ -52,7 +52,7 @@ typedef union
 	ax_buff_cr c;
 } ax_buff_r;
 
-ax_any *__ax_buff_construct(ax_base *base);
+ax_any *__ax_buff_construct();
 
 ax_buff_r ax_buff_create(ax_scope *scope);
 

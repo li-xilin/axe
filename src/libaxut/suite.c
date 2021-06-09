@@ -132,15 +132,14 @@ static const ax_stuff_trait case_trait = {
 
 };
 
-ax_one *__axut_suite_construct(ax_base *base, const char* name)
+ax_one *__axut_suite_construct(const char* name)
 {
-	CHECK_PARAM_NULL(base);
-
+	CHECK_PARAM_NULL(name);
 	axut_suite *suite = malloc(sizeof(axut_suite));
 	if (suite == NULL)
 		return NULL;
 
-	ax_seq *tctab = __ax_vector_construct(base, &case_trait);
+	ax_seq *tctab = __ax_vector_construct(&case_trait);
 	if (tctab == NULL) {
 		free(suite);
 		return NULL;
@@ -152,7 +151,6 @@ ax_one *__axut_suite_construct(ax_base *base, const char* name)
 		._one = {
 			.tr = &one_trait,
 				.env = {
-					.base = base,
 					.scope = { NULL },
 				},
 		},
@@ -168,8 +166,7 @@ ax_one *__axut_suite_construct(ax_base *base, const char* name)
 axut_suite *axut_suite_create(ax_scope *scope, const char *name)
 {
 	CHECK_PARAM_NULL(scope);
-	ax_base *base = ax_one_base(ax_r(scope, scope).one);
-	axut_suite_role suite_rl = { .one = __axut_suite_construct(base, name) };
+	axut_suite_role suite_rl = { .one = __axut_suite_construct(name) };
 	if (suite_rl.one == NULL)
 		return suite_rl.suite;
 	ax_scope_attach(scope, suite_rl.one);

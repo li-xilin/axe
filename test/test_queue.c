@@ -21,6 +21,7 @@
  */
 
 #include "ax/queue.h"
+#include "ax/base.h"
 
 #include "axut.h"
 

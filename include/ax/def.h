@@ -44,4 +44,6 @@ typedef void (*ax_binary_f)(void *out, const void *in1, const void *in2, void *a
 
 #define ax_block for(int __ax_block_flag = 0; __ax_block_flag != 1; __ax_block_flag = 1)
 
+#define ax_unused(_var) ((void)&(_var))
+
 #endif

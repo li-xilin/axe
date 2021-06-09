@@ -45,7 +45,7 @@ typedef union
 	ax_one *one;
 } ax_queue_r;
 
-ax_tube *__ax_queue_construct(ax_base *base, const ax_stuff_trait *elem_tr);
+ax_tube *__ax_queue_construct(const ax_stuff_trait *elem_tr);
 
 ax_queue_r ax_queue_create(ax_scope *scope, const ax_stuff_trait *elem_tr);
 

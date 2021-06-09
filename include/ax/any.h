@@ -90,5 +90,7 @@ inline static ax_any *ax_any_move(ax_any* any)
 
 const ax_stuff_trait *ax_any_stuff_trait();
 
+ax_any *ax_any_seal(ax_scope *scope, ax_any *any);
+
 #endif
 

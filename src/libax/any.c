@@ -21,6 +21,7 @@
  */
 
 #include <ax/any.h>
+#include <ax/scope.h>
 #include <ax/stuff.h>
 #include <ax/debug.h>
 #include <ax/def.h>
@@ -95,5 +96,14 @@ static const ax_stuff_trait any_stuff_trait = {
 const ax_stuff_trait* __ax_any_stuff_trait()
 {
 	return &any_stuff_trait;
+}
+
+ax_any *ax_any_seal(ax_scope *scope, ax_any *any)
+{
+	if (!any)
+		return NULL;
+	if (ax_scope_attach(scope, ax_r(any, any).one))
+		return NULL;
+	return any;
 }
 

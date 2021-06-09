@@ -21,7 +21,6 @@
  */
 
 #include <ax/list.h>
-#include <ax/base.h>
 #include <ax/def.h>
 #include <ax/scope.h>
 #include <ax/any.h>
@@ -352,12 +351,10 @@ static ax_any *any_copy(const ax_any *any)
 	ax_list_cr self_r = { .any = any };
 	const ax_stuff_trait *etr = self_r.seq->env.elem_tr;
 
-	ax_base *base = ax_one_base(self_r.one);
-	ax_list_r new_r = { .seq = __ax_list_construct(base, etr) };
+	ax_list_r new_r = { .seq = __ax_list_construct(etr) };
 	if (new_r.one == NULL) {
 		return NULL;
 	}
-
 
 	ax_citer it = ax_box_cbegin(self_r.box);
 	ax_citer end = ax_box_cend(self_r.box);
@@ -373,7 +370,6 @@ static ax_any *any_copy(const ax_any *any)
 
 	new_r.list->_seq.env.one.scope.macro = NULL;
 	new_r.list->_seq.env.one.scope.micro = 0;
-	ax_scope_attach(ax_base_local(base), new_r.one);
 	return (ax_any*)new_r.any;
 }
 
@@ -383,7 +379,6 @@ static ax_any *any_move(ax_any *any)
 
 	ax_list_r self_r = { .any = any };
 
-	ax_base *base = ax_one_base(self_r.one);
 	ax_list *new = malloc(sizeof(ax_list));
 	if (new == NULL) {
 		return NULL;
@@ -396,7 +391,6 @@ static ax_any *any_move(ax_any *any)
 
 	new->_seq.env.one.scope.macro = NULL;
 	new->_seq.env.one.scope.micro = 0;
-	ax_scope_attach(ax_base_local(base), ax_r(list, new).one);
 	return (ax_any*)new;}
 
 static size_t box_size(const ax_box *box)
@@ -848,9 +842,8 @@ const ax_seq_trait ax_list_tr =
 };
 
 
-ax_seq* __ax_list_construct(ax_base *base,const ax_stuff_trait *elem_tr)
+ax_seq* __ax_list_construct(const ax_stuff_trait *elem_tr)
 {
-	CHECK_PARAM_NULL(base);
 	CHECK_PARAM_NULL(elem_tr);
 
 	CHECK_PARAM_NULL(elem_tr->init);
@@ -867,7 +860,6 @@ ax_seq* __ax_list_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 			.tr = &ax_list_tr,
 			.env = {
 				.one = {
-					.base = base,
 					.scope = { NULL },
 				},
 				.elem_tr = elem_tr
@@ -885,8 +877,7 @@ ax_list_r ax_list_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
 	CHECK_PARAM_NULL(scope);
 	CHECK_PARAM_NULL(elem_tr);
 
-	ax_base *base = ax_one_base(ax_r(scope, scope).one);
-	ax_list_r self_r = { .seq = __ax_list_construct(base, elem_tr) };
+	ax_list_r self_r = { .seq = __ax_list_construct(elem_tr) };
 	ax_scope_attach(scope, self_r.one);
 	return self_r;
 }

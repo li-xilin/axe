@@ -42,7 +42,7 @@ typedef void    (*ax_tube_pop_f)    (ax_tube *tube);
 typedef void   *(*ax_tube_prime_f)  (const ax_tube *tube);
 typedef size_t  (*ax_tube_size_f)   (const ax_tube *tube);
 
-typedef ax_tube *(ax_tube_construct_f)(ax_base *base, const ax_stuff_trait *elem_tr);
+typedef ax_tube *(ax_tube_construct_f)(const ax_stuff_trait *elem_tr);
 
 struct ax_tube_trait_st
 {

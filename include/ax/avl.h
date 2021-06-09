@@ -52,13 +52,15 @@ typedef union
 
 extern const ax_map_trait ax_avl_tr;
 
-ax_map *__ax_avl_construct(ax_base* base,
+ax_map *__ax_avl_construct(
 		const ax_stuff_trait* key_tr,
-		const ax_stuff_trait* val_tr);
+		const ax_stuff_trait* val_tr
+);
 
 ax_avl_r ax_avl_create(ax_scope *scope,
 		const ax_stuff_trait *key_tr,
-		const ax_stuff_trait *val_tr);
+		const ax_stuff_trait *val_tr
+);
 
 #endif
 

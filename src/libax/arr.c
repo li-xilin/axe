@@ -21,7 +21,6 @@
  */
 
 #include <ax/arr.h>
-#include <ax/base.h>
 #include <ax/def.h>
 #include <ax/iter.h>
 #include <ax/debug.h>
@@ -430,9 +429,8 @@ const ax_seq_trait ax_arr_tr =
 };
 
 
-ax_arr_r ax_arr_make(ax_arr *arr, ax_base *base, const ax_stuff_trait *elem_tr, void *ptr, size_t size)
+ax_arr_r ax_arr_make(ax_arr *arr, const ax_stuff_trait *elem_tr, void *ptr, size_t size)
 {
-	CHECK_PARAM_NULL(base);
 	CHECK_PARAM_NULL(elem_tr);
 	CHECK_PARAM_NULL(elem_tr->copy);
 	CHECK_PARAM_NULL(elem_tr->equal);
@@ -446,7 +444,6 @@ ax_arr_r ax_arr_make(ax_arr *arr, ax_base *base, const ax_stuff_trait *elem_tr, 
 			.tr = &ax_arr_tr,
 			.env = {
 				.one = {
-					.base = base,
 					.scope = { NULL }
 				},
 				.elem_tr = elem_tr

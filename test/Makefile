@@ -2,7 +2,7 @@ ROOT = ..
 CC = gcc
 CFLAGS = -I$(ROOT)/include -std=c99 --pedantic -Werror
 
-ifeq ($(DEBUG), 1)
+ifneq ($(DEBUG), 0)
 	CFLAGS += -O0 -DAX_DEBUG -g
 else
 	CFLAGS += -O2

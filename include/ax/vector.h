@@ -49,7 +49,7 @@ typedef union
 
 extern const ax_seq_trait ax_vector_tr;
 
-ax_seq*__ax_vector_construct(ax_base* base, const ax_stuff_trait* elem_tr);
+ax_seq*__ax_vector_construct(const ax_stuff_trait* elem_tr);
 
 ax_vector_r ax_vector_create(ax_scope* scope, const ax_stuff_trait* elem_tr);
 

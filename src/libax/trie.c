@@ -22,13 +22,11 @@
 
 #include <ax/trie.h>
 #include <ax/list.h>
-#include <ax/base.h>
 
 ax_fail ax_trie_enum(ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx)
 {
 	ax_fail retval = false;
 	ax_trie_r self_r = { trie };
-	ax_base *base = ax_one_base(self_r.one);
 	
 	ax_stuff_trait iter_tr = {
 		.size = sizeof(ax_iter),
@@ -40,12 +38,12 @@ ax_fail ax_trie_enum(ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx)
 	ax_list_r list_r = { NULL };
 	ax_list_r key_r  = { NULL };
 
-	list_r = ax_list_create(ax_base_local(base), &iter_tr);
+	list_r.seq = __ax_list_construct(&iter_tr);
 	if (!list_r.one) {
 		retval = true;
 		goto out;
 	}
-	key_r = ax_list_create(ax_base_local(base), self_r.trie->env.key_tr);
+	key_r.seq = __ax_list_construct(self_r.trie->env.key_tr);
 	if (!key_r.one) {
 		retval = true;
 		goto out;

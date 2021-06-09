@@ -27,7 +27,6 @@
 #include <ax/iter.h>
 #include <ax/scope.h>
 #include <ax/debug.h>
-#include <ax/base.h>
 #include <ax/mem.h>
 
 #include <string.h>
@@ -670,10 +669,9 @@ static ax_any *any_copy(const ax_any *any)
 	CHECK_PARAM_NULL(any);
 
 	ax_avl_r src_r = { .any = (ax_any *)any };
-	ax_base *base = ax_one_base(src_r.one);
 	const ax_stuff_trait *ktr = src_r.map->env.key_tr;
 	const ax_stuff_trait *vtr = src_r.map->env.val_tr;
-	ax_avl_r dst_r = { .map = __ax_avl_construct(base, ktr, vtr)};
+	ax_avl_r dst_r = { .map = __ax_avl_construct(ktr, vtr)};
 
 	ax_map_cforeach(src_r.map, const void *, key, const void *, val) {
 		if (!ax_map_put(dst_r.map, key, val))
@@ -682,8 +680,6 @@ static ax_any *any_copy(const ax_any *any)
 
 	dst_r.avl->_map.env.one.scope.macro = NULL;
 	dst_r.avl->_map.env.one.scope.micro = 0;
-	ax_scope_attach(ax_base_local(base), dst_r.one);
-
 	return dst_r.any;
 fail:
 	ax_one_free(dst_r.one);
@@ -695,17 +691,12 @@ static ax_any *any_move(ax_any *any)
 	CHECK_PARAM_NULL(any);
 
 	ax_avl_r src_r = { .any = any };
-	ax_base *base = ax_one_base(src_r.one);
-
 	ax_avl *dst = malloc(sizeof(ax_avl));
 	memcpy(dst, src_r.avl, sizeof(ax_avl));
 	src_r.avl->size = 0;
 
 	dst->_map.env.one.scope.macro = NULL;
 	dst->_map.env.one.scope.micro = 0;
-
-	ax_scope_attach(ax_base_local(base), ax_r(avl, dst).one);
-
 	return (ax_any *) dst;
 }
 
@@ -872,10 +863,8 @@ const ax_map_trait ax_avl_tr =
 	.itkey = map_it_key
 };
 
-ax_map *__ax_avl_construct(ax_base* base, const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr)
+ax_map *__ax_avl_construct(const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr)
 {
-	CHECK_PARAM_NULL(base);
-
 	CHECK_PARAM_NULL(key_tr);
 	CHECK_PARAM_NULL(key_tr->less);
 	CHECK_PARAM_NULL(key_tr->copy);
@@ -894,7 +883,6 @@ ax_map *__ax_avl_construct(ax_base* base, const ax_stuff_trait* key_tr, const ax
 			.tr = &ax_avl_tr,
 			.env = {
 				.one = {
-					.base = base,
 					.scope = { NULL },
 				},
 				.key_tr = key_tr,
@@ -915,8 +903,7 @@ ax_avl_r ax_avl_create(ax_scope *scope, const ax_stuff_trait *key_tr, const ax_s
 	CHECK_PARAM_NULL(key_tr);
 	CHECK_PARAM_NULL(val_tr);
 
-	ax_base *base = ax_one_base(ax_r(scope, scope).one);
-	ax_avl_r avl_r =  { .map = __ax_avl_construct(base, key_tr, val_tr) };
+	ax_avl_r avl_r =  { .map = __ax_avl_construct(key_tr, val_tr) };
 	if (avl_r.one == NULL)
 		return avl_r;
 	ax_scope_attach(scope, avl_r.one);

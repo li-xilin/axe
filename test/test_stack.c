@@ -21,6 +21,7 @@
  */
 
 #include "ax/stack.h"
+#include "ax/base.h"
 
 #include "axut.h"
 

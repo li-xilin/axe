@@ -23,7 +23,6 @@
 #include <ax/btrie.h>
 #include <ax/avl.h>
 #include <ax/list.h>
-#include <ax/base.h>
 #include <ax/def.h>
 #include <ax/scope.h>
 #include <ax/any.h>
@@ -237,7 +236,7 @@ static void one_free(ax_one *one)
 	ax_btrie_r self_r = { .one = one };
 	ax_scope_detach(one);
 	box_clear(self_r.box);
-	ax_one_free(self_r.btrie->root_r.one);
+	ax_avl_tr.box.any.one.free(self_r.btrie->root_r.one);
 	free(one);
 }
 
@@ -474,7 +473,6 @@ static struct node_st *make_path(ax_trie *trie, const ax_seq *key)
 	ax_assert(trie->env.key_tr == key->env.elem_tr, "invalid element trait for the key");
 
 	ax_btrie_r self_r = { .trie = trie };
-	ax_base *base = ax_one_base(self_r.one);
 
 	ax_citer key_it;
 	struct node_st *last_node;
@@ -493,7 +491,7 @@ static struct node_st *make_path(ax_trie *trie, const ax_seq *key)
 
 	int count = 0;
 	for (size_t i = 0; i < ins_count; i++) {
-		ax_map *new_submap = __ax_avl_construct(base, self_r.btrie->_trie.env.key_tr, &node_tr);
+		ax_map *new_submap = __ax_avl_construct(self_r.btrie->_trie.env.key_tr, &node_tr);
 		new_submap->env.one.scope.macro = self_r.one;
 		if (!new_submap) {
 			goto fail;
@@ -674,7 +672,7 @@ static void rec_remove(ax_btrie *self, ax_map *map)
 			self->size--;
 		}
 		ax_one_free(node->submap_r.one);
-		ax_iter_erase(&cur);
+		ax_avl_tr.box.iter.erase(&cur);
 	}
 }
 
@@ -840,10 +838,8 @@ const ax_trie_trait ax_btrie_tr =
 	.it_valued = trie_it_valued
 };
 
-ax_trie *__ax_btrie_construct(ax_base *base,const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)
+ax_trie *__ax_btrie_construct(const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)
 {
-	CHECK_PARAM_NULL(base);
-
 	CHECK_PARAM_NULL(key_tr);
 	CHECK_PARAM_NULL(key_tr->equal);
 	CHECK_PARAM_NULL(key_tr->hash);
@@ -862,7 +858,7 @@ ax_trie *__ax_btrie_construct(ax_base *base,const ax_stuff_trait *key_tr, const 
 		goto fail;
 	}
 
-	root = __ax_avl_construct(base, ax_stuff_traits(AX_ST_NIL), &node_tr);
+	root = __ax_avl_construct(ax_stuff_traits(AX_ST_NIL), &node_tr);
 	if (!root) {
 		goto fail;
 	}
@@ -874,7 +870,6 @@ ax_trie *__ax_btrie_construct(ax_base *base,const ax_stuff_trait *key_tr, const 
 			.tr = &ax_btrie_tr,
 			.env = {
 				.one = {
-					.base = base,
 					.scope = { NULL },
 				},
 				.key_tr = key_tr,
@@ -899,8 +894,7 @@ ax_btrie_r ax_btrie_create(ax_scope *scope, const ax_stuff_trait *key_tr, const 
 	CHECK_PARAM_NULL(key_tr);
 	CHECK_PARAM_NULL(val_tr);
 
-	ax_base *base = ax_one_base(ax_r(scope, scope).one);
-	ax_btrie_r self_r = { .trie = __ax_btrie_construct(base, key_tr, val_tr) };
+	ax_btrie_r self_r = { .trie = __ax_btrie_construct(key_tr, val_tr) };
 	ax_scope_attach(scope, self_r.one);
 	return self_r;
 }

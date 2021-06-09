@@ -24,6 +24,7 @@
 #include "ax/avl.h"
 #include "ax/list.h"
 #include "ax/oper.h"
+#include "ax/base.h"
 
 #include "axut.h"
 

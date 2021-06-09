@@ -26,7 +26,6 @@
 #include <ax/str.h>
 #include <ax/iter.h>
 #include <ax/scope.h>
-#include <ax/base.h>
 #include <ax/mem.h>
 #include <ax/log.h>
 
@@ -276,7 +275,6 @@ static ax_any* any_copy(const ax_any* any)
 	CHECK_PARAM_NULL(any);
 
 	ax_string_r self_r = { .any = (ax_any*)any };
-	ax_base *base = ax_one_base(self_r.one);
 
 	ax_buff_r new_buf_r = { NULL };
 	ax_string_r new_str_r = { NULL };
@@ -294,8 +292,6 @@ static ax_any* any_copy(const ax_any* any)
 
 	new_str_r.string->_str.env.one.scope.macro = NULL;
 	new_str_r.string->_str.env.one.scope.micro = 0;
-	ax_scope_attach(ax_base_local(base), new_str_r.one);
-
 	return new_str_r.any;
 fail:
 	ax_one_free(new_buf_r.one);
@@ -308,8 +304,6 @@ static ax_any* any_move(ax_any* any)
 	CHECK_PARAM_NULL(any);
 
 	ax_string_r self_r = { .any = (ax_any*)any };
-	ax_base *base = ax_one_base(self_r.one);
-
 	ax_buff_r new_buf_r = { NULL };
 	ax_string_r new_str_r = { NULL };
 
@@ -326,8 +320,6 @@ static ax_any* any_move(ax_any* any)
 
 	new_str_r.string->_str.env.one.scope.macro = NULL;
 	new_str_r.string->_str.env.one.scope.micro = 0;
-	ax_scope_attach(ax_base_local(base), new_str_r.one);
-
 	return new_str_r.any;
 fail:
 	ax_one_free(new_buf_r.one);
@@ -499,10 +491,9 @@ static ax_str *str_substr (const ax_str* str, size_t start, size_t len)
 
 	ax_string_cr self_r = { .str = str };
 	ax_buff *buff = self_r.string->buff_r.buff;
-	ax_base *base = ax_one_base(self_r.one);
 
 	ax_string_r ret_r = { NULL };
-	ret_r = ax_string_create(ax_base_local(base));
+	ret_r.str = __ax_string_construct();
 	if (!ret_r.one) {
 		goto fail;
 	}
@@ -525,13 +516,12 @@ static ax_seq *str_split (const ax_str* str, const char ch)
 
 	ax_string_cr self_r = { .str = str };
 	ax_buff *buff = self_r.string->buff_r.buff;
-	ax_base *base = ax_one_base(self_r.one);
 
 	char *buffer = ax_buff_ptr(buff);
 	char *cur = buffer, *head = buffer;
 
 	ax_vector_r ret_r = { NULL };
-	ret_r = ax_vector_create(ax_base_local(base), ax_stuff_traits(AX_ST_S));
+	ret_r.seq = __ax_vector_construct(ax_stuff_traits(AX_ST_S));
 	if (ret_r.one == NULL)
 		goto fail;
 
@@ -789,10 +779,8 @@ static const ax_iter_trait riter_trait =
 	.erase  = iter_erase
 };
 
-ax_str *__ax_string_construct(ax_base* base)
+ax_str *__ax_string_construct()
 {
-	CHECK_PARAM_NULL(base);
-	
 	ax_string *self = NULL;
 	ax_buff_r buff_r = { NULL };
 
@@ -801,7 +789,7 @@ ax_str *__ax_string_construct(ax_base* base)
 		goto fail;
 	}
 
-	buff_r.any = __ax_buff_construct(base);
+	buff_r.any = __ax_buff_construct();
 	if (!buff_r.any)
 		goto fail;
 
@@ -810,7 +798,6 @@ ax_str *__ax_string_construct(ax_base* base)
 			.tr = &str_trait,
 			.env = {
 				.one = {
-					.base = base,
 					.scope = { NULL },
 				},
 				.elem_tr = ax_stuff_traits(AX_ST_I8)
@@ -833,8 +820,7 @@ fail:
 
 ax_string_r ax_string_create(ax_scope *scope)
 {
-	ax_base *base = ax_one_base(ax_r(scope, scope).one);
-	ax_string_r string_r = { .str = __ax_string_construct(base) };
+	ax_string_r string_r = { .str = __ax_string_construct() };
 	if (string_r.one == NULL)
 		return string_r;
 	ax_scope_attach(scope, string_r.one);

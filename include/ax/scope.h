@@ -27,6 +27,11 @@
 
 #define AX_SCOPE_NAME AX_ONE_NAME ".scope"
 
+#ifndef AX_BASE_DEFINED
+#define AX_BASE_DEFINED
+typedef struct ax_base_st ax_base;
+#endif
+
 typedef union
 {
 	const ax_one *one;
@@ -44,7 +49,7 @@ ax_one *__ax_scope_construct(ax_base *base);
 
 ax_scope_r ax_scope_create(ax_scope *scope);
 
-void ax_scope_attach(ax_scope *scope, ax_one *one);
+ax_fail ax_scope_attach(ax_scope *scope, ax_one *one);
 
 void ax_scope_clean(ax_scope *scope);
 

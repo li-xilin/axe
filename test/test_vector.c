@@ -197,27 +197,11 @@ static void seq_insert_for_riter(axut_runner *r)
 	ax_base_destroy(base);
 }
 
-static void any_move(axut_runner *r)
-{
-	ax_base* base = ax_base_create();
-	ax_vector_r role1 = ax_vector_init(ax_base_local(base), "i32x4", 1, 2, 3, 4);
-	ax_vector_r role2 = { .any = ax_any_move(role1.any) };
-
-	int32_t table1[] = {1, 2, 3, 4};
-	axut_assert(r, ax_box_size(role1.box) == 0);
-	axut_assert(r, seq_equal_array(role2.seq, table1, sizeof table1));
-
-	ax_vector_r role3 = { .any = ax_any_move(role1.any) };
-	axut_assert(r, ax_box_size(role3.box) == 0);
-
-	ax_base_destroy(base);
-}
-
 static void any_copy(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
 	ax_vector_r role1 = ax_vector_init(ax_base_local(base), "i32x4", 1, 2, 3, 4);
-	ax_vector_r role2 = { .any = ax_any_copy(role1.any) };
+	ax_vector_r role2 = { .any = ax_any_seal(ax_base_local(base), ax_any_copy(role1.any)) };
 
 	int32_t table1[] = {1, 2, 3, 4};
 	axut_assert(r, seq_equal_array(role1.seq, table1, sizeof table1));
@@ -225,7 +209,7 @@ static void any_copy(axut_runner *r)
 
 	ax_box_clear(role1.box);
 
-	ax_vector_r role3 = { .any = ax_any_copy(role1.any) };
+	ax_vector_r role3 = { .any = ax_any_seal(ax_base_local(base), ax_any_copy(role1.any)) };
 	axut_assert(r, ax_box_size(role3.box) == 0);
 
 	ax_base_destroy(base);
@@ -280,7 +264,6 @@ axut_suite *suite_for_vector(ax_base *base)
 
 	axut_suite_add(suite, create, 0);
 	axut_suite_add(suite, push, 0);
-	axut_suite_add(suite, any_move, 0);
 	axut_suite_add(suite, any_copy, 0);
 	axut_suite_add(suite, iter, 0);
 	axut_suite_add(suite, riter, 0);

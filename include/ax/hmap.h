@@ -53,7 +53,6 @@ typedef union
 extern const ax_map_trait ax_hmap_tr;
 
 ax_map *__ax_hmap_construct(
-		ax_base* base,
 		const ax_stuff_trait* key_tr,
 		const ax_stuff_trait* val_tr
 );

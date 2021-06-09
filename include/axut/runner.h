@@ -26,7 +26,6 @@
 #include "def.h"
 
 #include "../ax/def.h"
-#include "../ax/base.h"
 #include "../ax/str.h"
 
 #define AXUT_RUNNER_NAME AX_ONE_NAME ".runner"
@@ -61,7 +60,7 @@ typedef union
 	axut_runner_crol c;
 } axut_runner_role;
 
-ax_one *__axut_runner_construct(ax_base *base, axut_output_f ran_cb);
+ax_one *__axut_runner_construct(axut_output_f ran_cb);
 
 axut_runner *axut_runner_create(ax_scope *scope, axut_output_f ran_cb);
 

@@ -24,7 +24,6 @@
 #define AXUT_SUITE_H
 
 #include "def.h"
-#include "../ax/base.h"
 #include "../ax/str.h"
 #include "../ax/box.h"
 
@@ -75,7 +74,7 @@ struct axut_case_st
 	const int priority;
 };
 
-ax_one *__axut_suite_construct(ax_base *base, const char* name);
+ax_one *__axut_suite_construct(const char* name);
 
 axut_suite *axut_suite_create(ax_scope *scope, const char* name);
 

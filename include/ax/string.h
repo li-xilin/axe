@@ -50,7 +50,7 @@ typedef union
 	ax_string_cr c;
 } ax_string_r;
 
-ax_str *__ax_string_construct(ax_base* base);
+ax_str *__ax_string_construct();
 
 ax_string_r ax_string_create(ax_scope *scope);
 

@@ -23,7 +23,6 @@
 #include <ax/stack.h>
 #include <ax/vector.h>
 #include <ax/tube.h>
-#include <ax/base.h>
 #include <ax/scope.h>
 #include <ax/any.h>
 #include <ax/mem.h>
@@ -123,13 +122,12 @@ static void one_free(ax_one *one)
 	free(one);
 }
 
-ax_tube *__ax_stack_construct(ax_base *base, const ax_stuff_trait *elem_tr)
+ax_tube *__ax_stack_construct(const ax_stuff_trait *elem_tr)
 {
-	CHECK_PARAM_NULL(base);
 	CHECK_PARAM_NULL(elem_tr);
 
 	ax_tube *self= NULL;
-	ax_seq *vector = __ax_vector_construct(base, elem_tr);
+	ax_seq *vector = __ax_vector_construct(elem_tr);
 	if (!vector)
 		goto fail;
 
@@ -143,7 +141,6 @@ ax_tube *__ax_stack_construct(ax_base *base, const ax_stuff_trait *elem_tr)
 			.tr = &ax_stack_tr,
 			.env = {
 				.one = {
-					.base = base,
 					.scope = { NULL }
 				},
 				.elem_tr = elem_tr
@@ -167,8 +164,7 @@ ax_stack_r ax_stack_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
 	CHECK_PARAM_NULL(scope);
 	CHECK_PARAM_NULL(elem_tr);
 
-	ax_base *base = ax_one_base(ax_r(scope, scope).one);
-	ax_stack_r self_r = { .tube = __ax_stack_construct(base, elem_tr) };
+	ax_stack_r self_r = { .tube = __ax_stack_construct(elem_tr) };
 	if (!self_r.one)
 		return self_r;
 	ax_scope_attach(scope, self_r.one);

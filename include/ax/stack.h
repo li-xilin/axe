@@ -45,7 +45,7 @@ typedef union
 	ax_one *one;
 } ax_stack_r;
 
-ax_tube *__ax_stack_construct(ax_base *base, const ax_stuff_trait *elem_tr);
+ax_tube *__ax_stack_construct(const ax_stuff_trait *elem_tr);
 
 ax_stack_r ax_stack_create(ax_scope *scope, const ax_stuff_trait *elem_tr);
 

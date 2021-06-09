@@ -23,7 +23,6 @@
 #include <axut/runner.h>
 #include <axut/suite.h>
 
-#include <ax/base.h>
 #include <ax/string.h>
 #include <ax/vector.h>
 #include <ax/mem.h>
@@ -99,10 +98,8 @@ static void default_output(const char *suite_name, axut_case *tc, ax_str *out)
 	}
 }
 
-ax_one *__axut_runner_construct(ax_base *base, axut_output_f output_cb)
+ax_one *__axut_runner_construct(axut_output_f output_cb)
 {
-	CHECK_PARAM_NULL(base);
-
 	axut_runner *runner = NULL;
 	ax_map *smap = NULL;
 	ax_seq *suites = NULL;
@@ -112,15 +109,15 @@ ax_one *__axut_runner_construct(ax_base *base, axut_output_f output_cb)
 	if (!runner)
 		goto fail;
 
-	smap = __ax_avl_construct(base, ax_stuff_traits(AX_ST_PTR), ax_stuff_traits(AX_ST_PTR));
+	smap = __ax_avl_construct(ax_stuff_traits(AX_ST_PTR), ax_stuff_traits(AX_ST_PTR));
 	if (!smap)
 		goto fail;
 
-	suites = __ax_vector_construct(base, ax_stuff_traits(AX_ST_PTR));
+	suites = __ax_vector_construct(ax_stuff_traits(AX_ST_PTR));
 	if (!suites)
 		goto fail;
 
-	output = __ax_string_construct(base);
+	output = __ax_string_construct();
 	if (!output)
 		goto fail;
 
@@ -128,7 +125,6 @@ ax_one *__axut_runner_construct(ax_base *base, axut_output_f output_cb)
 		._one = {
 			.tr = &one_trait,
 			.env = {
-				.base = base,
 				.scope = { NULL },
 			},
 		},
@@ -164,8 +160,7 @@ axut_runner *axut_runner_create(ax_scope *scope, axut_output_f ran_cb)
 {
 	CHECK_PARAM_NULL(scope);
 
-	ax_base *base = ax_one_base(ax_r(scope, scope).one);
-	axut_runner_role runner_r = { .one = __axut_runner_construct(base, ran_cb) };
+	axut_runner_role runner_r = { .one = __axut_runner_construct(ran_cb) };
 	if (runner_r.one == NULL)
 		return runner_r.runner;
 	ax_scope_attach(scope, runner_r.one);

@@ -35,11 +35,6 @@
 		"operation for %s is not supported", \
 		((ax_one *)(_one))->tr->name)
 
-#ifndef AX_BASE_DEFINED
-#define AX_BASE_DEFINED
-typedef struct ax_base_st ax_base;
-#endif
-
 #ifndef AX_ONE_DEFINED
 #define AX_ONE_DEFINED
 typedef struct ax_one_st ax_one;
@@ -55,7 +50,6 @@ typedef struct ax_one_env_st ax_one_env;
 typedef void        (*ax_one_free_f) (ax_one *one);
 typedef ax_scope   *(*ax_one_scope_f)(const ax_one *one);
 typedef ax_one_env *(*ax_one_envp_f) (const ax_one *one);
-typedef ax_base    *(*ax_one_base_f)(const ax_one *one);
 
 struct ax_one_trait_st
 {
@@ -77,7 +71,6 @@ typedef union
 
 struct ax_one_env_st
 {
-	ax_base *const base;
 	struct {
 		ax_one *macro;
 		uintptr_t micro;
@@ -107,11 +100,6 @@ static inline void ax_one_free(ax_one *one) {
 static inline ax_one_env *ax_one_envp(const ax_one *one)
 {
 	return (ax_one_env *)((char*)one + sizeof (ax_one_trait *));
-}
-
-static inline ax_base *ax_one_base(const ax_one *one)
-{
-	return ax_one_envp(one)->base;
 }
 
 bool ax_one_is(const ax_one *one, const char *type);

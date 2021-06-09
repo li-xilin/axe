@@ -21,7 +21,6 @@
  */
 
 #include <ax/vector.h>
-#include <ax/base.h>
 #include <ax/def.h>
 #include <ax/scope.h>
 #include <ax/any.h>
@@ -271,7 +270,6 @@ static ax_any *any_copy(const ax_any *any)
 	CHECK_PARAM_NULL(any);
 
 	ax_vector_r self_r = { .any = (ax_any*)any };
-	ax_base *base = ax_one_base(self_r.one);
 	ax_vector *new_vector = NULL;
 	ax_buff *new_buff = NULL;
 
@@ -288,7 +286,6 @@ static ax_any *any_copy(const ax_any *any)
 
 	new_vector->_seq.env.one.scope.macro = NULL;
 	new_vector->_seq.env.one.scope.micro = 0;
-	ax_scope_attach(ax_base_local(base), ax_r(vector, new_vector).one);
 	return ax_r(vector, new_vector).any;
 fail:
 	free(new_vector);
@@ -301,7 +298,6 @@ static ax_any *any_move(ax_any *any)
 	CHECK_PARAM_NULL(any);
 
 	ax_vector *self = (ax_vector*)any;
-	ax_base *base = ax_one_base(ax_r(vector, self).one);
 	ax_buff *dst_buff= NULL;
 	ax_vector *dest = NULL;
 
@@ -319,7 +315,6 @@ static ax_any *any_move(ax_any *any)
 
 	dest->_seq.env.one.scope.macro = NULL;
 	dest->_seq.env.one.scope.micro = 0;
-	ax_scope_attach(ax_base_local(base), ax_r(vector, dest).one);
 
 	return ax_r(vector, dest).any;
 fail:
@@ -660,9 +655,8 @@ const ax_seq_trait ax_vector_tr =
 	.insert = seq_insert,
 };
 
-ax_seq *__ax_vector_construct(ax_base *base,const ax_stuff_trait *elem_tr)
+ax_seq *__ax_vector_construct(const ax_stuff_trait *elem_tr)
 {
-	CHECK_PARAM_NULL(base);
 	CHECK_PARAM_NULL(elem_tr);
 	CHECK_PARAM_NULL(elem_tr->copy);
 	CHECK_PARAM_NULL(elem_tr->equal);
@@ -679,7 +673,7 @@ ax_seq *__ax_vector_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 		goto fail;
 	}
 
-	buff = (ax_buff *)__ax_buff_construct(base);
+	buff = (ax_buff *)__ax_buff_construct();
 	if (!buff)
 		goto fail;
 
@@ -688,7 +682,6 @@ ax_seq *__ax_vector_construct(ax_base *base,const ax_stuff_trait *elem_tr)
 			.tr = &ax_vector_tr,
 			.env = {
 				.one = {
-					.base = base,
 					.scope = { NULL }
 				},
 				.elem_tr = elem_tr
@@ -711,8 +704,7 @@ ax_vector_r ax_vector_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
 	CHECK_PARAM_NULL(scope);
 	CHECK_PARAM_NULL(elem_tr);
 
-	ax_base *base = ax_one_base(ax_r(scope, scope).one);
-	ax_vector_r self_r = { .seq = __ax_vector_construct(base, elem_tr) };
+	ax_vector_r self_r = { .seq = __ax_vector_construct(elem_tr) };
 	if (!self_r.one)
 		return self_r;
 	ax_scope_attach(scope, self_r.one);

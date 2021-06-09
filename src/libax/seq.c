@@ -24,7 +24,6 @@
 #include <ax/seq.h>
 #include <ax/vail.h>
 #include <ax/scope.h>
-#include <ax/base.h>
 
 #include "check.h"
 
@@ -33,12 +32,10 @@ ax_seq *ax_seq_vinit(ax_scope *scope, ax_seq_construct_f *builder, const char *f
 	CHECK_PARAM_NULL(builder);
 	CHECK_PARAM_NULL(fmt);
 
-	ax_base *base = ax_one_base(ax_r(scope, scope).one);
-
 	ax_vail *vail = NULL;
 	ax_seq *seq = NULL;
 
-	vail = ax_vail_vcreate(base, fmt, varg);
+	vail = ax_vail_vcreate(fmt, varg);
 	if (!vail) {
 		return NULL;
 	}
@@ -56,7 +53,7 @@ ax_seq *ax_seq_vinit(ax_scope *scope, ax_seq_construct_f *builder, const char *f
 		elem_count += vinfo.size;
 	}
 
-	seq = builder(base, ax_stuff_traits(elem_type));
+	seq = builder(ax_stuff_traits(elem_type));
 	if (!seq) {
 		ax_vail_destroy(vail);
 		return NULL;
@@ -95,10 +92,8 @@ ax_fail ax_seq_vpushl(ax_seq *seq, const char *fmt, va_list varg)
 	CHECK_PARAM_NULL(seq);
 	CHECK_PARAM_NULL(fmt);
 
-	ax_base *base = ax_one_base(ax_r(seq, seq).one);
-
 	ax_vail *vail = NULL;
-	vail = ax_vail_vcreate(base, fmt, varg);
+	vail = ax_vail_vcreate(fmt, varg);
 
 	if (!vail) {
 		return true;

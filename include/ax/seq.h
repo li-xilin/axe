@@ -45,7 +45,7 @@ typedef ax_iter (*ax_seq_at_f)     (const ax_seq *seq, size_t index);
 typedef ax_fail (*ax_seq_insert_f) (ax_seq *seq, ax_iter *iter, const void *val);
 typedef void   *(*ax_seq_end_f)    (const ax_seq *seq);
 
-typedef ax_seq *(ax_seq_construct_f)(ax_base *base, const ax_stuff_trait *tr);
+typedef ax_seq *(ax_seq_construct_f)(const ax_stuff_trait *tr);
 
 struct ax_seq_trait_st
 {

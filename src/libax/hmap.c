@@ -25,7 +25,6 @@
 #include <ax/iter.h>
 #include <ax/scope.h>
 #include <ax/debug.h>
-#include <ax/base.h>
 #include <ax/log.h>
 
 #include <string.h>
@@ -566,10 +565,9 @@ static ax_any *any_copy(const ax_any *any)
 	CHECK_PARAM_NULL(any);
 
 	ax_hmap_r src_r = { .any = (ax_any *)any };
-	ax_base *base = ax_one_base(src_r.one);
 	const ax_stuff_trait *ktr = src_r.map->env.key_tr;
 	const ax_stuff_trait *vtr = src_r.map->env.val_tr;
-	ax_hmap_r dst_r = { .map = __ax_hmap_construct(base, ktr, vtr)};
+	ax_hmap_r dst_r = { .map = __ax_hmap_construct(ktr, vtr)};
 	ax_map_cforeach(src_r.map, const void *, key, const void *, val) {
 		if (!ax_map_put(dst_r.map, key, val)) {
 			ax_one_free(dst_r.one);
@@ -579,8 +577,6 @@ static ax_any *any_copy(const ax_any *any)
 
 	dst_r.hmap->_map.env.one.scope.macro = NULL;
 	dst_r.hmap->_map.env.one.scope.micro = 0;
-	ax_scope_attach(ax_base_local(base), dst_r.one);
-
 	return dst_r.any;
 }
 
@@ -589,7 +585,6 @@ static ax_any *any_move(ax_any *any)
 	CHECK_PARAM_NULL(any);
 
 	ax_hmap_r src_r = { .any = any };
-	ax_base *base = ax_one_base(src_r.one);
 
 	ax_hmap *dst = malloc(sizeof(ax_hmap));
 	memcpy(dst, src_r.hmap, sizeof(ax_hmap));
@@ -598,8 +593,6 @@ static ax_any *any_move(ax_any *any)
 
 	dst->_map.env.one.scope.macro = NULL;
 	dst->_map.env.one.scope.micro = 0;
-	ax_scope_attach(ax_base_local(base), ax_r(hmap, dst).one);
-
 	return (ax_any *) dst;
 }
 
@@ -717,10 +710,8 @@ const ax_map_trait ax_hmap_tr =
 	.itkey = map_it_key
 };
 
-ax_map *__ax_hmap_construct(ax_base *base, const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)
+ax_map *__ax_hmap_construct(const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)
 {
-	CHECK_PARAM_NULL(base);
-
 	CHECK_PARAM_NULL(key_tr);
 	CHECK_PARAM_NULL(key_tr->equal);
 	CHECK_PARAM_NULL(key_tr->hash);
@@ -741,7 +732,6 @@ ax_map *__ax_hmap_construct(ax_base *base, const ax_stuff_trait *key_tr, const a
 			.tr = &ax_hmap_tr,
 			.env = {
 				.one = {
-					.base = base,
 					.scope = { NULL },
 				},
 				.key_tr = key_tr,
@@ -770,8 +760,7 @@ ax_hmap_r ax_hmap_create(ax_scope *scope, const ax_stuff_trait *key_tr, const ax
 	CHECK_PARAM_NULL(key_tr);
 	CHECK_PARAM_NULL(val_tr);
 
-	ax_base *base = ax_one_base(ax_r(scope, scope).one);
-	ax_hmap_r hmap_r =  { .map = __ax_hmap_construct(base, key_tr, val_tr) };
+	ax_hmap_r hmap_r =  { .map = __ax_hmap_construct(key_tr, val_tr) };
 	if (!hmap_r.one)
 		return hmap_r;
 	ax_scope_attach(scope, hmap_r.one);

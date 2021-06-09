@@ -6,7 +6,6 @@
 #include <ax/one.h>
 #include <ax/seq.h>
 #include <ax/iter.h>
-#include <ax/base.h>
 #include <ax/def.h>
 #include <string.h>
 #include <stdio.h>
@@ -332,7 +331,6 @@ ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 
 	ax_seq_r main_r = { first->owner };
 
-	ax_base *base = ax_one_base(main_r.one);
 	const ax_stuff_trait *etr = ax_box_elem_tr(main_r.box);
 
 	size_t size = 0;
@@ -355,7 +353,7 @@ ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 	}
 	imap[pos] = cur.point;
 
-	ax_seq *aux = __ax_vector_construct(base, etr);
+	ax_seq *aux = __ax_vector_construct(etr);
 	if (!aux) {
 		free(imap);
 		return true;

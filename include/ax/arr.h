@@ -59,6 +59,6 @@ inline static void* ax_arr_ptr(ax_arr *arr)
 	return arr->arr;
 }
 
-ax_arr_r ax_arr_make(ax_arr *arr, ax_base *base, const ax_stuff_trait *elem_tr, void *ptr, size_t size);
+ax_arr_r ax_arr_make(ax_arr *arr, const ax_stuff_trait *elem_tr, void *ptr, size_t size);
 
 #endif

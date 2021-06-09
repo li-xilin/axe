@@ -36,6 +36,7 @@
 struct ax_scope_st
 {
 	ax_one _one;
+	ax_base *base;
 	ax_one **tab;
 	size_t tab_size;
 	size_t tab_capacity;
@@ -76,10 +77,10 @@ ax_one *__ax_scope_construct(ax_base *base)
 		._one = {
 			.tr = &one_trait,
 			.env = {
-				.base = base,
 				.scope = { NULL },
 			},
 		},
+		.base = base,
 		.tab = NULL,
 		.tab_size = 0,
 		.tab_capacity = 0
@@ -93,7 +94,7 @@ ax_scope_r ax_scope_create(ax_scope *scope)
 	CHECK_PARAM_NULL(scope);
 
 	assert(scope);
-	ax_base *base = ax_one_base(&scope->_one);
+	ax_base *base = scope->base;
 	ax_scope_r role = { .one = __ax_scope_construct(base) };
 	if (role.one == NULL)
 		return role;
@@ -101,27 +102,32 @@ ax_scope_r ax_scope_create(ax_scope *scope)
 	return role;
 }
 
-void ax_scope_attach(ax_scope *scope_attach, ax_one *one)
+ax_fail ax_scope_attach(ax_scope *scope_attach, ax_one *one)
 {
 	CHECK_PARAM_NULL(scope_attach);
 	CHECK_PARAM_NULL(one);
 	/* TODO: check first 4 bytes(base pointer) that if it equals to base which scope is created from */
 
 	if (ax_one_envp(one)->scope.macro == ax_r(scope, scope_attach).one)
-		return;
+		return false;
 	int ret = ax_scope_detach(one);
 	(void)ret;
 	ax_assert(ret, "object can not be detached");
 
 	if (scope_attach->tab_size == scope_attach->tab_capacity) {
+		void *new_tab = realloc(scope_attach->tab, ((scope_attach->tab_capacity << 1) | 1) * sizeof(*scope_attach->tab));
+		if (!new_tab)
+			return true;
 		scope_attach->tab_capacity <<= 1;
 		scope_attach->tab_capacity |= 1;
-		scope_attach->tab = realloc(scope_attach->tab, scope_attach->tab_capacity * sizeof(*scope_attach->tab));
+		scope_attach->tab = new_tab;
+
 	}
 	scope_attach->tab[scope_attach->tab_size] = one;
 	ax_one_envp(one)->scope.macro = ax_r(scope, scope_attach).one;
 	ax_one_envp(one)->scope.micro = scope_attach->tab_size;
 	scope_attach->tab_size ++;
+	return false;
 }
 
 void ax_scope_clean(ax_scope *scope)

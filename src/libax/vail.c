@@ -23,7 +23,6 @@
 #include <ax/vail.h>
 #include <ax/stuff.h>
 #include <ax/debug.h>
-#include <ax/base.h>
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -53,7 +52,6 @@ struct vail_item_st
 
 struct ax_vail_st
 {
-	ax_base *base;
 	size_t size;
 	struct vail_item_st *table;
 };
@@ -70,7 +68,6 @@ static ax_vail* create_vail(struct format_st *vfmt, va_list va)
 	if (vail->table == NULL)
 		return NULL;
 
-	vail->base = NULL;
 	vail->size = vfmt->size;
 
 	if (vail->size == 0)
@@ -268,7 +265,7 @@ bad_char:
 
 #undef TYPE_ACCEPT
 
-ax_vail *ax_vail_vcreate(ax_base *base, const char* fmt, va_list valist)
+ax_vail *ax_vail_vcreate(const char* fmt, va_list valist)
 {
 	CHECK_PARAM_NULL(fmt);
 
@@ -277,17 +274,16 @@ ax_vail *ax_vail_vcreate(ax_base *base, const char* fmt, va_list valist)
 	make_format(fmt, &argfmt);
 		
 	ax_vail *vail = create_vail(&argfmt, valist);
-	vail->base = base;
 	return vail;
 }
 
-ax_vail *ax_vail_create(ax_base *base, const char* fmt, ...)
+ax_vail *ax_vail_create(const char* fmt, ...)
 {
 	CHECK_PARAM_NULL(fmt);
 
 	va_list args;
 	va_start(args, fmt);
-	ax_vail *vail = ax_vail_vcreate(base, fmt, args);
+	ax_vail *vail = ax_vail_vcreate(fmt, args);
 	va_end(args);
 	return vail;
 }
