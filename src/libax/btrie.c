@@ -166,24 +166,6 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	return etr->copy(node->val, pval, etr->size);
 }
 
-#if 0
-/* return value : if map is freed */
-static bool node_remove_value(ax_btrie *self, struct node_st *node)
-{
-	if (node->val) {
-		const ax_stuff_trait *etr = self->_trie.env.val_tr;
-		etr->free(node->val);
-		node->val = NULL;
-	}
-	if (ax_box_size(node->submap_r.box) == 0) {
-		ax_avl_tr.box.iter.erase(it);
-		if (clean_path(node_get_parent(node))) {
-			*it = box_end(ax_r(btrie, self).box);
-		}
-	}
-}
-#endif
-
 static void node_free_value(ax_btrie *btrie, struct node_st *node)
 {
 	if (node->val) {
@@ -385,6 +367,7 @@ static void box_clear(ax_box *box)
 		return;
 	
 	rec_remove(self_r.btrie, self_r.btrie->root_r.map);
+	assert(self_r.btrie->size == 0);
 }
 
 void node_dump(ax_map *map, int i)
@@ -659,18 +642,13 @@ static bool trie_erase(ax_trie *trie, const ax_seq *key)
 
 static void rec_remove(ax_btrie *self, ax_map *map)
 {
-	const ax_stuff_trait *val_tr = self->_trie.env.val_tr;
 	ax_map_r map_r = ax_r(map, map);
 	ax_iter cur = ax_box_begin(map_r.box);
 	ax_iter end = ax_box_end(map_r.box);
 	while (!ax_iter_equal(&cur, &end)) {
 		struct node_st *node = ax_avl_tr.box.iter.get(&cur);
 		rec_remove(self, node->submap_r.map);
-		if (node->val) {
-			val_tr->free(node->val);
-			free(node->val);
-			self->size--;
-		}
+		node_free_value(self, node);
 		ax_one_free(node->submap_r.one);
 		ax_avl_tr.box.iter.erase(&cur);
 	}
