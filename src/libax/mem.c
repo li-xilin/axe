@@ -33,8 +33,8 @@ void ax_memxor(void *ptr1, void *ptr2, size_t size)
 	if (ptr1 == ptr2)
 		return;
 
-	size_t fast_size = size / sizeof(ax_fast_uint);
-	size_t slow_size = size % sizeof(ax_fast_uint);
+	register size_t fast_size = size / sizeof(ax_fast_uint);
+	register size_t slow_size = size % sizeof(ax_fast_uint);
 
 	ax_fast_uint *pf1 = ptr1, *pf2 = ptr2;
 	for (size_t i = 0; i!= fast_size; i++) {
@@ -43,7 +43,7 @@ void ax_memxor(void *ptr1, void *ptr2, size_t size)
 		pf1[i] = pf1[i] ^ pf2[i];
 	}
 
-	uint8_t *p1 = (ax_byte*)ptr1 + size - slow_size, *p2 = (ax_byte*)ptr2 + size - slow_size;
+	uint8_t *p1 = (ax_byte *)ptr1 + size - slow_size, *p2 = (ax_byte*)ptr2 + size - slow_size;
 	for (size_t i = 0; i!= slow_size; i++) {
 		p1[i] = p1[i] ^ p2[i];
 		p2[i] = p1[i] ^ p2[i];
@@ -51,24 +51,34 @@ void ax_memxor(void *ptr1, void *ptr2, size_t size)
 	}
 }
 
-char* ax_strdup(const char* str)
+char *ax_strdup(const char *str)
 {
 	size_t size = (strlen(str) + 1) * sizeof(char);
-	char* copy = malloc(size);
+	char *copy = malloc(size);
 	if (!copy)
 		return NULL;
 	memcpy(copy, str, size);
 	return copy;
 }
 
-wchar_t* ax_wcsdup(const wchar_t* str)
+wchar_t *ax_wcsdup(const wchar_t* str)
 {
 	size_t size = (wcslen(str) + 1) * sizeof(wchar_t);
-	wchar_t* copy = malloc(size);
+	wchar_t *copy = malloc(size);
 	if (!copy)
 		return NULL;
 	memcpy(copy, str, size);
 	return copy;
+}
+
+void *ax_memdup(const void *ptr, size_t size)
+{
+	ax_byte *copy = malloc(size);
+	if (!copy)
+		return NULL;
+	memcpy(copy, ptr, size);
+	return copy;
+
 }
 
 size_t ax_strhash(const char *s)
