@@ -64,6 +64,10 @@ ax_hmap_r ax_hmap_create(
 );
 
 
+ax_fail ax_hmap_set_threshold(ax_hmap *hmap, size_t threshold);
+
+size_t ax_hmap_threshold(ax_hmap *hmap);
+
 ax_fail ax_hmap_rehash(ax_hmap *hmap, size_t size);
 
 #endif

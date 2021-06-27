@@ -104,14 +104,15 @@ static struct node_st **find_node(const ax_map *map, struct bucket_st *bucket, c
 static void free_node(ax_map *map, struct node_st **pp_node);
 static void *value_set(ax_map* map, struct node_st *node, const void *val);
 
+/*
 inline static int size_bit_find_last(size_t size, bool bit)
 {
 	if (!bit) {
 		size = ~size;
 		bit = !bit;
 	}
-	for (int i = sizeof size * 8 - 1; i > 0; i--) {
-		if (size & (1 << i))
+	for (int i = sizeof size * 8 - 1; i >= 0; i--) {
+		if (size & ((size_t)1 << i))
 			return i;
 	}
 	return -1;
@@ -132,6 +133,7 @@ inline static void size_bit_set(size_t *size, bool bit, int len)
 	}
 	*size = tmp;
 }
+*/
 
 static ax_fail rehash(ax_hmap *hmap, size_t nbucket)
 {
@@ -141,11 +143,6 @@ static ax_fail rehash(ax_hmap *hmap, size_t nbucket)
 		return true;
 	for (size_t i = 0; i != nbucket; i++)
 		new_tab[i].node_list = NULL;
-
-	if (nbucket * hmap->threshold < hmap->size) {
-		errno = EINVAL;
-		return true;
-	}
 
 	struct bucket_st *bucket = hmap->bucket_list;
 	hmap->bucket_list = NULL;
@@ -181,25 +178,45 @@ static ax_fail rehash(ax_hmap *hmap, size_t nbucket)
 ax_fail ax_hmap_rehash(ax_hmap *hmap, size_t nbucket)
 {
 	CHECK_PARAM_NULL(hmap);
-	CHECK_PARAM_VALIDITY(nbucket, nbucket > 0);
+
+	if (nbucket == 0) {
+		size_t tmp = (hmap->size / hmap->threshold) + 1;
+		if (tmp == nbucket)
+			return false;
+		nbucket = tmp;
+	}
+
+	if (nbucket * hmap->threshold < hmap->size) {
+		errno = EDOM;
+		return true;
+	}
+
 	return rehash(hmap, nbucket);
 }
 
-// TODO: Do unit test
 ax_fail ax_hmap_set_threshold(ax_hmap *hmap, size_t threshold)
 {
 	CHECK_PARAM_NULL(hmap);
 	CHECK_PARAM_VALIDITY(threshold, threshold > 0);
 
 	if (threshold * hmap->buckets < hmap->size) {
-		int n = size_bit_find_last(hmap->size / threshold + 1, 1);
-		size_t nbucket = 0;
-		size_bit_set(&nbucket, 1, n + 1);
+		size_t quo = hmap->size / threshold;
+		size_t nbucket = quo ? hmap->size / threshold : 1;
+		printf("nbucket1 %lu\n", nbucket);
+		nbucket = ((box_maxsize(ax_r(hmap, hmap).box) >> 1) >= nbucket)
+			? (nbucket << 1) | 1
+			: box_maxsize(ax_r(hmap, hmap).box);
+
 		if (rehash(hmap, nbucket))
 			return true;
 	}
 	hmap->threshold = threshold;
 	return false;
+}
+
+size_t ax_hmap_threshold(ax_hmap *hmap)
+{
+	return hmap->threshold;
 }
 
 static struct node_st *make_node(ax_map *map, const void *key, const void *val)
@@ -608,7 +625,7 @@ static size_t box_maxsize(const ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	return (~(size_t)0) >> 1;
+	return (~(size_t)0);
 }
 
 static ax_iter box_begin(ax_box *box)
@@ -767,3 +784,14 @@ ax_hmap_r ax_hmap_create(ax_scope *scope, const ax_stuff_trait *key_tr, const ax
 	return hmap_r;
 }
 
+void dump_hmap(ax_hmap *hmap)
+{
+	for (struct bucket_st *b = hmap->bucket_list; b; b = b->next) {
+		int c = 0;
+		for (struct node_st *n = b->node_list; n; n = n->next) {
+		ax_unused(n);
+			c++;
+		}
+		printf("bucket %p %d\n", (void*)b, c);
+	}
+}
