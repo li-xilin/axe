@@ -23,7 +23,7 @@
 #include <axut.h>
 
 #include <ax/hmap.h>
-#include <ax/avl.h>
+#include <ax/hmap.h>
 #include <ax.h>
 
 #include <assert.h>
@@ -34,7 +34,7 @@
 
 #define N 400
 
-static void map_erase(axut_runner* r)
+static void erase(axut_runner* r)
 {
 	ax_base* base = axut_runner_arg(r);
 	ax_hmap_r hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
@@ -124,18 +124,18 @@ static void map_chkey(axut_runner* r)
 static void iterate(axut_runner *r)
 {
 	ax_base* base = axut_runner_arg(r);
-	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_S),
+	ax_hmap_r hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_S),
 			ax_stuff_traits(AX_ST_I32));
 	const int count = 100;
 	for (int32_t i = 0; i < count; i++) {
 		char key[4];
 		sprintf(key, "%d", i);
-		ax_map_put(avl_r.map, key, &i);
+		ax_map_put(hmap_r.map, key, &i);
 	}
 
 	int32_t check_table[count];
 	for (int i = 0; i < count; i++) check_table[i] = -1;
-	ax_map_cforeach(avl_r.map, const char *, key, const uint32_t *, val) {
+	ax_map_cforeach(hmap_r.map, const char *, key, const uint32_t *, val) {
 		int k;
 		sscanf(key, "%d", &k);
 		axut_assert_int_equal(r, k, *val);
@@ -143,6 +143,33 @@ static void iterate(axut_runner *r)
 	}
 	for (int i = 0; i < count; i++) 
 		axut_assert(r, check_table[i] == 0);
+}
+
+static void rehash(axut_runner* r)
+{
+	ax_base* base = axut_runner_arg(r);
+	ax_hmap_r hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_S),
+			ax_stuff_traits(AX_ST_I32));
+	const int count = 100;
+	puts("---");
+	for (int32_t i = 0; i < count; i++) {
+		char key[4];
+		sprintf(key, "%d", i);
+		ax_map_put(hmap_r.map, key, &i);
+	}
+	printf("threshold = %lu\n", ax_hmap_threshold(hmap_r.hmap));
+	if (ax_hmap_rehash(hmap_r.hmap, 20))
+		axut_term(r, "ax_hmap_rehash");
+	ax_map_cforeach(hmap_r.map, const char *, key, const uint32_t *, val) {
+		ax_unused(val);
+		printf("%s ", key);
+	}
+	puts("");
+
+	ax_hmap_set_threshold(hmap_r.hmap, 100);
+	void dump_hmap(ax_hmap *hmap);
+	dump_hmap(hmap_r.hmap);
+	puts("---");
 }
 
 static void clean(axut_runner *r)
@@ -160,9 +187,10 @@ axut_suite *suite_for_hmap(ax_base *base)
 	axut_suite_set_arg(suite, base1);
 
 	axut_suite_add(suite, iterate, 0);
-	axut_suite_add(suite, map_erase, 1);
+	axut_suite_add(suite, erase, 1);
 	axut_suite_add(suite, iter_erase, 1);
 	axut_suite_add(suite, map_chkey, 1);
+	axut_suite_add(suite, rehash, 1);
 	axut_suite_add(suite, clean, 0xFF);
 	return suite;
 }
