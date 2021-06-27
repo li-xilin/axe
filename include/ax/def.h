@@ -46,4 +46,8 @@ typedef void (*ax_binary_f)(void *out, const void *in1, const void *in2, void *a
 
 #define ax_unused(_var) ((void)&(_var))
 
+#define ax_repeat(_n) for(size_t __ax_repeat_count = 0; __ax_repeat_count != (_n); __ax_repeat_count++)
+
+#define ax_forever while(true)
+
 #endif
