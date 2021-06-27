@@ -26,16 +26,18 @@
 
 #define ax_mem_pswap(_a, _b, _type) \
 do { \
-	_type tmp = *(_type*)(_a); \
-	*(_type*) (_a) = *(_type*) (_b); \
-	*(_type*) (_b) = tmp; \
+	_type tmp = *(_type *)(_a); \
+	*(_type*)(_a) = *(_type *)(_b); \
+	*(_type*)(_b) = tmp; \
 } while(0)
 
 void ax_memxor(void *ptr1, void *ptr2, size_t size);
 
 char *ax_strdup(const char *str);
 
-wchar_t *ax_wcsdup(const wchar_t* str);
+wchar_t *ax_wcsdup(const wchar_t *str);
+
+void *ax_memdup(const void *ptr, size_t size);
 
 size_t ax_strhash(const char *s);
 
