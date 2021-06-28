@@ -27,6 +27,8 @@
 
 #include "check.h"
 
+#include <errno.h>
+
 ax_seq *ax_seq_vinit(ax_scope *scope, ax_seq_construct_f *builder, const char *fmt, va_list varg) 
 {
 	CHECK_PARAM_NULL(builder);
@@ -146,38 +148,19 @@ ax_fail ax_seq_pushl(ax_seq *seq, const char *fmt, ...)
 	return fail;
 }
 
-#if 0
-ax_fail ax_seq_vmpop(ax_seq *seq, unsigned int count, va_list varg)
+size_t ax_seq_array(ax_seq *seq, void *elems[], size_t len)
 {
 	CHECK_PARAM_NULL(seq);
-	ax_base *base = ax_one_base(ax_r(seq, seq).one);
-	ax_pool *pool = ax_base_pool(base);
-	const ax_stuff_trait *etr = ax_box_elem_tr(ax_r(seq, seq).box);
+	CHECK_PARAM_NULL(elems);
 	
-	int i;
-	for (i = 0; i < count; i++) {
-		void *ptr = va_arg(varg, void *);
-		void *val = ax_seq_last(seq);
-		void *pval = etr->link
-			? &val
-			: val;
-		if (etr->link)
-			
-		if (etr->copy(pool, ptr, pval, etr->size)) {
-			ax_base_set_errno(base, AX_ERR_NOMEM);
-			goto fail;
-		}
-		ax_seq_pop(seq);
+	ax_iter pos = ax_box_rbegin(ax_r(seq, seq).box),
+		end = ax_box_rend(ax_r(seq, seq).box);
+
+	size_t i;
+	for (i = 0; i < len && !ax_iter_equal(&pos, &end); i++) {
+		elems[i] = ax_iter_get(&pos);
+		ax_iter_next(&pos);
 	}
-fail:
-	for (int j = 0; j < i; j++) {
-	}
-	
+	return i; 
 }
 
-ax_fail ax_seq_mpop(ax_seq *seq, unsigned int count, ...)
-{
-	CHECK_PARAM_NULL(seq);
-}
-
-#endif

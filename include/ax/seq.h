@@ -173,12 +173,11 @@ static inline const void *ax_seq_clast(const ax_seq *seq)
 
 ax_seq *ax_seq_init(ax_scope *scope, ax_seq_construct_f *builder, const char *fmt, ...);
 ax_seq *ax_seq_vinit(ax_scope *scope, ax_seq_construct_f *builder, const char *fmt, va_list varg); 
+
+
 ax_fail ax_seq_vpushl(ax_seq *seq, const char *fmt, va_list varg);
 ax_fail ax_seq_pushl(ax_seq *seq, const char *fmt, ...);
 
-#if 0
-ax_fail ax_seq_vmpop(ax_seq *seq, unsigned int count, va_list varg);
-ax_fail ax_seq_mpop(ax_seq *seq, unsigned int count, ...);
-#endif
+size_t ax_seq_array(ax_seq *seq, void *elems[], size_t len);
 
 #endif
