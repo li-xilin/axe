@@ -254,7 +254,6 @@ static bool init_ws(void* p, size_t size) {
 	return false;
 }
 
-
 static size_t hash_s(const void* p, size_t size)
 {
 	return ax_strhash(*(char**)p);
@@ -271,7 +270,7 @@ void ax_stuff_mem_free(void* p) {
 
 bool ax_stuff_mem_less(const void* p1, const void* p2, size_t size)
 {
-	return memcmp(p1, p2, size);
+	return memcmp(p1, p2, size) < 0;
 }
 
 bool ax_stuff_mem_equal(const void* p1, const void* p2, size_t size)
