@@ -51,34 +51,33 @@ void ax_memxor(void *ptr1, void *ptr2, size_t size)
 	}
 }
 
-char *ax_strdup(const char *str)
+char *ax_strdup(const char *s)
 {
-	size_t size = (strlen(str) + 1) * sizeof(char);
+	size_t size = (strlen(s) + 1) * sizeof(char);
 	char *copy = malloc(size);
 	if (!copy)
 		return NULL;
-	memcpy(copy, str, size);
+	memcpy(copy, s, size);
 	return copy;
 }
 
-wchar_t *ax_wcsdup(const wchar_t* str)
+wchar_t *ax_wcsdup(const wchar_t* s)
 {
-	size_t size = (wcslen(str) + 1) * sizeof(wchar_t);
+	size_t size = (wcslen(s) + 1) * sizeof(wchar_t);
 	wchar_t *copy = malloc(size);
 	if (!copy)
 		return NULL;
-	memcpy(copy, str, size);
+	memcpy(copy, s, size);
 	return copy;
 }
 
-void *ax_memdup(const void *ptr, size_t size)
+void *ax_memdup(const void *p, size_t size)
 {
 	ax_byte *copy = malloc(size);
 	if (!copy)
 		return NULL;
-	memcpy(copy, ptr, size);
+	memcpy(copy, p, size);
 	return copy;
-
 }
 
 size_t ax_strhash(const char *s)
@@ -101,11 +100,11 @@ size_t ax_wcshash(const wchar_t *s)
 	return h;
 }
 
-size_t ax_memhash(const unsigned char *p, size_t size)
+size_t ax_memhash(const void *p, size_t size)
 {
 	register size_t h = 5381;
 	for (size_t i = 0; i < size; i++) {
-		h = (h ^ (h << 5)) ^ p[i];
+		h = (h ^ (h << 5)) ^ ((ax_byte *)p)[i];
 	}
 	return h;
 }
