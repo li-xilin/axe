@@ -91,6 +91,9 @@ static void    *iter_get(const ax_iter *it);
 static ax_fail  iter_set(const ax_iter *it, const void *val);
 static void     iter_erase(ax_iter *it);
 
+inline static void *node_val(const ax_map* map, struct node_st *node);
+inline static void *node_pval(const ax_map *map, struct node_st *node);
+
 inline static void *node_pval(const ax_map *map, struct node_st *node)
 {
 	assert(node);
@@ -442,20 +445,23 @@ static void *iter_get(const ax_iter *it)
 		: pval;
 }
 
+static void *node_set_value(ax_map *map, struct node_st *node, const void *val)
+{
+	const ax_stuff_trait *vtr = map->env.val_tr;
+	const void *psrc = vtr->link ? &val : val;
+	void *pdst = node_pval(map, node);
+	vtr->free(pdst);
+	if (val ? vtr->copy(pdst, psrc,  vtr->size) : vtr->init(pdst, vtr->size)) 
+		return NULL;
+	return node_val(map, node);
+}
+
 static ax_fail iter_set(const ax_iter *it, const void *val)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
 
 	ax_avl_r avl_r = { .one = (ax_one *)it->owner };
-	const ax_stuff_trait *val_tr = avl_r.map->env.val_tr;
-	const void *psrc = val_tr->link ? &val : val;
-	void *pdst = node_pval(avl_r.map, it->point);
-	val_tr->free(pdst);
-	if (val ? val_tr->copy(pdst, psrc,  val_tr->size)
-			: val_tr->init(pdst, val_tr->size)) {
-		return true;
-	}
-	return false;
+	return !node_set_value(avl_r.map, it->point, val);
 }
 
 static void iter_erase(ax_iter *it)
@@ -522,9 +528,7 @@ static void *map_put (ax_map* map, const void *key, const void *val)
 	while (true) {
 		lesser = map->env.key_tr->less(pkey, current->kvbuffer, map->env.key_tr->size);
 		greater = map->env.key_tr->less(current->kvbuffer, pkey, map->env.key_tr->size);
-		if (!lesser && !greater) {
-			break;
-		} else if (lesser) {
+		if (lesser) {
 			if (current->left)
 				current = current->left;
 			else {
@@ -553,15 +557,17 @@ static void *map_put (ax_map* map, const void *key, const void *val)
 			return node_val(map, current);
 		}
 	}
+
+	if (!new_node)
+		return node_set_value(map, current, val);
+
 	do {
 		current  = current->parent;
 		adjust_height(current);
 		current = balance(current);
 	} while (current->parent);
-
-	avl_r.avl->root = current;
 	avl_r.avl->size ++;
-
+	avl_r.avl->root = current;
 	return node_val(map, new_node);;
 }
 
