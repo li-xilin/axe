@@ -69,6 +69,7 @@ static void insert(axut_runner *r)
 	ax_iter_prev(&it_end);
 	axut_assert(r, ax_iter_dist(&it_begin, &it_end) == N-1);
 
+	
 }
 
 static void complex(axut_runner *r)
@@ -125,13 +126,71 @@ static void foreach(axut_runner *r)
 		count++;
 	}
 	axut_assert_int_equal(r, 10, count);
+}
+
+static void erase(axut_runner *r)
+{
+	ax_base *base = axut_runner_arg(r);
+	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
+			ax_stuff_traits(AX_ST_I32));
+
+	int count = 50;
+	for (int32_t i = 0; i < count; i++) {
+		ax_map_put(avl_r.map, &i, &i);
+	}
 
 	ax_iter it = ax_box_begin(avl_r.box), end = ax_box_end(avl_r.box);
 	while (!ax_iter_equal(&it, &end)) {
 		ax_iter_erase(&it);
 	}
-	axut_assert_uint_equal(r, ax_box_size(avl_r.box), 0);
+	axut_assert_uint_equal(r, 0, ax_box_size(avl_r.box));
 
+	for (int32_t i = 0; i < count; i++) {
+		ax_map_put(avl_r.map, &i, &i);
+	}
+
+	for (int32_t i = 0; i < count; i++) {
+		ax_map_erase(avl_r.map, &i);
+	}
+	axut_assert_uint_equal(r, 0, ax_box_size(avl_r.box));
+
+}
+
+static void duplicate(axut_runner *r)
+{
+	ax_base *base = axut_runner_arg(r);
+	ax_avl_r avl = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
+			ax_stuff_traits(AX_ST_I32));
+
+	uint32_t key, val = 0;
+
+	key = 1, val = 2;
+	ax_map_put(avl.map, &key, &val);
+	axut_assert_uint_equal(r, 1, ax_box_size(avl.box));
+	
+	key = 1, val = 3;
+	ax_map_put(avl.map, &key, &val);
+	axut_assert_uint_equal(r, 1, ax_box_size(avl.box));
+	val = *(uint32_t *)ax_map_get(avl.map, &key);
+	axut_assert_uint_equal(r, 3, val);
+
+	key = 1, val = 4;
+	ax_iter find = ax_map_at(avl.map, &key),
+		end = ax_box_end(avl.box);
+	axut_assert(r, !ax_iter_equal(&find, &end));
+	ax_iter_set(&find, &val);
+	axut_assert_uint_equal(r, 1, ax_box_size(avl.box));
+	val = *(uint32_t *)ax_map_get(avl.map, &key);
+	axut_assert_uint_equal(r, 4, val);
+
+
+	key = 2, val = 5;
+	ax_map_put(avl.map, &key, &val);
+	axut_assert_uint_equal(r, 2, ax_box_size(avl.box));
+	ax_map_erase(avl.map, &key);
+	axut_assert_uint_equal(r, 1, ax_box_size(avl.box));
+	ax_map_erase(avl.map, &key);
+	axut_assert_uint_equal(r, 1, ax_box_size(avl.box));
 }
 
 static void clear(axut_runner *r)
@@ -164,6 +223,8 @@ axut_suite* suite_for_avl(ax_base *base)
 	axut_suite_add(suite, insert, 0);
 	axut_suite_add(suite, foreach, 0);
 	axut_suite_add(suite, clear, 0);
+	axut_suite_add(suite, duplicate, 0);
+	axut_suite_add(suite, erase, 0);
 	axut_suite_add(suite, clean, 0xFF);
 
 	return suite;

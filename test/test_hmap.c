@@ -119,7 +119,42 @@ static void map_chkey(axut_runner* r)
 	axut_assert_int_equal(r, 2, *(int *)ax_map_get(hmap_r.map, &new));
 }
 
+static void duplicate(axut_runner *r)
+{
+	ax_base *base = axut_runner_arg(r);
+	ax_hmap_r hmap = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
+			ax_stuff_traits(AX_ST_I32));
 
+	uint32_t key, val = 0;
+
+	key = 1, val = 2;
+	ax_map_put(hmap.map, &key, &val);
+	axut_assert_uint_equal(r, 1, ax_box_size(hmap.box));
+	
+	key = 1, val = 3;
+	ax_map_put(hmap.map, &key, &val);
+	axut_assert_uint_equal(r, 1, ax_box_size(hmap.box));
+	val = *(uint32_t *)ax_map_get(hmap.map, &key);
+	axut_assert_uint_equal(r, 3, val);
+
+	key = 1, val = 4;
+	ax_iter find = ax_map_at(hmap.map, &key),
+		end = ax_box_end(hmap.box);
+	axut_assert(r, !ax_iter_equal(&find, &end));
+	ax_iter_set(&find, &val);
+	axut_assert_uint_equal(r, 1, ax_box_size(hmap.box));
+	val = *(uint32_t *)ax_map_get(hmap.map, &key);
+	axut_assert_uint_equal(r, 4, val);
+
+
+	key = 2, val = 5;
+	ax_map_put(hmap.map, &key, &val);
+	axut_assert_uint_equal(r, 2, ax_box_size(hmap.box));
+	ax_map_erase(hmap.map, &key);
+	axut_assert_uint_equal(r, 1, ax_box_size(hmap.box));
+	ax_map_erase(hmap.map, &key);
+	axut_assert_uint_equal(r, 1, ax_box_size(hmap.box));
+}
 
 static void iterate(axut_runner *r)
 {
@@ -151,25 +186,27 @@ static void rehash(axut_runner* r)
 	ax_hmap_r hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_S),
 			ax_stuff_traits(AX_ST_I32));
 	const int count = 100;
-	puts("---");
 	for (int32_t i = 0; i < count; i++) {
 		char key[4];
-		sprintf(key, "%d", i);
 		ax_map_put(hmap_r.map, key, &i);
 	}
 	printf("threshold = %lu\n", ax_hmap_threshold(hmap_r.hmap));
 	if (ax_hmap_rehash(hmap_r.hmap, 20))
 		axut_term(r, "ax_hmap_rehash");
+
+	int table[count];
+	for (int32_t i = 0; i < count; i++)
+		table[i] = 0;
+
 	ax_map_cforeach(hmap_r.map, const char *, key, const uint32_t *, val) {
-		ax_unused(val);
-		printf("%s ", key);
+		ax_unused(key);
+		table[*val] = 1;
 	}
-	puts("");
+	for (int32_t i = 0; i < count; i++)
+		axut_assert(r, 1 == table[i]);
 
 	ax_hmap_set_threshold(hmap_r.hmap, 100);
-	void dump_hmap(ax_hmap *hmap);
-	dump_hmap(hmap_r.hmap);
-	puts("---");
+	axut_assert_uint_equal(r, 100, ax_hmap_threshold(hmap_r.hmap));
 }
 
 static void clean(axut_runner *r)
@@ -191,6 +228,7 @@ axut_suite *suite_for_hmap(ax_base *base)
 	axut_suite_add(suite, iter_erase, 1);
 	axut_suite_add(suite, map_chkey, 1);
 	axut_suite_add(suite, rehash, 1);
+	axut_suite_add(suite, duplicate, 1);
 	axut_suite_add(suite, clean, 0xFF);
 	return suite;
 }
