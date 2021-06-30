@@ -162,4 +162,6 @@ inline static const void *ax_map_iter_key(ax_iter *it)
 	return ((const ax_map *)it->owner)->tr->itkey(ax_iter_c(it));
 }
 
+const void *ax_map_key(ax_map *map, const void *key);
+
 #endif
