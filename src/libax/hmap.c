@@ -202,7 +202,6 @@ ax_fail ax_hmap_set_threshold(ax_hmap *hmap, size_t threshold)
 	if (threshold * hmap->buckets < hmap->size) {
 		size_t quo = hmap->size / threshold;
 		size_t nbucket = quo ? hmap->size / threshold : 1;
-		printf("nbucket1 %lu\n", nbucket);
 		nbucket = ((box_maxsize(ax_r(hmap, hmap).box) >> 1) >= nbucket)
 			? (nbucket << 1) | 1
 			: box_maxsize(ax_r(hmap, hmap).box);
