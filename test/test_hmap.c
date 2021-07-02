@@ -24,7 +24,7 @@
 
 #include <ax/hmap.h>
 #include <ax/hmap.h>
-#include <ax.h>
+#include <ax/base.h>
 
 #include <assert.h>
 #include <setjmp.h>
