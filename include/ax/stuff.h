@@ -33,8 +33,7 @@
 typedef struct ax_stuff_trait_st ax_stuff_trait;
 #endif
 
-#define AX_ST_NIL   0
-#define AX_ST_RAW   1
+#define AX_ST_NIL   1
 #define AX_ST_I8    2
 #define AX_ST_I16   3
 #define AX_ST_I32   4
@@ -49,19 +48,20 @@ typedef struct ax_stuff_trait_st ax_stuff_trait;
 #define AX_ST_S     13
 #define AX_ST_WS    14
 #define AX_ST_PTR   15
-#define AX_ST_PWL   16
 
-#define AX_ST_C     21
-#define AX_ST_H     22
-#define AX_ST_I     23
-#define AX_ST_L     24
-#define AX_ST_LL    25
+#define AX_ST_C     16
+#define AX_ST_H     17
+#define AX_ST_I     18
+#define AX_ST_L     19
+#define AX_ST_LL    20
 
-#define AX_ST_UC    26
-#define AX_ST_UH    27
-#define AX_ST_U     28
-#define AX_ST_UL    29
-#define AX_ST_ULL   210
+#define AX_ST_UC    21
+#define AX_ST_UH    22
+#define AX_ST_U     23
+#define AX_ST_UL    24
+#define AX_ST_ULL   25
+
+#define AX_ST_PWL   26
 
 union ax_stuff_un
 {
@@ -118,5 +118,7 @@ void    ax_stuff_mem_free(void* p);
 size_t ax_stuff_size(int type);
 
 const ax_stuff_trait *ax_stuff_traits(int type);
+
+int ax_stuff_stoi(const char *s);
 
 #endif

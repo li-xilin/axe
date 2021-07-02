@@ -61,6 +61,46 @@ size_t ax_stuff_size(int type)
 	return 0;
 }
 
+int ax_stuff_stoi(const char *s)
+{
+	static const char *const table[] = {
+		[0        ] = "?",
+		[AX_ST_NIL] = "",
+		[AX_ST_I8 ] = "i8",
+		[AX_ST_I16] = "i16",
+		[AX_ST_I32] = "i32",
+		[AX_ST_I64] = "i64",
+		[AX_ST_U8 ] = "u8",
+		[AX_ST_U16] = "u16",
+		[AX_ST_U32] = "u32",
+		[AX_ST_U64] = "u64",
+		[AX_ST_Z  ] = "z",
+		[AX_ST_F  ] = "f",
+		[AX_ST_LF ] = "lf",
+		[AX_ST_S  ] = "s",
+		[AX_ST_WS ] = "ws",
+		[AX_ST_PTR] = "p",
+
+		[AX_ST_C  ] = "c",
+		[AX_ST_H  ] = "h",
+		[AX_ST_I  ] = "i",
+		[AX_ST_L  ] = "l", 
+		[AX_ST_LL ] = "ll", 
+
+		[AX_ST_UC ] = "uc",
+		[AX_ST_UH ] = "uh",
+		[AX_ST_U  ] = "u",
+		[AX_ST_UL ] = "ul",
+		[AX_ST_ULL] = "ull",
+	};
+
+	for (int i = 0; i < sizeof table/ sizeof *table; i++) {
+		if (strcmp(table[i], s) == 0)
+			return i;
+	}
+	return -1;
+}
+
 static bool equal_nil(const void* p1, const void* p2, size_t size)
 {
 	return true;
