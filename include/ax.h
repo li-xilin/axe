@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Li hsilin <lihsilyn@gmail.com>
+ * Copyright (c) 2020 - 2021 Li hsilin <lihsilyn@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,15 @@
 #ifndef AXE_H
 #define AXE_H
 
-#include "ax/str.h"
-#include "ax/map.h"
-#include "ax/seq.h"
-#include "ax/box.h"
-#include "ax/iter.h"
-#include "ax/any.h"
-#include "ax/scope.h"
-#include "ax/one.h"
+#include "ax/obj.h"
+#include "ax/list.h"
+#include "ax/vector.h"
+#include "ax/arr.h"
+#include "ax/avl.h"
+#include "ax/hmap.h"
+#include "ax/log.h"
+#include "ax/debug.h"
+#include "ax/unit.h"
 #include "ax/base.h"
-#include "ax/def.h"
 
 #endif
