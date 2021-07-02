@@ -27,7 +27,7 @@
 #include <string.h>
 
 
-void __ax_debug_assert_fail(const char* file, const char* func, int line, const char* brief, const char* fmt, ...)
+int __ax_debug_assert_fail(const char* file, const char* func, int line, const char* brief, const char* fmt, ...)
 {
 	va_list vl;
 	char text[2048];
@@ -44,4 +44,5 @@ void __ax_debug_assert_fail(const char* file, const char* func, int line, const 
 	fputs(text, stderr);
 		
 	abort();
+	return 0;
 }
