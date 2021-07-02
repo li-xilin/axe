@@ -109,3 +109,23 @@ size_t ax_memhash(const void *p, size_t size)
 	return h;
 }
 
+char *ax_strsplit(char **s, char ch)
+{
+	char *ret;
+	ax_assert(s, "unexpected null string pointer");
+	if (*s) {
+		for (char *p = *s; *p; p++) {
+			if (*p != ch)
+				continue;
+			*p = '\0';
+			ret = *s;
+			*s = p + 1;
+			return ret ;
+		}
+		ret = *s;
+	} else {
+		ret = NULL;
+	}
+	*s = NULL;
+	return ret;
+}

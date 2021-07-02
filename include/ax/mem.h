@@ -45,5 +45,7 @@ size_t ax_wcshash(const wchar_t *s);
 
 size_t ax_memhash(const void *p, size_t size);
 
+char *ax_strsplit(char **s, char ch);
+
 #endif
 
