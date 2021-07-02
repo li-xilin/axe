@@ -30,6 +30,9 @@
 #include "check.h"
 void ax_memxor(void *ptr1, void *ptr2, size_t size)
 {
+	CHECK_PARAM_NULL(ptr1);
+	CHECK_PARAM_NULL(ptr2);
+
 	if (ptr1 == ptr2)
 		return;
 
@@ -53,6 +56,8 @@ void ax_memxor(void *ptr1, void *ptr2, size_t size)
 
 char *ax_strdup(const char *s)
 {
+	CHECK_PARAM_NULL(s);
+
 	size_t size = (strlen(s) + 1) * sizeof(char);
 	char *copy = malloc(size);
 	if (!copy)
@@ -63,6 +68,8 @@ char *ax_strdup(const char *s)
 
 wchar_t *ax_wcsdup(const wchar_t* s)
 {
+	CHECK_PARAM_NULL(s);
+
 	size_t size = (wcslen(s) + 1) * sizeof(wchar_t);
 	wchar_t *copy = malloc(size);
 	if (!copy)
@@ -73,6 +80,8 @@ wchar_t *ax_wcsdup(const wchar_t* s)
 
 void *ax_memdup(const void *p, size_t size)
 {
+	CHECK_PARAM_NULL(p);
+
 	ax_byte *copy = malloc(size);
 	if (!copy)
 		return NULL;
@@ -82,6 +91,8 @@ void *ax_memdup(const void *p, size_t size)
 
 size_t ax_strhash(const char *s)
 {
+	CHECK_PARAM_NULL(s);
+
 	register size_t h = 5381;
 	int c;
 	while ((c = *s++)) {
@@ -92,6 +103,8 @@ size_t ax_strhash(const char *s)
 
 size_t ax_wcshash(const wchar_t *s)
 {
+	CHECK_PARAM_NULL(s);
+
 	register size_t h = 5381;
 	int c;
 	while ((c = *s++)) {
@@ -102,6 +115,8 @@ size_t ax_wcshash(const wchar_t *s)
 
 size_t ax_memhash(const void *p, size_t size)
 {
+	CHECK_PARAM_NULL(p);
+
 	register size_t h = 5381;
 	for (size_t i = 0; i < size; i++) {
 		h = (h ^ (h << 5)) ^ ((ax_byte *)p)[i];
@@ -111,8 +126,9 @@ size_t ax_memhash(const void *p, size_t size)
 
 char *ax_strsplit(char **s, char ch)
 {
+	CHECK_PARAM_NULL(s);
+
 	char *ret;
-	ax_assert(s, "unexpected null string pointer");
 	if (*s) {
 		for (char *p = *s; *p; p++) {
 			if (*p != ch)
