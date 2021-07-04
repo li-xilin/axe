@@ -72,7 +72,6 @@ static void        box_clear(ax_box *box);
 static const ax_stuff_trait *box_elem_tr(const ax_box* box);
 
 static ax_any     *any_copy(const ax_any *any);
-static ax_any     *any_move(ax_any *any);
 
 static void        one_free(ax_one *one);
 
@@ -124,7 +123,7 @@ static void *iter_get(const ax_iter *it)
 {
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr && it->point);
 	ax_list *list = (ax_list *) it->owner;
-	const ax_stuff_trait *etr = list->_seq.env.elem_tr;
+	const ax_stuff_trait *etr = list->_seq.env.box.elem_tr;
 	struct node_st *node = it->point;
 	return etr->link ? *(void**) node->data : node->data;
 }
@@ -288,7 +287,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 
 	struct node_st *node = it->point;
 	ax_list *list = (ax_list *) it->owner;
-	const ax_stuff_trait *etr = list->_seq.env.elem_tr;
+	const ax_stuff_trait *etr = list->_seq.env.box.elem_tr;
 
 	etr->free(node->data);
 	
@@ -321,7 +320,7 @@ static void iter_erase(ax_iter *it)
 		node->next->pre = node->pre;
 	}
 
-	const ax_stuff_trait *etr = list->_seq.env.elem_tr;
+	const ax_stuff_trait *etr = list->_seq.env.box.elem_tr;
 	etr->free(node->data);
 	free(node);
 }
@@ -349,7 +348,7 @@ static ax_any *any_copy(const ax_any *any)
 	CHECK_PARAM_NULL(any);
 
 	ax_list_cr self_r = { .any = any };
-	const ax_stuff_trait *etr = self_r.seq->env.elem_tr;
+	const ax_stuff_trait *etr = self_r.seq->env.box.elem_tr;
 
 	ax_list_r new_r = { .seq = __ax_list_construct(etr) };
 	if (new_r.one == NULL) {
@@ -368,30 +367,10 @@ static ax_any *any_copy(const ax_any *any)
 		ax_citer_next(&it);
 	}
 
-	new_r.list->_seq.env.one.scope.macro = NULL;
-	new_r.list->_seq.env.one.scope.micro = 0;
+	new_r.list->_seq.env.box.any.one.scope.macro = NULL;
+	new_r.list->_seq.env.box.any.one.scope.micro = 0;
 	return (ax_any*)new_r.any;
 }
-
-static ax_any *any_move(ax_any *any)
-{
-	CHECK_PARAM_NULL(any);
-
-	ax_list_r self_r = { .any = any };
-
-	ax_list *new = malloc(sizeof(ax_list));
-	if (new == NULL) {
-		return NULL;
-	}
-
-	memcpy(new, self_r.list, sizeof(ax_list));
-
-	self_r.list->head = NULL;
-	self_r.list->size = 0;
-
-	new->_seq.env.one.scope.macro = NULL;
-	new->_seq.env.one.scope.micro = 0;
-	return (ax_any*)new;}
 
 static size_t box_size(const ax_box *box)
 {
@@ -461,7 +440,7 @@ static ax_iter box_rend(ax_box *box)
 static const ax_stuff_trait *box_elem_tr(const ax_box* box)
 {
 	ax_list_r self_r = { .box = (ax_box*)box };
-	return self_r.seq->env.elem_tr;
+	return self_r.seq->env.box.elem_tr;
 }
 
 static void box_clear(ax_box *box)
@@ -473,7 +452,7 @@ static void box_clear(ax_box *box)
 	if (list->size == 0)
 		return;
 
-	const ax_stuff_trait *etr = ax_r(list, list).seq->env.elem_tr;
+	const ax_stuff_trait *etr = ax_r(list, list).seq->env.box.elem_tr;
 	struct node_st *node = list->head;
 	do {	
 		struct node_st *next = node->next;
@@ -495,7 +474,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	ax_list_r self_r = { .seq = seq };
 	CHECK_PARAM_VALIDITY(it, (it->point ? !!self_r.list->head : 1));
 
-	const ax_stuff_trait *etr = self_r.seq->env.elem_tr;
+	const ax_stuff_trait *etr = self_r.seq->env.box.elem_tr;
 	struct node_st *node = malloc(sizeof(struct node_st) + etr->size);
 	if (node == NULL) {
 		return true;
@@ -568,7 +547,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 
 	ax_list_r self_r = { .seq = seq };
 
-	const ax_stuff_trait *etr = seq->env.elem_tr;
+	const ax_stuff_trait *etr = seq->env.box.elem_tr;
 
 	struct node_st *node = make_node(etr, val);
 	if (!node) {
@@ -608,7 +587,7 @@ static ax_fail seq_pop(ax_seq *seq)
 	} else {
 		list->head = NULL;
 	}
-	seq->env.elem_tr->free(node->data);
+	seq->env.box.elem_tr->free(node->data);
 	free(node);
 
 	list->size --;
@@ -621,7 +600,7 @@ static ax_fail seq_pushf(ax_seq *seq, const void *val)
 
 	ax_list_r self_r = { .seq = seq };
 
-	const ax_stuff_trait *etr = seq->env.elem_tr;
+	const ax_stuff_trait *etr = seq->env.box.elem_tr;
 
 	struct node_st *node = make_node(etr, val);
 	if (!node) {
@@ -661,7 +640,7 @@ static ax_fail seq_popf(ax_seq *seq)
 	} else {
 		list->head = NULL;
 	}
-	seq->env.elem_tr->free(node->data);
+	seq->env.box.elem_tr->free(node->data);
 	free(node);
 
 	list->size --;
@@ -754,7 +733,7 @@ static void *seq_last(const ax_seq *seq)
 	ax_list *list = (ax_list *)seq;
 	struct node_st *head = list->head;
 	ax_assert(head, "empty list");
-	const ax_stuff_trait *etr = list->_seq.env.elem_tr;
+	const ax_stuff_trait *etr = list->_seq.env.box.elem_tr;
 	void *pval = head->pre->data;
 	
 	return etr->link
@@ -768,7 +747,7 @@ static void *seq_first(const ax_seq *seq)
 	ax_list *list = (ax_list *)seq;
 	struct node_st *head = list->head;
 	ax_assert(head, "empty list");
-	const ax_stuff_trait *etr = list->_seq.env.elem_tr;
+	const ax_stuff_trait *etr = list->_seq.env.box.elem_tr;
 	void *pval = head->data;
 	
 	return etr->link
@@ -786,7 +765,6 @@ const ax_seq_trait ax_list_tr =
 			},
 			.dump = any_dump,
 			.copy = any_copy,
-			.move = any_move
 		},
 		.iter = {
 			.ctr = {
@@ -800,7 +778,7 @@ const ax_seq_trait ax_list_tr =
 			},
 			.get = iter_get,
 			.set = iter_set,
-			.erase = iter_erase
+			.erase = iter_erase,
 		},
 		.riter = {
 			.ctr = {
@@ -814,7 +792,7 @@ const ax_seq_trait ax_list_tr =
 			},
 			.get = iter_get,
 			.set = iter_set,
-			.erase = iter_erase
+			.erase = iter_erase,
 		},
 
 		.size = box_size,
@@ -826,7 +804,7 @@ const ax_seq_trait ax_list_tr =
 		.rend = box_rend,
 
 		.clear = box_clear,
-		.elem_tr = box_elem_tr
+		.elem_tr = box_elem_tr,
 
 	},
 	.push = seq_push,
@@ -838,7 +816,7 @@ const ax_seq_trait ax_list_tr =
 	.insert = seq_insert,
 	.at = seq_at,
 	.first = seq_first,
-	.last = seq_last
+	.last = seq_last,
 };
 
 
@@ -858,15 +836,10 @@ ax_seq* __ax_list_construct(const ax_stuff_trait *elem_tr)
 	ax_list list_init = {
 		._seq = {
 			.tr = &ax_list_tr,
-			.env = {
-				.one = {
-					.scope = { NULL },
-				},
-				.elem_tr = elem_tr
-			},
+			.env.box.elem_tr = elem_tr,
 		},
 		.head = NULL,
-		.size = 0
+		.size = 0,
 	};
 	memcpy(self_r.list, &list_init, sizeof list_init);
 	return self_r.seq;

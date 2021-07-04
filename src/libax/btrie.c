@@ -118,7 +118,7 @@ static void citer_next(ax_citer *it)
 static ax_box *citer_box(const ax_citer *it)
 {
 	const ax_map *map = it->owner;
-	return (ax_box *)map->env.one.scope.macro;
+	return (ax_box *)map->env.box.any.one.scope.macro;
 }
 
 inline static void node_set_parent(struct node_st *node, const void *parent)
@@ -137,7 +137,7 @@ static void *iter_get(const ax_iter *it)
 
 	ax_btrie *self = iter_get_self(it);
 	struct node_st *node = ax_avl_tr.box.iter.get(it);
-	void *val = self->_trie.env.val_tr->link
+	void *val = self->_trie.env.box.elem_tr->link
 		? *(void **)node->val
 		: node->val;
 	return val;
@@ -152,7 +152,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	ax_btrie *self = iter_get_self(it);
 
 	struct node_st *node = ax_avl_tr.box.iter.get(it);
-	const ax_stuff_trait *etr = self->_trie.env.val_tr;
+	const ax_stuff_trait *etr = self->_trie.env.box.elem_tr;
 	const void *pval = (etr->link) ? &val : val;
 	if (node->val) {
 		etr->free(node->val);
@@ -169,7 +169,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 static void node_free_value(ax_btrie *btrie, struct node_st *node)
 {
 	if (node->val) {
-		const ax_stuff_trait *etr = btrie->_trie.env.val_tr;
+		const ax_stuff_trait *etr = btrie->_trie.env.box.elem_tr;
 		etr->free(node->val);
 		free(node->val);
 		node->val = NULL;
@@ -234,7 +234,7 @@ static ax_any *any_copy(const ax_any *any)
 	// TODO
 #if 0
 	ax_btrie_cr self_r = { .any = any };
-	const ax_stuff_trait *etr = self_r.seq->env.elem_tr;
+	const ax_stuff_trait *etr = self_r.seq->env.box.elem_tr;
 
 	ax_base *base = ax_one_base(self_r.one);
 	ax_btrie_r new_r = { .seq = __ax_btrie_construct(base, etr) };
@@ -354,7 +354,7 @@ static const ax_stuff_trait *box_elem_tr(const ax_box* box)
 	CHECK_PARAM_NULL(box);
 
 	ax_btrie_r self_r = { .box = (ax_box*)box };
-	return self_r.trie->env.val_tr;
+	return self_r.trie->env.box.elem_tr;
 }
 
 static void box_clear(ax_box *box)
@@ -421,7 +421,7 @@ static int match_key(const ax_btrie *self, const ax_seq *key, ax_citer *it_misma
 
 static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *val)
 {
-	const ax_stuff_trait *val_tr = self->_trie.env.val_tr;
+	const ax_stuff_trait *val_tr = self->_trie.env.box.elem_tr;
 	void *value = NULL;
 
 	value = malloc(val_tr->size);
@@ -453,7 +453,7 @@ fail:
 
 static struct node_st *make_path(ax_trie *trie, const ax_seq *key)
 {
-	ax_assert(trie->env.key_tr == key->env.elem_tr, "invalid element trait for the key");
+	ax_assert(trie->env.key_tr == key->env.box.elem_tr, "invalid element trait for the key");
 
 	ax_btrie_r self_r = { .trie = trie };
 
@@ -475,7 +475,7 @@ static struct node_st *make_path(ax_trie *trie, const ax_seq *key)
 	int count = 0;
 	for (size_t i = 0; i < ins_count; i++) {
 		ax_map *new_submap = __ax_avl_construct(self_r.btrie->_trie.env.key_tr, &node_tr);
-		new_submap->env.one.scope.macro = self_r.one;
+		new_submap->env.box.any.one.scope.macro = self_r.one;
 		if (!new_submap) {
 			goto fail;
 		}
@@ -518,7 +518,7 @@ static void *trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 {
 	CHECK_PARAM_NULL(trie);
 	CHECK_PARAM_NULL(key);
-	ax_assert(trie->env.key_tr == key->env.elem_tr, "invalid element trait for the key");
+	ax_assert(trie->env.key_tr == key->env.box.elem_tr, "invalid element trait for the key");
 
 	ax_btrie_r self_r = { .trie = trie };
 
@@ -529,7 +529,7 @@ static void *trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 	if (node_set_value(self_r.btrie, node, val))
 		return NULL;
 
-	const ax_stuff_trait *vtr = trie->env.val_tr;
+	const ax_stuff_trait *vtr = trie->env.box.elem_tr;
 	return vtr->link
 		? *(void **)node->val
 		: node->val;
@@ -770,24 +770,20 @@ const ax_trie_trait ax_btrie_tr =
 			},
 			.dump = any_dump,
 			.copy = any_copy,
-			.move = any_move
+			.move = any_move,
 		},
 		.iter = {
 			.ctr = {
 				.norm = true,
 				.type = AX_IT_RAND,
-				.move = NULL,
 				.next = citer_next,
 				.prev = citer_prev,
-				.less = NULL,
-				.dist = NULL,
-				.box = citer_box
+				.box = citer_box,
 			},
 			.get = iter_get,
 			.set = iter_set,
-			.erase = iter_erase
+			.erase = iter_erase,
 		},
-		.riter = { { NULL } },
 
 		.size = box_size,
 		.maxsize = box_maxsize,
@@ -840,23 +836,19 @@ ax_trie *__ax_btrie_construct(const ax_stuff_trait *key_tr, const ax_stuff_trait
 	if (!root) {
 		goto fail;
 	}
-	root->env.one.scope.macro = ax_r(btrie, self).one;
-	root->env.one.scope.micro = 0;
+	root->env.box.any.one.scope.macro = ax_r(btrie, self).one;
 
 	ax_btrie btrie_init = {
 		._trie = {
 			.tr = &ax_btrie_tr,
 			.env = {
-				.one = {
-					.scope = { NULL },
-				},
 				.key_tr = key_tr,
-				.val_tr = val_tr
+				.box.elem_tr = val_tr,
 			},
 		},
-		.root_r = { .map = root },
+		.root_r.map = root,
 		.size = 0,
-		.capacity = SIZE_MAX
+		.capacity = SIZE_MAX,
 	};
 	memcpy(self, &btrie_init, sizeof btrie_init);
 	return ax_r(btrie, self).trie;

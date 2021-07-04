@@ -86,7 +86,6 @@ static const ax_stuff_trait *box_elem_tr(const ax_box *box);
 
 static void    any_dump(const ax_any* any, int ind);
 static ax_any* any_copy(const ax_any* any);
-static ax_any* any_move(ax_any* any);
 
 static void    one_free(ax_one* one);
 
@@ -290,42 +289,13 @@ static ax_any* any_copy(const ax_any* any)
 
 	memcpy(new_str_r.string, self_r.string, sizeof(ax_string));
 
-	new_str_r.string->_str.env.one.scope.macro = NULL;
-	new_str_r.string->_str.env.one.scope.micro = 0;
+	new_str_r.string->_str.env.box.any.one.scope.macro = NULL;
+	new_str_r.string->_str.env.box.any.one.scope.micro = 0;
 	return new_str_r.any;
 fail:
 	ax_one_free(new_buf_r.one);
 	ax_one_free(new_str_r.one);
 	return NULL;
-}
-
-static ax_any* any_move(ax_any* any)
-{
-	CHECK_PARAM_NULL(any);
-
-	ax_string_r self_r = { .any = (ax_any*)any };
-	ax_buff_r new_buf_r = { NULL };
-	ax_string_r new_str_r = { NULL };
-
-	new_str_r.string = malloc((sizeof(ax_string)));
-	if (!new_str_r.string) {
-		goto fail;
-	}
-
-	new_buf_r.any = ax_any_move(self_r.string->buff_r.any);
-	if (!new_buf_r.any)
-		goto fail;
-
-	memcpy(new_str_r.string, self_r.string, sizeof(ax_string));
-
-	new_str_r.string->_str.env.one.scope.macro = NULL;
-	new_str_r.string->_str.env.one.scope.micro = 0;
-	return new_str_r.any;
-fail:
-	ax_one_free(new_buf_r.one);
-	ax_one_free(new_str_r.one);
-	return NULL;
-
 }
 
 static size_t box_size(const ax_box* box)
@@ -412,7 +382,7 @@ static void box_clear(ax_box* box)
 static const ax_stuff_trait *box_elem_tr(const ax_box *box)
 {
 	ax_string_r self_r = { .box = (ax_box *)box };
-	return self_r.seq->env.elem_tr;
+	return self_r.seq->env.box.elem_tr;
 }
 
 static ax_fail str_append(ax_str* str, const char *s)
@@ -716,7 +686,6 @@ static const ax_str_trait str_trait =
 				},
 				.dump = any_dump,
 				.copy = any_copy,
-				.move = any_move,
 			},
 			.size = box_size,
 			.maxsize = box_maxsize,
@@ -785,9 +754,8 @@ ax_str *__ax_string_construct()
 	ax_buff_r buff_r = { NULL };
 
 	self = malloc(sizeof(ax_string));
-	if (self == NULL) {
+	if (self == NULL)
 		goto fail;
-	}
 
 	buff_r.any = __ax_buff_construct();
 	if (!buff_r.any)
@@ -797,13 +765,10 @@ ax_str *__ax_string_construct()
 		._str = {
 			.tr = &str_trait,
 			.env = {
-				.one = {
-					.scope = { NULL },
-				},
-				.elem_tr = ax_stuff_traits(AX_ST_I8)
+				.box.elem_tr = ax_stuff_traits(AX_ST_C)
 			},
 		},
-		.buff_r = buff_r
+		.buff_r = buff_r,
 	};
 	char zero = '\0';
 	ax_buff_reserve(buff_r.buff, MIN_SIZE * sizeof(char));

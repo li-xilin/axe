@@ -40,7 +40,7 @@
 #define DEFINE_KVTR(_map) \
 	register const ax_stuff_trait \
 		*ktr = (_map)->env.key_tr,\
-		*vtr = (_map)->env.val_tr
+		*vtr = (_map)->env.box.elem_tr
 
 #undef free
 
@@ -86,7 +86,6 @@ static const ax_stuff_trait *box_elem_tr(const ax_box *box);
 
 static void     any_dump(const ax_any *any, int ind);
 static ax_any  *any_copy(const ax_any *any);
-static ax_any  *any_move(ax_any *any);
 
 static void     one_free(ax_one *one);
 
@@ -222,7 +221,7 @@ static struct node_st *make_node(ax_map *map, const void *key, const void *val)
 {
 
 	DEFINE_KVTR(map);
-	size_t node_size = sizeof(struct node_st) + ktr->size + map->env.val_tr->size;
+	size_t node_size = sizeof(struct node_st) + ktr->size + map->env.box.elem_tr->size;
 
 	struct node_st *node = malloc(node_size);
 	if (!node)
@@ -291,7 +290,7 @@ static void free_node(ax_map *map, struct node_st **pp_node)
 	assert(pp_node);
 	ax_byte *value_ptr = (*pp_node)->kvbuffer + map->env.key_tr->size;
 	map->env.key_tr->free((*pp_node)->kvbuffer);
-	map->env.val_tr->free(value_ptr);
+	map->env.box.elem_tr->free(value_ptr);
 	struct node_st *node_to_free = *pp_node;
 	(*pp_node) = node_to_free->next;
 	free(node_to_free);
@@ -383,7 +382,7 @@ inline static void *node_key(const ax_map* map, struct node_st *node)
 static void *value_set(ax_map* map, struct node_st *node, const void *val)
 {
 	const ax_stuff_trait *ktr = map->env.key_tr;
-	const ax_stuff_trait *vtr = map->env.val_tr;
+	const ax_stuff_trait *vtr = map->env.box.elem_tr;
 	const void *pval = vtr->link && val ? &val : val;
 
 	ax_byte *value_ptr = node->kvbuffer + ktr->size;
@@ -582,7 +581,7 @@ static ax_any *any_copy(const ax_any *any)
 
 	ax_hmap_r src_r = { .any = (ax_any *)any };
 	const ax_stuff_trait *ktr = src_r.map->env.key_tr;
-	const ax_stuff_trait *vtr = src_r.map->env.val_tr;
+	const ax_stuff_trait *vtr = src_r.map->env.box.elem_tr;
 	ax_hmap_r dst_r = { .map = __ax_hmap_construct(ktr, vtr)};
 	ax_map_cforeach(src_r.map, const void *, key, const void *, val) {
 		if (!ax_map_put(dst_r.map, key, val)) {
@@ -591,25 +590,9 @@ static ax_any *any_copy(const ax_any *any)
 		}
 	}
 
-	dst_r.hmap->_map.env.one.scope.macro = NULL;
-	dst_r.hmap->_map.env.one.scope.micro = 0;
+	dst_r.hmap->_map.env.box.any.one.scope.macro = NULL;
+	dst_r.hmap->_map.env.box.any.one.scope.micro = 0;
 	return dst_r.any;
-}
-
-static ax_any *any_move(ax_any *any)
-{
-	CHECK_PARAM_NULL(any);
-
-	ax_hmap_r src_r = { .any = any };
-
-	ax_hmap *dst = malloc(sizeof(ax_hmap));
-	memcpy(dst, src_r.hmap, sizeof(ax_hmap));
-	src_r.hmap->buckets = 0;
-	src_r.hmap->size = 0;
-
-	dst->_map.env.one.scope.macro = NULL;
-	dst->_map.env.one.scope.micro = 0;
-	return (ax_any *) dst;
 }
 
 static size_t box_size(const ax_box *box)
@@ -676,7 +659,7 @@ static void box_clear(ax_box *box)
 static const ax_stuff_trait *box_elem_tr(const ax_box *box)
 {
 	ax_hmap_r hmap_r = { .box = (ax_box*)box };
-	return hmap_r.map->env.val_tr;
+	return hmap_r.map->env.box.elem_tr;
 }
 
 const ax_map_trait ax_hmap_tr =
@@ -689,7 +672,6 @@ const ax_map_trait ax_hmap_tr =
 			},
 			.dump = any_dump,
 			.copy = any_copy,
-			.move = any_move,
 		},
 		
 		.iter = {
@@ -715,7 +697,7 @@ const ax_map_trait ax_hmap_tr =
 		.rbegin  = NULL,
 		.rend    = NULL,
 		.clear   = box_clear,
-		.elem_tr = box_elem_tr
+		.elem_tr = box_elem_tr,
 	},
 	.put   = map_put,
 	.get   = map_get,
@@ -723,7 +705,7 @@ const ax_map_trait ax_hmap_tr =
 	.erase = map_erase,
 	.exist = map_exist,
 	.chkey = map_chkey,
-	.itkey = map_it_key
+	.itkey = map_it_key,
 };
 
 ax_map *__ax_hmap_construct(const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)
@@ -747,11 +729,8 @@ ax_map *__ax_hmap_construct(const ax_stuff_trait *key_tr, const ax_stuff_trait *
 		._map = {
 			.tr = &ax_hmap_tr,
 			.env = {
-				.one = {
-					.scope = { NULL },
-				},
+				.box.elem_tr = val_tr,
 				.key_tr = key_tr,
-				.val_tr = val_tr,
 			},
 		},
 		.buckets = 1,

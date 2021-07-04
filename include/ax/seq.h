@@ -64,8 +64,7 @@ struct ax_seq_trait_st
 
 typedef struct ax_seq_env_st
 {
-	ax_one_env one; /* Keep this first */
-	const ax_stuff_trait *const elem_tr;
+	ax_box_env box; /* Keep this first */
 } ax_seq_env;
 
 struct ax_seq_st

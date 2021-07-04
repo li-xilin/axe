@@ -71,7 +71,7 @@ static inline bool iter_if_valid(const ax_citer *it)
 {
 
 	const ax_arr *self = it->owner;
-	const ax_stuff_trait *etr = self->seq.env.elem_tr;
+	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
 	ax_byte *ptr = self->arr;
 	size_t size = etr->size * self->size;
 
@@ -85,7 +85,7 @@ static inline bool iter_if_have_value(const ax_citer *it)
 {
 	const ax_arr *self = it->owner;
 	const ax_byte *ptr = self->arr;
-	const ax_stuff_trait *etr = self->seq.env.elem_tr;
+	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
 	size_t size = etr->size * self->size;
 	return (ax_byte *)it->point >= ptr && (ax_byte *)it->point < ptr + size;
 }
@@ -97,7 +97,7 @@ static void citer_move(ax_citer *it, long i)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_arr *self = it->owner;
-	it->point = (ax_byte*)it->point + (i * (self->seq.env.elem_tr->size));
+	it->point = (ax_byte*)it->point + (i * (self->seq.env.box.elem_tr->size));
 
 	CHECK_PARAM_VALIDITY(i, iter_if_valid(it));
 }
@@ -109,7 +109,7 @@ static void citer_prev(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_arr *self = it->owner;
-	it->point = (ax_byte*)it->point - self->seq.env.elem_tr->size;
+	it->point = (ax_byte*)it->point - self->seq.env.box.elem_tr->size;
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -120,7 +120,7 @@ static void citer_next(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_arr *self = it->owner;
-	it->point = (ax_byte*)it->point + self->seq.env.elem_tr->size;
+	it->point = (ax_byte*)it->point + self->seq.env.box.elem_tr->size;
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -143,7 +143,7 @@ static long citer_dist(const ax_citer *it1, const ax_citer *it2)
 	CHECK_PARAM_VALIDITY(it2, iter_if_valid(it2));
 
 	const ax_arr *self = it1->owner;
-	return ((uintptr_t)it2->point - (uintptr_t)it1->point) / self->seq.env.elem_tr->size;
+	return ((uintptr_t)it2->point - (uintptr_t)it1->point) / self->seq.env.box.elem_tr->size;
 }
 
 static void rciter_move(ax_citer *it, long i)
@@ -152,7 +152,7 @@ static void rciter_move(ax_citer *it, long i)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_arr *self = it->owner;
-	it->point = (ax_byte*)it->point - (i * (self->seq.env.elem_tr->size));
+	it->point = (ax_byte*)it->point - (i * (self->seq.env.box.elem_tr->size));
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -162,7 +162,7 @@ static void rciter_prev(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_arr *self = it->owner;
-	it->point = (ax_byte*)it->point + self->seq.env.elem_tr->size;
+	it->point = (ax_byte*)it->point + self->seq.env.box.elem_tr->size;
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -172,7 +172,7 @@ static void rciter_next(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_arr *self = it->owner;
-	it->point = (ax_byte*)it->point - self->seq.env.elem_tr->size;
+	it->point = (ax_byte*)it->point - self->seq.env.box.elem_tr->size;
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -184,7 +184,7 @@ static void *iter_get(const ax_iter *it)
 	CHECK_ITERATOR_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
 
 	const ax_arr *self = it->owner;
-	const ax_stuff_trait *etr = self->seq.env.elem_tr;
+	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
 	return etr->link ? *(void**) it->point : it->point;
 }
 
@@ -193,7 +193,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
 
 	const ax_arr *self = it->owner;
-	const ax_stuff_trait *etr = self->seq.env.elem_tr;
+	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
 
 	etr->free(it->point);
 
@@ -249,7 +249,7 @@ static ax_iter box_end(ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	ax_arr *self = (ax_arr *) box;
-	const ax_stuff_trait *etr = self->seq.env.elem_tr;
+	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
 
 	ax_iter it = {
 		.owner = (void*)box,
@@ -264,7 +264,7 @@ static ax_iter box_rbegin(ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	ax_arr *self = (ax_arr *) box;
-	const ax_stuff_trait *etr = self->seq.env.elem_tr;
+	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
 
 	ax_iter it = {
 		.owner = (void*)box,
@@ -279,7 +279,7 @@ static ax_iter box_rend(ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	ax_arr *self = (ax_arr *) box;
-	const ax_stuff_trait *etr = self->seq.env.elem_tr;
+	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
 
 	ax_iter it = {
 		.owner = (void *)box,
@@ -292,7 +292,7 @@ static ax_iter box_rend(ax_box *box)
 static const ax_stuff_trait *box_elem_tr(const ax_box *box)
 {
 	ax_arr_r self_r = { .box = (ax_box*)box };
-	return self_r.seq->env.elem_tr;
+	return self_r.seq->env.box.elem_tr;
 }
 
 static void seq_invert(ax_seq *seq)
@@ -300,7 +300,7 @@ static void seq_invert(ax_seq *seq)
 	CHECK_PARAM_NULL(seq);
 
 	ax_arr *self = (ax_arr *) seq;
-	const ax_stuff_trait *etr = self->seq.env.elem_tr;
+	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
 	size_t size = self->size * etr->size;
 	ax_byte *ptr = self->arr;
 
@@ -309,8 +309,8 @@ static void seq_invert(ax_seq *seq)
 
 	size_t left = 0, right = size - etr->size;
 	while (right - left > etr->size) {
-		seq->env.elem_tr->swap(ptr + left, ptr + right,
-				seq->env.elem_tr->size);
+		seq->env.box.elem_tr->swap(ptr + left, ptr + right,
+				seq->env.box.elem_tr->size);
 		left += etr->size;
 		right -= etr->size;
 	}
@@ -332,7 +332,7 @@ static ax_iter seq_at(const ax_seq *seq, size_t index)
 	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(ax_cr(seq, seq).box));
 
 	ax_arr *self = (ax_arr *) seq;
-	const ax_stuff_trait *etr = seq->env.elem_tr;
+	const ax_stuff_trait *etr = seq->env.box.elem_tr;
 
 	ax_iter it = {
 		.owner = self,
@@ -348,7 +348,7 @@ static void *seq_last(const ax_seq *seq)
 	ax_assert(ax_box_size(ax_cr(seq, seq).box) > 0, "empty");
 
 	ax_arr_cr self_r = { .seq = seq };
-	const ax_stuff_trait *etr = self_r.arr->seq.env.elem_tr;
+	const ax_stuff_trait *etr = self_r.arr->seq.env.box.elem_tr;
 	return (ax_byte *)self_r.arr->arr + (etr->size  - 1) * self_r.arr->size;
 }
 
@@ -443,10 +443,14 @@ ax_arr_r ax_arr_make(ax_arr *arr, const ax_stuff_trait *elem_tr, void *ptr, size
 		.seq = {
 			.tr = &ax_arr_tr,
 			.env = {
-				.one = {
-					.scope = { NULL }
+				.box = {
+					.any = {
+						.one = {
+							.scope = { NULL }
+						},
+					},
+					.elem_tr = elem_tr
 				},
-				.elem_tr = elem_tr
 			},
 		},
 		.arr = ptr,

@@ -38,21 +38,21 @@ static void new(axut_runner *r)
 {
 	ax_list_r obj1 = ax_new(ax_list, "i8");
 	axut_assert(r, obj1.one != NULL);
-	axut_assert(r, obj1.seq->env.elem_tr == ax_stuff_traits(AX_ST_I8));
+	axut_assert(r, obj1.seq->env.box.elem_tr == ax_stuff_traits(AX_ST_I8));
 
 	ax_vector_r obj2 = ax_new(ax_vector, "u8");
 	axut_assert(r, obj2.one != NULL);
-	axut_assert(r, obj2.seq->env.elem_tr == ax_stuff_traits(AX_ST_U8));
+	axut_assert(r, obj2.seq->env.box.elem_tr == ax_stuff_traits(AX_ST_U8));
 
 	ax_avl_r obj3 = ax_new(ax_avl, "s:i32");
 	axut_assert(r, obj3.one != NULL);
 	axut_assert(r, obj3.map->env.key_tr == ax_stuff_traits(AX_ST_S));
-	axut_assert(r, obj3.map->env.val_tr == ax_stuff_traits(AX_ST_I32));
+	axut_assert(r, obj3.map->env.box.elem_tr == ax_stuff_traits(AX_ST_I32));
 
 	ax_hmap_r obj4 = ax_new(ax_hmap, "z:u64");
 	axut_assert(r, obj4.one != NULL);
 	axut_assert(r, obj4.map->env.key_tr == ax_stuff_traits(AX_ST_Z));
-	axut_assert(r, obj4.map->env.val_tr == ax_stuff_traits(AX_ST_U64));
+	axut_assert(r, obj4.map->env.box.elem_tr == ax_stuff_traits(AX_ST_U64));
 
 	ax_stack_r obj5 = ax_new(ax_stack, "p");
 	axut_assert(r, obj5.one != NULL);
@@ -65,7 +65,7 @@ static void new(axut_runner *r)
 	ax_btrie_r obj7 = ax_new(ax_btrie, "f:ws");
 	axut_assert(r, obj7.one != NULL);
 	axut_assert(r, obj7.trie->env.key_tr == ax_stuff_traits(AX_ST_F));
-	axut_assert(r, obj7.trie->env.val_tr == ax_stuff_traits(AX_ST_WS));
+	axut_assert(r, obj7.trie->env.box.elem_tr == ax_stuff_traits(AX_ST_WS));
 }
 
 axut_suite *suite_for_obj(ax_base *base)

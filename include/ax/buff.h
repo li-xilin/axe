@@ -27,6 +27,8 @@
 #include "any.h"
 #include "def.h"
 
+#define AX_BUFF_NAME AX_ANY_NAME ".buff"
+
 #ifndef AX_POOL_DEFINED
 #define AX_POOL_DEFINED
 typedef struct ax_pool_st ax_pool;
@@ -51,6 +53,8 @@ typedef union
 	ax_one *one;
 	ax_buff_cr c;
 } ax_buff_r;
+
+extern const ax_any_trait ax_buff_tr;
 
 ax_any *__ax_buff_construct();
 

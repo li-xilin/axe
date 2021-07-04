@@ -77,9 +77,8 @@ struct ax_trie_trait_st
 
 typedef struct ax_trie_env_st
 {
-	ax_one_env one;
+	ax_box_env box;
 	const ax_stuff_trait *key_tr;
-	const ax_stuff_trait *val_tr;
 } ax_trie_env;
 
 struct ax_trie_st

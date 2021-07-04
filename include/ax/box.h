@@ -89,10 +89,16 @@ struct ax_box_trait_st
 	const ax_box_elem_tr_f elem_tr;
 };
 
+typedef struct ax_box_env_st
+{
+	ax_any_env any; /* Keep this first */
+	const ax_stuff_trait *const elem_tr;
+} ax_box_env;
+
 struct ax_box_st
 {
 	const ax_box_trait *const tr;
-	ax_one_env env;
+	ax_box_env env;
 };
 
 typedef union

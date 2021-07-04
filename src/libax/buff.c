@@ -43,11 +43,8 @@ struct ax_buff_st
 };
 
 static ax_any *any_copy(const ax_any *any);
-static ax_any *any_move(ax_any *any);
 
 static void    one_free(ax_one *one);
-
-static const ax_any_trait any_trait;
 
 static void one_free(ax_one *one)
 {
@@ -81,45 +78,13 @@ static ax_any *any_copy(const ax_any *any)
 	dst_buff->real = src_buff->used;
 	dst_buff->buf = buffer;
 
-	dst_buff->_any.env.scope.macro = NULL;
-	dst_buff->_any.env.scope.micro = 0;
+	dst_buff->_any.env.one.scope.macro = NULL;
+	dst_buff->_any.env.one.scope.micro = 0;
 	return ax_r(buff, dst_buff).any;
 fail:
 	free(buffer);
 	free(dst_buff);
 	return NULL;
-}
-
-static ax_any *any_move(ax_any *any)
-{
-	CHECK_PARAM_NULL(any);
-
-	ax_buff *src_buff = (ax_buff *) any, *dst_buff = NULL;
-	void *buf = NULL;
-
-	dst_buff = malloc(sizeof(ax_buff));
-	if (!dst_buff) {
-		goto fail;
-	}
-
-	buf = malloc(src_buff->min);
-	if (!buf) {
-		goto fail;
-	}
-
-	memcpy(dst_buff, src_buff, sizeof(ax_buff));
-	src_buff->used = 0;
-	src_buff->real = src_buff->min;
-	src_buff->buf = buf;
-	
-	dst_buff->_any.env.scope.micro = 0;
-	dst_buff->_any.env.scope.macro = NULL;
-	return ax_r(buff, dst_buff).any;
-fail:
-	free(dst_buff);
-	free(buf);
-	return NULL;
-
 }
 
 static ax_fail mem_resize(const ax_buff *buff, size_t require, size_t *alloc)
@@ -146,13 +111,12 @@ static ax_fail mem_resize(const ax_buff *buff, size_t require, size_t *alloc)
 	return false;
 }
 
-static const ax_any_trait any_trait =
+const ax_any_trait ax_buff_tr =
 {
 	.one = {
-		.name = "one.buff",
-		.free = one_free
+		.name = AX_BUFF_NAME,
+		.free = one_free,
 	},
-	.move = any_move,
 	.copy = any_copy
 };
 
@@ -166,13 +130,7 @@ ax_any *__ax_buff_construct()
 		goto fail;
 
 	ax_buff buff_init = {
-		._any = {
-			.tr = &any_trait,
-			.env = {
-				.scope = { NULL },
-			}
-		},
-		
+		._any.tr = &ax_buff_tr,
 		.used = 0,
 		.real = 0,
 		.min = 0,

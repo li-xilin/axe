@@ -31,31 +31,33 @@
 typedef struct ax_stuff_trait_st ax_stuff_trait;
 #endif
 
+//#ifndef AX_DUMP_DEFINED
+//#define AX_DUMP_DEFINED
+//typedef struct ax_dump_st ax_dump;
+//#endif
+
 #ifndef AX_ANY_DEFINED
 #define AX_ANY_DEFINED
 typedef struct ax_any_st ax_any;
 #endif
-
 
 #ifndef AX_ANY_TRAIT_DEFINED
 #define AX_ANY_TRAIT_DEFINED
 typedef struct ax_any_trait_st ax_any_trait;
 #endif
 
-
 typedef ax_any     *(*ax_any_copy_f) (const ax_any* any);
 typedef ax_any     *(*ax_any_move_f) (      ax_any* any);
 typedef void        (*ax_any_dump_f) (const ax_any* any, int ind); /* to be determined */
-typedef void        (*ax_any_assign_f) (const ax_any* any); /* to be determined */
+//typedef ax_dump    *(*ax_any_dump_f) (const ax_any* any);
 
 struct ax_any_trait_st
 {
 	const ax_one_trait one;
-	const ax_any_dump_f  dump;
-	const ax_any_copy_f  copy;
-	const ax_any_move_f  move;
+	const ax_any_dump_f dump;
+	const ax_any_copy_f copy;
+	const ax_any_move_f move;
 };
-
 
 typedef union
 {
@@ -70,10 +72,15 @@ typedef union
 	ax_any_cr c;
 } ax_any_r;
 
+typedef struct ax_any_env_st
+{
+	ax_one_env one;
+} ax_any_env;
+
 struct ax_any_st
 {
 	const ax_any_trait *const tr;
-	ax_one_env env;
+	ax_any_env env;
 };
 
 inline static ax_any *ax_any_copy(const ax_any* any)
@@ -82,11 +89,13 @@ inline static ax_any *ax_any_copy(const ax_any* any)
 	return any->tr->copy(any);
 }
 
-inline static ax_any *ax_any_move(ax_any* any)
+/*
+inline static ax_dump *ax_any_dump(const ax_any* any)
 {
-	ax_trait_require(any, any->tr->move);
-	return any->tr->move(any);
+	ax_trait_require(any, any->tr->dump);
+	return any->tr->dump(any);
 }
+*/
 
 extern const ax_stuff_trait ax_any_tr;
 

@@ -49,7 +49,6 @@ static void    tube_pop(ax_tube *tube);
 static size_t  tube_size(const ax_tube *tube);
 static void   *tube_prime(const ax_tube *tube);
 static ax_any *any_copy(const ax_any *any);
-static ax_any *any_move(ax_any *any);
 static void    one_free(ax_one *one);
 
 const ax_tube_trait ax_stack_tr =
@@ -60,12 +59,11 @@ const ax_tube_trait ax_stack_tr =
 				.free = one_free,
 			},
 			.copy = any_copy,
-			.move = any_move
 		},
 		.push = tube_push,
 		.pop = tube_pop,
 		.size = tube_size,
-		.prime = tube_prime
+		.prime = tube_prime,
 };
 
 
@@ -106,11 +104,6 @@ static ax_any *any_copy(const ax_any *any)
 	return NULL;
 }
 
-static ax_any *any_move(ax_any *any)
-{
-	return NULL;
-}
-
 static void one_free(ax_one *one)
 {
 	if (!one)
@@ -139,16 +132,9 @@ ax_tube *__ax_stack_construct(const ax_stuff_trait *elem_tr)
 	ax_stack stack_init = {
 		.tube = {
 			.tr = &ax_stack_tr,
-			.env = {
-				.one = {
-					.scope = { NULL }
-				},
-				.elem_tr = elem_tr
-			},
+			.env.elem_tr = elem_tr,
 		},
-		.vector = {
-			.seq = vector
-		}
+		.vector.seq = vector,
 	};
 
 	memcpy(self, &stack_init, sizeof stack_init);
