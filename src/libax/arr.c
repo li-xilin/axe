@@ -372,8 +372,6 @@ const ax_seq_trait ax_arr_tr =
 			},
 			.dump = NULL,
 			.copy = any_copy,
-			.move = NULL 
-
 		},
 		.iter = {
 			.ctr = {

@@ -78,7 +78,6 @@ static void     box_clear(ax_box *box);
 static const ax_stuff_trait *box_elem_tr(const ax_box* box);
 
 static ax_any  *any_copy(const ax_any *any);
-static ax_any  *any_move(ax_any *any);
 
 static void     one_free(ax_one *one);
 
@@ -259,35 +258,6 @@ static ax_any *any_copy(const ax_any *any)
 	new_r.btrie->_seq.env.one.scope = NULL;
 	ax_scope_attach(ax_base_local(base), new_r.one);
 	return (ax_any*)new_r.any;
-#endif
-	return NULL;
-}
-
-static ax_any *any_move(ax_any *any)
-{
-	CHECK_PARAM_NULL(any);
-
-	// TODO
-#if 0
-	ax_btrie_r self_r = { .any = any };
-
-	ax_base *base = ax_one_base(self_r.one);
-	ax_pool *pool = ax_base_pool(base);
-	ax_btrie *new = ax_pool_alloc(pool, (sizeof(ax_btrie)));
-	if (new == NULL) {
-		ax_base_set_errno(base, AX_ERR_NOMEM);
-		return NULL;
-	}
-
-	memcpy(new, self_r.btrie, sizeof(ax_btrie));
-
-	self_r.btrie->head = NULL;
-	self_r.btrie->size = 0;
-
-	new->_seq.env.one.sindex = 0;
-	new->_seq.env.one.scope = NULL;
-	ax_scope_attach(ax_base_local(base), ax_r(btrie, new).one);
-	return (ax_any*)new;
 #endif
 	return NULL;
 }
@@ -770,7 +740,6 @@ const ax_trie_trait ax_btrie_tr =
 			},
 			.dump = any_dump,
 			.copy = any_copy,
-			.move = any_move,
 		},
 		.iter = {
 			.ctr = {

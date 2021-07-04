@@ -47,16 +47,13 @@ typedef struct ax_any_trait_st ax_any_trait;
 #endif
 
 typedef ax_any     *(*ax_any_copy_f) (const ax_any* any);
-typedef ax_any     *(*ax_any_move_f) (      ax_any* any);
-typedef void        (*ax_any_dump_f) (const ax_any* any, int ind); /* to be determined */
-//typedef ax_dump    *(*ax_any_dump_f) (const ax_any* any);
+//typedef void        (*ax_any_dump_f) (const ax_any* any, int ind); /* to be determined */
 
 struct ax_any_trait_st
 {
 	const ax_one_trait one;
-	const ax_any_dump_f dump;
+	//const ax_any_dump_f dump;
 	const ax_any_copy_f copy;
-	const ax_any_move_f move;
 };
 
 typedef union
