@@ -82,7 +82,6 @@ static size_t   box_maxsize(const ax_box *box);
 static ax_iter  box_begin(ax_box *box);
 static ax_iter  box_end(ax_box *box);
 static void     box_clear(ax_box *box);
-static const ax_stuff_trait *box_elem_tr(const ax_box *box);
 
 static void     any_dump(const ax_any *any, int ind);
 static ax_any  *any_copy(const ax_any *any);
@@ -656,12 +655,6 @@ static void box_clear(ax_box *box)
 	hmap_r.hmap->buckets = 1;
 }
 
-static const ax_stuff_trait *box_elem_tr(const ax_box *box)
-{
-	ax_hmap_r hmap_r = { .box = (ax_box*)box };
-	return hmap_r.map->env.box.elem_tr;
-}
-
 const ax_map_trait ax_hmap_tr =
 {
 	.box = {
@@ -697,7 +690,6 @@ const ax_map_trait ax_hmap_tr =
 		.rbegin  = NULL,
 		.rend    = NULL,
 		.clear   = box_clear,
-		.elem_tr = box_elem_tr,
 	},
 	.put   = map_put,
 	.get   = map_get,

@@ -69,7 +69,6 @@ typedef struct ax_box_trait_st ax_box_trait;
 typedef size_t  (*ax_box_size_f)  (const ax_box* box);
 typedef ax_iter (*ax_box_iter_f)  (      ax_box* box);
 typedef void    (*ax_box_clear_f) (      ax_box* box);
-typedef const ax_stuff_trait *(*ax_box_elem_tr_f) (const ax_box* box);
 
 struct ax_box_trait_st
 {
@@ -86,7 +85,6 @@ struct ax_box_trait_st
 	const ax_box_iter_f rend;
 
 	const ax_box_clear_f clear;
-	const ax_box_elem_tr_f elem_tr;
 };
 
 typedef struct ax_box_env_st
@@ -188,8 +186,7 @@ static inline void ax_box_clear(ax_box* box)
 
 static inline const ax_stuff_trait *ax_box_elem_tr(const ax_box* box)
 {
-	ax_trait_require(box, box->tr->elem_tr);
-	return box->tr->elem_tr(box);
+	return box->env.elem_tr;
 }
 
 #endif

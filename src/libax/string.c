@@ -82,7 +82,6 @@ static ax_iter box_end(ax_box* box);
 static ax_iter box_rbegin(ax_box* box);
 static ax_iter box_rend(ax_box* box);
 static void    box_clear(ax_box* box);
-static const ax_stuff_trait *box_elem_tr(const ax_box *box);
 
 static void    any_dump(const ax_any* any, int ind);
 static ax_any* any_copy(const ax_any* any);
@@ -377,12 +376,6 @@ static void box_clear(ax_box* box)
 
 	char *ptr = ax_buff_ptr(buff);
 	ptr[0] = '\0';
-}
-
-static const ax_stuff_trait *box_elem_tr(const ax_box *box)
-{
-	ax_string_r self_r = { .box = (ax_box *)box };
-	return self_r.seq->env.box.elem_tr;
 }
 
 static ax_fail str_append(ax_str* str, const char *s)
@@ -689,7 +682,6 @@ static const ax_str_trait str_trait =
 			},
 			.size = box_size,
 			.maxsize = box_maxsize,
-			.elem_tr = box_elem_tr,
 
 			.begin = box_begin,
 			.end = box_end,

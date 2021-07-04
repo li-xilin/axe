@@ -75,7 +75,6 @@ static ax_iter  box_end(ax_box *box);
 static ax_iter  box_rbegin(ax_box *box);
 static ax_iter  box_rend(ax_box *box);
 static void     box_clear(ax_box *box);
-static const ax_stuff_trait *box_elem_tr(const ax_box* box);
 
 static ax_any  *any_copy(const ax_any *any);
 
@@ -317,14 +316,6 @@ static ax_iter box_rend(ax_box *box)
 	ax_iter it = ax_box_rend(self_r.btrie->root_r.box);
 	it.tr = &ax_btrie_tr.box.riter;
 	return it;
-}
-
-static const ax_stuff_trait *box_elem_tr(const ax_box* box)
-{
-	CHECK_PARAM_NULL(box);
-
-	ax_btrie_r self_r = { .box = (ax_box*)box };
-	return self_r.trie->env.box.elem_tr;
 }
 
 static void box_clear(ax_box *box)
@@ -763,8 +754,6 @@ const ax_trie_trait ax_btrie_tr =
 		.rend = box_rend,
 
 		.clear = box_clear,
-		.elem_tr = box_elem_tr
-
 	},
 
 	.put = trie_put,

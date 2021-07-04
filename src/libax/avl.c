@@ -69,7 +69,6 @@ static ax_iter  box_end(ax_box* box);
 static ax_iter  box_rbegin(ax_box* box);
 static ax_iter  box_rend(ax_box* box);
 static void     box_clear(ax_box* box);
-static const ax_stuff_trait *box_elem_tr(const ax_box *box);
 
 static void     any_dump(const ax_any* any, int ind);
 static ax_any  *any_copy(const ax_any* any);
@@ -789,12 +788,6 @@ static void box_clear(ax_box* box)
 	avl_r.avl->size = 0;
 }
 
-static const ax_stuff_trait *box_elem_tr(const ax_box *box)
-{
-	 ax_avl_r avl_r = { .box = (ax_box*)box };
-	return avl_r.map->env.box.elem_tr;
-}
-
 const ax_map_trait ax_avl_tr =
 {
 	.box = {
@@ -842,8 +835,6 @@ const ax_map_trait ax_avl_tr =
 		.rbegin  = box_rbegin,
 		.rend    = box_rend,
 		.clear   = box_clear,
-		.elem_tr = box_elem_tr,
-
 	},
 	.put   = map_put,
 	.get   = map_get,

@@ -69,7 +69,6 @@ static ax_iter     box_end(ax_box *box);
 static ax_iter     box_rbegin(ax_box *box);
 static ax_iter     box_rend(ax_box *box);
 static void        box_clear(ax_box *box);
-static const ax_stuff_trait *box_elem_tr(const ax_box* box);
 
 static ax_any     *any_copy(const ax_any *any);
 
@@ -437,12 +436,6 @@ static ax_iter box_rend(ax_box *box)
 	return it;
 }
 
-static const ax_stuff_trait *box_elem_tr(const ax_box* box)
-{
-	ax_list_r self_r = { .box = (ax_box*)box };
-	return self_r.seq->env.box.elem_tr;
-}
-
 static void box_clear(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
@@ -804,7 +797,6 @@ const ax_seq_trait ax_list_tr =
 		.rend = box_rend,
 
 		.clear = box_clear,
-		.elem_tr = box_elem_tr,
 
 	},
 	.push = seq_push,
