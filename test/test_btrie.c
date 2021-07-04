@@ -82,7 +82,7 @@ struct enum_context_st {
 	struct check_table_st *check_table;
 };
 
-bool iterator_enum_cb(ax_trie *trie, const ax_seq *key, const void *val, void *ctx)
+bool iterator_enum_cb(const ax_trie *trie, const ax_seq *key, const void *val, void *ctx)
 {
 	struct enum_context_st *ectx = ctx;
 	char path[1024];
