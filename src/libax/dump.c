@@ -487,7 +487,7 @@ int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args)
 				if ((rc = dump_out_dfs(value->block.dumps[i], depth, args)))
 					return rc;
 			}
-			strcpy(args->buf, "} ");
+			strcpy(args->buf, "}");
 			if ((rc = args->cb(args->buf, 2, args->ctx)))
 				return rc;
 			break;
