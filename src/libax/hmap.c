@@ -83,7 +83,7 @@ static ax_iter  box_begin(ax_box *box);
 static ax_iter  box_end(ax_box *box);
 static void     box_clear(ax_box *box);
 
-static void     any_dump(const ax_any *any, int ind);
+static ax_dump *any_dump(const ax_any *any);
 static ax_any  *any_copy(const ax_any *any);
 
 static void     one_free(ax_one *one);
@@ -569,9 +569,10 @@ static void one_free(ax_one *one)
 	free(hmap_r.hmap);
 }
 
-static void any_dump(const ax_any *any, int ind)
+static ax_dump *any_dump(const ax_any *any)
 {
-	UNSUPPORTED();
+	ax_map_cr self = { .any = any };
+	return ax_map_dump(self.map);
 }
 
 static ax_any *any_copy(const ax_any *any)

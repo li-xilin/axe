@@ -104,7 +104,7 @@ int ax_stuff_stoi(const char *s)
 
 static ax_dump *dump_nil(const void* p, size_t size)
 {
-	return ax_dump_uint(0);
+	return ax_dump_symbol("nil");
 }
 
 static ax_dump *dump_i8(const void* p, size_t size)
@@ -164,12 +164,12 @@ static ax_dump *dump_z(const void* p, size_t size)
 
 static ax_dump *dump_s(const void* p, size_t size)
 {
-	return ax_dump_str(p);
+	return ax_dump_str(*(char **)p);
 }
 
 static ax_dump *dump_ws(const void* p, size_t size)
 {
-	return ax_dump_wcs(p);
+	return ax_dump_wcs(*(wchar_t**)p);
 }
 
 static ax_dump *dump_ptr(const void* p, size_t size)

@@ -337,9 +337,10 @@ static void one_free(ax_one *one)
 	free(one);
 }
 
-static void any_dump(const ax_any *any, int ind)
+static ax_dump *any_dump(const ax_any *any)
 {
-	printf("not implemented\n");
+	ax_seq_cr self = { .any = any };
+	return ax_seq_dump(self.seq);
 }
 
 static ax_any *any_copy(const ax_any *any)

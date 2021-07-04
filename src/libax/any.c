@@ -20,10 +20,11 @@
  * THE SOFTWARE.
  */
 
-#include <ax/any.h>
+#include "ax/any.h"
 #include <ax/scope.h>
 #include <ax/stuff.h>
 #include <ax/debug.h>
+#include <ax/dump.h>
 #include <ax/def.h>
 
 #include <stdio.h>
@@ -105,5 +106,18 @@ ax_any *ax_any_seal(ax_scope *scope, ax_any *any)
 	if (ax_scope_attach(scope, ax_r(any, any).one))
 		return NULL;
 	return any;
+}
+
+ax_fail ax_any_so(const ax_any *any)
+{
+	ax_dump *dmp = ax_any_dump(any);
+	if (!dmp)
+		return true;
+	ax_fail ret = ax_dump_fput(dmp, stdout);
+	ax_dump_free(dmp);
+
+	if (ret)
+		return true;
+	return putchar('\n') == EOF;
 }
 

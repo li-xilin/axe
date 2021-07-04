@@ -26,6 +26,7 @@
 #include <ax/scope.h>
 #include <ax/any.h>
 #include <ax/mem.h>
+#include <ax/dump.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -44,12 +45,13 @@ struct ax_queue_st
 	ax_list_r list;
 };
 
-static ax_fail tube_push(ax_tube *tube, const void *val);
-static void    tube_pop(ax_tube *tube);
-static size_t  tube_size(const ax_tube *tube);
-static void   *tube_prime(const ax_tube *tube);
-static ax_any *any_copy(const ax_any *any);
-static void    one_free(ax_one *one);
+static ax_fail  tube_push(ax_tube *tube, const void *val);
+static void     tube_pop(ax_tube *tube);
+static size_t   tube_size(const ax_tube *tube);
+static void    *tube_prime(const ax_tube *tube);
+static ax_any  *any_copy(const ax_any *any);
+static ax_dump *any_dump(const ax_any *any);
+static void     one_free(ax_one *one);
 
 const ax_tube_trait ax_queue_tr =
 {
@@ -59,6 +61,7 @@ const ax_tube_trait ax_queue_tr =
 				.free = one_free,
 			},
 			.copy = any_copy,
+			.dump = any_dump,
 		},
 		.push = tube_push,
 		.pop = tube_pop,
@@ -102,6 +105,15 @@ static void *tube_prime(const ax_tube *tube)
 static ax_any *any_copy(const ax_any *any)
 {
 	return NULL;
+}
+
+static ax_dump *any_dump(const ax_any *any)
+{
+	ax_queue_cr self = { .any = any };
+	ax_dump *dmp = ax_any_dump(self.queue->list.any);
+	if (ax_dump_set_name(dmp, ax_one_name(self.one)))
+		return NULL;
+	return dmp;
 }
 
 static void one_free(ax_one *one)

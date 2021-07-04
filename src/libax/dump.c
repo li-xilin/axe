@@ -43,7 +43,7 @@ do { \
 	ax_assert(isalpha(_sym[0]) || _sym[0] == '_', \
 			"symbol name %s begin with invalid charactor", _sym); \
 	for (int i = 1; _sym[i]; i++) { \
-		ax_assert(_sym[i] == '_' || isdigit(_sym[i]) || isalpha(_sym[i]), \
+		ax_assert(_sym[i] == '_' || _sym[i] == '.' || isdigit(_sym[i]) || isalpha(_sym[i]), \
 				"invalid charactor \'%c\' in symbol name \'%s\'", _sym[i], _sym); \
 	} \
 } while(0)
@@ -220,7 +220,6 @@ ax_dump *ax_dump_symbol(const char *sym)
 	return dmp;
 }
 
-
 ax_dump *ax_dump_pair()
 {
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof(struct value_pair_st));
@@ -235,7 +234,7 @@ ax_dump *ax_dump_pair()
 	return dmp;
 }
 
-ax_dump *ax_dump_block(const char* sym, size_t len)
+ax_dump *ax_dump_block(const char *sym, size_t len)
 {
 	check_symbol(sym);
 
@@ -257,6 +256,20 @@ ax_dump *ax_dump_block(const char* sym, size_t len)
 	}
 
 	return dmp;
+}
+
+ax_fail ax_dump_set_name(ax_dump *dmp, const char *sym)
+{
+	check_symbol(sym);
+	ax_assert(dmp->type == DTYPE_BLOCK, "unsupported dump type");
+	struct value_block_st *block = (void *) dmp->value;
+	free(block->name);
+	block->name = ax_strdup(sym);
+	if (!block->name ) {
+		free(dmp);
+		return true;
+	}
+	return false;
 }
 
 void ax_dump_bind(ax_dump *dmp, int index, ax_dump* binding)
@@ -299,6 +312,8 @@ void ax_dump_bind(ax_dump *dmp, int index, ax_dump* binding)
 
 static void dump_rec_free(ax_dump *dmp)
 {
+	if (!dmp)
+		return;
 	assert((dmp->type & DTYPE_BIND));
 	union {
 		struct value_block_st *block;

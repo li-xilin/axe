@@ -47,9 +47,13 @@ ax_dump *ax_dump_wcs(const wchar_t *val);
 
 ax_dump *ax_dump_mem(const void *ptr, size_t size);
 
+ax_dump *ax_dump_symbol(const char *sym);
+
 ax_dump *ax_dump_pair();
 
 ax_dump *ax_dump_block(const char* name, size_t elem_cnt);
+
+ax_fail ax_dump_set_name(ax_dump *dmp, const char *sym);
 
 void ax_dump_bind(ax_dump *dmp, int index, ax_dump* binding);
 

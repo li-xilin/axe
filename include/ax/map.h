@@ -163,4 +163,6 @@ inline static const void *ax_map_iter_key(ax_iter *it)
 
 const void *ax_map_key(ax_map *map, const void *key);
 
+ax_dump *ax_map_dump(const ax_map *map);
+
 #endif

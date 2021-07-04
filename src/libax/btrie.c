@@ -30,11 +30,14 @@
 #include <ax/debug.h>
 #include <ax/vail.h>
 #include <ax/stuff.h>
+#include <ax/dump.h>
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <assert.h>
+
 #include "check.h"
 
 #undef free
@@ -77,6 +80,7 @@ static ax_iter  box_rend(ax_box *box);
 static void     box_clear(ax_box *box);
 
 static ax_any  *any_copy(const ax_any *any);
+static ax_dump *any_dump(const ax_any *any);
 
 static void     one_free(ax_one *one);
 
@@ -220,9 +224,9 @@ static void one_free(ax_one *one)
 	free(one);
 }
 
-static void any_dump(const ax_any *any, int ind)
+static ax_dump *any_dump(const ax_any *any)
 {
-	printf("not implemented\n");
+	return NULL;
 }
 
 static ax_any *any_copy(const ax_any *any)

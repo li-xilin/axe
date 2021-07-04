@@ -31,10 +31,10 @@
 typedef struct ax_stuff_trait_st ax_stuff_trait;
 #endif
 
-//#ifndef AX_DUMP_DEFINED
-//#define AX_DUMP_DEFINED
-//typedef struct ax_dump_st ax_dump;
-//#endif
+#ifndef AX_DUMP_DEFINED
+#define AX_DUMP_DEFINED
+typedef struct ax_dump_st ax_dump;
+#endif
 
 #ifndef AX_ANY_DEFINED
 #define AX_ANY_DEFINED
@@ -46,13 +46,14 @@ typedef struct ax_any_st ax_any;
 typedef struct ax_any_trait_st ax_any_trait;
 #endif
 
-typedef ax_any     *(*ax_any_copy_f) (const ax_any* any);
-//typedef void        (*ax_any_dump_f) (const ax_any* any, int ind); /* to be determined */
+typedef ax_any *(*ax_any_copy_f)(const ax_any* any);
+typedef ax_dump *(*ax_any_dump_f)(const ax_any* any);
+//typedef void (*ax_any_dump_f)(const ax_any *any, int ind);
 
 struct ax_any_trait_st
 {
 	const ax_one_trait one;
-	//const ax_any_dump_f dump;
+	const ax_any_dump_f dump;
 	const ax_any_copy_f copy;
 };
 
@@ -86,13 +87,13 @@ inline static ax_any *ax_any_copy(const ax_any* any)
 	return any->tr->copy(any);
 }
 
-/*
 inline static ax_dump *ax_any_dump(const ax_any* any)
 {
 	ax_trait_require(any, any->tr->dump);
 	return any->tr->dump(any);
 }
-*/
+
+ax_fail ax_any_pdump(const ax_any *any);
 
 extern const ax_stuff_trait ax_any_tr;
 

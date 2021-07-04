@@ -25,7 +25,7 @@
 #include "box.h"
 #include "def.h"
 
-#define AX_TUBE_NAME AX_BOX_NAME ".tube"
+#define AX_TUBE_NAME AX_ANY_NAME ".tube"
 
 #ifndef AX_TUBE_DEFINED
 #define AX_TUBE_DEFINED

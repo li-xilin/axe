@@ -28,6 +28,7 @@
 #include <ax/scope.h>
 #include <ax/mem.h>
 #include <ax/log.h>
+#include <ax/dump.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -83,7 +84,7 @@ static ax_iter box_rbegin(ax_box* box);
 static ax_iter box_rend(ax_box* box);
 static void    box_clear(ax_box* box);
 
-static void    any_dump(const ax_any* any, int ind);
+static ax_dump*any_dump(const ax_any* any);
 static ax_any* any_copy(const ax_any* any);
 
 static void    one_free(ax_one* one);
@@ -263,9 +264,24 @@ static void one_free(ax_one* one)
 	free(one);
 }
 
-static void any_dump(const ax_any* any, int ind)
+static ax_dump *any_dump(const ax_any* any)
 {
-	ax_pinfo("have not implemented");
+	ax_str_cr self = { .any = any };
+	ax_dump *block = NULL, *strdmp = NULL;
+	block = ax_dump_block(ax_one_name(self.one), 1);
+	if (!block)
+		goto fail;
+
+	strdmp = ax_dump_str(ax_str_cstrz(self.str));
+	if (!strdmp) {
+		goto fail;
+	}
+	ax_dump_bind(block, 0, strdmp);
+	return block;
+fail:
+	ax_dump_free(block);
+	ax_dump_free(strdmp);
+	return NULL;
 }
 
 static ax_any* any_copy(const ax_any* any)

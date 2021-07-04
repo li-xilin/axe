@@ -24,6 +24,7 @@
 #include <ax/seq.h>
 #include <ax/vail.h>
 #include <ax/scope.h>
+#include <ax/dump.h>
 
 #include "check.h"
 
@@ -164,3 +165,39 @@ size_t ax_seq_array(ax_seq *seq, void *elems[], size_t len)
 	return i; 
 }
 
+ax_dump *ax_seq_dump(const ax_seq *seq)
+{
+	ax_seq_cr self = ax_cr(seq, seq);
+	size_t size = ax_box_size(self.box);
+	ax_dump *block_dmp = NULL;
+
+	block_dmp = ax_dump_block(ax_one_name(self.one), size);
+	if (!block_dmp)
+		return NULL;
+
+	const ax_stuff_trait *etr = ax_box_elem_tr(self.box);
+
+	size_t i = 0;
+	ax_dump *elem_dmp;
+	if (etr->link) {
+		ax_box_cforeach(self.box, const void *, p) {
+			elem_dmp = etr->dump(&p, etr->size);
+			if (!elem_dmp)
+				goto fail;
+			ax_dump_bind(block_dmp, i, elem_dmp);
+			i++;
+		}
+	} else {
+		ax_box_cforeach(self.box, const void *, p) {
+			elem_dmp = etr->dump(p, etr->size);
+			if (!elem_dmp)
+				goto fail;
+			ax_dump_bind(block_dmp, i, elem_dmp);
+			i++;
+		}
+	}
+	return block_dmp;
+fail:
+	ax_dump_free(block_dmp);
+	return NULL;
+}
