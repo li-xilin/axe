@@ -33,6 +33,7 @@
 
 #include <string.h>
 #include <errno.h>
+#include <stdlib.h>
 
 enum {
 	OBJ_VECTOR,
@@ -137,6 +138,8 @@ ax_one *__ax_obj_construct(const char *type, const char *desc, ...)
 		case OBJ_BTRIE:
 			inst = (ax_one *)__ax_btrie_construct(tr_tab[0], tr_tab[1]);
 			break;
+		default:
+			abort();
 	}
 
 	return inst;
