@@ -23,6 +23,7 @@
 #include <ax/stuff.h>
 #include <ax/debug.h>
 #include <ax/mem.h>
+#include <ax/dump.h>
 #include <ax/def.h>
 
 #include <stdlib.h>
@@ -99,6 +100,81 @@ int ax_stuff_stoi(const char *s)
 			return i;
 	}
 	return -1;
+}
+
+static ax_dump *dump_nil(const void* p, size_t size)
+{
+	return ax_dump_uint(0);
+}
+
+static ax_dump *dump_i8(const void* p, size_t size)
+{
+	return ax_dump_int(*(int8_t *)p);
+}
+
+static ax_dump *dump_i16(const void* p, size_t size)
+{
+	return ax_dump_int(*(int16_t *)p);
+}
+
+static ax_dump *dump_i32(const void* p, size_t size)
+{
+	return ax_dump_int(*(int32_t *)p);
+}
+
+static ax_dump *dump_i64(const void* p, size_t size)
+{
+	return ax_dump_int(*(int64_t *)p);
+}
+
+static ax_dump *dump_u8(const void* p, size_t size)
+{
+	return ax_dump_int(*(uint8_t *)p);
+}
+
+static ax_dump *dump_u16(const void* p, size_t size)
+{
+	return ax_dump_int(*(uint16_t *)p);
+}
+
+static ax_dump *dump_u32(const void* p, size_t size)
+{
+	return ax_dump_int(*(uint32_t *)p);
+}
+
+static ax_dump *dump_u64(const void* p, size_t size)
+{
+	return ax_dump_int(*(uint64_t *)p);
+}
+
+static ax_dump *dump_f(const void* p, size_t size)
+{
+	return ax_dump_float(*(float *)p);
+}
+
+static ax_dump *dump_lf(const void* p, size_t size)
+{
+	return ax_dump_float(*(double *)p);
+}
+
+static ax_dump *dump_z(const void* p, size_t size)
+{
+	return ax_dump_float(*(size_t *)p);
+}
+
+static ax_dump *dump_s(const void* p, size_t size)
+{
+	return ax_dump_str(p);
+}
+
+static ax_dump *dump_ws(const void* p, size_t size)
+{
+	return ax_dump_wcs(p);
+}
+
+static ax_dump *dump_ptr(const void* p, size_t size)
+{
+	return ax_dump_ptr(p);
 }
 
 static bool equal_nil(const void* p1, const void* p2, size_t size)
@@ -304,8 +380,14 @@ static size_t hash_ws(const void* p, size_t size)
 	return ax_wcshash(*(wchar_t**)p);
 } 
 
-void ax_stuff_mem_free(void* p) {
+void ax_stuff_mem_free(void* p)
+{
 
+}
+
+ax_dump *ax_stuff_mem_dump(const void* p, size_t size)
+{
+	return ax_dump_mem(p, size);
 }
 
 bool ax_stuff_mem_less(const void* p1, const void* p2, size_t size)
@@ -363,7 +445,6 @@ void ax_stuff_mem_swap(void* dst, void* src, size_t size)
 	}
 }
 
-
 ax_fail ax_stuff_mem_init(void* p, size_t size)
 {
 	memset(p, 0, size);
@@ -384,6 +465,7 @@ static const ax_stuff_trait trait_nil = {
 	.size  = 0,
 	.equal = equal_nil,
 	.less  = less_nil,
+	.dump  = dump_nil,
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
@@ -398,6 +480,7 @@ static const ax_stuff_trait trait_i8 = {
 	.size  = sizeof(int8_t),
 	.equal = equal_i8,
 	.less  = less_i8,
+	.dump  = dump_i8,
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
@@ -411,6 +494,7 @@ static const ax_stuff_trait trait_i16 = {
 	.size  = sizeof(int16_t),
 	.equal = equal_i16,
 	.less  = less_i16,
+	.dump  = dump_i16,
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
@@ -424,6 +508,7 @@ static const ax_stuff_trait trait_i32 = {
 	.size  = sizeof(int32_t),
 	.equal = equal_i32,
 	.less  = less_i32,
+	.dump  = dump_i32,
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
@@ -437,6 +522,7 @@ static const ax_stuff_trait trait_i64 = {
 	.size  = sizeof(int64_t),
 	.equal = equal_i64,
 	.less  = less_i64,
+	.dump  = dump_i64,
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
@@ -450,6 +536,7 @@ static const ax_stuff_trait trait_u8 = {
 	.size  = sizeof(uint8_t),
 	.equal = equal_u8,
 	.less  = less_u8,
+	.dump  = dump_u8,
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
@@ -463,6 +550,7 @@ static const ax_stuff_trait trait_u16 = {
 	.size  = sizeof(uint16_t),
 	.equal = equal_u16,
 	.less  = less_u16,
+	.dump  = dump_u16,
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
@@ -476,6 +564,7 @@ static const ax_stuff_trait trait_u32 = {
 	.size  = sizeof(uint32_t),
 	.equal = equal_u32,
 	.less  = less_u32,
+	.dump  = dump_u32,
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
@@ -489,6 +578,7 @@ static const ax_stuff_trait trait_u64 = {
 	.size  = sizeof(int64_t),
 	.equal = equal_u64,
 	.less  = less_u64,
+	.dump  = dump_u64,
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
@@ -502,6 +592,7 @@ static const ax_stuff_trait trait_z = {
 	.size  = sizeof(size_t),
 	.equal = equal_z,
 	.less  = less_z,
+	.dump  = dump_z,
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
@@ -515,6 +606,7 @@ static const ax_stuff_trait trait_f = {
 	.size  = sizeof(float),
 	.equal = equal_f,
 	.less  = less_f,
+	.dump  = dump_f,
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
@@ -528,6 +620,7 @@ static const ax_stuff_trait trait_lf = {
 	.size  = sizeof(double),
 	.equal = equal_lf,
 	.less  = less_lf,
+	.dump  = dump_lf,
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
@@ -541,6 +634,7 @@ static const ax_stuff_trait trait_ptr= {
 	.size  = sizeof(void *),
 	.equal = equal_ptr,
 	.less  = less_ptr,
+	.dump  = dump_ptr,
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
@@ -554,6 +648,7 @@ static const ax_stuff_trait trait_s = {
 	.size  = sizeof(void*),
 	.equal = equal_s,
 	.less  = less_s,
+	.dump  = dump_s,
 	.hash  = hash_s,
 	.free  = free_s,
 	.copy  = copy_s,
@@ -567,6 +662,7 @@ static const ax_stuff_trait trait_ws = {
 	.size  = sizeof(void*),
 	.equal = equal_ws,
 	.less  = less_ws,
+	.dump  = dump_ws,
 	.hash  = hash_ws,
 	.free  = free_ws,
 	.copy  = copy_ws,

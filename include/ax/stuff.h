@@ -33,6 +33,13 @@
 typedef struct ax_stuff_trait_st ax_stuff_trait;
 #endif
 
+#ifndef AX_DUMP_DEFINED
+#define AX_DUMP_DEFINED
+typedef struct ax_dump_st ax_dump;
+#endif
+
+
+
 #define AX_ST_NIL   1
 #define AX_ST_I8    2
 #define AX_ST_I16   3
@@ -83,13 +90,14 @@ union ax_stuff_un
 };
 typedef union ax_stuff_un ax_stuff;
 
-typedef void   (*ax_stuff_free_f) (void* p);
-typedef bool(*ax_stuff_compare_f) (const void* p1, const void* p2, size_t size);
-typedef size_t (*ax_stuff_hash_f) (const void* p, size_t size);
-typedef void   (*ax_stuff_move_f) (void* dst, const void* src, size_t size);
-typedef void   (*ax_stuff_swap_f) (void* dst, void* src, size_t size);
-typedef ax_fail(*ax_stuff_copy_f) (void* dst, const void* src, size_t size);
-typedef ax_fail(*ax_stuff_init_f) (void* p, size_t size);
+typedef void    (*ax_stuff_free_f) (void* p);
+typedef bool    (*ax_stuff_compare_f) (const void* p1, const void* p2, size_t size);
+typedef size_t  (*ax_stuff_hash_f) (const void* p, size_t size);
+typedef void    (*ax_stuff_move_f) (void* dst, const void* src, size_t size);
+typedef void    (*ax_stuff_swap_f) (void* dst, void* src, size_t size);
+typedef ax_fail (*ax_stuff_copy_f) (void* dst, const void* src, size_t size);
+typedef ax_fail (*ax_stuff_init_f) (void* p, size_t size);
+typedef ax_dump*(*ax_stuff_dump_f) (const void* p, size_t size);
 
 struct ax_stuff_trait_st
 {
@@ -102,6 +110,7 @@ struct ax_stuff_trait_st
 	ax_stuff_move_f    move;
 	ax_stuff_swap_f    swap;
 	ax_stuff_init_f    init;
+	ax_stuff_dump_f    dump;
 	bool               link;
 };
 
@@ -113,6 +122,7 @@ ax_fail ax_stuff_mem_copy(void* dst, const void* src, size_t size);
 void    ax_stuff_mem_swap(void* dst, void* src, size_t size);
 ax_fail ax_stuff_mem_init(void* p, size_t size);
 void    ax_stuff_mem_free(void* p);
+ax_dump *ax_stuff_mem_dump(const void* p, size_t size);
 
 
 size_t ax_stuff_size(int type);
