@@ -226,7 +226,8 @@ static void one_free(ax_one *one)
 
 static ax_dump *any_dump(const ax_any *any)
 {
-	return NULL;
+	ax_trie_cr self = { .any = any };
+	return ax_trie_dump(self.trie);
 }
 
 static ax_any *any_copy(const ax_any *any)
