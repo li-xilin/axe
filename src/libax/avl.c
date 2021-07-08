@@ -853,7 +853,7 @@ ax_map *__ax_avl_construct(const ax_stuff_trait* key_tr, const ax_stuff_trait* v
 	CHECK_PARAM_NULL(key_tr->free);
 
 	CHECK_PARAM_NULL(val_tr);
-	CHECK_PARAM_NULL(val_tr->copy);
+	CHECK_PARAM_NULL(val_tr->copy || val_tr->init);
 	CHECK_PARAM_NULL(val_tr->free);
 
 	ax_avl *avl = malloc(sizeof(ax_avl));
