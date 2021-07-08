@@ -52,7 +52,7 @@ void ax_log_set_mode(int mode)
 	g_mode = mode;
 }
 
-int __ax_log_print(const char *file, const char *func, int level, const char* fmt, ...)
+int __ax_log_print(const char *file, const char *func, int line, int level, const char* fmt, ...)
 {
 
 	static const char *type_debug = "DEBUG";
@@ -103,8 +103,8 @@ int __ax_log_print(const char *file, const char *func, int level, const char* fm
 	va_end(vl);
 
 	return fprintf(g_logfp ? g_logfp : stderr,
-			"[%s] %s:%s: %s\n",
-			type, file, func, buf) == -1
+			"[%s] %s:%s:%d:%s\n",
+			type, file, func, line, buf) == -1
 		? -1
 		: 0;
 }
