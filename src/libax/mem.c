@@ -66,6 +66,21 @@ char *ax_strdup(const char *s)
 	return copy;
 }
 
+char *ax_strdup2(const char *s, size_t *lenp)
+{
+	CHECK_PARAM_NULL(s);
+
+	size_t len = strlen(s);
+	size_t size = (len + 1) * sizeof(char);
+	char *copy = malloc(size);
+	if (!copy)
+		return NULL;
+	memcpy(copy, s, size);
+	*lenp = len;
+	return copy;
+}
+
+
 wchar_t *ax_wcsdup(const wchar_t* s)
 {
 	CHECK_PARAM_NULL(s);
