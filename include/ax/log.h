@@ -44,16 +44,16 @@
 
 #define AX_LOG_MAX_LEN 1024
 
-int __ax_log_print(const char *file, const char *func, int level, const char* fmt, ...);
+int __ax_log_print(const char *file, const char *func, int line, int level, const char* fmt, ...);
 void ax_log_set_mode(int mode);
 int ax_log_mode();
 void ax_log_set_fp(void *fp);
 void *ax_log_fp();
 
-#define ax_pdebug(...)   __ax_log_print(__FILE__, __func__, AX_LL_DEBUG, __VA_ARGS__)
-#define ax_pinfo(...)    __ax_log_print(__FILE__, __func__, AX_LL_INFO, __VA_ARGS__)
-#define ax_pwarn(...)    __ax_log_print(__FILE__, __func__, AX_LL_WARN, __VA_ARGS__)
-#define ax_perror(...)   __ax_log_print(__FILE__, __func__, AX_LL_ERROR, __VA_ARGS__)
-#define ax_pfatal(...)   __ax_log_print(__FILE__, __func__, AX_LL_FATAL, __VA_ARGS__)
+#define ax_pdebug(...)   __ax_log_print(__FILE__, __func__, __LINE__, AX_LL_DEBUG, __VA_ARGS__)
+#define ax_pinfo(...)    __ax_log_print(__FILE__, __func__, __LINE__, AX_LL_INFO, __VA_ARGS__)
+#define ax_pwarn(...)    __ax_log_print(__FILE__, __func__, __LINE__, AX_LL_WARN, __VA_ARGS__)
+#define ax_perror(...)   __ax_log_print(__FILE__, __func__, __LINE__, AX_LL_ERROR, __VA_ARGS__)
+#define ax_pfatal(...)   __ax_log_print(__FILE__, __func__, __LINE__, AX_LL_FATAL, __VA_ARGS__)
 
 #endif

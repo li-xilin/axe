@@ -24,7 +24,7 @@
 #define AX_BTRIE_H
 #include "trie.h"
 
-#define AX_BTRIE_NAME AX_SEQ_NAME ".btrie"
+#define AX_BTRIE_NAME AX_TRIE_NAME ".btrie"
 
 typedef struct ax_btrie_st ax_btrie;
 

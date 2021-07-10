@@ -149,7 +149,7 @@ ax_dump *ax_dump_ptr(const void *val)
 ax_dump *ax_dump_str(const char *val)
 {
 	if (val == NULL)
-		val = "<NULL>";
+		return ax_dump_symbol("NULL");
 	size_t len = strlen(val);
 	size_t siz = (len + 1) * sizeof(char);
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof(struct value_mem_st) + siz);
@@ -168,7 +168,7 @@ ax_dump *ax_dump_str(const char *val)
 ax_dump *ax_dump_wcs(const wchar_t *val)
 {
 	if (val == NULL)
-		val = L"<NULL>";
+		return ax_dump_symbol("NULL");
 	size_t len = wcslen(val);
 	size_t siz = (len + 1) * sizeof(wchar_t);
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof(struct value_mem_st) + siz);
@@ -186,7 +186,8 @@ ax_dump *ax_dump_wcs(const wchar_t *val)
 
 ax_dump *ax_dump_mem(const void *ptr, size_t size)
 {
-	CHECK_PARAM_NULL(ptr);
+	if (ptr == NULL)
+		return ax_dump_symbol("NULL");
 
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof(struct value_mem_st) + size);
 	if (!dmp)
@@ -212,7 +213,7 @@ ax_dump *ax_dump_symbol(const char *sym)
 	if (!dmp)
 		return NULL;
 
-	dmp->type = DTYPE_STR;
+	dmp->type = DTYPE_SYM;
 	union value_u *value = (void *)dmp->value;
 	value->sym.size = len;
 	memcpy(value->sym.data, sym, siz);
@@ -274,14 +275,34 @@ ax_fail ax_dump_set_name(ax_dump *dmp, const char *sym)
 
 void ax_dump_bind(ax_dump *dmp, int index, ax_dump* binding)
 {
+	CHECK_PARAM_NULL(dmp);
+	CHECK_PARAM_NULL(index >= 0);
+	CHECK_PARAM_NULL(binding);
 	ax_assert(dmp->type == DTYPE_PAIR || dmp->type == DTYPE_BLOCK,
 			"binding operation only support pair and block"); 
 	ax_assert(!(binding->type & DTYPE_BIND),
 			"instance is already in binding");
+
 	union {
 		struct value_block_st *block;
 		struct value_pair_st *pair;
 	} val;
+
+#ifdef AX_DEBUG
+	switch (binding->type) {
+		case DTYPE_PAIR:
+			val.pair = (void *) binding->value;
+			ax_assert(val.pair->first, "incomplete dump of pair, NULL pointer field of first");
+			ax_assert(val.pair->second, "incomplete dump of pair, NULL pointer field of second");
+			break;
+		case DTYPE_BLOCK:
+			val.block = (void *) binding->value;
+			for (int i = 0; i < val.block->len; i++) {
+				ax_assert(val.block->dumps[i], "incomplete dump of block, NULL pointer field #%d", i);
+			}
+			break;
+	}
+#endif
 
 	switch (dmp->type) {
 		case DTYPE_PAIR:
@@ -487,7 +508,7 @@ int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args)
 				if ((rc = dump_out_dfs(value->block.dumps[i], depth, args)))
 					return rc;
 			}
-			strcpy(args->buf, "} ");
+			strcpy(args->buf, "}");
 			if ((rc = args->cb(args->buf, 2, args->ctx)))
 				return rc;
 			break;

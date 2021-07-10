@@ -188,6 +188,7 @@ static void rehash(axut_runner* r)
 	const int count = 100;
 	for (int32_t i = 0; i < count; i++) {
 		char key[4];
+		sprintf(key, "%d", i);
 		ax_map_put(hmap_r.map, key, &i);
 	}
 	printf("threshold = %lu\n", ax_hmap_threshold(hmap_r.hmap));

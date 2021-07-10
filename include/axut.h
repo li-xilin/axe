@@ -26,5 +26,6 @@
 #include "axut/runner.h"
 #include "axut/suite.h"
 #include "axut/def.h"
+#include "ax/base.h"
 
 #endif

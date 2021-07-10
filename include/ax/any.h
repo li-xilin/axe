@@ -93,7 +93,7 @@ inline static ax_dump *ax_any_dump(const ax_any* any)
 	return any->tr->dump(any);
 }
 
-ax_fail ax_any_pdump(const ax_any *any);
+ax_fail ax_any_so(const ax_any *any);
 
 extern const ax_stuff_trait ax_any_tr;
 

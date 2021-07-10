@@ -28,6 +28,11 @@
 
 #define AX_TRIE_NAME AX_BOX_NAME ".trie"
 
+#ifndef AX_DUMP_DEFINED
+#define AX_DUMP_DEFINED
+typedef struct ax_dump_st ax_dump;
+#endif
+
 #ifndef AX_TRIE_DEFINED
 #define AX_TRIE_DEFINED
 typedef struct ax_trie_st ax_trie;
@@ -178,6 +183,13 @@ inline static ax_iter ax_trie_citer_begin(const ax_citer *it)
 	return self_r.trie->tr->it_begin(it);
 }
 
+inline static ax_citer ax_trie_citer_cbegin(const ax_citer *it)
+{
+	ax_trie_cr self_r = { .box = ax_citer_box(it) };
+	ax_iter tmp = self_r.trie->tr->it_begin(it);
+	return *ax_iter_c(&tmp);
+}
+
 inline static ax_iter ax_trie_iter_end(const ax_iter *it)
 {
 	ax_trie_cr self_r = { .box = ax_iter_box(it) };
@@ -188,6 +200,13 @@ inline static ax_iter ax_trie_citer_end(const ax_citer *it)
 {
 	ax_trie_cr self_r = { .box = ax_citer_box(it) };
 	return self_r.trie->tr->it_end(it);
+}
+
+inline static ax_citer ax_trie_citer_cend(const ax_citer *it)
+{
+	ax_trie_cr self_r = { .box = ax_citer_box(it) };
+	ax_iter tmp = self_r.trie->tr->it_end(it);
+	return *ax_iter_c(&tmp);
 }
 
 inline static ax_fail ax_trie_rekey(ax_trie *trie,
@@ -223,8 +242,10 @@ inline static const ax_stuff_trait *ax_trie_key_tr(const ax_trie *trie)
 	return self_r.trie->env.key_tr;
 }
 
-typedef bool (*ax_trie_enum_cb_f)(ax_trie *trie, const ax_seq *key, const void *val, void *ctx);
+typedef bool (*ax_trie_enum_cb_f)(const ax_trie *trie, const ax_seq *key, const void *val, void *ctx);
 
-ax_fail ax_trie_enum(ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx);
+ax_fail ax_trie_enum(const ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx);
+
+ax_dump *ax_trie_dump(const ax_trie *trie);
 
 #endif
