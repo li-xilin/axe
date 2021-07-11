@@ -50,4 +50,6 @@ typedef void (*ax_binary_f)(void *out, const void *in1, const void *in2, void *a
 
 #define ax_forever while(true)
 
+#define ax_align(_size, _align) (((_size) % (_align)) ? (_size) : ((_size) + (_align) - ((_size) % (_align))))
+
 #endif
