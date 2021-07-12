@@ -35,6 +35,8 @@ void ax_memxor(void *p1, void *p2, size_t size);
 
 char *ax_strdup(const char *str);
 
+char *ax_strdup2(const char *s, size_t *lenp);
+
 wchar_t *ax_wcsdup(const wchar_t *str);
 
 void *ax_memdup(const void *p, size_t size);
