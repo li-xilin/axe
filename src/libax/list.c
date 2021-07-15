@@ -307,18 +307,19 @@ static void iter_erase(ax_iter *it)
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
 
 	ax_list *list = ax_r(list, it->owner).list;
+
 	struct node_st *node = it->point;
-	//it->point = node->next; // ?
 	it->point = ax_iter_norm(it) ? node->next : node->pre; 
-	if (list->size == 1)
+	if (list->size == 1) {
 		list->head = NULL;
-	else {
+		it->point = NULL;
+	} else {
 		if (list->head == node)
 			list->head = node->next;
 		node->pre->next = node->next;
 		node->next->pre = node->pre;
 	}
-
+	list->size --;
 	const ax_stuff_trait *etr = list->_seq.env.box.elem_tr;
 	etr->free(node->data);
 	free(node);
