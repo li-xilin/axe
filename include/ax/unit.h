@@ -23,21 +23,16 @@
 #ifndef AX_UNIT_H
 #define AX_UNIT_H
 
-#define ax_unit(_name, _struct) \
-	struct \
-	{ \
-		unsigned _count; \
-		_struct ctx; \
-	} _name = { \
-		._count = 0, \
-	}
+typedef int ax_unit;
+
+#define AX_UNIT_INITIALIZER 0
 
 #ifdef AX_DEBUG
 
-#define ax_unit_assert_ready(_uni) ((_uni)._count ? 0 : __ax_debug_assert_fail(__FILE__, __func__, __LINE__, \
+#define ax_unit_assert_ready(_uni) ((_uni) ? 0 : __ax_debug_assert_fail(__FILE__, __func__, __LINE__, \
 		"uninitialized unit", "%s, aborted", #_uni))
 
-#define __ax_unit_assert_not_ready(_uni) (!(_uni)._count ? 0 : __ax_debug_assert_fail(__FILE__, __func__, __LINE__, \
+#define __ax_unit_assert_not_ready(_uni) (!(_uni) ? 0 : __ax_debug_assert_fail(__FILE__, __func__, __LINE__, \
 		"unit already initialized", "%s, aborted", #_uni))
 #else
 
@@ -47,15 +42,13 @@
 
 #endif
 
-#define ax_uctx(_uni) (&(_uni).ctx)
+#define ax_unit_init(_uni) if (!(_uni) || (_uni++, 0))
 
-#define ax_unit_init(_uni) if ((!(_uni)._count || ((_uni)._count++, 0)))
+#define ax_unit_deinit(_uni) if (ax_unit_assert_ready(_uni), (_uni-- == 1))
 
-#define ax_unit_deinit(_uni) if (ax_unit_assert_ready(_uni), ((_uni)._count -- == 1))
+#define ax_unit_ready(_uni) (void)(__ax_unit_assert_not_ready(_uni), (_uni = 1))
 
-#define ax_unit_ready(_uni) (void)(__ax_unit_assert_not_ready(_uni), ((_uni)._count = 1))
-
-#define ax_unit_rc(_uni) ((_uni)._count)
+#define ax_unit_rc(_uni) (_uni)
 
 #endif
 
