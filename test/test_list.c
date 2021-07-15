@@ -244,6 +244,23 @@ static void seq_trunc(axut_runner *r)
 	ax_base_destroy(base);
 }
 
+static void iter_erase(axut_runner *r)
+{
+	ax_base* base = ax_base_create();
+
+	ax_list_r list_r = ax_list_init(ax_base_local(base), "i32x3", 1, 2, 3);
+
+	ax_iter cur = ax_box_begin(list_r.box),
+		end = ax_box_end(list_r.box);
+	while (!ax_iter_equal(&cur, &end)) {
+		ax_iter_erase(&cur);
+	}
+
+	axut_assert_uint_equal(r, 0, ax_box_size(list_r.box));
+
+	ax_base_destroy(base);
+}
+
 static void seq_invert(axut_runner *r)
 {
 	ax_base* base = ax_base_create();
@@ -280,6 +297,7 @@ axut_suite* suite_for_list(ax_base *base)
 	axut_suite_add(suite, seq_trunc, 0);
 	axut_suite_add(suite, seq_invert, 0);
 	axut_suite_add(suite, any_copy, 0);
+	axut_suite_add(suite, iter_erase, 0);
 
 	return suite;
 }
