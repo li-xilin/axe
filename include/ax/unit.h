@@ -22,6 +22,7 @@
 
 #ifndef AX_UNIT_H
 #define AX_UNIT_H
+#include "debug.h"
 
 typedef int ax_unit;
 
