@@ -61,39 +61,31 @@ typedef void (*ax_binary_f)(void *out, const void *in1, const void *in2, void *a
 #	define AX_ARCH_I386
 #elif defined(__ia64__) || defined(__ia64) || defined(_M_IA64) || defined(__itanium__)
 #	define AX_ARCH_IA64
-#elif defined(__ARM_ARCH_2__)
+#elif defined(__arm__) || defined(__arm) || defined(_M_ARM) || defined(_ARM)
 #	define AX_ARCH_ARM
-#	define AX_ARCH_ARM_2
-#elif defined(__ARM_ARCH_3__) || defined(__ARM_ARCH_3M__)
-#	define AX_ARCH_ARM
-#	define AX_ARCH_ARM_3
-#elif defined(__ARM_ARCH_4T__) || defined(__TARGET_ARM_4T)
-#	define AX_ARCH_ARM
-#	define AX_ARCH_ARM_4T
-#elif defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5E__)
-#	define AX_ARCH_ARM
-#	define AX_ARCH_ARM_5
-#elif defined(__ARM_ARCH_5T__) || defined(__ARM_ARCH_5TE__) || defined(__ARM_ARCH_5TEJ__)
-#	define AX_ARCH_ARM
-#	define AX_ARCH_ARM_5T
-#elif defined(__ARM_ARCH_6T2_) || defined(__ARM_ARCH_6T2__)
-#	define AX_ARCH_ARM
-#	define AX_ARCH_ARM_6T2
-#elif defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__)
-#	define AX_ARCH_ARM
-#	define AX_ARCH_ARM_6
-#elif defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
-#	define AX_ARCH_ARM
-#	define AX_ARCH_ARM_7
-#elif defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
-#	define AX_ARCH_ARM
-#	define AX_ARCH_ARM_7R
-#elif defined(__ARM_ARCH_7M__)
-#	define AX_ARCH_ARM
-#	define AX_ARCH_ARM_7M
-#elif defined(__ARM_ARCH_7S__)
-#	define AX_ARCH_ARM
-#	define AX_ARCH_ARM_7S
+#	if defined(__ARM_ARCH_2__)
+#		define AX_ARCH_ARM_2
+#	elif defined(__ARM_ARCH_3__) || defined(__ARM_ARCH_3M__)
+#		define AX_ARCH_ARM_3
+#	elif defined(__ARM_ARCH_4T__) || defined(__TARGET_ARM_4T)
+#		define AX_ARCH_ARM_4T
+#	elif defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5E__)
+#		define AX_ARCH_ARM_5
+#	elif defined(__ARM_ARCH_5T__) || defined(__ARM_ARCH_5TE__) || defined(__ARM_ARCH_5TEJ__)
+#		define AX_ARCH_ARM_5T
+#	elif defined(__ARM_ARCH_6T2_) || defined(__ARM_ARCH_6T2__)
+#		define AX_ARCH_ARM_6T2
+#	elif defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__)
+#		define AX_ARCH_ARM_6
+#	elif defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
+#		define AX_ARCH_ARM_7
+#	elif defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
+#		define AX_ARCH_ARM_7R
+#	elif defined(__ARM_ARCH_7M__)
+#		define AX_ARCH_ARM_7M
+#	elif defined(__ARM_ARCH_7S__)
+#		define AX_ARCH_ARM_7S
+#	endif
 #elif defined(__aarch64__) || defined(_M_ARM64)
 #	define AX_ARCH_AARCH64
 #elif defined(__mips__) || defined(__mips) || defined(__MIPS__)
@@ -139,8 +131,6 @@ typedef void (*ax_binary_f)(void *out, const void *in1, const void *in2, void *a
 #	elif defined(_PA_RISC2_0) || defined(__RISC2_0__) || defined(__HPPA20__) || defined(__PA8000__)
 #		define AX_ARCH_HPPA_10
 #	endif
-#else
-#	define AX_ARCH_UNKNOWN
 #endif
 
 #endif
