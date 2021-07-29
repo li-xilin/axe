@@ -24,8 +24,9 @@
 
 #include "ax/base.h"
 #include "ax/mem.h"
-
 #include "axut.h"
+
+#include <stdlib.h>
 
 static void strsplit(axut_runner *r)
 {
@@ -49,9 +50,48 @@ static void strsplit(axut_runner *r)
 	axut_assert(r, p == NULL);
 }
 
+static void strrepl(axut_runner *r)
+{
+	char *res = NULL;
+
+	res = ax_strrepl("a", "a", "");
+	axut_assert_str_equal(r, "", res);
+	free(res);
+
+	res = ax_strrepl("a", "b", "");
+	axut_assert_str_equal(r, "a", res);
+	free(res);
+
+	res = ax_strrepl("", "a", "");
+	axut_assert_str_equal(r, "", res);
+	free(res);
+
+	res = ax_strrepl("a", "ab", "");
+	axut_assert_str_equal(r, "a", res);
+	free(res);
+
+	res = ax_strrepl("a", "a", "b");
+	axut_assert_str_equal(r, "b", res);
+	free(res);
+
+	res = ax_strrepl("a", "a", "ab");
+	axut_assert_str_equal(r, "ab", res);
+	free(res);
+
+	res = ax_strrepl("ab", "b", "c");
+	axut_assert_str_equal(r, "ac", res);
+	free(res);
+
+	res = ax_strrepl("aabccCeefgg", "cc", "CC");
+	axut_assert_str_equal(r, "aabCCCeefgg", res);
+	free(res);
+
+}
+
 axut_suite *suite_for_mem(ax_base *base)
 {
 	axut_suite* suite = axut_suite_create(ax_base_local(base), "mem");
 	axut_suite_add(suite, strsplit, 0);
+	axut_suite_add(suite, strrepl, 0);
 	return suite;
 }

@@ -49,5 +49,7 @@ size_t ax_memhash(const void *p, size_t size);
 
 char *ax_strsplit(char **s, char ch);
 
+char *ax_strrepl(const char *orig, const char *rep, const char *with);
+
 #endif
 
