@@ -56,7 +56,7 @@ typedef void (*ax_binary_f)(void *out, const void *in1, const void *in2, void *a
 
 #if defined(__x86_64__) || defined(__x86_64) || defined(__amd64__) || defined(_M_X64) || defined(_M_AMD64)
 #	define AX_ARCH_AMD64
-#elif defined(i386) || defined(__i386__) || defined(__i386) || defined(__IA32__) || defined(__I86__) \
+#elif defined(i386) || defined(__i386__) || defined(__i386) || defined(__IA32__) || defined(__I86__) || \
 	defined(_M_I386) || defined(_M_IX86) || defined(__INTEL) || defined(__THW_INTEL__)
 #	define AX_ARCH_I386
 #elif defined(__ia64__) || defined(__ia64) || defined(_M_IA64) || defined(__itanium__)
