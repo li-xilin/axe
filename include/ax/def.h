@@ -36,8 +36,8 @@ typedef void (*ax_unary_f)(void *out, const void *in, void *arg);
 
 typedef void (*ax_binary_f)(void *out, const void *in1, const void *in2, void *arg);
 
-#define AX_MIN(a, b) ((a) < (b) ? a : b)
-#define AX_MAX(a, b) ((a) > (b) ? a : b)
+#define AX_MIN(a, b) ((a) < (b) ? (a) : (b))
+#define AX_MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #define AX_IMAX_BITS(m) ((m) /((m)%0x3fffffffL+1) /0x3fffffffL %0x3fffffffL *30 \
                   + (m)%0x3fffffffL /((m)%31+1)/31%31*5 + 4-12/((m)%31+3))
