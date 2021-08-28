@@ -27,6 +27,8 @@
 
 #define AX_ONE_NAME "one"
 
+#define ax_null { .one = NULL }
+
 #define ax_trait_require(_one, _trait) ax_assert((_trait), \
 		"operation for %s is required, do implement it", \
 		((ax_one *)(_one))->tr->name)
