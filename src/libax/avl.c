@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Li hsilin <lihsilyn@gmail.com>
+ * Copyright (c) 2020 - 2021 Li hsilin <lihsilyn@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,8 +52,6 @@ struct ax_avl_st
 	struct node_st *root;
 	size_t size;
 };
-
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 static void     *map_put(ax_map* map, const void *key, const void *val);
 static ax_fail  map_erase(ax_map* map, const void *key);
@@ -265,31 +263,13 @@ static struct node_st *balance(struct node_st *root)
 
 static void swap_node(ax_map *map, struct node_st *node1, struct node_st *node2)
 {
-	//ax_avl_r avl_r = { .map = map };
-	//size_t node_size = sizeof(struct node_st) + avl_r.map->env.key_tr->size + avl_r.map->env.box.elem_tr->size;
-
-	ax_memxor(node1->parent, node2->parent, sizeof(void *));
-	ax_memxor(node2->parent, node1->parent, sizeof(void *));
-	ax_memxor(node1->parent, node2->parent, sizeof(void *));
-
-	ax_memxor(node1->left, node2->left, sizeof(void *));
-	ax_memxor(node2->left, node1->left, sizeof(void *));
-	ax_memxor(node1->left, node2->left, sizeof(void *));
-
-	ax_memxor(node1->right, node2->right, sizeof(void *));
-	ax_memxor(node2->right, node1->right, sizeof(void *));
-	ax_memxor(node1->right, node2->right, sizeof(void *));
-
-	/*
-	ax_memxor(node1, node2, node_size);
-	ax_memxor(node2, node1, node_size);
-	ax_memxor(node1, node2, node_size);
-	*/
+	ax_mem_pswap(&node1->parent, &node2->parent, void *);
+	ax_mem_pswap(&node1->left, &node2->left, void *);
+	ax_mem_pswap(&node1->right, &node2->right, void *);
 }
 
 static struct node_st* remove_node(ax_map *map, struct node_st* node)
 {
-
 	struct node_st * new_node = node, **pnode = NULL;
 	if(node->parent) {
 		if(node->parent->left == node)
