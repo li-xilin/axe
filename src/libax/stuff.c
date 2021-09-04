@@ -682,3 +682,9 @@ const ax_stuff_trait* ax_stuff_traits(int type)
 		default:         return NULL;
 	}
 }
+
+ax_dump *ax_stuff_dump(const ax_stuff_trait *tr, const void* p, size_t size)
+{
+	return tr->dump ? tr->dump(p, size) : ax_dump_symbol("?");
+}
+

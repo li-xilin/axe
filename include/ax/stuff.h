@@ -23,6 +23,7 @@
 #ifndef AXE_STUFF_H_
 #define AXE_STUFF_H_
 #include "def.h"
+#include "debug.h"
 #include <stdint.h>
 #include <stddef.h>
 #include <stdarg.h>
@@ -38,7 +39,7 @@ typedef struct ax_stuff_trait_st ax_stuff_trait;
 typedef struct ax_dump_st ax_dump;
 #endif
 
-
+#define __ax_require(_fun) ax_assert(_fun, "NULL pointer of %s", _fun)
 
 #define AX_ST_NIL   1
 #define AX_ST_I8    2
@@ -93,8 +94,6 @@ typedef union ax_stuff_un ax_stuff;
 typedef void    (*ax_stuff_free_f) (void* p);
 typedef bool    (*ax_stuff_compare_f) (const void* p1, const void* p2, size_t size);
 typedef size_t  (*ax_stuff_hash_f) (const void* p, size_t size);
-//typedef void    (*ax_stuff_move_f) (void* dst, const void* src, size_t size);
-//typedef void    (*ax_stuff_swap_f) (void* dst, void* src, size_t size);
 typedef ax_fail (*ax_stuff_copy_f) (void* dst, const void* src, size_t size);
 typedef ax_fail (*ax_stuff_init_f) (void* p, size_t size);
 typedef ax_dump*(*ax_stuff_dump_f) (const void* p, size_t size);
@@ -107,28 +106,73 @@ struct ax_stuff_trait_st
 	ax_stuff_hash_f    hash;
 	ax_stuff_free_f    free; 
 	ax_stuff_copy_f    copy;
-	//ax_stuff_move_f    move;
-	//ax_stuff_swap_f    swap;
 	ax_stuff_init_f    init;
 	ax_stuff_dump_f    dump;
 	bool               link;
 };
 
-bool ax_stuff_mem_equal(const void* p1, const void* p2, size_t size);
-bool ax_stuff_mem_less(const void* p1, const void* p2, size_t size);
-size_t  ax_stuff_mem_hash(const void* p, size_t size);
-//void    ax_stuff_mem_move(void* dst, const void* src, size_t size);
-ax_fail ax_stuff_mem_copy(void* dst, const void* src, size_t size);
-//void    ax_stuff_mem_swap(void* dst, void* src, size_t size);
-ax_fail ax_stuff_mem_init(void* p, size_t size);
-void    ax_stuff_mem_free(void* p);
-ax_dump *ax_stuff_mem_dump(const void* p, size_t size);
+#define ax_stuff_in(_tr, _ptr) ((_tr)->link ? &(_ptr) : *&(_ptr))
 
+#define ax_stuff_out(_tr, _ptr) ((_tr)->link ? *(void **)(_ptr) : (_ptr))
+
+inline static bool ax_stuff_equal(const ax_stuff_trait *tr, const void *p1, const void *p2, size_t size)
+{
+	__ax_require(tr->equal);
+	return tr->equal(p1, p2, size);
+}
+
+inline static size_t ax_stuff_hash(const ax_stuff_trait *tr, const void *p)
+{
+	__ax_require(tr->hash);
+	return tr->hash(p, tr->size);
+}
+
+inline static void ax_stuff_free(const ax_stuff_trait *tr, void *p)
+{
+	__ax_require(tr->free);
+	tr->free(p);
+}
+
+inline static bool ax_stuff_less(const ax_stuff_trait *tr, const void *p1, const void *p2, size_t size)
+{
+	__ax_require(tr->less);
+	return tr->less(p1, p2, size);
+}
+
+inline static ax_fail ax_stuff_copy(const ax_stuff_trait *tr, void* dst, const void* src, size_t size)
+{
+	__ax_require(tr->copy);
+	return tr->copy(dst, src, size);
+}
+
+inline static ax_fail ax_stuff_init(const ax_stuff_trait *tr, void* p, size_t size)
+{
+	__ax_require(tr->init);
+	return tr->init(p, size);
+}
+
+ax_dump *ax_stuff_dump(const ax_stuff_trait *tr, const void* p, size_t size);
+
+bool ax_stuff_mem_equal(const void* p1, const void* p2, size_t size);
+
+bool ax_stuff_mem_less(const void* p1, const void* p2, size_t size);
+
+size_t  ax_stuff_mem_hash(const void* p, size_t size);
+
+ax_fail ax_stuff_mem_copy(void* dst, const void* src, size_t size);
+
+ax_fail ax_stuff_mem_init(void* p, size_t size);
+
+void  ax_stuff_mem_free(void* p);
+
+ax_dump *ax_stuff_mem_dump(const void* p, size_t size);
 
 size_t ax_stuff_size(int type);
 
 const ax_stuff_trait *ax_stuff_traits(int type);
 
 int ax_stuff_stoi(const char *s);
+
+#undef __ax_require
 
 #endif
