@@ -10,3 +10,4 @@ test/test.exe
 .vscode
 example
 compile_commands.json
+*.swp
