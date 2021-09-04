@@ -23,6 +23,7 @@
 #ifndef AX_MEM_H
 #define AX_MEM_H
 #include "def.h"
+#include <string.h>
 
 #define ax_mem_pswap(_a, _b, _type) \
 do { \
@@ -30,6 +31,14 @@ do { \
 	*(_type*)(_a) = *(_type *)(_b); \
 	*(_type*)(_b) = tmp; \
 } while(0)
+
+inline static void ax_mem_swap(void *p1, void *p2, size_t size)
+{
+	char tmp[size];
+	memcpy(tmp, p1, size);
+	memcpy(p1, p2, size);
+	memcpy(p2, tmp, size);
+}
 
 void ax_memxor(void *p1, void *p2, size_t size);
 

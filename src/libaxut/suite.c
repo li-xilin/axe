@@ -121,9 +121,7 @@ out:
 
 static const ax_stuff_trait case_trait = {
 	.copy = case_copy,
-	.move = ax_stuff_mem_move,
 	.init = ax_stuff_mem_init,
-	.swap = ax_stuff_mem_swap,
 	.less = case_less,
 	.equal = case_equal,
 	.free = case_free,

@@ -88,7 +88,6 @@ struct ax_iter_trait_st
 	ax_iter_erase_f erase;
 };
 
-
 struct ax_citer_st
 {
 	const void *owner;
@@ -154,10 +153,7 @@ inline static void ax_iter_erase(ax_iter *it)
 	it->tr->erase(it);
 }
 
-inline static void *ax_iter_get(const ax_iter *it)
-{
-	return it->tr->get(it);
-}
+void *ax_iter_get(const ax_iter *it);
 
 inline static const void *ax_citer_get(const ax_citer *it)
 {

@@ -339,19 +339,6 @@ static ax_fail copy_ws(void* dst, const void* src, size_t size)
 	return !(*(wchar_t**)dst = ax_wcsdup(*(wchar_t**)src));
 }
 
-static void move_s(void* dst, const void* src, size_t size)
-{
-	*(char**)dst = *(char**)src;
-	*(char**)src = NULL;
-}
-
-static void move_ws(void* dst, const void* src, size_t size)
-{
-	*(wchar_t**)dst = *(wchar_t**)src;
-	*(wchar_t**)src = NULL;
-}
-
-
 static ax_fail init_s(void* p, size_t size) {
 	char *s = malloc(sizeof(char));
 	if (s == NULL)
@@ -417,34 +404,6 @@ ax_fail ax_stuff_mem_copy(void* dst, const void* src, size_t size)
 	return false;
 }
 
-void ax_stuff_mem_move(void* dst, const void* src, size_t size)
-{
-	ax_stuff_mem_copy(dst, src, size);
-}
-
-void ax_stuff_mem_swap(void* dst, void* src, size_t size)
-{
-	switch(size) {
-		case 0: return;
-		case sizeof(uint8_t):
-			ax_mem_pswap(dst, src, uint8_t);
-			break;
-		case sizeof(uint16_t):
-			ax_mem_pswap(dst, src, uint16_t);
-			break;
-		case sizeof(uint32_t):
-			ax_mem_pswap(dst, src, uint32_t);
-			break;
-		case sizeof(uint64_t):
-			ax_mem_pswap(dst, src, uint64_t);
-			break;
-		default:
-			ax_memxor(dst, src, size);
-			ax_memxor(src, dst, size);
-			ax_memxor(dst, src, size);
-	}
-}
-
 ax_fail ax_stuff_mem_init(void* p, size_t size)
 {
 	memset(p, 0, size);
@@ -469,12 +428,9 @@ static const ax_stuff_trait trait_nil = {
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };
-
 
 static const ax_stuff_trait trait_i8 = { 
 	.size  = sizeof(int8_t),
@@ -484,8 +440,6 @@ static const ax_stuff_trait trait_i8 = {
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };
@@ -498,8 +452,6 @@ static const ax_stuff_trait trait_i16 = {
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };
@@ -512,8 +464,6 @@ static const ax_stuff_trait trait_i32 = {
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };
@@ -526,8 +476,6 @@ static const ax_stuff_trait trait_i64 = {
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };
@@ -540,8 +488,6 @@ static const ax_stuff_trait trait_u8 = {
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };
@@ -554,8 +500,6 @@ static const ax_stuff_trait trait_u16 = {
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };
@@ -568,8 +512,6 @@ static const ax_stuff_trait trait_u32 = {
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };
@@ -582,8 +524,6 @@ static const ax_stuff_trait trait_u64 = {
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };
@@ -596,8 +536,6 @@ static const ax_stuff_trait trait_z = {
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };
@@ -610,8 +548,6 @@ static const ax_stuff_trait trait_f = {
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };
@@ -624,8 +560,6 @@ static const ax_stuff_trait trait_lf = {
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };
@@ -638,8 +572,6 @@ static const ax_stuff_trait trait_ptr= {
 	.hash  = ax_stuff_mem_hash,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };
@@ -652,8 +584,6 @@ static const ax_stuff_trait trait_s = {
 	.hash  = hash_s,
 	.free  = free_s,
 	.copy  = copy_s,
-	.move  = move_s,
-	.swap  = ax_stuff_mem_swap,
 	.init  = init_s,
 	.link  = true
 };
@@ -666,8 +596,6 @@ static const ax_stuff_trait trait_ws = {
 	.hash  = hash_ws,
 	.free  = free_ws,
 	.copy  = copy_ws,
-	.move  = move_ws,
-	.swap  = ax_stuff_mem_swap,
 	.init  = init_ws,
 	.link  = true
 };

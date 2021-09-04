@@ -720,8 +720,6 @@ static const ax_stuff_trait node_tr = {
 	.hash  = NULL,
 	.free  = ax_stuff_mem_free,
 	.copy  = ax_stuff_mem_copy,
-	.move  = ax_stuff_mem_move,
-	.swap  = ax_stuff_mem_swap,
 	.init  = ax_stuff_mem_init,
 	.link  = false
 };

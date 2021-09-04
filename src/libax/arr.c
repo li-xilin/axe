@@ -24,7 +24,7 @@
 #include <ax/def.h>
 #include <ax/iter.h>
 #include <ax/debug.h>
-#include <ax/vail.h>
+#include <ax/mem.h>
 #include <ax/stuff.h>
 
 #include <string.h>
@@ -302,8 +302,7 @@ static void seq_invert(ax_seq *seq)
 
 	size_t left = 0, right = size - etr->size;
 	while (right - left > etr->size) {
-		seq->env.box.elem_tr->swap(ptr + left, ptr + right,
-				seq->env.box.elem_tr->size);
+		ax_mem_swap(ptr + left, ptr + right, seq->env.box.elem_tr->size);
 		left += etr->size;
 		right -= etr->size;
 	}
@@ -426,8 +425,6 @@ ax_arr_r ax_arr_make(ax_arr *arr, const ax_stuff_trait *elem_tr, void *ptr, size
 	CHECK_PARAM_NULL(elem_tr->equal);
 	CHECK_PARAM_NULL(elem_tr->free);
 	CHECK_PARAM_NULL(elem_tr->init);
-	CHECK_PARAM_NULL(elem_tr->move);
-	CHECK_PARAM_NULL(elem_tr->swap);
 
 	ax_arr arr_init = {
 		.seq = {

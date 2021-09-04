@@ -73,8 +73,9 @@ static void    one_free(ax_one *one);
 static void    citer_move(ax_citer *it, long i);
 static void    citer_prev(ax_citer *it);
 static void    citer_next(ax_citer *it);
-static bool citer_less(const ax_citer *it1, const ax_citer *it2);
+static bool    citer_less(const ax_citer *it1, const ax_citer *it2);
 static long    citer_dist(const ax_citer *it1, const ax_citer *it2);
+ax_box        *citer_box(const ax_citer *it);
 
 static void    rciter_move(ax_citer *it, long i);
 static void    rciter_prev(ax_citer *it);
@@ -163,6 +164,12 @@ static long citer_dist(const ax_citer *it1, const ax_citer *it2)
 	return ((uintptr_t)it2->point - (uintptr_t)it1->point) / self->_seq.env.box.elem_tr->size;
 }
 
+ax_box *citer_box(const ax_citer *it)
+{
+	CHECK_PARAM_NULL(it);
+	return (ax_box *)it->owner;
+}
+
 static void rciter_move(ax_citer *it, long i)
 {
 	CHECK_PARAM_NULL(it);
@@ -238,7 +245,7 @@ static void iter_erase(ax_iter *it)
 
 	ax_byte *end = ptr + size - etr->size;
 	for (ax_byte *p = it->point ; p < end ; p += etr->size)
-		etr->move(p, p + etr->size, etr->size);
+		memcpy(p, p + etr->size, etr->size);
 
 	size_t shift = (ax_byte*)it->point - ptr;
 	(void)ax_buff_adapt(self->buff, size - etr->size);
@@ -397,7 +404,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	void *ins = ax_iter_norm(it) ? it->point : ((ax_byte*)it->point + etr->size);
 	void *end = ptr + size;
 	for (ax_byte *p = end ; p != ins ; p -= etr->size) {
-		etr->move(p, p - etr->size, etr->size);
+		memcpy(p, p - etr->size, etr->size);
 	}
 
 	const void *pval = etr->link ? &val : val;
@@ -473,8 +480,7 @@ static void seq_invert(ax_seq *seq)
 
 	size_t left = 0, right = size - etr->size;
 	while (right - left > etr->size) {
-		seq->env.box.elem_tr->swap(ptr + left, ptr + right,
-				seq->env.box.elem_tr->size);
+		ax_mem_swap(ptr + left, ptr + right, seq->env.box.elem_tr->size);
 		left += etr->size;
 		right -= etr->size;
 	}
@@ -571,6 +577,7 @@ const ax_seq_trait ax_vector_tr =
 				.prev = citer_prev,
 				.less = citer_less,
 				.dist = citer_dist,
+				.box  = citer_box,
 			},
 			.get = iter_get,
 			.set = iter_set,
@@ -621,8 +628,6 @@ ax_seq *__ax_vector_construct(const ax_stuff_trait *elem_tr)
 	CHECK_PARAM_NULL(elem_tr->equal);
 	CHECK_PARAM_NULL(elem_tr->free);
 	CHECK_PARAM_NULL(elem_tr->init);
-	CHECK_PARAM_NULL(elem_tr->move);
-	CHECK_PARAM_NULL(elem_tr->swap);
 
 	ax_buff *buff = NULL;
 	ax_seq *seq = NULL;

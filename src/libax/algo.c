@@ -27,7 +27,8 @@
 #include <ax/one.h>
 #include <ax/seq.h>
 #include <ax/iter.h>
-#include <ax/def.h>
+#include <ax/mem.h>
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -232,7 +233,7 @@ static void quick_sort(struct quick_sort_context_st*ext, const ax_iter *first, c
 
 	ax_iter left_last = right_first;
 	ax_iter_prev(&left_last);
-	ext->tr->swap(ax_iter_get(&left_last), ax_iter_get(first), ext->tr->size);
+	ax_mem_swap(left_last.tr->get(&left_last), first->tr->get(first), ext->tr->size);
 
 	quick_sort(ext, first, &left_last);
 	quick_sort(ext, &right_first, last);
@@ -500,7 +501,7 @@ ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 		find = sorted_first;
 		search_if_not(ax_iter_c(&find), ax_iter_c(&cur), &pred);
 
-		tr->move(tmp, ax_iter_get(&cur), tr->size);
+		memcpy(tmp, cur.tr->get(&cur), tr->size);
 		ax_iter swapit = cur;
 		while(!ax_iter_equal(&find, &swapit)) {
 			swap_prev.point = swapit.point;
@@ -508,7 +509,7 @@ ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 			ax_iter_swap(&swapit, &swap_prev);
 			swapit.point = swap_prev.point;
 		}
-		tr->move(ax_iter_get(&find), tmp, tr->size);
+		memcpy(find.tr->get(&find), tmp, tr->size);
 
 		ax_iter_next(&cur);
 	}
