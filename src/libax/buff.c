@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
+#include <assert.h>
 
 #include "check.h"
 #define DEFAULT_MAX ((~(size_t)0) >> 1)
@@ -44,7 +45,7 @@ struct ax_buff_st
 
 static ax_any *any_copy(const ax_any *any);
 
-static void    one_free(ax_one *one);
+static void one_free(ax_one *one);
 
 static void one_free(ax_one *one)
 {
@@ -87,28 +88,21 @@ fail:
 	return NULL;
 }
 
-static ax_fail mem_resize(const ax_buff *buff, size_t require, size_t *alloc)
+static size_t mem_resize(const ax_buff *buff, size_t require)
 {
-	ax_assert(buff->used <= buff->real
-			&& buff->real >= buff->min
-			&& buff->used < buff->max
-			, "invalid msize");
+	assert(buff->used <= buff->real && buff->real >= buff->min
+			&& buff->used < buff->max);
 
-	if (require > buff->max) {
-		return true;
-	}
+	ax_assert(require <= buff->max, "size required too large");
 
 	if (require > buff->real) {
-		*alloc = buff->max >> 1 <= require ? buff->max : (require << 1) | 1;
-		return false;
+		return buff->max >> 1 <= require ? buff->max : (require << 1) | 1;
 	}
 	if (buff->real >> 2 >= require) {
 		size_t new_size = buff->real >> 1;
-		*alloc = new_size < buff->min ? buff->min : new_size;
-		return false;
+		return new_size < buff->min ? buff->min : new_size;
 	}
-	*alloc = buff->real;
-	return false;
+	return buff->real;
 }
 
 const ax_any_trait ax_buff_tr =
@@ -184,15 +178,12 @@ ax_fail ax_buff_adapt(ax_buff *buff, size_t size)
 {
 	CHECK_PARAM_NULL(buff);
 
-	size_t size_realloc;
-	if (mem_resize(buff, size, &size_realloc))
-		return true;
+	size_t size_realloc = mem_resize(buff, size);
 
 	if (size_realloc != buff->real) {
 		void *buf = realloc(buff->buf, size_realloc);
-		if (!buf) {
+		if (!buf)
 			return true;
-		}
 		buff->buf = buf;
 		buff->real = size_realloc;
 	}
@@ -209,7 +200,6 @@ ax_fail ax_buff_resize(ax_buff *buff, size_t size)
 		buff->used = size;
 		return false;
 	}
-
 	return ax_buff_adapt(buff, size);
 }
 
@@ -218,9 +208,7 @@ ax_fail ax_buff_alloc(ax_buff *buff, size_t size, void **obuf)
 	CHECK_PARAM_NULL(buff);
 	CHECK_PARAM_NULL(obuf);
 
-	size_t size_alloc;
-	if (mem_resize(buff, size, &size_alloc))
-		return true;
+	size_t size_alloc = mem_resize(buff, size);
 
 	if (size_alloc != buff->real) {
 		void *buf = malloc(size_alloc);
