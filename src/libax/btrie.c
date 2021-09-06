@@ -165,7 +165,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 		}
 	}
 
-	return etr->copy(node->val, pval, etr->size);
+	return ax_stuff_copy(etr, node->val, pval, etr->size);
 }
 
 static void node_free_value(ax_btrie *btrie, struct node_st *node)
@@ -387,24 +387,24 @@ static int match_key(const ax_btrie *self, const ax_seq *key, ax_citer *it_misma
 
 static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *val)
 {
-	const ax_stuff_trait *val_tr = self->_trie.env.box.elem_tr;
+	const ax_stuff_trait *vtr = self->_trie.env.box.elem_tr;
 	void *value = NULL;
 
-	value = malloc(val_tr->size);
+	value = malloc(vtr->size);
 	if (!value) {
 		goto fail;
 	}
 
-	const void *pval = val_tr->link ? &val : val;
-	ax_fail fail = (val == NULL)
-		? val_tr->init(value, val_tr->size)
-		: val_tr->copy(value, pval, val_tr->size);
+	const void *pval = vtr->link ? &val : val;
+	ax_fail fail = val 
+		? ax_stuff_copy(vtr, value, pval, vtr->size)
+		: ax_stuff_init(vtr, value, vtr->size);
 	if (fail) {
 		goto fail;
 	}
 
 	if (node->val) {
-		val_tr->free(node->val);
+		vtr->free(node->val);
 		free(node->val);
 	} else {
 		self->size ++;

@@ -44,8 +44,9 @@ ax_dump *ax_map_dump(const ax_map *map)
 	if (!block_dmp)
 		return NULL;
 
-	const ax_stuff_trait *etr = ax_box_elem_tr(self.box);
-	const ax_stuff_trait *ktr = map->env.key_tr;
+	const ax_stuff_trait
+		*etr = self.box->env.elem_tr,
+		*ktr = map->env.key_tr;
 
 	size_t i = 0;
 	ax_dump *pair_dmp, *val_dmp;

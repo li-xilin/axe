@@ -122,10 +122,11 @@ static bool trie_dump_cb(const ax_trie *trie, const ax_seq *key, const void *val
 		goto fail;
 	}
 
-	const ax_stuff_trait *ktr = trie->env.key_tr,
-	      *vtr = ax_box_elem_tr(ax_cr(trie, trie).box);
+	const ax_stuff_trait
+		*ktr = trie->env.key_tr,
+		*vtr = trie->env.box.elem_tr;
 
-	val_dmp = vtr->dump(vtr->link ? &val : val, vtr->size);
+	val_dmp = ax_stuff_dump(vtr, ax_stuff_in(vtr, val), vtr->size);
 	if (!val_dmp)
 		goto fail;
 

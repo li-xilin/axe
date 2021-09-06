@@ -198,8 +198,8 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 
 	const void *pval = etr->link ? &val : val;
 	ax_fail fail = val
-		? etr->copy(it->point, pval, etr->size)
-		: etr->init(it->point, etr->size);
+		? ax_stuff_copy(etr, it->point, pval, etr->size)
+		: ax_stuff_init(etr, it->point, etr->size);
 	if (fail) {
 		return true;
 	}

@@ -184,9 +184,4 @@ static inline void ax_box_clear(ax_box* box)
 	box->tr->clear(box);
 }
 
-static inline const ax_stuff_trait *ax_box_elem_tr(const ax_box* box)
-{
-	return box->env.elem_tr;
-}
-
 #endif

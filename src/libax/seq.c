@@ -120,7 +120,7 @@ ax_fail ax_seq_vpushl(ax_seq *seq, const char *fmt, va_list varg)
 	int type = vinfo.type;
 
 	const ax_stuff_trait *etr = ax_stuff_traits(type);
-	ax_assert(etr->size == ax_box_elem_tr(ax_r(seq, seq).box)->size, "data type in initial list is invalid");
+	ax_assert(etr->size == seq->env.box.elem_tr->size, "data type in initial list is invalid");
 
 	int npush = 0;
 	for (int i = 0; i < vail_size; i++) {
@@ -175,7 +175,7 @@ ax_dump *ax_seq_dump(const ax_seq *seq)
 	if (!block_dmp)
 		return NULL;
 
-	const ax_stuff_trait *etr = ax_box_elem_tr(self.box);
+	const ax_stuff_trait *etr = self.box->env.elem_tr;
 
 	size_t i = 0;
 	ax_dump *elem_dmp;

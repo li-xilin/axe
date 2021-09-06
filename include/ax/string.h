@@ -20,8 +20,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef AXE_STRING_H_
-#define AXE_STRING_H_
+#ifndef AX_STRING_H
+#define AX_STRING_H
 #include "str.h"
 #include "debug.h"
 

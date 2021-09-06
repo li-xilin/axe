@@ -191,6 +191,7 @@ static void rehash(axut_runner* r)
 		sprintf(key, "%d", i);
 		ax_map_put(hmap_r.map, key, &i);
 	}
+	ax_any_so(hmap_r.any);
 	printf("threshold = %lu\n", ax_hmap_threshold(hmap_r.hmap));
 	if (ax_hmap_rehash(hmap_r.hmap, 20))
 		axut_term(r, "ax_hmap_rehash");
@@ -198,6 +199,7 @@ static void rehash(axut_runner* r)
 	int table[count];
 	for (int32_t i = 0; i < count; i++)
 		table[i] = 0;
+
 
 	ax_map_cforeach(hmap_r.map, const char *, key, const uint32_t *, val) {
 		ax_unused(key);

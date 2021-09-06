@@ -23,22 +23,22 @@
 #include <ax/mem.h>
 #include <ax/iter.h>
 #include <ax/box.h>
+#include "check.h"
 
 void ax_iter_swap(const ax_iter *it1, const ax_iter *it2)
 {
-	//TODO: check same owner
+	CHECK_ITER_COMPARABLE(it1, it2);
+
 	ax_box *box = ax_iter_box(it1);
-	const ax_stuff_trait *tr = ax_box_elem_tr(box);
+	const ax_stuff_trait *tr = box->env.elem_tr;
 	ax_mem_swap(it1->tr->get(it1), it2->tr->get(it2), tr->size);
 }
 
 void *ax_iter_get(const ax_iter *it)
 {
 	ax_box *box = (ax_box *)it->owner;
-	const ax_stuff_trait *tr = ax_box_elem_tr(box);
-	return tr->link
-	       ? *(void **)it->tr->get(it)
-	       : it->tr->get(it);
+	const ax_stuff_trait *tr = box->env.elem_tr;
+	return ax_stuff_out(tr, it->tr->get(it));
 }
 
 ax_citer ax_citer_npos(const ax_citer *it)
