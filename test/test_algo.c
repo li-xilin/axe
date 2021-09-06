@@ -324,7 +324,7 @@ static void sort_time(axut_runner *r) {
 
 	{
 		time_before = clock();
-		qsort(ax_vector_buffer(role4.vector), ax_box_size(role4.box), ax_box_elem_tr(role4.box)->size, qsort_compare_cb);
+		qsort(ax_vector_buffer(role4.vector), ax_box_size(role4.box), role4.box->env.elem_tr->size, qsort_compare_cb);
 		printf("qsort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
 		axut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
 	}
