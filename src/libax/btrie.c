@@ -50,7 +50,7 @@ struct node_st
 
 struct ax_btrie_st
 {
-	ax_trie _trie;
+	ax_trie trie;
 	ax_avl_r root_r;
 	size_t size;
 	size_t capacity;
@@ -139,7 +139,7 @@ static void *iter_get(const ax_iter *it)
 
 	ax_btrie *self = iter_get_self(it);
 	struct node_st *node = ax_avl_tr.box.iter.get(it);
-	void *val = self->_trie.env.box.elem_tr->link
+	void *val = self->trie.env.box.elem_tr->link
 		? *(void **)node->val
 		: node->val;
 	return val;
@@ -154,7 +154,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	ax_btrie *self = iter_get_self(it);
 
 	struct node_st *node = ax_avl_tr.box.iter.get(it);
-	const ax_stuff_trait *etr = self->_trie.env.box.elem_tr;
+	const ax_stuff_trait *etr = self->trie.env.box.elem_tr;
 	const void *pval = (etr->link) ? &val : val;
 	if (node->val) {
 		etr->free(node->val);
@@ -171,7 +171,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 static void node_free_value(ax_btrie *btrie, struct node_st *node)
 {
 	if (node->val) {
-		const ax_stuff_trait *etr = btrie->_trie.env.box.elem_tr;
+		const ax_stuff_trait *etr = btrie->trie.env.box.elem_tr;
 		etr->free(node->val);
 		free(node->val);
 		node->val = NULL;
@@ -387,7 +387,7 @@ static int match_key(const ax_btrie *self, const ax_seq *key, ax_citer *it_misma
 
 static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *val)
 {
-	const ax_stuff_trait *vtr = self->_trie.env.box.elem_tr;
+	const ax_stuff_trait *vtr = self->trie.env.box.elem_tr;
 	void *value = NULL;
 
 	value = malloc(vtr->size);
@@ -440,7 +440,7 @@ static struct node_st *make_path(ax_trie *trie, const ax_seq *key)
 
 	int count = 0;
 	for (size_t i = 0; i < ins_count; i++) {
-		ax_map *new_submap = __ax_avl_construct(self_r.btrie->_trie.env.key_tr, &node_tr);
+		ax_map *new_submap = __ax_avl_construct(self_r.btrie->trie.env.key_tr, &node_tr);
 		new_submap->env.box.any.one.scope.macro = self_r.one;
 		if (!new_submap) {
 			goto fail;
@@ -800,7 +800,7 @@ ax_trie *__ax_btrie_construct(const ax_stuff_trait *key_tr, const ax_stuff_trait
 	root->env.box.any.one.scope.macro = ax_r(btrie, self).one;
 
 	ax_btrie btrie_init = {
-		._trie = {
+		.trie = {
 			.tr = &ax_btrie_tr,
 			.env = {
 				.key_tr = key_tr,

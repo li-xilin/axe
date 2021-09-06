@@ -40,7 +40,7 @@
 
 struct ax_string_st
 {
-	ax_str _str;
+	ax_str str;
 	ax_buff_r buff_r;
 };
 
@@ -304,8 +304,8 @@ static ax_any* any_copy(const ax_any* any)
 
 	memcpy(new_str_r.string, self_r.string, sizeof(ax_string));
 
-	new_str_r.string->_str.env.box.any.one.scope.macro = NULL;
-	new_str_r.string->_str.env.box.any.one.scope.micro = 0;
+	new_str_r.string->str.env.box.any.one.scope.macro = NULL;
+	new_str_r.string->str.env.box.any.one.scope.micro = 0;
 	return new_str_r.any;
 fail:
 	ax_one_free(new_buf_r.one);
@@ -770,7 +770,7 @@ ax_str *__ax_string_construct()
 		goto fail;
 
 	ax_string string_init = {
-		._str = {
+		.str = {
 			.tr = &str_trait,
 			.env = {
 				.box.elem_tr = ax_stuff_traits(AX_ST_C)

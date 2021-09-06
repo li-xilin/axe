@@ -37,10 +37,10 @@
 
 #define DEFAULT_THRESHOLD 8
 
-#define DEFINE_KVTR(_map) \
+#define DEFINE_KVTR(map) \
 	register const ax_stuff_trait \
-		*ktr = (_map)->env.key_tr,\
-		*vtr = (_map)->env.box.elem_tr
+		*ktr = (map)->env.key_tr,\
+		*vtr = (map)->env.box.elem_tr
 
 #undef free
 
@@ -59,7 +59,7 @@ struct bucket_st
 
 struct ax_hmap_st
 {
-	ax_map _map;
+	ax_map map;
 	size_t size;
 	size_t buckets;
 	size_t threshold;
@@ -146,7 +146,7 @@ static ax_fail rehash(ax_hmap *hmap, size_t nbucket)
 	hmap->bucket_list = NULL;
 	for (; bucket; bucket = bucket->next) {
 		for (struct node_st *currnode = bucket->node_list; currnode;) {
-			const ax_stuff_trait *ktr = hmap->_map.env.key_tr;
+			const ax_stuff_trait *ktr = hmap->map.env.key_tr;
 
 			struct bucket_st *new_bucket = new_tab
 				+ ktr->hash(currnode->kvbuffer, ktr->size)
@@ -241,7 +241,7 @@ fail:
 
 static inline struct bucket_st *locate_bucket(const ax_hmap *hmap, const void *key)
 {
-	size_t index = hmap->_map.env.key_tr->hash(key, hmap->_map.env.key_tr->size) % hmap->buckets;
+	size_t index = hmap->map.env.key_tr->hash(key, hmap->map.env.key_tr->size) % hmap->buckets;
 	return hmap->bucket_tab + index;
 }
 
@@ -507,7 +507,7 @@ static void *map_chkey(ax_map *map, const void *key, const void *new_key)
 
 	const ax_hmap_r hmap_r = { .map = map };
 
-	const ax_stuff_trait *ktr = hmap_r.hmap->_map.env.key_tr;
+	const ax_stuff_trait *ktr = hmap_r.hmap->map.env.key_tr;
 	const void *pkey = ktr->link ? &key : key;
 
 	if (!hmap_r.hmap->buckets)
@@ -580,8 +580,8 @@ static ax_any *any_copy(const ax_any *any)
 		}
 	}
 
-	dst_r.hmap->_map.env.box.any.one.scope.macro = NULL;
-	dst_r.hmap->_map.env.box.any.one.scope.micro = 0;
+	dst_r.hmap->map.env.box.any.one.scope.macro = NULL;
+	dst_r.hmap->map.env.box.any.one.scope.micro = 0;
 	return dst_r.any;
 }
 
@@ -708,7 +708,7 @@ ax_map *__ax_hmap_construct(const ax_stuff_trait *key_tr, const ax_stuff_trait *
 		return NULL;
 	
 	ax_hmap hmap_init = {
-		._map = {
+		.map = {
 			.tr = &ax_hmap_tr,
 			.env = {
 				.box.elem_tr = val_tr,

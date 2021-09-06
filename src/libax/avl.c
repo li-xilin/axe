@@ -48,7 +48,7 @@ struct node_st
 
 struct ax_avl_st
 {
-	ax_map _map;
+	ax_map map;
 	struct node_st *root;
 	size_t size;
 };
@@ -353,7 +353,7 @@ static void citer_next(ax_citer *it)
 
 	ax_assert(it->point != NULL, "iterator boundary exceeded");
 	ax_avl* avl= (ax_avl*)it->owner;
-	it->point =  get_right_node(&avl->_map, it->point);
+	it->point =  get_right_node(&avl->map, it->point);
 }
 
 static bool citer_less(const ax_citer *it1, const ax_citer *it2)
@@ -395,8 +395,8 @@ static void rciter_prev(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr);
 
 	const ax_avl* avl = it->owner;
-	it->point = it->point ? get_right_node(&avl->_map, it->point)
-		: get_left_end_node(&avl->_map, avl->root);
+	it->point = it->point ? get_right_node(&avl->map, it->point)
+		: get_left_end_node(&avl->map, avl->root);
 }
 
 static void rciter_next(ax_citer *it)
@@ -405,7 +405,7 @@ static void rciter_next(ax_citer *it)
 
 	ax_assert(it->point != NULL, "iterator boundary exceeded");
 	const ax_avl *avl = it->owner;
-	it->point =  get_left_node(&avl->_map, it->point);
+	it->point =  get_left_node(&avl->map, it->point);
 }
 
 static bool rciter_less(const ax_citer *it1, const ax_citer *it2)
@@ -426,7 +426,7 @@ static void *iter_get(const ax_iter *it)
 	const ax_avl *avl= it->owner;
 	struct node_st *node = it->point;
 	void *pval = node_pval(it->owner, node);
-	return avl->_map.env.box.elem_tr->link
+	return avl->map.env.box.elem_tr->link
 		? *(void**)pval
 		: pval;
 }
@@ -637,7 +637,7 @@ static const void *map_it_key(const ax_citer *it)
 
 	const ax_avl *avl= it->owner;
 	struct node_st *node = it->point;
-	return ax_stuff_out(avl->_map.env.key_tr, node->kvbuffer);
+	return ax_stuff_out(avl->map.env.key_tr, node->kvbuffer);
 }
 
 static void one_free(ax_one* one)
@@ -671,8 +671,8 @@ static ax_any *any_copy(const ax_any *any)
 			goto fail;
 	}
 
-	dst_r.avl->_map.env.box.any.one.scope.macro = NULL;
-	dst_r.avl->_map.env.box.any.one.scope.micro = 0;
+	dst_r.avl->map.env.box.any.one.scope.macro = NULL;
+	dst_r.avl->map.env.box.any.one.scope.micro = 0;
 	return dst_r.any;
 fail:
 	ax_one_free(dst_r.one);
@@ -848,7 +848,7 @@ ax_map *__ax_avl_construct(const ax_stuff_trait* key_tr, const ax_stuff_trait* v
 		return NULL;
 	
 	ax_avl avl_init = {
-		._map = {
+		.map = {
 			.tr = &ax_avl_tr,
 			.env.box.elem_tr = val_tr,
 			.env.key_tr = key_tr,
@@ -858,7 +858,7 @@ ax_map *__ax_avl_construct(const ax_stuff_trait* key_tr, const ax_stuff_trait* v
 	};
 
 	memcpy(avl, &avl_init, sizeof avl_init);
-	return &avl->_map;
+	return &avl->map;
 }
 
 ax_avl_r ax_avl_create(ax_scope *scope, const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)

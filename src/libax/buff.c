@@ -35,7 +35,7 @@
 
 struct ax_buff_st
 {
-	ax_any _any;
+	ax_any any;
 	size_t used;
 	size_t real;
 	size_t min;
@@ -79,8 +79,8 @@ static ax_any *any_copy(const ax_any *any)
 	dst_buff->real = src_buff->used;
 	dst_buff->buf = buffer;
 
-	dst_buff->_any.env.one.scope.macro = NULL;
-	dst_buff->_any.env.one.scope.micro = 0;
+	dst_buff->any.env.one.scope.macro = NULL;
+	dst_buff->any.env.one.scope.micro = 0;
 	return ax_r(buff, dst_buff).any;
 fail:
 	free(buffer);
@@ -124,7 +124,7 @@ ax_any *__ax_buff_construct()
 		goto fail;
 
 	ax_buff buff_init = {
-		._any.tr = &ax_buff_tr,
+		.any.tr = &ax_buff_tr,
 		.used = 0,
 		.real = 0,
 		.min = 0,

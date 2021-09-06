@@ -45,7 +45,7 @@ struct node_st
 
 struct ax_list_st
 {
-	ax_seq _seq;
+	ax_seq seq;
 	struct node_st *head;
 	size_t size;
 	size_t capacity;
@@ -283,7 +283,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 
 	struct node_st *node = it->point;
 	ax_list *list = (ax_list *) it->owner;
-	const ax_stuff_trait *etr = list->_seq.env.box.elem_tr;
+	const ax_stuff_trait *etr = list->seq.env.box.elem_tr;
 
 	ax_stuff_free(etr, node->data);
 	
@@ -316,7 +316,7 @@ static void iter_erase(ax_iter *it)
 		node->next->pre = node->pre;
 	}
 	list->size --;
-	const ax_stuff_trait *etr = list->_seq.env.box.elem_tr;
+	const ax_stuff_trait *etr = list->seq.env.box.elem_tr;
 	ax_stuff_free(etr, node->data);
 	free(node);
 }
@@ -363,8 +363,8 @@ static ax_any *any_copy(const ax_any *any)
 		ax_citer_next(&it);
 	}
 
-	new_r.list->_seq.env.box.any.one.scope.macro = NULL;
-	new_r.list->_seq.env.box.any.one.scope.micro = 0;
+	new_r.list->seq.env.box.any.one.scope.macro = NULL;
+	new_r.list->seq.env.box.any.one.scope.micro = 0;
 	return (ax_any*)new_r.any;
 }
 
@@ -442,7 +442,7 @@ static void box_clear(ax_box *box)
 	if (list->size == 0)
 		return;
 
-	const ax_stuff_trait *etr = list->_seq.env.box.elem_tr;
+	const ax_stuff_trait *etr = list->seq.env.box.elem_tr;
 	struct node_st *node = list->head;
 	do {	
 		struct node_st *next = node->next;
@@ -817,7 +817,7 @@ ax_seq* __ax_list_construct(const ax_stuff_trait *elem_tr)
 	}
 
 	ax_list list_init = {
-		._seq = {
+		.seq = {
 			.tr = &ax_list_tr,
 			.env.box.elem_tr = elem_tr,
 		},
