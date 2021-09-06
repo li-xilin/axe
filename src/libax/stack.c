@@ -55,20 +55,19 @@ static void     one_free(ax_one *one);
 
 const ax_tube_trait ax_stack_tr =
 {
-		.any = {
-			.one = {
-				.name = AX_STACK_NAME,
-				.free = one_free,
-			},
-			.copy = any_copy,
-			.dump = any_dump,
+	.any = {
+		.one = {
+			.name = AX_STACK_NAME,
+			.free = one_free,
 		},
-		.push = tube_push,
-		.pop = tube_pop,
-		.size = tube_size,
-		.prime = tube_prime,
+		.copy = any_copy,
+		.dump = any_dump,
+	},
+	.push = tube_push,
+	.pop = tube_pop,
+	.size = tube_size,
+	.prime = tube_prime,
 };
-
 
 static ax_fail tube_push(ax_tube *tube, const void *val)
 {

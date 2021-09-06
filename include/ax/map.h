@@ -98,7 +98,6 @@ typedef union
 	ax_box *box;
 	ax_any *any;
 	ax_one *one;
-	ax_map_cr c;
 } ax_map_r;
 
 inline static void *ax_map_put(ax_map *map, const void *key, const void *val)

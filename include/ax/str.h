@@ -82,7 +82,6 @@ typedef union
 	ax_box *box;
 	ax_any *any;
 	ax_one *one;
-	ax_str_cr c;
 } ax_str_r;
 
 inline static ax_fail  ax_str_append (      ax_str* str, const char *s) {return str->tr->append(str, s); }

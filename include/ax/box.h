@@ -111,7 +111,6 @@ typedef union
 	ax_box *box;
 	ax_any *any;
 	ax_one *one;
-	ax_box_cr c;
 } ax_box_r;
 
 static inline size_t ax_box_size(const ax_box* box)

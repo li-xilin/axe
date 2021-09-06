@@ -47,7 +47,6 @@ typedef union
 	ax_box *box;
 	ax_any *any;
 	ax_one *one;
-	ax_avl_cr c;
 } ax_avl_r;
 
 extern const ax_map_trait ax_avl_tr;

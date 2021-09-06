@@ -57,7 +57,6 @@ typedef union
 {
 	axut_runner *runner;
 	ax_one *one;
-	axut_runner_crol c;
 } axut_runner_role;
 
 ax_one *__axut_runner_construct(axut_output_f ran_cb);

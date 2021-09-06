@@ -47,7 +47,6 @@ typedef union
 	ax_box *box;
 	ax_any *any;
 	ax_one *one;
-	ax_string_cr c;
 } ax_string_r;
 
 ax_str *__ax_string_construct();

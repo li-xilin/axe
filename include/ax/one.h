@@ -68,7 +68,6 @@ typedef union
 typedef union
 {
 	ax_one *one;
-	ax_one_cr c;
 } ax_one_r;
 
 struct ax_one_env_st
