@@ -20,29 +20,53 @@
  * THE SOFTWARE.
  */
 
-#ifndef AX_STRING_H
-#define AX_STRING_H
-#include "str.h"
-#include "debug.h"
+#include "assist.h"
 
-#define AX_STRING_NAME AX_STR_NAME ".string"
+#include "ax/base.h"
+#include "ax/class.h"
+#include "ax/stuff.h"
 
-#ifndef AX_STRING_DEFINED
-#define AX_STRING_DEFINED
-typedef struct ax_string_st ax_string;
-#endif
+#include "axut.h"
+#include <stdio.h>
 
-#define AX_CLASS_BASE_string str
-#define AX_CLASS_ROLE_string(_l) _l AX_CLASS_PTR(string); AX_CLASS_ROLE_str(_l)
-AX_CLASS_STRUCT_ROLE(string);
-
-ax_str *__ax_string_construct();
-
-inline static AX_CLASS_CONSTRUCTOR0(string)
+static void stoi(axut_runner *r)
 {
-	return __ax_string_construct();
+	static const struct { const char *name; int value; } table[] = {
+		{ "",   	AX_ST_NIL },
+		{ "?",  	0         },
+		{ "c",  	AX_ST_C   },
+		{ "f",  	AX_ST_F   },
+		{ "h",  	AX_ST_H   },
+		{ "i",  	AX_ST_I   },
+		{ "i16",	AX_ST_I16 },
+		{ "i32",	AX_ST_I32 },
+		{ "i64",	AX_ST_I64 },
+		{ "i8", 	AX_ST_I8  },
+		{ "l",  	AX_ST_L   },
+		{ "lf", 	AX_ST_LF  },
+		{ "ll", 	AX_ST_LL  },
+		{ "p",  	AX_ST_PTR },
+		{ "s",  	AX_ST_S   },
+		{ "u",  	AX_ST_U   },
+		{ "u16",	AX_ST_U16 },
+		{ "u32",	AX_ST_U32 },
+		{ "u64",	AX_ST_U64 },
+		{ "u8", 	AX_ST_U8  },
+		{ "uc", 	AX_ST_UC  },
+		{ "uh", 	AX_ST_UH  },
+		{ "ul", 	AX_ST_UL  },
+		{ "ull",	AX_ST_ULL },
+		{ "ws", 	AX_ST_WS  },
+		{ "z",  	AX_ST_Z   },
+	};
+	for (int i = 0; i < sizeof table/ sizeof *table; i++) {
+		axut_assert(r, table[i].value == ax_stuff_stoi(table[i].name));
+	}
 }
 
-ax_string_r ax_string_create(ax_scope *scope);
-
-#endif
+axut_suite *suite_for_stuff(ax_base *base)
+{
+	axut_suite* suite = axut_suite_create(ax_base_local(base), "stuff");
+	axut_suite_add(suite, stoi, 0);
+	return suite;
+}

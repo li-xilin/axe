@@ -37,27 +37,22 @@
 
 #undef free
 
-struct node_st
-{
-        struct node_st *left;
-        struct node_st *right;
-        struct node_st *parent;
-        size_t height;
-	ax_byte kvbuffer[];
-};
-
-struct ax_avl_st
-{
-	ax_map map;
-	struct node_st *root;
+AX_CLASS_STRUCT_ENTRY(avl)
+	struct node_st {
+		struct node_st *left;
+		struct node_st *right;
+		struct node_st *parent;
+		size_t height;
+		ax_byte kvbuffer[];
+	} *root;
 	size_t size;
-};
+AX_END;	
 
-static void     *map_put(ax_map* map, const void *key, const void *val);
+static void    *map_put(ax_map* map, const void *key, const void *val);
 static ax_fail  map_erase(ax_map* map, const void *key);
 static void    *map_get(const ax_map* map, const void *key);
 static ax_iter  map_at(const ax_map* map, const void *key);
-static bool  map_exist(const ax_map* map, const void *key);
+static bool     map_exist(const ax_map* map, const void *key);
 static const void *map_it_key(const ax_citer *it);
 
 static size_t   box_size(const ax_box* box);
@@ -68,19 +63,19 @@ static ax_iter  box_rbegin(ax_box* box);
 static ax_iter  box_rend(ax_box* box);
 static void     box_clear(ax_box* box);
 
-static ax_dump*any_dump(const ax_any* any);
+static ax_dump *any_dump(const ax_any* any);
 static ax_any  *any_copy(const ax_any* any);
 
 static void     one_free(ax_one* one);
 
 static void     citer_prev(ax_citer *it);
 static void     citer_next(ax_citer *it);
-static bool  citer_less(const ax_citer *it1, const ax_citer *it2);
+static bool     citer_less(const ax_citer *it1, const ax_citer *it2);
 static long     citer_dist(const ax_citer *it1, const ax_citer *it2);
 
 static void     rciter_prev(ax_citer *it);
 static void     rciter_next(ax_citer *it);
-static bool  rciter_less(const ax_citer *it1, const ax_citer *it2);
+static bool     rciter_less(const ax_citer *it1, const ax_citer *it2);
 static long     rciter_dist(const ax_citer *it1, const ax_citer *it2);
 
 static void    *iter_get(const ax_iter *it);

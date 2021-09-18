@@ -26,29 +26,24 @@
 
 #define AX_LIST_NAME AX_SEQ_NAME ".list"
 
+#ifndef AX_LIST_DEFINED
+#define AX_LIST_DEFINED
 typedef struct ax_list_st ax_list;
+#endif
 
-typedef union
-{
-	const ax_list *list;
-	const ax_seq *seq;
-	const ax_box *box;
-	const ax_any *any;
-	const ax_one *one;
-} ax_list_cr;
+#define AX_CLASS_BASE_list seq
+#define AX_CLASS_ROLE_list(_l) _l AX_CLASS_PTR(list); AX_CLASS_ROLE_seq(_l)
 
-typedef union
-{
-	ax_list *list;
-	ax_seq *seq;
-	ax_box *box;
-	ax_any *any;
-	ax_one *one;
-} ax_list_r;
+AX_CLASS_STRUCT_ROLE(list);
 
 extern const ax_seq_trait ax_list_tr;
 
 ax_seq *__ax_list_construct(const ax_stuff_trait *elem_tr);
+
+inline static AX_CLASS_CONSTRUCTOR(list, const ax_stuff_trait* trait)
+{
+	return __ax_list_construct(trait);
+}
 
 ax_list_r ax_list_create(ax_scope *scope, const ax_stuff_trait *elem_tr);
 

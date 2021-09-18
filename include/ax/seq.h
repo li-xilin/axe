@@ -24,17 +24,13 @@
 #define AX_SEQ_H
 #include "box.h"
 #include "def.h"
+#include "class.h"
 
 #define AX_SEQ_NAME AX_BOX_NAME ".seq"
 
 #ifndef AX_SEQ_DEFINED
 #define AX_SEQ_DEFINED
 typedef struct ax_seq_st ax_seq;
-#endif
-
-#ifndef AX_TRAIT_DEFINED
-#define AX_TRAIT_DEFINED
-typedef struct ax_seq_trait_st ax_seq_trait;
 #endif
 
 typedef ax_fail (*ax_seq_push_f)   (ax_seq *seq, const void *val);
@@ -47,9 +43,13 @@ typedef void   *(*ax_seq_end_f)    (const ax_seq *seq);
 
 typedef ax_seq *(ax_seq_construct_f)(const ax_stuff_trait *tr);
 
-struct ax_seq_trait_st
-{
-	const ax_box_trait box; /* Keep this first */
+#define AX_CLASS_BASE_seq box
+#define AX_CLASS_ROLE_seq(_l) _l AX_CLASS_PTR(seq); AX_CLASS_ROLE_box(_l)
+
+AX_BEGIN_ENV(seq)
+AX_END;
+
+AX_BEGIN_TRAIT(seq)
 	const ax_seq_push_f   push;
 	const ax_seq_pop_f    pop;
 	const ax_seq_push_f   pushf;
@@ -60,34 +60,9 @@ struct ax_seq_trait_st
 	const ax_seq_insert_f insert;
 	const ax_seq_end_f   first;
 	const ax_seq_end_f   last;
-};
+AX_END;
 
-typedef struct ax_seq_env_st
-{
-	ax_box_env box; /* Keep this first */
-} ax_seq_env;
-
-struct ax_seq_st
-{
-	const ax_seq_trait *const tr; /* Keep this first */
-	ax_seq_env env;
-};
-
-typedef union
-{
-	const ax_seq *seq;
-	const ax_box *box;
-	const ax_any *any;
-	const ax_one *one;
-} ax_seq_cr;
-
-typedef union
-{
-	ax_seq *seq;
-	ax_box *box;
-	ax_any *any;
-	ax_one *one;
-} ax_seq_r;
+AX_BLESS(seq);
 
 inline static ax_fail ax_seq_push(ax_seq *seq, const void *val)
 {

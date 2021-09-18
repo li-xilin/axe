@@ -52,6 +52,43 @@ typedef void (*ax_binary_f)(void *out, const void *in1, const void *in2, void *a
 
 #define ax_align(_size, _align) (!((_size) % (_align)) ? (_size) : ((_size) + (_align) - ((_size) % (_align))))
 
+#define AX_NARG(...) \
+         __AX_NARG_(__VA_ARGS__, __AX_RSEQ_N)
+#define __AX_NARG_(...) \
+         __AX_ARG_N(__VA_ARGS__)
+#define __AX_ARG_N( \
+          _1, _2, _3, _4, _5, _6, _7, _8, _9,_10, \
+         _11,_12,_13,_14,_15,_16,_17,_18,_19,_20, \
+         _21,_22,_23,_24,_25,_26,_27,_28,_29,_30, \
+         _31,_32,_33,_34,_35,_36,_37,_38,_39,_40, \
+         _41,_42,_43,_44,_45,_46,_47,_48,_49,_50, \
+         _51,_52,_53,_54,_55,_56,_57,_58,_59,_60, \
+         _61,_62,_63,N,...) N
+#define __AX_RSEQ_N \
+         63, 62, 61, 60,                          \
+         59, 58, 57, 56, 55, 54, 53, 52, 51, 50,  \
+         49, 48, 47, 46, 45, 44, 43, 42, 41, 40,  \
+         39, 38, 37, 36, 35, 34, 33, 32, 31, 30,  \
+         29, 28, 27, 26, 25, 24, 23, 22, 21, 20,  \
+         19, 18, 17, 16, 15, 14, 13, 12, 11, 10,  \
+          9,  8,  7,  6,  5,  4,  3,  2,  1,  0
+
+#define __AX_CATENATE_8(a1, a2, a3, a4, a5, a6, a7, a8) a1##a2##a3##a4##a5##a6##a7##a8
+#define __AX_CATENATE_7(a1, a2, a3, a4, a5, a6, a7) a1##a2##a3##a4##a5##a6##a7
+#define __AX_CATENATE_6(a1, a2, a3, a4, a5, a6) a1##a2##a3##a4##a5##a6
+#define __AX_CATENATE_5(a1, a2, a3, a4, a5) a1##a2##a3##a4##a5
+#define __AX_CATENATE_4(a1, a2, a3, a4) a1##a2##a3##a4
+#define __AX_CATENATE_3(a1, a2, a3) a1##a2##a3
+#define __AX_CATENATE_2(a1, a2) a1##a2
+#define __AX_CATENATE_1(a1) a1
+
+#define __AX_CATENATE1_N(n, ...) __AX_CATENATE_##n(__VA_ARGS__)
+#define __AX_CATENATE_N(n, ...) __AX_CATENATE1_N(n, __VA_ARGS__)
+#define AX_CATENATE(...) __AX_CATENATE_N(AX_NARG(__VA_ARGS__), __VA_ARGS__)
+
+#define __AX_STRINGY(_x) #_x
+#define AX_STRINGY(_x) __AX_STRINGY(_x)
+
 /* Architecture Macros */
 
 #if defined(__x86_64__) || defined(__x86_64) || defined(__amd64__) || defined(_M_X64) || defined(_M_AMD64)

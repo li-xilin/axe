@@ -49,56 +49,29 @@
 			_foreach_cont;                                    \
 			_foreach_cont = 0)
 
+#ifndef AX_MAP_DEFINED
+#define AX_MAP_DEFINED
 typedef struct ax_map_st ax_map;
-typedef struct ax_map_trait_st ax_map_trait;
+#endif
 
-typedef void       *(*ax_map_put_f)   (ax_map *map, const void *key, const void *val);
-typedef void       *(*ax_map_get_f)   (const ax_map *map, const void *key);
-typedef ax_iter     (*ax_map_at_f)    (const ax_map *map, const void *key);
-typedef bool        (*ax_map_exist_f) (const ax_map *map, const void *key);
-typedef void       *(*ax_map_chkey_f) (ax_map *map, const void *key, const void *new_key);
-typedef ax_fail     (*ax_map_erase_f) (ax_map *map, const void *key);
-typedef const void *(*ax_map_it_key_f)(const ax_citer *it);
+#define AX_CLASS_BASE_map box
+#define AX_CLASS_ROLE_map(_l) _l AX_CLASS_PTR(map); AX_CLASS_ROLE_box(_l)
 
-struct ax_map_trait_st
-{
-	const ax_box_trait box;
-	const ax_map_put_f put;
-	const ax_map_get_f get;
-	const ax_map_at_f at;
-	const ax_map_exist_f exist;
-	const ax_map_chkey_f chkey;
-	const ax_map_erase_f erase;
-	const ax_map_it_key_f itkey;
-};
+AX_BEGIN_TRAIT(map)
+	void *(*put) (ax_map *map, const void *key, const void *val);
+	void *(*get) (const ax_map *map, const void *key);
+	ax_iter (*at) (const ax_map *map, const void *key);
+	bool (*exist) (const ax_map *map, const void *key);
+	void *(*chkey) (ax_map *map, const void *key, const void *new_key);
+	ax_fail (*erase) (ax_map *map, const void *key);
+	const void *(*itkey)(const ax_citer *it);
+AX_END;
 
-typedef struct ax_map_env_st
-{
-	ax_box_env box;
+AX_BEGIN_ENV(map)
 	const ax_stuff_trait *key_tr;
-} ax_map_env;
+AX_END;
 
-struct ax_map_st
-{
-	const ax_map_trait *const tr;
-	ax_map_env env;
-};
-
-typedef union
-{
-	const ax_map *map;
-	const ax_box *box;
-	const ax_any *any;
-	const ax_one *one;
-} ax_map_cr;
-
-typedef union
-{
-	ax_map *map;
-	ax_box *box;
-	ax_any *any;
-	ax_one *one;
-} ax_map_r;
+AX_BLESS(map);
 
 inline static void *ax_map_put(ax_map *map, const void *key, const void *val)
 {

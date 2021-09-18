@@ -28,6 +28,7 @@
 #include <ax/debug.h>
 #include <ax/vail.h>
 #include <ax/stuff.h>
+#include <ax/class.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -43,13 +44,11 @@ struct node_st
 	ax_byte data[];
 };
 
-struct ax_list_st
-{
-	ax_seq seq;
+AX_CLASS_STRUCT_ENTRY(list)
 	struct node_st *head;
 	size_t size;
 	size_t capacity;
-};
+AX_END;
 
 static ax_fail seq_push(ax_seq *seq, const void *val);
 static ax_fail seq_pop(ax_seq *seq);

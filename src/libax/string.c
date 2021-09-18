@@ -38,11 +38,9 @@
 
 #define MIN_SIZE 16
 
-struct ax_string_st
-{
-	ax_str str;
+AX_CLASS_STRUCT_ENTRY(string)
 	ax_buff_r buff_r;
-};
+AX_END;
 
 static void    citer_move(ax_citer *it, long i);
 static void    citer_prev(ax_citer *it);
@@ -304,8 +302,8 @@ static ax_any* any_copy(const ax_any* any)
 
 	memcpy(new_str_r.string, self_r.string, sizeof(ax_string));
 
-	new_str_r.string->str.env.box.any.one.scope.macro = NULL;
-	new_str_r.string->str.env.box.any.one.scope.micro = 0;
+	new_str_r.string->str.env.seq.box.any.one.scope.macro = NULL;
+	new_str_r.string->str.env.seq.box.any.one.scope.micro = 0;
 	return new_str_r.any;
 fail:
 	ax_one_free(new_buf_r.one);
@@ -696,6 +694,39 @@ static const ax_str_trait str_trait =
 				.dump = any_dump,
 				.copy = any_copy,
 			},
+
+
+			.iter = {
+				.ctr = {
+					.norm = true,
+					.type = AX_IT_RAND,
+					.move = citer_move,
+					.prev = citer_prev,
+					.next = citer_next,
+					.less = citer_less,
+					.dist = citer_dist
+				},
+
+				.get    = iter_get,
+				.set    = iter_set,
+				.erase  = iter_erase,
+			},
+
+			.riter = {
+				.ctr = {
+					.norm = false,
+					.type = AX_IT_RAND,
+					.move = rciter_move,
+					.prev = rciter_prev,
+					.next = rciter_next,
+					.less = rciter_less,
+					.dist = rciter_dist
+				},
+				.get   = iter_get,
+				.set   = iter_set,
+				.erase = iter_erase
+			},
+
 			.size = box_size,
 			.maxsize = box_maxsize,
 
@@ -723,39 +754,6 @@ static const ax_str_trait str_trait =
 	.sprintf = str_sprintf
 };
 
-static const ax_iter_trait iter_trait =
-{
-	.ctr = {
-		.norm   = true,
-		.type   = AX_IT_RAND,
-		.move   = citer_move,
-		.prev   = citer_prev,
-		.next   = citer_next,
-		.less   = citer_less,
-		.dist   = citer_dist
-	},
-
-	.get    = iter_get,
-	.set    = iter_set,
-	.erase  = iter_erase,
-};
-
-static const ax_iter_trait riter_trait =
-{
-	.ctr = {
-		.norm   = false,
-		.type   = AX_IT_RAND,
-		.move   = rciter_move,
-		.prev   = rciter_prev,
-		.next   = rciter_next,
-		.less   = rciter_less,
-		.dist   = rciter_dist
-	},
-	.get    = iter_get,
-	.set    = iter_set,
-	.erase  = iter_erase
-};
-
 ax_str *__ax_string_construct()
 {
 	ax_string *self = NULL;
@@ -773,7 +771,7 @@ ax_str *__ax_string_construct()
 		.str = {
 			.tr = &str_trait,
 			.env = {
-				.box.elem_tr = ax_stuff_traits(AX_ST_C)
+				.seq.box.elem_tr = ax_stuff_traits(AX_ST_C)
 			},
 		},
 		.buff_r = buff_r,

@@ -91,7 +91,7 @@ axut_suite *suite_for_string(ax_base *base)
 
 	axut_suite_add(suite, create, 0);
 	axut_suite_add(suite, append, 0);
-	axut_suite_add(suite, split, 0);
+	//axut_suite_add(suite, split, 0);
 	axut_suite_add(suite, cleanup, 0xFF);
 
 	return suite;

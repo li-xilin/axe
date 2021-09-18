@@ -26,31 +26,24 @@
 
 #define AX_BTRIE_NAME AX_TRIE_NAME ".btrie"
 
+#ifndef AX_BTRIE_DEFINED
+#define AX_BTRIE_DEFINED
 typedef struct ax_btrie_st ax_btrie;
+#endif
 
-typedef union
-{
-	const ax_btrie* btrie;
-	const ax_trie* trie;
-	const ax_box* box;
-	const ax_any* any;
-	const ax_one* one;
-} ax_btrie_cr;
+#define AX_CLASS_BASE_btrie trie
+#define AX_CLASS_ROLE_btrie(_l) _l AX_CLASS_PTR(btrie); AX_CLASS_ROLE_trie(_l)
 
-typedef union
-{
-	ax_btrie* btrie;
-	ax_trie* trie;
-	ax_seq* seq;
-	ax_box* box;
-	ax_any* any;
-	ax_one* one;
-	ax_btrie_cr c;
-} ax_btrie_r;
+AX_CLASS_STRUCT_ROLE(btrie);
 
 extern const ax_trie_trait ax_btrie_tr;
 
 ax_trie *__ax_btrie_construct(const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr);
+
+inline static AX_CLASS_CONSTRUCTOR(btrie, const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr)
+{
+	return __ax_btrie_construct(key_tr, val_tr);
+}
 
 ax_btrie_r ax_btrie_create(ax_scope* scope, const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr);
 

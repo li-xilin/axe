@@ -57,16 +57,14 @@ struct bucket_st
 	struct bucket_st *next;
 };
 
-struct ax_hmap_st
-{
-	ax_map map;
+AX_CLASS_STRUCT_ENTRY(hmap)
 	size_t size;
 	size_t buckets;
 	size_t threshold;
 	size_t reserved;
 	struct bucket_st *bucket_list;
 	struct bucket_st *bucket_tab;
-};
+AX_END;
 
 static void    *map_put(ax_map *map, const void *key, const void *val);
 static ax_fail  map_erase(ax_map *map, const void *key);

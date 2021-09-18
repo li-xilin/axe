@@ -31,30 +31,24 @@
 typedef struct ax_avl_st ax_avl;
 #endif
 
-typedef union
-{
-	const ax_avl *avl;
-	const ax_map *map;
-	const ax_box *box;
-	const ax_any *any;
-	const ax_one *one;
-} ax_avl_cr;
-
-typedef union
-{
-	ax_avl *avl;
-	ax_map *map;
-	ax_box *box;
-	ax_any *any;
-	ax_one *one;
-} ax_avl_r;
-
 extern const ax_map_trait ax_avl_tr;
+
+#define AX_CLASS_BASE_avl map
+#define AX_CLASS_ROLE_avl(_l) _l AX_CLASS_PTR(avl); AX_CLASS_ROLE_map(_l)
+
+AX_CLASS_STRUCT_ROLE(avl);
+
+extern const ax_map_trait ax_hmap_tr;
 
 ax_map *__ax_avl_construct(
 		const ax_stuff_trait* key_tr,
 		const ax_stuff_trait* val_tr
 );
+
+inline static AX_CLASS_CONSTRUCTOR(avl, const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr)
+{
+	return __ax_avl_construct(key_tr, val_tr);
+}
 
 ax_avl_r ax_avl_create(ax_scope *scope,
 		const ax_stuff_trait *key_tr,

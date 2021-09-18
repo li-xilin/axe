@@ -38,76 +38,31 @@ typedef struct ax_dump_st ax_dump;
 typedef struct ax_trie_st ax_trie;
 #endif
 
-#ifndef AX_TRIE_TRAIT_DEFINED
-#define AX_TRIE_TRAIT_DEFINED
-typedef struct ax_trie_trait_st ax_trie_trait;
-#endif
+#define AX_CLASS_BASE_trie box
+#define AX_CLASS_ROLE_trie(_l) _l AX_CLASS_PTR(trie); AX_CLASS_ROLE_box(_l)
 
-typedef void *(*ax_trie_put_f)  (ax_trie *trie, const ax_seq *key, const void *val);
-typedef void *(*ax_trie_get_f)  (const ax_trie *trie, const ax_seq *key);
-typedef ax_iter (*ax_trie_at_f)   (const ax_trie *trie, const ax_seq *key);
-typedef bool (*ax_trie_exist_f)(const ax_trie *trie, const ax_seq *key, bool *valued);
-typedef bool (*ax_trie_erase_f)(ax_trie *trie, const ax_seq *key);
-typedef bool (*ax_trie_prune_f)(ax_trie *trie, const ax_seq *key);
-typedef ax_fail (*ax_trie_rekey_f)(ax_trie *trie, const ax_seq *key_from, const ax_seq *key_to);
-
-typedef const void *(*ax_trie_it_word_f)(const ax_citer *it);
-typedef ax_iter (*ax_trie_it_begin_f)(const ax_citer *it);
-typedef ax_iter (*ax_trie_it_end_f)(const ax_citer *it);
-typedef bool (*ax_trie_it_parent_f)(const ax_citer *it, ax_iter *parent);
-typedef bool (*ax_trie_it_valued_f)(const ax_citer *it);
-typedef void (*ax_trie_it_clean_f)(const ax_iter *it);
-
-
-struct ax_trie_trait_st
-{
-	const ax_box_trait box;
+AX_BEGIN_TRAIT(trie)
 	const ax_iter_trait iter_root;
+	void       *(*put)      (ax_trie *trie, const ax_seq *key, const void *val);
+	void       *(*get)      (const ax_trie *trie, const ax_seq *key);
+	ax_iter     (*at)       (const ax_trie *trie, const ax_seq *key);
+	bool        (*exist)    (const ax_trie *trie, const ax_seq *key, bool *valued);
+	bool        (*erase)    (ax_trie *trie, const ax_seq *key);
+	bool        (*prune)    (ax_trie *trie, const ax_seq *key);
+	ax_fail     (*rekey)    (ax_trie *trie, const ax_seq *key_from, const ax_seq *key_to);
+	const void *(*it_word)  (const ax_citer *it);
+	ax_iter     (*it_begin) (const ax_citer *it);
+	ax_iter     (*it_end)   (const ax_citer *it);
+	bool        (*it_parent)(const ax_citer *it, ax_iter *parent);
+	bool        (*it_valued)(const ax_citer *it);
+	void        (*it_clean) (const ax_iter *it);
+AX_END;
 
-	const ax_trie_put_f put;
-	const ax_trie_get_f get;
-	const ax_trie_at_f at;
-	const ax_trie_exist_f exist;
-	const ax_trie_erase_f erase;
-	const ax_trie_prune_f prune;
-	const ax_trie_rekey_f rekey;
-	
-	const ax_trie_it_word_f it_word;
-	const ax_trie_it_begin_f it_begin;
-	const ax_trie_it_end_f it_end;
-	const ax_trie_it_parent_f it_parent;
-	const ax_trie_it_valued_f it_valued;
-	const ax_trie_it_clean_f clean;
-};
-
-typedef struct ax_trie_env_st
-{
-	ax_box_env box;
+AX_BEGIN_ENV(trie)
 	const ax_stuff_trait *key_tr;
-} ax_trie_env;
+AX_END;
 
-struct ax_trie_st
-{
-	const ax_trie_trait *const tr;
-	ax_trie_env env;
-};
-
-typedef union
-{
-	const ax_trie *trie;
-	const ax_box *box;
-	const ax_any *any;
-	const ax_one *one;
-} ax_trie_cr;
-
-typedef union
-{
-	ax_trie *trie;
-	ax_box *box;
-	ax_any *any;
-	ax_one *one;
-	ax_trie_cr c;
-} ax_trie_r;
+AX_BLESS(trie);
 
 inline static void *ax_trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 {

@@ -42,11 +42,9 @@
 
 #define MIN_SIZE
 
-struct ax_vector_st
-{
-	ax_seq seq;
+AX_CLASS_STRUCT_ENTRY(vector)
 	ax_buff *buff;
-};
+AX_END;
 
 static ax_fail seq_push(ax_seq *seq, const void *val);
 static ax_fail seq_pop(ax_seq *seq);

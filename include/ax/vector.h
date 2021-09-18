@@ -26,29 +26,24 @@
 
 #define AX_VECTOR_NAME AX_SEQ_NAME ".vector"
 
+#ifndef AX_VECTOR_DEFINED
+#define AX_VECTOR_DEFINED
 typedef struct ax_vector_st ax_vector;
+#endif
 
-typedef union
-{
-	const ax_vector* vector;
-	const ax_seq* seq;
-	const ax_box* box;
-	const ax_any* any;
-	const ax_one* one;
-} ax_vector_cr;
+#define AX_CLASS_BASE_vector seq
+#define AX_CLASS_ROLE_vector(_l) _l AX_CLASS_PTR(vector); AX_CLASS_ROLE_seq(_l)
 
-typedef union
-{
-	ax_vector* vector;
-	ax_seq* seq;
-	ax_box* box;
-	ax_any* any;
-	ax_one* one;
-} ax_vector_r;
+AX_CLASS_STRUCT_ROLE(vector);
 
 extern const ax_seq_trait ax_vector_tr;
 
 ax_seq*__ax_vector_construct(const ax_stuff_trait* elem_tr);
+
+inline static AX_CLASS_CONSTRUCTOR(vector, const ax_stuff_trait* trait)
+{
+	return __ax_vector_construct(trait);
+}
 
 ax_vector_r ax_vector_create(ax_scope* scope, const ax_stuff_trait* elem_tr);
 

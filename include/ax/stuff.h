@@ -91,12 +91,12 @@ union ax_stuff_un
 };
 typedef union ax_stuff_un ax_stuff;
 
-typedef void    (*ax_stuff_free_f) (void* p);
+typedef void    (*ax_stuff_free_f)(void* p);
 typedef bool    (*ax_stuff_compare_f) (const void* p1, const void* p2, size_t size);
-typedef size_t  (*ax_stuff_hash_f) (const void* p, size_t size);
-typedef ax_fail (*ax_stuff_copy_f) (void* dst, const void* src, size_t size);
-typedef ax_fail (*ax_stuff_init_f) (void* p, size_t size);
-typedef ax_dump*(*ax_stuff_dump_f) (const void* p, size_t size);
+typedef size_t  (*ax_stuff_hash_f)(const void* p, size_t size);
+typedef ax_fail (*ax_stuff_copy_f)(void* dst, const void* src, size_t size);
+typedef ax_fail (*ax_stuff_init_f)(void* p, size_t size);
+typedef ax_dump*(*ax_stuff_dump_f)(const void* p, size_t size);
 
 struct ax_stuff_trait_st
 {
@@ -172,6 +172,15 @@ size_t ax_stuff_size(int type);
 const ax_stuff_trait *ax_stuff_traits(int type);
 
 int ax_stuff_stoi(const char *s);
+
+inline static const ax_stuff_trait *ax_stuff_type(const char *t)
+{
+	int n = ax_stuff_stoi(t);
+	ax_assert(n != -1, "invalid stuff type '%s'", t);
+	return ax_stuff_traits(n);
+}
+
+#define ax_tr ax_stuff_type
 
 #undef __ax_require
 

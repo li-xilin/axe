@@ -26,31 +26,18 @@
 
 #define AX_ARR_NAME AX_SEQ_NAME ".arr"
 
-typedef struct ax_arr_st 
-{
-	ax_seq seq;
+#ifndef AX_ARR_DEFINED
+#define AX_ARR_DEFINED
+typedef struct ax_arr_st ax_arr;
+#endif
+
+#define AX_CLASS_BASE_arr seq
+#define AX_CLASS_ROLE_arr(_l) _l AX_CLASS_PTR(arr); AX_CLASS_ROLE_seq(_l)
+AX_CLASS_STRUCT_ROLE(arr);
+AX_CLASS_STRUCT_ENTRY(arr)
 	size_t size;
 	void *arr;
-} ax_arr;
-
-typedef union
-{
-	const ax_arr* arr;
-	const ax_seq* seq;
-	const ax_box* box;
-	const ax_any* any;
-	const ax_one* one;
-} ax_arr_cr;
-
-typedef union
-{
-	ax_arr* arr;
-	ax_seq* seq;
-	ax_box* box;
-	ax_any* any;
-	ax_one* one;
-	ax_arr_cr c;
-} ax_arr_r;
+AX_END;
 
 extern const ax_seq_trait ax_arr_tr;
 

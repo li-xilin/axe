@@ -41,44 +41,18 @@ typedef struct ax_dump_st ax_dump;
 typedef struct ax_any_st ax_any;
 #endif
 
-#ifndef AX_ANY_TRAIT_DEFINED
-#define AX_ANY_TRAIT_DEFINED
-typedef struct ax_any_trait_st ax_any_trait;
-#endif
+#define AX_CLASS_BASE_any one
+#define AX_CLASS_ROLE_any(_l) _l AX_CLASS_PTR(any); AX_CLASS_ROLE_one(_l)
 
-typedef ax_any *(*ax_any_copy_f)(const ax_any* any);
-typedef ax_dump *(*ax_any_dump_f)(const ax_any* any);
-//typedef void (*ax_any_dump_f)(const ax_any *any, int ind);
+AX_BEGIN_ENV(any)
+AX_END;
 
-struct ax_any_trait_st
-{
-	const ax_one_trait one;
-	const ax_any_dump_f dump;
-	const ax_any_copy_f copy;
-};
+AX_BEGIN_TRAIT(any)
+	ax_any *(*copy)(const ax_any* any);
+	ax_dump *(*dump)(const ax_any* any);
+AX_END;
 
-typedef union
-{
-	const ax_any *any;
-	const ax_one *one;
-} ax_any_cr;
-
-typedef union
-{
-	ax_any *any;
-	ax_one *one;
-} ax_any_r;
-
-typedef struct ax_any_env_st
-{
-	ax_one_env one;
-} ax_any_env;
-
-struct ax_any_st
-{
-	const ax_any_trait *const tr;
-	ax_any_env env;
-};
+AX_BLESS(any);
 
 inline static ax_any *ax_any_copy(const ax_any* any)
 {

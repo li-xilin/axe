@@ -31,23 +31,10 @@
 typedef struct ax_hmap_st ax_hmap;
 #endif
 
-typedef union
-{
-	const ax_hmap *hmap;
-	const ax_map *map;
-	const ax_box *box;
-	const ax_any *any;
-	const ax_one *one;
-} ax_hmap_cr;
+#define AX_CLASS_BASE_hmap map
+#define AX_CLASS_ROLE_hmap(_l) _l AX_CLASS_PTR(hmap); AX_CLASS_ROLE_map(_l)
 
-typedef union
-{
-	ax_hmap *hmap;
-	ax_map *map;
-	ax_box *box;
-	ax_any *any;
-	ax_one *one;
-} ax_hmap_r;
+AX_CLASS_STRUCT_ROLE(hmap);
 
 extern const ax_map_trait ax_hmap_tr;
 
@@ -56,12 +43,16 @@ ax_map *__ax_hmap_construct(
 		const ax_stuff_trait* val_tr
 );
 
+inline static AX_CLASS_CONSTRUCTOR(hmap, const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr)
+{
+	return __ax_hmap_construct(key_tr, val_tr);
+}
+
 ax_hmap_r ax_hmap_create(
 		ax_scope *scope,
 		const ax_stuff_trait *key_tr,
 		const ax_stuff_trait *val_tr
 );
-
 
 ax_fail ax_hmap_set_threshold(ax_hmap *hmap, size_t threshold);
 

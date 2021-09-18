@@ -24,6 +24,7 @@
 #define AX_ONE_H
 #include "def.h"
 #include "debug.h"
+#include "class.h"
 
 #define AX_ONE_NAME "one"
 
@@ -37,6 +38,8 @@
 		"operation for %s is not supported", \
 		((ax_one *)(_one))->tr->name)
 
+#define AX_CLASS_ROLE_one(_l) _l struct ax_one_st *one;
+
 #ifndef AX_ONE_DEFINED
 #define AX_ONE_DEFINED
 typedef struct ax_one_st ax_one;
@@ -47,42 +50,24 @@ typedef struct ax_one_st ax_one;
 typedef struct ax_scope_st ax_scope;
 #endif
 
-typedef struct ax_one_env_st ax_one_env;
-
 typedef void        (*ax_one_free_f) (ax_one *one);
 typedef ax_scope   *(*ax_one_scope_f)(const ax_one *one);
-typedef ax_one_env *(*ax_one_envp_f) (const ax_one *one);
 
-struct ax_one_trait_st
+typedef struct ax_one_trait_st
 {
 	const char          *name;
 	const ax_one_free_f  free;
-};
-typedef struct ax_one_trait_st ax_one_trait;
+} ax_one_trait;
 
-typedef union
-{
-	ax_one *one;
-} ax_one_cr;
-
-typedef union
-{
-	ax_one *one;
-} ax_one_r;
-
-struct ax_one_env_st
+typedef struct ax_one_env_st
 {
 	struct {
 		ax_one *macro;
 		uintptr_t micro;
 	} scope;
-};
+} ax_one_env;
 
-struct ax_one_st
-{
-	const ax_one_trait *const tr; /* Keep this first */
-	ax_one_env env;
-};
+AX_BLESS(one);
 
 static inline const char *ax_one_name(const ax_one *one)
 {
@@ -96,7 +81,6 @@ static inline void ax_one_free(ax_one *one) {
 	ax_trait_require(one, one->tr->free);
 	one->tr->free(one);
 }
-
 
 static inline ax_one_env *ax_one_envp(const ax_one *one)
 {

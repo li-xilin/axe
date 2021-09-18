@@ -32,53 +32,23 @@
 typedef struct ax_tube_st ax_tube;
 #endif
 
-#ifndef AX_TUBE_TRAIT_DEFINED
-#define AX_TUBE_TRAIT_DEFINED
-typedef struct ax_tube_trait_st ax_tube_trait;
-#endif
-
-typedef ax_fail (*ax_tube_push_f)   (ax_tube *tube, const void *val);
-typedef void    (*ax_tube_pop_f)    (ax_tube *tube);
-typedef void   *(*ax_tube_prime_f)  (const ax_tube *tube);
-typedef size_t  (*ax_tube_size_f)   (const ax_tube *tube);
-
 typedef ax_tube *(ax_tube_construct_f)(const ax_stuff_trait *elem_tr);
 
-struct ax_tube_trait_st
-{
-	const ax_any_trait any; /* Keep this first */
-	const ax_tube_push_f   push;
-	const ax_tube_pop_f    pop;
-	const ax_tube_prime_f  prime;
-	const ax_tube_size_f   size;
-};
+#define AX_CLASS_BASE_tube any
+#define AX_CLASS_ROLE_tube(_l) _l AX_CLASS_PTR(tube); AX_CLASS_ROLE_any(_l)
 
-typedef struct ax_tube_env_st
-{
-	ax_any_env any; /* Keep this first */
+AX_BEGIN_TRAIT(tube)
+	ax_fail (*push)   (ax_tube *tube, const void *val);
+	void    (*pop)    (ax_tube *tube);
+	void   *(*prime)  (const ax_tube *tube);
+	size_t  (*size)   (const ax_tube *tube);
+AX_END;
+
+AX_BEGIN_ENV(tube)
 	const ax_stuff_trait *const elem_tr;
-} ax_tube_env;
+AX_END;
 
-struct ax_tube_st
-{
-	const ax_tube_trait *const tr; /* Keep this first */
-	ax_tube_env env;
-};
-
-typedef union
-{
-	const ax_tube *tube;
-	const ax_any *any;
-	const ax_one *one;
-} ax_tube_cr;
-
-typedef union
-{
-	ax_tube *tube;
-	ax_any *any;
-	ax_one *one;
-	ax_tube_cr c;
-} ax_tube_r;
+AX_BLESS(tube);
 
 inline static ax_fail ax_tube_push(ax_tube *tube, const void *val)
 {

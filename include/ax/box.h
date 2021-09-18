@@ -27,11 +27,6 @@
 
 #define AX_BOX_NAME AX_ANY_NAME ".box"
 
-#ifndef AX_BOX_TRAIT_DEFINED
-#define AX_BOX_TRAIT_DEFINED
-typedef struct ax_box_trait_st ax_box_trait;
-#endif
-
 #define _ax_box_iterate(_box, _it, _cond)                  \
 	for (ax_iter _it = ax_box_begin(_box),             \
 			_it_end = ax_box_end(_box);        \
@@ -70,9 +65,10 @@ typedef size_t  (*ax_box_size_f)  (const ax_box* box);
 typedef ax_iter (*ax_box_iter_f)  (      ax_box* box);
 typedef void    (*ax_box_clear_f) (      ax_box* box);
 
-struct ax_box_trait_st
-{
-	const ax_any_trait any;
+#define AX_CLASS_BASE_box any
+#define AX_CLASS_ROLE_box(_l) _l AX_CLASS_PTR(box); AX_CLASS_ROLE_any(_l)
+
+AX_BEGIN_TRAIT(box)
 	const ax_iter_trait iter;
 	const ax_iter_trait riter;
 
@@ -85,33 +81,13 @@ struct ax_box_trait_st
 	const ax_box_iter_f rend;
 
 	const ax_box_clear_f clear;
-};
+AX_END;
 
-typedef struct ax_box_env_st
-{
-	ax_any_env any; /* Keep this first */
+AX_BEGIN_ENV(box)
 	const ax_stuff_trait *const elem_tr;
-} ax_box_env;
+AX_END;
 
-struct ax_box_st
-{
-	const ax_box_trait *const tr;
-	ax_box_env env;
-};
-
-typedef union
-{
-	const ax_box *box;
-	const ax_any *any;
-	const ax_one *one;
-} ax_box_cr;
-
-typedef union
-{
-	ax_box *box;
-	ax_any *any;
-	ax_one *one;
-} ax_box_r;
+AX_BLESS(box);
 
 static inline size_t ax_box_size(const ax_box* box)
 {

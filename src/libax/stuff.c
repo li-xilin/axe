@@ -62,43 +62,50 @@ size_t ax_stuff_size(int type)
 	return 0;
 }
 
+static const struct { const char *name; int value; } st_table[] = {
+	{ "",   	AX_ST_NIL },
+	{ "?",  	0         },
+	{ "c",  	AX_ST_C   },
+	{ "f",  	AX_ST_F   },
+	{ "h",  	AX_ST_H   },
+	{ "i",  	AX_ST_I   },
+	{ "i16",	AX_ST_I16 },
+	{ "i32",	AX_ST_I32 },
+	{ "i64",	AX_ST_I64 },
+	{ "i8", 	AX_ST_I8  },
+	{ "l",  	AX_ST_L   },
+	{ "lf", 	AX_ST_LF  },
+	{ "ll", 	AX_ST_LL  },
+	{ "p",  	AX_ST_PTR },
+	{ "s",  	AX_ST_S   },
+	{ "u",  	AX_ST_U   },
+	{ "u16",	AX_ST_U16 },
+	{ "u32",	AX_ST_U32 },
+	{ "u64",	AX_ST_U64 },
+	{ "u8", 	AX_ST_U8  },
+	{ "uc", 	AX_ST_UC  },
+	{ "uh", 	AX_ST_UH  },
+	{ "ul", 	AX_ST_UL  },
+	{ "ull",	AX_ST_ULL },
+	{ "ws", 	AX_ST_WS  },
+	{ "z",  	AX_ST_Z   },
+
+};
+
 int ax_stuff_stoi(const char *s)
 {
-	static const char *const table[] = {
-		[0        ] = "?",
-		[AX_ST_NIL] = "",
-		[AX_ST_I8 ] = "i8",
-		[AX_ST_I16] = "i16",
-		[AX_ST_I32] = "i32",
-		[AX_ST_I64] = "i64",
-		[AX_ST_U8 ] = "u8",
-		[AX_ST_U16] = "u16",
-		[AX_ST_U32] = "u32",
-		[AX_ST_U64] = "u64",
-		[AX_ST_Z  ] = "z",
-		[AX_ST_F  ] = "f",
-		[AX_ST_LF ] = "lf",
-		[AX_ST_S  ] = "s",
-		[AX_ST_WS ] = "ws",
-		[AX_ST_PTR] = "p",
-
-		[AX_ST_C  ] = "c",
-		[AX_ST_H  ] = "h",
-		[AX_ST_I  ] = "i",
-		[AX_ST_L  ] = "l", 
-		[AX_ST_LL ] = "ll", 
-
-		[AX_ST_UC ] = "uc",
-		[AX_ST_UH ] = "uh",
-		[AX_ST_U  ] = "u",
-		[AX_ST_UL ] = "ul",
-		[AX_ST_ULL] = "ull",
-	};
-
-	for (int i = 0; i < sizeof table/ sizeof *table; i++) {
-		if (strcmp(table[i], s) == 0)
-			return i;
-	}
+	int l = 0, r = sizeof st_table/ sizeof *st_table - 1;
+	assert(r > 0);
+	do {
+		int m = (r - l) / 2 + l;
+		int res = strcmp(st_table[m].name, s);
+		if (res == 0)
+			return st_table[m].value;
+		if (res < 0)
+			l = m + 1;
+		else
+			r = m - 1;
+	} while (l <= r);
 	return -1;
 }
 

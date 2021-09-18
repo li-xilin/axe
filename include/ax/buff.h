@@ -39,20 +39,11 @@ typedef struct ax_pool_st ax_pool;
 typedef struct ax_buff_st ax_buff;
 #endif
 
-typedef union
-{
-	const ax_buff *buff;
-	const ax_any *any;
-	const ax_one *one;
-} ax_buff_cr;
 
-typedef union
-{
-	ax_buff *buff;
-	ax_any *any;
-	ax_one *one;
-	ax_buff_cr c;
-} ax_buff_r;
+#define AX_CLASS_BASE_buff any
+#define AX_CLASS_ROLE_buff(_l) _l AX_CLASS_PTR(buff); AX_CLASS_ROLE_any(_l)
+
+AX_CLASS_STRUCT_ROLE(buff);
 
 extern const ax_any_trait ax_buff_tr;
 

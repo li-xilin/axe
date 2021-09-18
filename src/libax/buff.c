@@ -80,7 +80,7 @@ static ax_any *any_copy(const ax_any *any)
 	dst_buff->buf = buffer;
 
 	dst_buff->any.env.one.scope.macro = NULL;
-	dst_buff->any.env.one.scope.micro = 0;
+	dst_buff->any.env.one.scope.micro= 0;
 	return ax_r(buff, dst_buff).any;
 fail:
 	free(buffer);

@@ -27,25 +27,21 @@
 
 #define AX_STACK_NAME AX_TUBE_NAME ".stack"
 
+#ifndef AX_STACK_DEFINED
+#define AX_STACK_DEFINED
 typedef struct ax_stack_st ax_stack;
+#endif
 
-typedef union
-{
-	const ax_stack *stack;
-	const ax_tube *tube;
-	const ax_any *any;
-	const ax_one *one;
-} ax_stack_cr;
-
-typedef union
-{
-	ax_stack *stack;
-	ax_tube *tube;
-	ax_any *any;
-	ax_one *one;
-} ax_stack_r;
+#define AX_CLASS_BASE_stack tube
+#define AX_CLASS_ROLE_stack(_l) _l AX_CLASS_PTR(stack); AX_CLASS_ROLE_tube(_l)
+AX_CLASS_STRUCT_ROLE(stack);
 
 ax_tube *__ax_stack_construct(const ax_stuff_trait *elem_tr);
+
+inline static AX_CLASS_CONSTRUCTOR(stack, const ax_stuff_trait *tr)
+{
+	return __ax_stack_construct(tr);
+}
 
 ax_stack_r ax_stack_create(ax_scope *scope, const ax_stuff_trait *elem_tr);
 

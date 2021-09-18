@@ -27,25 +27,21 @@
 
 #define AX_QUEUE_NAME AX_TUBE_NAME ".queue"
 
+#ifndef AX_QUEUE_DEFINED
+#define AX_QUEUE_DEFINED
 typedef struct ax_queue_st ax_queue;
+#endif
 
-typedef union
-{
-	const ax_queue *queue;
-	const ax_tube *tube;
-	const ax_any *any;
-	const ax_one *one;
-} ax_queue_cr;
-
-typedef union
-{
-	ax_queue *queue;
-	ax_tube *tube;
-	ax_any *any;
-	ax_one *one;
-} ax_queue_r;
+#define AX_CLASS_BASE_queue tube
+#define AX_CLASS_ROLE_queue(_l) _l AX_CLASS_PTR(queue); AX_CLASS_ROLE_tube(_l)
+AX_CLASS_STRUCT_ROLE(queue);
 
 ax_tube *__ax_queue_construct(const ax_stuff_trait *elem_tr);
+
+inline static AX_CLASS_CONSTRUCTOR(queue, const ax_stuff_trait *tr)
+{
+	return __ax_queue_construct(tr);
+}
 
 ax_queue_r ax_queue_create(ax_scope *scope, const ax_stuff_trait *elem_tr);
 

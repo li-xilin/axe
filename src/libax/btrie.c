@@ -31,6 +31,7 @@
 #include <ax/vail.h>
 #include <ax/stuff.h>
 #include <ax/dump.h>
+#include <ax/class.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -48,13 +49,11 @@ struct node_st
 	ax_byte *val;
 };
 
-struct ax_btrie_st
-{
-	ax_trie trie;
+AX_CLASS_STRUCT_ENTRY(btrie)
 	ax_avl_r root_r;
 	size_t size;
 	size_t capacity;
-};
+AX_END;
 
 static void    *trie_put(ax_trie *trie, const ax_seq *key, const void *val);
 static void    *trie_get(const ax_trie *trie, const ax_seq *key);
@@ -105,7 +104,6 @@ inline static ax_btrie *iter_get_self(const ax_iter *it)
 {
 	return (ax_btrie *)(ax_one_envp(it->owner)->scope.macro);
 }
-
 
 static void citer_prev(ax_citer *it)
 {

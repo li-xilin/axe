@@ -23,7 +23,6 @@
 #ifndef AX_STR_H
 #define AX_STR_H
 #include "seq.h"
-#include "def.h"
 #include <stdarg.h>
 
 #define AX_STR_NAME AX_SEQ_NAME ".str"
@@ -33,56 +32,21 @@
 typedef struct ax_str_st ax_str;
 #endif
 
-#ifndef AX_STR_TRAIT_DEFINED
-#define AX_STR_TRAIT_DEFINED
-typedef struct ax_str_trait_st ax_str_trait;
-#endif
+#define AX_CLASS_BASE_str seq
+#define AX_CLASS_ROLE_str(_l) _l AX_CLASS_PTR(str); AX_CLASS_ROLE_seq(_l)
 
-typedef ax_fail  (*ax_str_append_f) (      ax_str *str, const char *s);
-typedef size_t   (*ax_str_length_f) (const ax_str *str);
-typedef ax_fail  (*ax_str_insert_f) (      ax_str *str, size_t start, const char *s);
-typedef char    *(*ax_str_strz_f)   (      ax_str *str);
-typedef int      (*ax_str_comp_f)   (const ax_str *str, const char *s);
-typedef ax_str  *(*ax_str_substr_f) (const ax_str *str, size_t start, size_t len);
-typedef ax_seq  *(*ax_str_split_f)  (const ax_str *str, const char ch);
-typedef ax_fail  (*ax_str_sprintf_f)(      ax_str *str, const char *fmt, va_list args); 
-
-struct ax_str_trait_st
-{
-	const ax_seq_trait seq;
-	const ax_str_append_f  append;
-	const ax_str_length_f  length;
-	const ax_str_insert_f  insert;
-	const ax_str_strz_f    strz;
-	const ax_str_comp_f    comp;
-	const ax_str_substr_f  substr;
-	const ax_str_split_f   split;
-	const ax_str_sprintf_f sprintf;
-};
-
-struct ax_str_st
-{
-	const ax_str_trait* tr;
-	ax_seq_env env;
-};
-
-typedef union
-{
-	const ax_str *str;
-	const ax_seq *seq;
-	const ax_box *box;
-	const ax_any *any;
-	const ax_one *one;
-} ax_str_cr;
-
-typedef union
-{
-	ax_str *str;
-	ax_seq *seq;
-	ax_box *box;
-	ax_any *any;
-	ax_one *one;
-} ax_str_r;
+AX_BEGIN_TRAIT(str)
+	ax_fail  (*append) (      ax_str *str, const char *s);
+	size_t   (*length) (const ax_str *str);
+	ax_fail  (*insert) (      ax_str *str, size_t start, const char *s);
+	char    *(*strz)   (      ax_str *str);
+	int      (*comp)   (const ax_str *str, const char *s);
+	ax_str  *(*substr) (const ax_str *str, size_t start, size_t len);
+	ax_seq  *(*split)  (const ax_str *str, const char ch);
+	ax_fail  (*sprintf)(      ax_str *str, const char *fmt, va_list args); 
+AX_END;
+AX_BEGIN_ENV(str) AX_END;
+AX_BLESS(str);
 
 inline static ax_fail  ax_str_append (      ax_str* str, const char *s) {return str->tr->append(str, s); }
 inline static size_t   ax_str_length (const ax_str* str) { return str->tr->length(str); }
