@@ -442,7 +442,7 @@ int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args)
 			{
 				mbstate_t mbs = { 0 };
 				const wchar_t *p = (void *)value->wcs.data;
-				size_t conv;
+				size_t conv = 0;
 				args->buf[args->size - 1] = '\0';
 				while (p && (conv = wcsrtombs(args->buf, &p, args->size - 1, &mbs)) != 0)
 					if ((rc = args->cb(args->buf, conv, args->ctx)))
