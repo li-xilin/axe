@@ -27,7 +27,7 @@
 const void *ax_map_key(ax_map *map, const void *key)
 {
 	ax_map_r mapr = { map };
-	ax_iter find = ax_map_at(mapr.map, key),
+	ax_iter find = ax_map_at(mapr.map, ax_stuff_in(map->env.key_tr, key)),
 		end = ax_box_end(mapr.box);
 	if (ax_iter_equal(&find, &end))
 		return NULL;

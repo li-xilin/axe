@@ -285,11 +285,8 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	const ax_stuff_trait *etr = list->seq.env.box.elem_tr;
 
 	ax_stuff_free(etr, node->data);
-	
-	ax_fail fail = (val != NULL)
-		? ax_stuff_copy(etr, node->data, ax_stuff_in(etr, val), etr->size)
-		: ax_stuff_init(etr, node->data, etr->size);
-	if (fail) {
+
+	if (ax_stuff_copy_or_init(etr, node->data, val)) {
 		free(node);
 		return true;
 	}
@@ -354,7 +351,7 @@ static ax_any *any_copy(const ax_any *any)
 	ax_citer it = ax_box_cbegin(self_r.box);
 	ax_citer end = ax_box_cend(self_r.box);
 	while (!ax_citer_equal(&it, &end)) {
-		const void *val = ax_stuff_out(etr, ax_citer_get(&it));
+		const void *val = ax_citer_get(&it);
 		if (ax_seq_push(new_r.seq, val)) {
 			ax_one_free(new_r.one);
 			return NULL;
@@ -469,11 +466,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 		return true;
 	}
 
-	const void *pval = etr->link ? &pval : val;
-	ax_fail fail = (val != NULL)
-		? ax_stuff_copy(etr, node->data, pval, etr->size)
-		: ax_stuff_init(etr, node->data, etr->size);
-	if (fail) {
+	if (ax_stuff_copy_or_init(etr, node->data, val)) {
 		free(node);
 		return true;
 	}
@@ -516,12 +509,7 @@ inline static struct node_st *make_node(const ax_stuff_trait *etr, const void *v
 	if (!node)
 		goto fail;
 
-	const void *pval = ax_stuff_in(etr, val);
-
-	ax_fail fail = (val != NULL)
-		? ax_stuff_copy(etr, node->data, pval, etr->size)
-		: ax_stuff_init(etr, node->data, etr->size);
-	if (fail)
+	if (ax_stuff_copy_or_init(etr, node->data, val))
 		goto fail;
 
 	return node;
@@ -724,7 +712,7 @@ static void *seq_last(const ax_seq *seq)
 	ax_list *list = (ax_list *)seq;
 	struct node_st *head = list->head;
 	ax_assert(head, "empty list");
-	return ax_stuff_out(seq->env.box.elem_tr, head->pre->data);
+	return head->pre->data;
 }
 
 static void *seq_first(const ax_seq *seq)
@@ -734,8 +722,7 @@ static void *seq_first(const ax_seq *seq)
 	ax_list *list = (ax_list *)seq;
 	struct node_st *head = list->head;
 	ax_assert(head, "empty list");
-	const ax_stuff_trait *etr = seq->env.box.elem_tr;
-	return ax_stuff_out(etr, head->data);
+	return head->data;
 }
 
 const ax_seq_trait ax_list_tr =

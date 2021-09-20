@@ -115,10 +115,10 @@ struct ax_stuff_trait_st
 
 #define ax_stuff_out(_tr, _ptr) ((_tr)->link ? *(void **)(_ptr) : (_ptr))
 
-inline static bool ax_stuff_equal(const ax_stuff_trait *tr, const void *p1, const void *p2, size_t size)
+inline static bool ax_stuff_equal(const ax_stuff_trait *tr, const void *p1, const void *p2)
 {
 	__ax_require(tr->equal);
-	return tr->equal(p1, p2, size);
+	return tr->equal(p1, p2, tr->size);
 }
 
 inline static size_t ax_stuff_hash(const ax_stuff_trait *tr, const void *p)
@@ -133,22 +133,28 @@ inline static void ax_stuff_free(const ax_stuff_trait *tr, void *p)
 	tr->free(p);
 }
 
-inline static bool ax_stuff_less(const ax_stuff_trait *tr, const void *p1, const void *p2, size_t size)
+inline static bool ax_stuff_less(const ax_stuff_trait *tr, const void *p1, const void *p2)
 {
 	__ax_require(tr->less);
-	return tr->less(p1, p2, size);
+	return tr->less(p1, p2, tr->size);
 }
 
-inline static ax_fail ax_stuff_copy(const ax_stuff_trait *tr, void* dst, const void* src, size_t size)
+inline static ax_fail ax_stuff_copy(const ax_stuff_trait *tr, void* dst, const void* src)
 {
 	__ax_require(tr->copy);
-	return tr->copy(dst, src, size);
+	return tr->copy(dst, src, tr->size);
 }
 
-inline static ax_fail ax_stuff_init(const ax_stuff_trait *tr, void* p, size_t size)
+inline static ax_fail ax_stuff_init(const ax_stuff_trait *tr, void* p)
 {
 	__ax_require(tr->init);
-	return tr->init(p, size);
+	return tr->init(p, tr->size);
+}
+
+inline static ax_fail ax_stuff_copy_or_init(const ax_stuff_trait *tr, void* dst, const void *src)
+{
+	return src ? ax_stuff_copy(tr, dst, src)
+		: ax_stuff_init(tr, dst);
 }
 
 ax_dump *ax_stuff_dump(const ax_stuff_trait *tr, const void* p, size_t size);

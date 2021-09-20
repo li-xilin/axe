@@ -182,9 +182,7 @@ static void *iter_get(const ax_iter *it)
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr && it->point);
 	CHECK_ITERATOR_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
 
-	const ax_arr *self = it->owner;
-	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
-	return etr->link ? *(void**) it->point : it->point;
+	return it->point;
 }
 
 static ax_fail iter_set(const ax_iter *it, const void *val)
@@ -193,17 +191,9 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 
 	const ax_arr *self = it->owner;
 	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
-
-	etr->free(it->point);
-
-	const void *pval = etr->link ? &val : val;
-	ax_fail fail = val
-		? ax_stuff_copy(etr, it->point, pval, etr->size)
-		: ax_stuff_init(etr, it->point, etr->size);
-	if (fail) {
+	ax_stuff_free(etr, it->point);
+	if (ax_stuff_copy_or_init(etr, it->point, val))
 		return true;
-	}
-	
 	return false;
 }
 
@@ -279,7 +269,6 @@ static ax_iter box_rend(ax_box *box)
 
 	ax_arr *self = (ax_arr *) box;
 	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
-
 	ax_iter it = {
 		.owner = (void *)box,
 		.point = (ax_byte *)self->arr - etr->size,

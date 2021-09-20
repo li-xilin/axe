@@ -59,14 +59,14 @@ typedef struct ax_box_st ax_box;
 #endif
 
 typedef void    *(*ax_iter_get_f)   (const ax_iter *it);
-typedef bool  (*ax_iter_comp_f)  (const ax_citer *it1, const ax_citer *it2);
+typedef bool     (*ax_iter_comp_f)  (const ax_citer *it1, const ax_citer *it2);
 typedef long     (*ax_iter_dist_f)  (const ax_citer *it1, const ax_citer *it2);
 typedef void     (*ax_iter_creep_f) (      ax_citer *it);
 typedef void     (*ax_iter_move_f)  (      ax_citer *it, long i);
 typedef ax_box  *(*ax_iter_box_f)   (const ax_citer *it);
 
-typedef void     (*ax_iter_erase_f)(      ax_iter *it);
-typedef ax_fail  (*ax_iter_set_f)  (const ax_iter *it, const void *p);
+typedef void     (*ax_iter_erase_f) (      ax_iter *it);
+typedef ax_fail  (*ax_iter_set_f)   (const ax_iter *it, const void *p);
 
 struct ax_citer_trait_st
 {
@@ -76,7 +76,7 @@ struct ax_citer_trait_st
 	ax_iter_comp_f  less;
 	ax_iter_dist_f  dist;
 	ax_iter_box_f   box;
-	bool         norm;
+	bool            norm;
 	unsigned char   type;
 };
 
@@ -161,10 +161,13 @@ inline static const void *ax_citer_get(const ax_citer *it)
 	return ax_iter_get(p);
 }
 
+ax_fail ax_iter_set(const ax_iter *it, const void *val);
+/*
 inline static ax_fail ax_iter_set(const ax_iter *it, const void *val)
 {
 	return it->tr->set(it, val);
 }
+*/
 
 inline static bool ax_citer_equal(const ax_citer *it1, const ax_citer *it2)
 {

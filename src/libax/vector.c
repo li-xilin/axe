@@ -205,9 +205,7 @@ static void *iter_get(const ax_iter *it)
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr && it->point);
 	CHECK_ITERATOR_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
 
-	const ax_vector *self = it->owner;
-	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
-	return etr->link ? *(void**) it->point : it->point;
+	return it->point;
 }
 
 static ax_fail iter_set(const ax_iter *it, const void *val)
@@ -217,11 +215,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	ax_vector_r self = { it->owner };
 	const ax_stuff_trait *etr = self.box->env.elem_tr;
 	ax_stuff_free(etr, it->point);
-	const void *pval = ax_stuff_in(etr, val);
-	ax_fail fail = val
-		? ax_stuff_copy(etr, it->point, pval, etr->size)
-		: ax_stuff_init(etr, it->point, etr->size);
-	if (fail) 
+	if (ax_stuff_copy_or_init(etr, it->point, val)) 
 		return true;
 	return false;
 }
@@ -401,11 +395,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 		memcpy(p, p - etr->size, etr->size);
 	}
 
-	const void *pval = ax_stuff_in(etr, val);
-	ax_fail fail = (val != NULL)
-		? ax_stuff_copy(etr, ins, pval, etr->size)
-		: ax_stuff_init(etr, ins, etr->size);
-	if (fail) {
+	if (ax_stuff_copy_or_init(etr, ins, val)) {
 		ax_buff_resize(self->buff, size);
 		return true;
 	}
@@ -427,13 +417,9 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 	if (ax_buff_adapt(self->buff, size + etr->size))
 		return true;
 
-	const void *pval = seq->env.box.elem_tr->link ? &val: val;
 	ax_byte *ptr = ax_buff_ptr(self->buff);
 
-	ax_fail fail = val
-		? ax_stuff_copy(etr, ptr + size, pval, etr->size)
-		: ax_stuff_init(etr, ptr + size, etr->size);
-	if (fail) {
+	if (ax_stuff_copy_or_init(etr, ptr + size, val)) {
 		ax_buff_resize(self->buff, size);
 		return true;
 	}
@@ -508,7 +494,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 		ax_byte *ptr = ax_buff_ptr(self->buff);
 
 		for (size_t off = old_size; off < size ; off += etr->size) {
-			ax_stuff_init(etr, ptr + off, etr->size);
+			ax_stuff_init(etr, ptr + off);
 		}
 	}
 	return false;

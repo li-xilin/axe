@@ -223,13 +223,10 @@ static struct node_st *make_node(ax_map *map, const void *key, const void *val)
 	if (!node)
 		return NULL;
 
-	if (ax_stuff_copy(ktr, node->kvbuffer, key, ktr->size))
+	if (ax_stuff_copy(ktr, node->kvbuffer, key))
 		goto fail;
 
-	ax_fail fail = val
-		? ax_stuff_copy(vtr, node->kvbuffer + ktr->size, val, vtr->size)
-		: ax_stuff_init(vtr, node->kvbuffer + ktr->size, vtr->size);
-	if (fail)
+	if (ax_stuff_copy_or_init(vtr, node->kvbuffer + ktr->size, val))
 		goto fail;
 	return node;
 fail:
@@ -239,7 +236,7 @@ fail:
 
 static inline struct bucket_st *locate_bucket(const ax_hmap *hmap, const void *key)
 {
-	size_t index = hmap->map.env.key_tr->hash(key, hmap->map.env.key_tr->size) % hmap->buckets;
+	size_t index = ax_stuff_hash(hmap->map.env.key_tr, key) % hmap->buckets;
 	return hmap->bucket_tab + index;
 }
 
@@ -275,7 +272,7 @@ static struct node_st **find_node(const ax_map *map, struct bucket_st *bucket, c
 	struct node_st **pp_node;
 	const ax_stuff_trait *ktr = map->env.key_tr;
 	for (pp_node = &bucket->node_list; *pp_node; pp_node = &((*pp_node)->next))
-		if (ax_stuff_equal(ktr, (*pp_node)->kvbuffer, key, map->env.key_tr->size))
+		if (ax_stuff_equal(ktr, (*pp_node)->kvbuffer, key))
 			return pp_node;
 	return NULL;
 }
@@ -355,14 +352,12 @@ static void iter_erase(ax_iter *it)
 
 inline static void *node_val(const ax_map* map, struct node_st *node)
 {
-	DEFINE_KVTR(map);
-	return ax_stuff_out(vtr, node->kvbuffer + ktr->size);
+	return node->kvbuffer + map->env.key_tr->size;
 }
 
-inline static void *node_key(const ax_map* map, struct node_st *node)
+inline static void *node_key(struct node_st *node)
 {
-	const ax_stuff_trait *ktr = map->env.key_tr;
-	return ax_stuff_out(ktr, node->kvbuffer);
+	return node->kvbuffer;
 }
 
 static void *value_set(ax_map* map, struct node_st *node, const void *val)
@@ -370,18 +365,17 @@ static void *value_set(ax_map* map, struct node_st *node, const void *val)
 	const ax_stuff_trait
 		*ktr = map->env.key_tr,
 		*vtr = map->env.box.elem_tr;
-	const void *pval = ax_stuff_in(vtr, val);
 
 	ax_byte *value_ptr = node->kvbuffer + ktr->size;
 	ax_byte tmp_buf[vtr->size];
 	memcpy(tmp_buf, value_ptr, vtr->size);
-	if (pval ? ax_stuff_copy(vtr, value_ptr, pval, vtr->size)
-			: ax_stuff_init(vtr, value_ptr, vtr->size)) {
-		vtr->free(value_ptr);
+
+	if (ax_stuff_copy_or_init(vtr, value_ptr, val)) {
+		ax_stuff_free(vtr, value_ptr);
 		memcpy(value_ptr, tmp_buf, vtr->size);
 		return NULL;
 	}
-	vtr->free(tmp_buf);
+	ax_stuff_free(vtr, tmp_buf);
 	return node_val(map, node);
 
 }
@@ -392,12 +386,8 @@ static void *map_put(ax_map *map, const void *key, const void *val)
 
 	ax_hmap_r hmap_r = { .map = map };
 
-	DEFINE_KVTR(map);
-	const void *pkey = ax_stuff_in(ktr, key);
-	const void *pval = ax_stuff_in(vtr, val);
-
-	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
-	struct node_st **findpp = find_node(hmap_r.map, bucket, pkey);
+	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, key);
+	struct node_st **findpp = find_node(hmap_r.map, bucket, key);
 	if (findpp)
 		return value_set(map, *findpp, val);
 
@@ -408,9 +398,9 @@ static void *map_put(ax_map *map, const void *key, const void *val)
 		size_t new_size = hmap_r.hmap->buckets << 1 | 1;
 		if(rehash(hmap_r.hmap, new_size))
 			return NULL;
-		bucket = locate_bucket(hmap_r.hmap, pkey);//bucket is invalid
+		bucket = locate_bucket(hmap_r.hmap, key);//bucket is invalid
 	}
-	struct node_st *new_node = make_node(hmap_r.map, pkey, pval);
+	struct node_st *new_node = make_node(hmap_r.map, key, val);
 	if (!new_node)
 		return NULL;
 	bucket_push_node(hmap_r.hmap, bucket, new_node);
@@ -423,10 +413,9 @@ static ax_fail map_erase (ax_map *map, const void *key)
 	CHECK_PARAM_NULL(map);
 
 	ax_hmap_r hmap_r = { .map = map };
-	const void *pkey = map->env.key_tr->link ? &key : key;
 
-	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
-	struct node_st **findpp = find_node(hmap_r.map, bucket, pkey);
+	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, key);
+	struct node_st **findpp = find_node(hmap_r.map, bucket, key);
 	if (!findpp)
 		return true;
 
@@ -449,13 +438,12 @@ static void *map_get (const ax_map *map, const void *key)
 	CHECK_PARAM_NULL(map);
 
 	const ax_hmap_cr hmap_r = { .map = map };
-	const void *pkey = map->env.key_tr->link ? &key : key;
 
 	if (!hmap_r.hmap->buckets)
 		return NULL;
 
-	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
-	struct node_st **findpp = find_node(hmap_r.map, bucket, pkey);
+	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, key);
+	struct node_st **findpp = find_node(hmap_r.map, bucket, key);
 
 	return findpp ? node_val(hmap_r.map, *findpp) : NULL;
 }
@@ -466,13 +454,12 @@ static ax_iter  map_at(const ax_map *map, const void *key)
 	CHECK_PARAM_NULL(map);
 
 	const ax_hmap_cr hmap_r = { .map = map };
-	const void *pkey = map->env.key_tr->link ? &key : key;
 
 	if (!hmap_r.hmap->buckets)
 		return box_end((ax_box *)hmap_r.box);
 
-	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
-	struct node_st **findpp = find_node(hmap_r.map, bucket, pkey);
+	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, key);
+	struct node_st **findpp = find_node(hmap_r.map, bucket, key);
 	if (!findpp) {
 		return box_end((ax_box *)hmap_r.box);
 	}
@@ -489,9 +476,8 @@ static bool map_exist (const ax_map *map, const void *key)
 	CHECK_PARAM_NULL(map);
 
 	ax_hmap_r hmap_r = { .map = (ax_map*)map };
-	const void *pkey = map->env.key_tr->link ? &key : key;
-	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
-	struct node_st **findpp = find_node(hmap_r.map, bucket, pkey);
+	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, key);
+	struct node_st **findpp = find_node(hmap_r.map, bucket, key);
 	if (findpp)
 		return true;
 	return false;
@@ -506,29 +492,27 @@ static void *map_chkey(ax_map *map, const void *key, const void *new_key)
 	const ax_hmap_r hmap_r = { .map = map };
 
 	const ax_stuff_trait *ktr = hmap_r.hmap->map.env.key_tr;
-	const void *pkey = ktr->link ? &key : key;
 
 	if (!hmap_r.hmap->buckets)
 		return NULL;
 
-	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, pkey);
-	struct node_st **findpp = find_node(hmap_r.map, bucket, pkey);
+	struct bucket_st *bucket = locate_bucket(hmap_r.hmap, key);
+	struct node_st **findpp = find_node(hmap_r.map, bucket, key);
 	ax_assert(findpp, "key does not exists");
 
-	const void *pnewkey = ktr->link ? &new_key: new_key;
 	struct node_st *node = *findpp;
-	if (ax_stuff_copy(ktr, node->kvbuffer, pnewkey, ktr->size))
+	if (ax_stuff_copy(ktr, node->kvbuffer, new_key))
 		return NULL;
 
 	(*findpp) = node->next;
 
-	struct bucket_st *new_bucket = locate_bucket(hmap_r.hmap, pnewkey);
-	struct node_st **destpp = find_node(hmap_r.map, new_bucket, pnewkey);
+	struct bucket_st *new_bucket = locate_bucket(hmap_r.hmap, new_key);
+	struct node_st **destpp = find_node(hmap_r.map, new_bucket, new_key);
 	if (destpp)
 		free_node(hmap_r.map, destpp);
 
 	bucket_push_node(hmap_r.hmap, new_bucket, node);
-	return node_key(hmap_r.map, node);
+	return node_key(node);
 }
 
 static const void *map_it_key(const ax_citer *it)
@@ -536,13 +520,8 @@ static const void *map_it_key(const ax_citer *it)
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
 	CHECK_ITER_TYPE(it, AX_HMAP_NAME);
-
-	ax_hmap_cr hmap_r = { .hmap = it->owner };
 	struct node_st *node = it->point;
-
-	return (hmap_r.map->env.key_tr->link)
-		? *(void**)node->kvbuffer
-		: node->kvbuffer;
+	return node_key(node);
 }
 
 static void one_free(ax_one *one)
@@ -753,3 +732,4 @@ void dump_hmap(ax_hmap *hmap)
 		printf("bucket %p %d\n", (void*)b, c);
 	}
 }
+

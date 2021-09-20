@@ -41,6 +41,14 @@ void *ax_iter_get(const ax_iter *it)
 	return ax_stuff_out(tr, it->tr->get(it));
 }
 
+ax_fail ax_iter_set(const ax_iter *it, const void *val)
+{
+	ax_box *box = (ax_box *)it->owner;
+	const ax_stuff_trait *tr = box->env.elem_tr;
+	const void *pval = ax_stuff_in(tr, val);
+	return it->tr->set(it, pval);
+}
+
 ax_citer ax_citer_npos(const ax_citer *it)
 {
 	static int dummy;

@@ -135,12 +135,8 @@ static void *iter_get(const ax_iter *it)
 {
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr && it->point);
 
-	ax_btrie *self = iter_get_self(it);
 	struct node_st *node = ax_avl_tr.box.iter.get(it);
-	void *val = self->trie.env.box.elem_tr->link
-		? *(void **)node->val
-		: node->val;
-	return val;
+	return node->val;
 }
 
 static ax_fail iter_set(const ax_iter *it, const void *val)
@@ -153,17 +149,15 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 
 	struct node_st *node = ax_avl_tr.box.iter.get(it);
 	const ax_stuff_trait *etr = self->trie.env.box.elem_tr;
-	const void *pval = (etr->link) ? &val : val;
 	if (node->val) {
-		etr->free(node->val);
-	} else {
+		ax_stuff_free(etr, node->val);
+	} else { 
 		node->val = malloc(etr->size);
-		if (!node->val) {
+		if (!node->val)
 			return true;
-		}
 	}
 
-	return ax_stuff_copy(etr, node->val, pval, etr->size);
+	return ax_stuff_copy(etr, node->val, val);
 }
 
 static void node_free_value(ax_btrie *btrie, struct node_st *node)
@@ -393,13 +387,8 @@ static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *
 		goto fail;
 	}
 
-	const void *pval = vtr->link ? &val : val;
-	ax_fail fail = val 
-		? ax_stuff_copy(vtr, value, pval, vtr->size)
-		: ax_stuff_init(vtr, value, vtr->size);
-	if (fail) {
+	if (ax_stuff_copy_or_init(vtr, value, val))
 		goto fail;
-	}
 
 	if (node->val) {
 		vtr->free(node->val);
@@ -493,10 +482,7 @@ static void *trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 	if (node_set_value(self_r.btrie, node, val))
 		return NULL;
 
-	const ax_stuff_trait *vtr = trie->env.box.elem_tr;
-	return vtr->link
-		? *(void **)node->val
-		: node->val;
+	return node->val;
 }
 
 static void *trie_get(const ax_trie *trie, const ax_seq *key)
