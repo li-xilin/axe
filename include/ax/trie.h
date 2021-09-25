@@ -117,7 +117,7 @@ inline static bool ax_trie_exist(const ax_trie *trie, const ax_seq *key, bool *v
 inline static const void *ax_trie_iter_word(const ax_iter *it)
 {
 	ax_trie_cr self_r = { .box = ax_iter_box(it) };
-	return self_r.trie->tr->it_word(ax_iter_c(it));
+	return self_r.trie->tr->it_word(ax_iter_cc(it));
 }
 
 inline static const void *ax_trie_citer_word(const ax_citer *it)
@@ -129,7 +129,7 @@ inline static const void *ax_trie_citer_word(const ax_citer *it)
 inline static ax_iter ax_trie_iter_begin(const ax_iter *it)
 {
 	ax_trie_cr self_r = { .box = ax_iter_box(it) };
-	return self_r.trie->tr->it_begin(ax_iter_c(it));
+	return self_r.trie->tr->it_begin(ax_iter_cc(it));
 }
 
 inline static ax_iter ax_trie_citer_begin(const ax_citer *it)
@@ -148,7 +148,7 @@ inline static ax_citer ax_trie_citer_cbegin(const ax_citer *it)
 inline static ax_iter ax_trie_iter_end(const ax_iter *it)
 {
 	ax_trie_cr self_r = { .box = ax_iter_box(it) };
-	return self_r.trie->tr->it_end(ax_iter_c(it));
+	return self_r.trie->tr->it_end(ax_iter_cc(it));
 }
 
 inline static ax_iter ax_trie_citer_end(const ax_citer *it)
@@ -174,7 +174,7 @@ inline static ax_fail ax_trie_rekey(ax_trie *trie,
 inline static bool ax_trie_iter_valued(const ax_iter *it)
 {
 	ax_trie_cr self_r = { .box = ax_iter_box(it) };
-	return self_r.trie->tr->it_valued(ax_iter_c(it));
+	return self_r.trie->tr->it_valued(ax_iter_cc(it));
 }
 
 inline static bool ax_trie_citer_valued(const ax_citer *it)

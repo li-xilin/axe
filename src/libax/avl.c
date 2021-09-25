@@ -78,7 +78,7 @@ static void     rciter_next(ax_citer *it);
 static bool     rciter_less(const ax_citer *it1, const ax_citer *it2);
 static long     rciter_dist(const ax_citer *it1, const ax_citer *it2);
 
-static void    *iter_get(const ax_iter *it);
+static void    *citer_get(const ax_citer *it);
 static ax_fail  iter_set(const ax_iter *it, const void *val);
 static void     iter_erase(ax_iter *it);
 
@@ -416,7 +416,7 @@ static long rciter_dist(const ax_citer *it1, const ax_citer *it2)
 	return citer_dist(it2, it1);
 }
 
-static void *iter_get(const ax_iter *it)
+static void *citer_get(const ax_citer *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
 	return node_val(it->owner, it->point);
@@ -586,8 +586,9 @@ static ax_iter  map_at(const ax_map* map, const void *key)
 		return box_end(avl_r.box);
 	return (ax_iter) {
 		.owner = (void *)map,
+		.point = node,
 		.tr = &ax_avl_tr.box.iter,
-		.point = node
+		.etr = map->env.box.elem_tr,
 	};
 }
 
@@ -602,8 +603,8 @@ static const void *map_it_key(const ax_citer *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
 	CHECK_ITER_TYPE(it, AX_AVL_NAME);
-
-	return node_key(it->point);
+	const ax_map *map = it->owner;
+	return ax_stuff_out(map->env.key_tr, node_key(it->point));
 }
 
 static void one_free(ax_one* one)
@@ -671,8 +672,9 @@ static ax_iter box_begin(ax_box* box)
 			node = node->left;
 	ax_iter it = {
 		.owner = box,
+		.point = node,
 		.tr = &ax_avl_tr.box.iter,
-		.point = node
+		.etr = box->env.elem_tr,
 	};
 	return it;
 }
@@ -683,8 +685,9 @@ static ax_iter box_end(ax_box* box)
 
 	ax_iter it = {
 		.owner = box,
+		.point = NULL,
 		.tr = &ax_avl_tr.box.iter,
-		.point = NULL
+		.etr = box->env.elem_tr,
 	};
 	return it;
 }
@@ -700,8 +703,9 @@ static ax_iter box_rbegin(ax_box* box)
 			node = node->right;
 	ax_iter it = {
 		.owner = box,
+		.point = node,
 		.tr = &ax_avl_tr.box.riter,
-		.point = node
+		.etr = box->env.elem_tr,
 	};
 	return it;
 }
@@ -713,7 +717,8 @@ static ax_iter box_rend(ax_box* box)
 	ax_iter it = {
 		.owner = box,
 		.tr = &ax_avl_tr.box.riter,
-		.point = NULL
+		.point = NULL,
+		.etr = box->env.elem_tr,
 	};
 	return it;
 }
@@ -754,30 +759,26 @@ const ax_map_trait ax_avl_tr =
 			.copy = any_copy,
 		},
 		.iter = {
-			.ctr = {
-				.norm = true,
-				.type = AX_IT_BID,
-				.move = NULL,
-				.prev = citer_prev,
-				.next = citer_next,
-				.less = citer_less,
-				.dist = citer_dist
-			},
-			.get    = iter_get,
+			.norm = true,
+			.type = AX_IT_BID,
+			.move = NULL,
+			.prev = citer_prev,
+			.next = citer_next,
+			.less = citer_less,
+			.dist = citer_dist,
+			.get    = citer_get,
 			.set    = iter_set,
 			.erase  = iter_erase,
 		},
 		.riter = {
-			.ctr = {
-				.norm = false,
-				.type = AX_IT_BID,
-				.move = NULL,
-				.prev = rciter_prev,
-				.next = rciter_next,
-				.less = rciter_less,
-				.dist = rciter_dist,
-			},
-			.get    = iter_get,
+			.norm = false,
+			.type = AX_IT_BID,
+			.move = NULL,
+			.prev = rciter_prev,
+			.next = rciter_next,
+			.less = rciter_less,
+			.dist = rciter_dist,
+			.get    = citer_get,
 			.set    = iter_set,
 			.erase  = iter_erase,
 		},

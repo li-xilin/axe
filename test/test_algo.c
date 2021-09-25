@@ -265,6 +265,8 @@ static int qsort_compare_cb(const void* p1, const void* p2)
  * 0x3FFFFF 3.64, 4.15
  * 0x3FFFFF 2.53, 3.01
  * 0x3FFFFF 1.96, 2.24
+ * 0x3FFFFF 2.35, 2.27
+ * 0x3FFFFF 2.42, 2.25
  */
 
 static void sort_time(axut_runner *r) {

@@ -83,7 +83,7 @@ static void    rciter_next(ax_citer *it);
 static bool    rciter_less(const ax_citer *it1, const ax_citer *it2);
 static long    rciter_dist(const ax_citer *it1, const ax_citer *it2);
 
-static void   *iter_get(const ax_iter *it);
+static void   *citer_get(const ax_citer *it);
 static ax_fail iter_set(const ax_iter *it, const void *val);
 static void    iter_erase(ax_iter *it);
 
@@ -117,7 +117,7 @@ static void citer_next(ax_citer *it)
 	}
 }
 
-static void *iter_get(const ax_iter *it)
+static void *citer_get(const ax_citer *it)
 {
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr && it->point);
 	struct node_st *node = it->point;
@@ -385,7 +385,8 @@ static ax_iter box_begin(ax_box *box)
 	ax_iter it = {
 		.owner = box,
 		.point = self_r.list->head,
-		.tr = &ax_list_tr.box.iter
+		.tr = &ax_list_tr.box.iter,
+		.etr = box->env.elem_tr,
 	};
 	return it;
 }
@@ -397,7 +398,8 @@ static ax_iter box_end(ax_box *box)
 	ax_iter it = {
 		.owner = box,
 		.point = NULL,
-		.tr = &ax_list_tr.box.iter
+		.tr = &ax_list_tr.box.iter,
+		.etr = box->env.elem_tr,
 	};
 	return it;
 	
@@ -412,6 +414,7 @@ static ax_iter box_rbegin(ax_box *box)
 	ax_iter it = {
 		.owner = (void *)box,
 		.point = right_end,
+		.etr = box->env.elem_tr,
 		.tr = &ax_list_tr.box.riter,
 	};
 	return it;
@@ -424,6 +427,7 @@ static ax_iter box_rend(ax_box *box)
 	ax_iter it = {
 		.owner = box,
 		.point = NULL,
+		.etr = box->env.elem_tr,
 		.tr = &ax_list_tr.box.riter,
 	};
 	return it;
@@ -688,8 +692,9 @@ static ax_iter seq_at(const ax_seq *seq, size_t index) /* Could optimized to mea
 	struct node_st *cur = list->head;
 	ax_iter it = {
 		.owner = (void *)seq,
+		.point = cur,
 		.tr = &ax_list_tr.box.iter,
-		.point = cur
+		.etr = seq->env.box.elem_tr,
 	};
 
 	if (index == 0)
@@ -737,30 +742,26 @@ const ax_seq_trait ax_list_tr =
 			.copy = any_copy,
 		},
 		.iter = {
-			.ctr = {
-				.norm = true,
-				.type = AX_IT_BID,
-				.move = NULL,
-				.next = citer_next,
-				.prev = citer_prev,
-				.less = citer_less,
-				.dist = citer_dist,
-			},
-			.get = iter_get,
+			.norm = true,
+			.type = AX_IT_BID,
+			.move = NULL,
+			.next = citer_next,
+			.prev = citer_prev,
+			.less = citer_less,
+			.dist = citer_dist,
+			.get = citer_get,
 			.set = iter_set,
 			.erase = iter_erase,
 		},
 		.riter = {
-			.ctr = {
-				.norm = false,
-				.type = AX_IT_BID,
-				.move = NULL,
-				.prev = rciter_prev,
-				.next = rciter_next,
-				.less = rciter_less,
-				.dist = rciter_dist,
-			},
-			.get = iter_get,
+			.norm = false,
+			.type = AX_IT_BID,
+			.move = NULL,
+			.prev = rciter_prev,
+			.next = rciter_next,
+			.less = rciter_less,
+			.dist = rciter_dist,
+			.get = citer_get,
 			.set = iter_set,
 			.erase = iter_erase,
 		},

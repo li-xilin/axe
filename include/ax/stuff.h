@@ -113,7 +113,7 @@ struct ax_stuff_trait_st
 
 #define ax_stuff_in(_tr, _ptr) ((_tr)->link ? &(_ptr) : *&(_ptr))
 
-#define ax_stuff_out(_tr, _ptr) ((_tr)->link ? *(void **)(_ptr) : (_ptr))
+#define ax_stuff_out(_tr, _ptr) ((_tr)->link ? *(void **)(_ptr) : (void *)(_ptr))
 
 inline static bool ax_stuff_equal(const ax_stuff_trait *tr, const void *p1, const void *p2)
 {

@@ -70,7 +70,7 @@ static void    *map_put(ax_map *map, const void *key, const void *val);
 static ax_fail  map_erase(ax_map *map, const void *key);
 static void    *map_get(const ax_map *map, const void *key);
 static ax_iter  map_at(const ax_map *map, const void *key);
-static bool  map_exist(const ax_map *map, const void *key);
+static bool     map_exist(const ax_map *map, const void *key);
 static void    *map_chkey(ax_map *map, const void *key, const void *new_key);
 
 static const void *map_it_key(const ax_citer *it);
@@ -87,7 +87,7 @@ static ax_any  *any_copy(const ax_any *any);
 static void     one_free(ax_one *one);
 
 static void     citer_next(ax_citer *it);
-static void    *iter_get(const ax_iter *it);
+static void    *citer_get(const ax_citer *it);
 static ax_fail  iter_set(const ax_iter *it, const void *p);
 static void     iter_erase(ax_iter *it);
 
@@ -306,7 +306,7 @@ static void citer_next(ax_citer *it)
 	it->point = node;
 }
 
-static void *iter_get(const ax_iter *it)
+static void *citer_get(const ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
@@ -465,10 +465,10 @@ static ax_iter  map_at(const ax_map *map, const void *key)
 	}
 	return (ax_iter) {
 		.owner = (void *)map,
+		.point = *findpp,
 		.tr = &ax_hmap_tr.box.iter,
-		.point = *findpp
+		.etr = map->env.box.elem_tr,
 	};
-
 }
 
 static bool map_exist (const ax_map *map, const void *key)
@@ -521,7 +521,8 @@ static const void *map_it_key(const ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
 	CHECK_ITER_TYPE(it, AX_HMAP_NAME);
 	struct node_st *node = it->point;
-	return node_key(node);
+	const ax_map *map = it->owner;
+	return ax_stuff_out(map->env.key_tr, node_key(node));
 }
 
 static void one_free(ax_one *one)
@@ -586,7 +587,10 @@ static ax_iter box_begin(ax_box *box)
 	ax_iter it = {
 		.owner = (void *)box,
 		.tr = &ax_hmap_tr.box.iter,
-		.point = hmap_r.hmap->bucket_list ? hmap_r.hmap->bucket_list->node_list : NULL
+		.point = hmap_r.hmap->bucket_list
+			? hmap_r.hmap->bucket_list->node_list
+			: NULL,
+		.etr = box->env.elem_tr,
 	};
 	return it;
 }
@@ -598,7 +602,8 @@ static ax_iter box_end(ax_box *box)
 	ax_iter it = {
 		.owner = box,
 		.tr = &ax_hmap_tr.box.iter,
-		.point = NULL
+		.point = NULL,
+		.etr = box->env.elem_tr,
 	};
 	return it;
 }
@@ -636,21 +641,17 @@ const ax_map_trait ax_hmap_tr =
 		},
 		
 		.iter = {
-			.ctr = {
-				.norm  = true,
-				.type  = AX_IT_FORW,
-				.move = NULL,
-				.prev = NULL,
-				.next = citer_next,
-				.less  = NULL,
-				.dist  = NULL,
-			},
-			.get   = iter_get,
+			.norm  = true,
+			.type  = AX_IT_FORW,
+			.move = NULL,
+			.prev = NULL,
+			.next = citer_next,
+			.less  = NULL,
+			.dist  = NULL,
+			.get   = citer_get,
 			.set   = iter_set,
 			.erase = iter_erase,
 		},
-		.riter = { { NULL } },
-
 		.size    = box_size,
 		.maxsize = box_maxsize,
 		.begin   = box_begin,

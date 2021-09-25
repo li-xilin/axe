@@ -126,14 +126,14 @@ inline static void *ax_map_chkey(ax_map *map, const void *key, const void *new_k
 			ax_stuff_in(map->env.key_tr, new_key));
 }
 
-inline static const void *ax_map_citer_key(ax_citer *it)
+inline static const void *ax_map_citer_key(const ax_citer *it)
 {
-	return ((const ax_map *)it->owner)->tr->itkey(it);
+	return ax_stuff_out(it->etr, ((const ax_map *)it->owner)->tr->itkey(it));
 }
 
-inline static const void *ax_map_iter_key(ax_iter *it)
+inline static void *ax_map_iter_key(const ax_iter *it)
 {
-	return ((const ax_map *)it->owner)->tr->itkey(ax_iter_c(it));
+	return ax_stuff_out(it->etr, ((const ax_map *)it->owner)->tr->itkey(ax_iter_cc(it)));
 }
 
 const void *ax_map_key(ax_map *map, const void *key);

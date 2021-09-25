@@ -55,7 +55,7 @@ static ax_fail rciter_less(const ax_citer *it1, const ax_citer *it2);
 static long    rciter_dist(const ax_citer *it1, const ax_citer *it2);
 
 
-static void   *iter_get(const ax_iter *it);
+static void   *citer_get(const ax_citer *it);
 static ax_fail iter_set(const ax_iter *it, const void *val);
 static void    iter_erase(ax_iter *it);
 
@@ -213,19 +213,18 @@ static long rciter_dist(const ax_citer *it1, const ax_citer *it2)
 	return ((char *)it1->point - (char *)it2->point) / sizeof(char);
 }
 
-static void *iter_get(const ax_iter *it)
+static void *citer_get(const ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
+	CHECK_PARAM_VALIDITY(it, iter_if_have_value(it));
 	
 	return (char *)it->point;
-
 }
 
 static ax_fail iter_set(const ax_iter *it, const void *val)
 {
 	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
+	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_cc(it)));
 
 	*(char *)it->point = *(char *) val;
 	return false;
@@ -336,8 +335,9 @@ static ax_iter box_begin(ax_box* box)
 	ax_string_r self_r = { .box = box };
 	return (ax_iter) {
 		.owner = box,
+		.point = (ax_byte *)ax_buff_ptr(self_r.string->buff_r.buff),
 		.tr = &iter_trait,
-		.point = (ax_byte *)ax_buff_ptr(self_r.string->buff_r.buff)
+		.etr = box->env.elem_tr,
 	};
 }
 
@@ -349,8 +349,10 @@ static ax_iter box_end(ax_box* box)
 	ax_buff *buff = self_r.string->buff_r.buff;
 	return (ax_iter) {
 		.owner = box,
+		.point = (ax_byte *)ax_buff_ptr(buff)
+			+ ax_buff_size(buff, NULL) - sizeof(char),
 		.tr = &iter_trait,
-		.point = (ax_byte *)ax_buff_ptr(buff) + ax_buff_size(buff, NULL) - sizeof(char)
+		.etr = box->env.elem_tr,
 	};
 }
 
@@ -362,8 +364,10 @@ static ax_iter box_rbegin(ax_box* box)
 	ax_buff *buff = self_r.string->buff_r.buff;
 	return (ax_iter) {
 		.owner = box,
+		.point = (ax_byte *)ax_buff_ptr(buff)
+			+ ax_buff_size(buff, NULL) - 2 * sizeof(char),
 		.tr = &riter_trait,
-		.point = (ax_byte *)ax_buff_ptr(buff) + ax_buff_size(buff, NULL) - 2 * sizeof(char)
+		.etr = box->env.elem_tr,
 	};
 }
 
@@ -374,8 +378,9 @@ static ax_iter box_rend(ax_box* box)
 	ax_string_r self_r = { .box = box };
 	return (ax_iter) {
 		.owner = box,
+		.point = (ax_byte *)ax_buff_ptr(self_r.string->buff_r.buff) - sizeof(char),
 		.tr = &riter_trait,
-		.point = (ax_byte *)ax_buff_ptr(self_r.string->buff_r.buff) - sizeof(char)
+		.etr = box->env.elem_tr,
 	};
 }
 
@@ -674,8 +679,9 @@ static ax_iter seq_at(const ax_seq *seq, size_t index)
 
 	ax_iter it = {
 		.owner = (void *)self_r.one,
+		.point =  ptr + index,
 		.tr = &iter_trait,
-		.point =  ptr + index
+		.etr = seq->env.box.elem_tr,
 	};
 
 	CHECK_PARAM_VALIDITY(index, iter_if_have_value(ax_iter_c(&it)));
@@ -694,47 +700,37 @@ static const ax_str_trait str_trait =
 				.dump = any_dump,
 				.copy = any_copy,
 			},
-
-
 			.iter = {
-				.ctr = {
-					.norm = true,
-					.type = AX_IT_RAND,
-					.move = citer_move,
-					.prev = citer_prev,
-					.next = citer_next,
-					.less = citer_less,
-					.dist = citer_dist
-				},
-
-				.get    = iter_get,
+				.norm = true,
+				.type = AX_IT_RAND,
+				.move = citer_move,
+				.prev = citer_prev,
+				.next = citer_next,
+				.less = citer_less,
+				.dist = citer_dist,
+				.get    = citer_get,
 				.set    = iter_set,
 				.erase  = iter_erase,
 			},
 
 			.riter = {
-				.ctr = {
-					.norm = false,
-					.type = AX_IT_RAND,
-					.move = rciter_move,
-					.prev = rciter_prev,
-					.next = rciter_next,
-					.less = rciter_less,
-					.dist = rciter_dist
-				},
-				.get   = iter_get,
+				.norm = false,
+				.type = AX_IT_RAND,
+				.move = rciter_move,
+				.prev = rciter_prev,
+				.next = rciter_next,
+				.less = rciter_less,
+				.dist = rciter_dist,
+				.get   = citer_get,
 				.set   = iter_set,
-				.erase = iter_erase
+				.erase = iter_erase,
 			},
-
 			.size = box_size,
 			.maxsize = box_maxsize,
-
 			.begin = box_begin,
 			.end = box_end,
 			.rbegin = box_rbegin,
 			.rend = box_rend,
-
 			.clear = box_clear,
 		},
 		.push = seq_push,
@@ -751,7 +747,7 @@ static const ax_str_trait str_trait =
 	.comp   = str_comp,
 	.substr = str_substr,
 	.split  = str_split,
-	.sprintf = str_sprintf
+	.sprintf = str_sprintf,
 };
 
 ax_str *__ax_string_construct()

@@ -189,10 +189,10 @@ void ax_partition(ax_iter *first, const ax_iter *last, const ax_pred *pred)
 {
 	CHECK_PARAM_NULL(pred);
 	CHECK_ITER_COMPARABLE(first, last);
-	ax_assert((first->tr->ctr.type & AX_IT_FORW) == AX_IT_FORW,
+	ax_assert((first->tr->type & AX_IT_FORW) == AX_IT_FORW,
 			"iterator type is not supported");
 
-	ax_find_if_not(ax_iter_c(first), ax_iter_c(last), pred);
+	ax_find_if_not(ax_iter_c(first), ax_iter_cc(last), pred);
 
 	if (ax_iter_equal(first, last))
 		return;
@@ -236,7 +236,7 @@ static void quick_sort(struct quick_sort_context_st*ext, const ax_iter *first, c
 
 	ax_iter left_last = right_first;
 	ax_iter_prev(&left_last);
-	ax_mem_swap(left_last.tr->get(&left_last), first->tr->get(first), ext->tr->size);
+	ax_mem_swap(left_last.tr->get(ax_iter_cc(&left_last)), first->tr->get(ax_iter_cc(first)), ext->tr->size);
 
 	quick_sort(ext, first, &left_last);
 	quick_sort(ext, &right_first, last);
@@ -318,9 +318,9 @@ void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
 	merge_sort(rmid, right, ext);
 
 	ax_iter end = ax_box_end(ax_r(seq, ext->main).box);
-	ax_iter main_first = { .owner = end.owner, .tr = end.tr };
-	ax_iter main_mid  = { .owner = end.owner, .tr = end.tr };
-	ax_iter main_last = { .owner = end.owner, .tr = end.tr };
+	ax_iter main_first = { .owner = end.owner, .tr = end.tr, .etr = end.etr };
+	ax_iter main_mid  = { .owner = end.owner, .tr = end.tr, .etr = end.etr };
+	ax_iter main_last = { .owner = end.owner, .tr = end.tr, .etr = end.etr };
 	ax_iter aux_first;
 	ax_iter aux_mid;
 	ax_iter aux_last;
@@ -457,7 +457,7 @@ void ax_binary_search_if_not(ax_citer *first, const ax_citer *last, const ax_pre
 	ax_assert(ax_one_is(first->owner, "one.any.box.seq"), "unsupported container type");
 	ax_assert(ax_citer_is(first, AX_IT_RAND), "unsupported citerator type");
 
-	ax_citer left = *first, right = *last, middle = { .owner = first->owner, .tr = first->tr };
+	ax_citer left = *first, right = *last, middle = { .owner = first->owner, .tr = first->tr, .etr = first->etr };
 	while (!ax_citer_equal(&left, &right)) {
 		bool ret;
 		long length = ax_citer_dist(&left, &right);
@@ -505,7 +505,7 @@ ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 		find = sorted_first;
 		search_if_not(ax_iter_c(&find), ax_iter_c(&cur), &pred);
 
-		memcpy(tmp, cur.tr->get(&cur), etr->size);
+		memcpy(tmp, cur.tr->get(ax_iter_cc(&cur)), etr->size);
 		ax_iter swapit = cur;
 		while(!ax_iter_equal(&find, &swapit)) {
 			swap_prev.point = swapit.point;
@@ -513,7 +513,7 @@ ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 			ax_iter_swap(&swapit, &swap_prev);
 			swapit.point = swap_prev.point;
 		}
-		memcpy(find.tr->get(&find), tmp, etr->size);
+		memcpy(find.tr->get(ax_iter_cc(&find)), tmp, etr->size);
 
 		ax_iter_next(&cur);
 	}

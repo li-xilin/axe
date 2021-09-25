@@ -98,7 +98,6 @@ inline static void ax_pred_do(const ax_pred *pred, void *out, const void *in1, c
 			in1 = pred->first;
 			in2 = pred->second;
 			goto do_binary;
-
 	}
 do_unary:
 	pred->fun.u(out, in1, pred->args);

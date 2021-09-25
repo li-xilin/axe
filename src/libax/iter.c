@@ -25,30 +25,6 @@
 #include <ax/box.h>
 #include "check.h"
 
-void ax_iter_swap(const ax_iter *it1, const ax_iter *it2)
-{
-	CHECK_ITER_COMPARABLE(it1, it2);
-
-	ax_box *box = ax_iter_box(it1);
-	const ax_stuff_trait *tr = box->env.elem_tr;
-	ax_mem_swap(it1->tr->get(it1), it2->tr->get(it2), tr->size);
-}
-
-void *ax_iter_get(const ax_iter *it)
-{
-	ax_box *box = (ax_box *)it->owner;
-	const ax_stuff_trait *tr = box->env.elem_tr;
-	return ax_stuff_out(tr, it->tr->get(it));
-}
-
-ax_fail ax_iter_set(const ax_iter *it, const void *val)
-{
-	ax_box *box = (ax_box *)it->owner;
-	const ax_stuff_trait *tr = box->env.elem_tr;
-	const void *pval = ax_stuff_in(tr, val);
-	return it->tr->set(it, pval);
-}
-
 ax_citer ax_citer_npos(const ax_citer *it)
 {
 	static int dummy;
