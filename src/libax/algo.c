@@ -23,10 +23,7 @@
 #include <ax/algo.h>
 #include <ax/vector.h>
 #include <ax/pred.h>
-#include <ax/box.h>
 #include <ax/one.h>
-#include <ax/seq.h>
-#include <ax/iter.h>
 #include <ax/mem.h>
 
 #include <string.h>
@@ -109,9 +106,7 @@ ax_iter ax_search_of(const ax_iter *first1, const ax_iter *last1, const ax_citer
 {
 	CHECK_ITER_COMPARABLE(first1, last1);
 
-	ax_box *box = first1->owner;
-	const ax_stuff_trait *etr = box->env.elem_tr;
-
+	const ax_stuff_trait *etr = first1->etr;
 	for (ax_iter it1 = *first1; !ax_iter_equal(&it1, last1); ax_iter_next(&it1)) {
 		for (ax_citer it2 = *first2; !ax_citer_equal(&it2, last2); ax_citer_next(&it2))
 		{
@@ -129,8 +124,7 @@ void ax_generate(const ax_iter *first, const ax_iter *last, const void *ptr)
 {
 	CHECK_ITER_COMPARABLE(first, last);
 
-	ax_box *box = first->owner;
-	const ax_stuff_trait *etr = box->env.elem_tr;
+	const ax_stuff_trait *etr = first->etr;
 
 	for (ax_iter it = *first; !ax_iter_equal(&it, last); ax_iter_next(&it)) {
 		void *p = ax_iter_get(&it);
@@ -208,17 +202,12 @@ void ax_partition(ax_iter *first, const ax_iter *last, const ax_pred *pred)
 	}
 }
 
-struct quick_sort_context_st {
-	const ax_stuff_trait *tr;
-	ax_pred pred;
-};
-
 static void less_then(bool *out, void *in1, void *in2, const ax_stuff_trait *tr)
 {
 	*out = tr->less(in1, in2, tr->size);
 }
 
-static void quick_sort(struct quick_sort_context_st*ext, const ax_iter *first, const ax_iter *last)
+static void quick_sort(const ax_iter *first, const ax_iter *last)
 {
 	if (ax_iter_equal(first, last))
 		return;
@@ -229,17 +218,18 @@ static void quick_sort(struct quick_sort_context_st*ext, const ax_iter *first, c
 	if (ax_iter_equal(&second, last))
 		return;
 
-	ext->pred = ax_pred_binary_make((ax_binary_f) less_then, NULL,
-			ax_iter_get(first), (void*)ext->tr);
 	ax_iter right_first = second;
-	 ax_partition(&right_first, last, &ext->pred);
+	const ax_pred pred = ax_pred_binary_make((ax_binary_f) less_then,
+			NULL, ax_iter_get(first), (void *)first->etr);
+	ax_partition(&right_first, last, &pred);
 
 	ax_iter left_last = right_first;
 	ax_iter_prev(&left_last);
-	ax_mem_swap(left_last.tr->get(ax_iter_cc(&left_last)), first->tr->get(ax_iter_cc(first)), ext->tr->size);
+	ax_mem_swap(left_last.tr->get(ax_iter_cc(&left_last)),
+			first->tr->get(ax_iter_cc(first)), first->etr->size);
 
-	quick_sort(ext, first, &left_last);
-	quick_sort(ext, &right_first, last);
+	quick_sort(first, &left_last);
+	quick_sort(&right_first, last);
 }
 
 ax_fail ax_quick_sort(const ax_iter *first, const ax_iter *last)
@@ -248,13 +238,7 @@ ax_fail ax_quick_sort(const ax_iter *first, const ax_iter *last)
 	ax_assert(ax_one_is(first->owner, "one.any.box.seq"), "unsupported container type");
 	ax_assert(ax_iter_is(first, AX_IT_BID), "unsupported iterator type");
 
-	const ax_box *box = first->owner;
-	const ax_stuff_trait *tr = box->env.elem_tr;
-
-	struct quick_sort_context_st ext = {
-		.tr = tr
-	};
-	quick_sort(&ext, first, last);
+	quick_sort(first, last);
 	return false;
 }
 
@@ -263,8 +247,7 @@ void ax_merge(const ax_citer *first1, const ax_citer *last1, const ax_citer *fir
 	CHECK_ITER_COMPARABLE(first1, last1);
 	CHECK_ITER_COMPARABLE(first2, last2);
 
-	ax_box *box = (ax_box *)first1->owner;
-	const ax_stuff_trait *etr = box->env.elem_tr;
+	const ax_stuff_trait *etr = first1->etr;
 	ax_citer cur1 = *first1, cur2 = *first2;
 
 	ax_citer src;
@@ -357,7 +340,6 @@ ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 	ax_assert(ax_iter_is(first, AX_IT_FORW), "unsupported iterator type");
 
 	ax_seq_r main_r = { first->owner };
-	const ax_stuff_trait *etr = main_r.box->env.elem_tr;
 
 	size_t size = 0;
 	ax_iter cur = ax_box_begin(main_r.box);
@@ -379,7 +361,7 @@ ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 	}
 	imap[pos] = cur.point;
 
-	ax_seq *aux = __ax_vector_construct(etr);
+	ax_seq *aux = ax_class_new(vector, first->etr).seq;
 	if (!aux) {
 		free(imap);
 		return true;
@@ -404,8 +386,7 @@ bool ax_equal_to_arr(const ax_iter *first, const ax_iter *last, void *arr, size_
 {
 	CHECK_PARAM_VALIDITY(arr, !!arr == !!size);
 
-	const ax_box *box = first->owner;
-	const ax_stuff_trait *tr = box->env.elem_tr;
+	const ax_stuff_trait *tr = first->etr;
 	ax_assert(size % tr->size == 0, "unexpected size");
 
 	size_t pos = 0;
@@ -426,8 +407,7 @@ void ax_binary_search(ax_citer *first, const ax_citer *last, const void* p)
 	ax_assert(ax_citer_is(first, AX_IT_RAND), "unsupported citerator type");
 
 	void *orignal_last_citer_point = last->point;
-	const ax_box *box = first->owner;
-	const ax_stuff_trait *etr = box->env.elem_tr;
+	const ax_stuff_trait *etr = first->etr;
 
 	ax_citer left = *first, right = *last, middle;
 	while (!ax_citer_equal(&left, &right)) {
@@ -482,8 +462,7 @@ ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 	ax_assert(ax_iter_is(first, AX_IT_FORW), "unsupported iterator type");
 
 	ax_pred pred;
-	ax_box *box = first->owner;
-	const ax_stuff_trait *etr = box->env.elem_tr;
+	const ax_stuff_trait *etr = first->etr;
 	void *tmp = malloc(etr->size);
 	if (!tmp) {
 		return true;
