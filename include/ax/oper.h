@@ -25,6 +25,10 @@
 #include "stuff.h"
 #include "def.h"
 
+typedef void (*ax_unary_f)(void *out, const void *in, void *arg);
+
+typedef void (*ax_binary_f)(void *out, const void *in1, const void *in2, void *arg);
+
 typedef struct ax_operset_st ax_operset;
 
 struct ax_operset_st
