@@ -22,8 +22,6 @@
 
 #ifndef AX_OPER_H
 #define AX_OPER_H
-#include "stuff.h"
-#include "def.h"
 
 typedef void (*ax_unary_f)(void *out, const void *in, void *arg);
 

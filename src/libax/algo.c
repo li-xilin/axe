@@ -23,6 +23,7 @@
 #include <ax/algo.h>
 #include <ax/vector.h>
 #include <ax/pred.h>
+#include <ax/oper.h>
 #include <ax/one.h>
 #include <ax/mem.h>
 

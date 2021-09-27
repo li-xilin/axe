@@ -23,6 +23,7 @@
 #ifndef AX_PRED_H
 #define AX_PRED_H
 #include "debug.h"
+#include "oper.h"
 #include "def.h"
 
 #define AX_BIND_1 1
