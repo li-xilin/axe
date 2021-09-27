@@ -48,7 +48,9 @@ typedef uint_fast32_t ax_fast_uint;
 
 #define ax_forever while(true)
 
-#define ax_align(_size, _align) (!((_size) % (_align)) ? (_size) : ((_size) + (_align) - ((_size) % (_align))))
+#define ax_align(_size, _align) \
+	(!((_size) % (_align)) ? (_size) \
+	 : ((_size) + (_align) - ((_size) % (_align))))
 
 #define __AX_CATENATE_8(a1, a2, a3, a4, a5, a6, a7, a8) a1##a2##a3##a4##a5##a6##a7##a8
 #define __AX_CATENATE_7(a1, a2, a3, a4, a5, a6, a7) a1##a2##a3##a4##a5##a6##a7
@@ -66,7 +68,34 @@ typedef uint_fast32_t ax_fast_uint;
 #define __ax_stringy(_x) #_x
 #define ax_stringy(_x) __ax_stringy(_x)
 
-#define ax_arrof(_t, ...) ((_t []) { __VA_ARGS__ })
-#define ax_ptrof(_t, _v) ax_arrof(_t, _v)
+#define ax_ptrof(_t, _v) ((_t [1]) { _v })
+
+#define __ax_sizeof_arr(_t, ...) \
+	sizeof((_t[]){ __VA_ARGS__ })
+
+#define __AX_ARRAYA_MAGIC 0xCCCCCCCCCCCCCCCC
+
+#define ax_arraya(_t, ...) \
+	(_t *) ( \
+	  ( \
+	    ( \
+	      struct { \
+	        uint64_t _mag, _len; \
+	        _t _arr[__ax_sizeof_arr(_t, __VA_ARGS__) / sizeof(_t)]; \
+	      } [1] \
+	    ) \
+	    { \
+	      { \
+	        ._mag = __AX_ARRAYA_MAGIC, \
+	        ._len = __ax_sizeof_arr(_t, __VA_ARGS__), \
+		._arr = { __VA_ARGS__}, \
+	      } \
+	    } \
+	  ) ->_arr \
+	)
+
+#define ax_arraya_size(_p) \
+	(size_t)(*((uint64_t *)(_p) - 1))
 
 #endif
+
