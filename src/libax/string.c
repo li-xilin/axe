@@ -87,9 +87,7 @@ static ax_any* any_copy(const ax_any* any);
 
 static void    one_free(ax_one* one);
 
-static const ax_str_trait str_trait;
-static const ax_iter_trait iter_trait;
-static const ax_iter_trait riter_trait;
+const ax_str_trait ax_string_tr;
 
 #ifdef AX_DEBUG
 bool iter_if_valid(const ax_citer *it);
@@ -336,7 +334,7 @@ static ax_iter box_begin(ax_box* box)
 	return (ax_iter) {
 		.owner = box,
 		.point = (ax_byte *)ax_buff_ptr(self_r.string->buff_r.buff),
-		.tr = &iter_trait,
+		.tr = &ax_string_tr.seq.box.iter,
 		.etr = box->env.elem_tr,
 	};
 }
@@ -351,7 +349,7 @@ static ax_iter box_end(ax_box* box)
 		.owner = box,
 		.point = (ax_byte *)ax_buff_ptr(buff)
 			+ ax_buff_size(buff, NULL) - sizeof(char),
-		.tr = &iter_trait,
+		.tr = &ax_string_tr.seq.box.iter,
 		.etr = box->env.elem_tr,
 	};
 }
@@ -366,7 +364,7 @@ static ax_iter box_rbegin(ax_box* box)
 		.owner = box,
 		.point = (ax_byte *)ax_buff_ptr(buff)
 			+ ax_buff_size(buff, NULL) - 2 * sizeof(char),
-		.tr = &riter_trait,
+		.tr = &ax_string_tr.seq.box.riter,
 		.etr = box->env.elem_tr,
 	};
 }
@@ -379,7 +377,7 @@ static ax_iter box_rend(ax_box* box)
 	return (ax_iter) {
 		.owner = box,
 		.point = (ax_byte *)ax_buff_ptr(self_r.string->buff_r.buff) - sizeof(char),
-		.tr = &riter_trait,
+		.tr = &ax_string_tr.seq.box.riter,
 		.etr = box->env.elem_tr,
 	};
 }
@@ -680,7 +678,7 @@ static ax_iter seq_at(const ax_seq *seq, size_t index)
 	ax_iter it = {
 		.owner = (void *)self_r.one,
 		.point =  ptr + index,
-		.tr = &iter_trait,
+		.tr = &ax_string_tr.seq.box.iter,
 		.etr = seq->env.box.elem_tr,
 	};
 
@@ -688,7 +686,7 @@ static ax_iter seq_at(const ax_seq *seq, size_t index)
 	return it;
 }
 
-static const ax_str_trait str_trait =
+const ax_str_trait ax_string_tr =
 {
 	.seq = {
 		.box = {
@@ -765,7 +763,7 @@ ax_str *__ax_string_construct()
 
 	ax_string string_init = {
 		.str = {
-			.tr = &str_trait,
+			.tr = &ax_string_tr,
 			.env = {
 				.seq.box.elem_tr = ax_stuff_traits(AX_ST_C)
 			},

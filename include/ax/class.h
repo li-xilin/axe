@@ -28,7 +28,7 @@
 #define __AX_CLASS_ENTRY_STRUCT(_name) struct AX_CATENATE(ax_, _name, _st)
 
 #define ax_class_new0(_name) \
-	(ax_##_name##_r) { .ax_base_of(_name) = AX_CATENATE(__ax_, _name, _construct0)(void) }
+	(ax_##_name##_r) { .ax_base_of(_name) = AX_CATENATE(__ax_, _name, _construct0)() }
 
 #define ax_class_new(_name, ...) \
 	(ax_##_name##_r) { .ax_base_of(_name) = AX_CATENATE(__ax_, _name, _construct, AX_NARG(__VA_ARGS__))(__VA_ARGS__) }
