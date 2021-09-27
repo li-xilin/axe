@@ -89,6 +89,10 @@ typedef void (*ax_binary_f)(void *out, const void *in1, const void *in2, void *a
 #define __AX_STRINGY(_x) #_x
 #define AX_STRINGY(_x) __AX_STRINGY(_x)
 
+#define ax_arrof(_t, ...) ((_t []) { __VA_ARGS__ })
+#define ax_ptrof(_t, _v) ax_arrof(_t, _v)
+
+
 /* Architecture Macros */
 
 #if defined(__x86_64__) || defined(__x86_64) || defined(__amd64__) || defined(_M_X64) || defined(_M_AMD64)
