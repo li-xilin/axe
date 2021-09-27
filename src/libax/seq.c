@@ -201,3 +201,22 @@ fail:
 	ax_dump_free(block_dmp);
 	return NULL;
 }
+
+ax_fail ax_seq_push_arraya(ax_seq *seq, const void *arrp)
+{
+	size_t size = ax_arraya_size(arrp);
+	int esize = seq->env.box.elem_tr->size;
+	ax_assert(size % esize == 0,
+			"different size of elements with seq and arraya");
+	const ax_byte *p = arrp;
+	size_t i;
+	for (i = 0; i < size / esize; i++) {
+		if (seq->tr->push(seq, p + esize * i))
+			goto fail;
+	}
+	return false;
+fail:
+	for (size_t j = 0; j < i; j++)
+		seq->tr->pop(seq);
+	return true;;
+}

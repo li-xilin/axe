@@ -153,6 +153,8 @@ ax_fail ax_seq_pushl(ax_seq *seq, const char *fmt, ...);
 
 size_t ax_seq_array(ax_seq *seq, void *elems[], size_t len);
 
+ax_fail ax_seq_push_arraya(ax_seq *seq, const void *arrp);
+
 ax_dump *ax_seq_dump(const ax_seq *seq);
 
 #endif
