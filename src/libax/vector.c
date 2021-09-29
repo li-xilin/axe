@@ -22,7 +22,6 @@
 
 #include <ax/vector.h>
 #include <ax/def.h>
-#include <ax/scope.h>
 #include <ax/any.h>
 #include <ax/iter.h>
 #include <ax/debug.h>
@@ -247,7 +246,6 @@ static void one_free(ax_one *one)
 		return;
 
 	ax_vector_r self = { .one = one };
-	ax_scope_detach(one);
 	box_clear(self.box);
 	ax_one_free(ax_r(buff, self.vector->buff).one);
 	free(one);
@@ -635,18 +633,6 @@ fail:
 	free(seq);
 	ax_one_free(ax_r(buff, buff).one);
 	return NULL;
-}
-
-ax_vector_r ax_vector_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
-{
-	CHECK_PARAM_NULL(scope);
-	CHECK_PARAM_NULL(elem_tr);
-
-	ax_vector_r self = { .seq = __ax_vector_construct(elem_tr) };
-	if (!self.one)
-		return self;
-	ax_scope_attach(scope, self.one);
-	return self;
 }
 
 void *ax_vector_buffer(ax_vector *vector)

@@ -24,10 +24,7 @@
 #include "ax/avl.h"
 #include "ax/list.h"
 #include "ax/oper.h"
-#include "ax/base.h"
-
 #include "axut.h"
-
 #include <assert.h>
 #include <setjmp.h>
 #include <stdlib.h>
@@ -43,7 +40,7 @@ struct check_table_st
 	} table[32];
 };
 
-static ax_btrie_r make_test_btrie(ax_base *base);
+static ax_btrie_r make_test_btrie();
 static void seq_to_path(const ax_seq *seq, char * path);
 
 static void seq_to_path(const ax_seq *seq, char * path)
@@ -58,23 +55,17 @@ static void seq_to_path(const ax_seq *seq, char * path)
 
 static void create(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
-	ax_btrie_r btrie = ax_btrie_create(ax_base_local(base),
-			ax_stuff_traits(AX_ST_I32), ax_stuff_traits(AX_ST_I32));
+	ax_btrie_r btrie = ax_class_new(btrie, ax_tr("i32"), ax_tr("i32"));
 	axut_assert_uint_equal(r, ax_box_size(btrie.box), 0);
+	ax_one_free(btrie.one);
 }
 
 static void trie_put(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
 	
-	int d = ax_base_enter(base);
-
-	ax_btrie_r btrie = make_test_btrie(base);
-
+	ax_btrie_r btrie = make_test_btrie();
 	axut_assert_uint_equal(r, ax_box_size(btrie.box), 7);
-
-	ax_base_leave(base, d);
+	ax_one_free(btrie.one);
 }
 
 struct enum_context_st {
@@ -95,13 +86,9 @@ bool iterator_enum_cb(const ax_trie *trie, const ax_seq *key, const void *val, v
 	return false;
 }
 
-static ax_btrie_r make_test_btrie(ax_base *base) {
-	ax_btrie_r btrie = ax_btrie_create(ax_base_local(base),
-			ax_stuff_traits(AX_ST_I32),
-			ax_stuff_traits(AX_ST_I32));
-
-	ax_list_r key = ax_list_create(ax_base_local(base),
-			ax_stuff_traits(AX_ST_I32));
+static ax_btrie_r make_test_btrie() {
+	ax_btrie_r btrie = ax_class_new(btrie, ax_tr("i"), ax_tr("i"));
+	ax_list_r key = ax_class_new(list, ax_tr("i"));
 
 	int value;
 
@@ -138,15 +125,13 @@ static ax_btrie_r make_test_btrie(ax_base *base) {
 	value = 11;
 	ax_trie_put(btrie.trie, key.seq, &value);
 
+	ax_one_free(key.one);
 	return btrie;
 }
 
 static void iterater(axut_runner *r)
 {
-
-	ax_base *base = axut_runner_arg(r);
-	
-	ax_btrie_r btrie = make_test_btrie(base);
+	ax_btrie_r btrie = make_test_btrie();
 
 	struct check_table_st data = {
 		.index = 0,
@@ -167,19 +152,14 @@ static void iterater(axut_runner *r)
 		.runner = r,
 	};
 	ax_trie_enum(btrie.trie, iterator_enum_cb, &enumctx);
+	ax_one_free(btrie.one);
 }
 
 static void trie_get(axut_runner *r)
 {
 
-	ax_base *base = axut_runner_arg(r);
-
-	int d = ax_base_enter(base);
-
-	ax_btrie_r btrie = make_test_btrie(base);
-	ax_list_r key;
-
-	key = ax_list_create(ax_base_local(base), ax_trie_key_tr(btrie.trie));
+	ax_btrie_r btrie = make_test_btrie();
+	ax_list_r key = ax_class_new(list, ax_trie_key_tr(btrie.trie));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 1))
@@ -197,7 +177,6 @@ static void trie_get(axut_runner *r)
 	axut_assert_int_equal(r, 11, *(int32_t*)ax_trie_get(btrie.trie, key.seq));
 
 	ax_box_clear(key.box);
-	key = ax_list_create(ax_base_local(base), ax_trie_key_tr(btrie.trie));
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 2, 1))
 		axut_term(r, "ax_seq_pushl");
 	axut_assert_int_equal(r, 121, *(int32_t*)ax_trie_get(btrie.trie, key.seq));
@@ -210,48 +189,43 @@ static void trie_get(axut_runner *r)
 	ax_box_clear(key.box);
 	axut_assert_int_equal(r, 0, *(int32_t*)ax_trie_get(btrie.trie, key.seq));
 
-	ax_base_leave(base, d);
+	ax_one_free(btrie.one);
+	ax_one_free(key.one);
 }
 
 static void trie_at(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
+	ax_btrie_r btrie = make_test_btrie();
+	ax_list_r key = ax_class_new(list, ax_trie_key_tr(btrie.trie));
 
-	int d = ax_base_enter(base);
-
-	ax_btrie_r btrie = make_test_btrie(base);
-	ax_list_r key;
-	ax_iter it;
-	ax_iter end;
-
-	key = ax_list_create(ax_base_local(base), ax_trie_key_tr(btrie.trie));
+	ax_iter it, end;
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 1))
 		axut_term(r, "ax_seq_pushl");
 	it = ax_trie_at(btrie.trie, key.seq);
-	axut_assert_int_equal(r, 111, *(int32_t*)ax_iter_get(&it));
+	axut_assert_int_equal(r, 111, *(int*)ax_iter_get(&it));
 	axut_assert(r, ax_trie_iter_valued(&it));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 2))
 		axut_term(r, "ax_seq_pushl");
 	it = ax_trie_at(btrie.trie, key.seq);
-	axut_assert_int_equal(r, 112, *(int32_t*)ax_iter_get(&it));
+	axut_assert_int_equal(r, 112, *(int*)ax_iter_get(&it));
 	axut_assert(r, ax_trie_iter_valued(&it));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x2", 1, 1))
 		axut_term(r, "ax_seq_pushl");
 	it = ax_trie_at(btrie.trie, key.seq);
-	axut_assert_int_equal(r, 11, *(int32_t*)ax_iter_get(&it));
+	axut_assert_int_equal(r, 11, *(int*)ax_iter_get(&it));
 	axut_assert(r, ax_trie_iter_valued(&it));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x1", 1))
 		axut_term(r, "ax_seq_pushl");
 	it = ax_trie_at(btrie.trie, key.seq);
-	axut_assert_int_equal(r, 1, *(int32_t*)ax_iter_get(&it));
+	axut_assert_int_equal(r, 1, *(int*)ax_iter_get(&it));
 	axut_assert(r, ax_trie_iter_valued(&it));
 
 	ax_box_clear(key.box);
@@ -269,19 +243,16 @@ static void trie_at(axut_runner *r)
 	end = ax_box_end(btrie.box);
 	axut_assert(r, ax_iter_equal(&it, &end));
 
-	ax_base_leave(base, d);
+	ax_one_free(btrie.one);
+	ax_one_free(key.one);
 }
 
 static void trie_exist(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
 
-	int d = ax_base_enter(base);
 
-	ax_btrie_r btrie = make_test_btrie(base);
-	ax_list_r key;
-
-	key = ax_list_create(ax_base_local(base), ax_trie_key_tr(btrie.trie));
+	ax_btrie_r btrie = make_test_btrie();
+	ax_list_r key = ax_class_new(list, ax_trie_key_tr(btrie.trie));
 
 	bool valued;
 
@@ -301,7 +272,6 @@ static void trie_exist(axut_runner *r)
 	axut_assert(r, ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_box_clear(key.box);
-	key = ax_list_create(ax_base_local(base), ax_trie_key_tr(btrie.trie));
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 2, 1))
 		axut_term(r, "ax_seq_pushl");
 	axut_assert(r, ax_trie_exist(btrie.trie, key.seq, NULL));
@@ -326,20 +296,14 @@ static void trie_exist(axut_runner *r)
 		axut_term(r, "ax_seq_pushl");
 	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 
-	ax_base_leave(base, d);
-
+	ax_one_free(btrie.one);
+	ax_one_free(key.one);
 }
 
 static void trie_erase(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
-
-	int d = ax_base_enter(base);
-
-	ax_btrie_r btrie = make_test_btrie(base);
-	ax_list_r key;
-
-	key = ax_list_create(ax_base_local(base), ax_trie_key_tr(btrie.trie));
+	ax_btrie_r btrie = make_test_btrie();
+	ax_list_r key = ax_class_new(list, ax_trie_key_tr(btrie.trie));
 
 	ax_box_clear(key.box);
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 1))
@@ -360,7 +324,6 @@ static void trie_erase(axut_runner *r)
 	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 
 	ax_box_clear(key.box);
-	key = ax_list_create(ax_base_local(base), ax_trie_key_tr(btrie.trie));
 	if (ax_seq_pushl(key.seq, "i32x3", 1, 2, 1))
 		axut_term(r, "ax_seq_pushl");
 	ax_trie_erase(btrie.trie, key.seq);
@@ -376,39 +339,37 @@ static void trie_erase(axut_runner *r)
 	ax_trie_erase(btrie.trie, key.seq);
 	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
 
-	ax_base_leave(base, d);
-
+	ax_one_free(btrie.one);
+	ax_one_free(key.one);
 }
 
 static void trie_prune(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
-
-	int d = ax_base_enter(base);
-
-	ax_btrie_r btrie = make_test_btrie(base);
-	ax_list_r key;
-
-	key = ax_list_create(ax_base_local(base), ax_trie_key_tr(btrie.trie));
-
-	btrie = make_test_btrie(base);
-	ax_box_clear(key.box);
-	if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 1))
-		axut_term(r, "ax_seq_pushl");
-	ax_trie_prune(btrie.trie, key.seq);
-	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
-	axut_assert_uint_equal(r, 6, ax_box_size(btrie.box));
-
-	btrie = make_test_btrie(base);
-	ax_box_clear(key.box);
-	if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 2))
-		axut_term(r, "ax_seq_pushl");
-	ax_trie_prune(btrie.trie, key.seq);
-	axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
-	axut_assert_uint_equal(r, 6, ax_box_size(btrie.box));
+	ax_btrie_r btrie = make_test_btrie();
+	ax_list_r key = ax_class_new(list, ax_trie_key_tr(btrie.trie));
+	{
+		ax_box_clear(key.box);
+		if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 1))
+			axut_term(r, "ax_seq_pushl");
+		ax_trie_prune(btrie.trie, key.seq);
+		axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
+		axut_assert_uint_equal(r, 6, ax_box_size(btrie.box));
+		ax_one_free(btrie.one);
+	}
 
 	{
-		btrie = make_test_btrie(base);
+		btrie = make_test_btrie();
+		ax_box_clear(key.box);
+		if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 2))
+			axut_term(r, "ax_seq_pushl");
+		ax_trie_prune(btrie.trie, key.seq);
+		axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
+		axut_assert_uint_equal(r, 6, ax_box_size(btrie.box));
+		ax_one_free(btrie.one);
+	}
+
+	{
+		btrie = make_test_btrie();
 		ax_box_clear(key.box);
 		if (ax_seq_pushl(key.seq, "i32x2", 1, 1))
 			axut_term(r, "ax_seq_pushl");
@@ -429,10 +390,11 @@ static void trie_prune(axut_runner *r)
 		if (ax_seq_pushl(key.seq, "i32x3", 1, 1, 2))
 			axut_term(r, "ax_seq_pushl");
 		axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
+		ax_one_free(btrie.one);
 	}
 
 	{
-		btrie = make_test_btrie(base);
+		btrie = make_test_btrie();
 		ax_box_clear(key.box);
 		if (ax_seq_pushl(key.seq, "i32x1", 1))
 			axut_term(r, "ax_seq_pushl");
@@ -446,39 +408,31 @@ static void trie_prune(axut_runner *r)
 		if (ax_seq_pushl(key.seq, "i32x3", 2, 1, 1))
 			axut_term(r, "ax_seq_pushl");
 		axut_assert(r, ax_trie_exist(btrie.trie, key.seq, NULL));
+		ax_one_free(btrie.one);
 	}
 
 	{
-		btrie = make_test_btrie(base);
+		btrie = make_test_btrie();
 		ax_box_clear(key.box);
 		ax_trie_prune(btrie.trie, key.seq);
 		axut_assert_uint_equal(r, 0, ax_box_size(btrie.box));
 
 		ax_box_clear(key.box);
 		axut_assert(r, !ax_trie_exist(btrie.trie, key.seq, NULL));
+		ax_one_free(btrie.one);
 	}
 
-	ax_base_leave(base, d);
+	ax_one_free(key.one);
 }
 
 static void trie_rekey(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
 	axut_assert(r, !"BUG");
 }
 
-static void clean(axut_runner *r)
+axut_suite *suite_for_btrie()
 {
-	ax_base *base = axut_runner_arg(r);
-	ax_base_destroy(base);
-}
-
-axut_suite *suite_for_btrie(ax_base *base)
-{
-	axut_suite *suite = axut_suite_create(ax_base_local(base), "btrie");
-
-	ax_base *base1 = ax_base_create();
-	axut_suite_set_arg(suite, base1);
+	axut_suite *suite = axut_suite_create("btrie");
 
 	axut_suite_add(suite, create, 0);
 	axut_suite_add(suite, trie_put, 1);
@@ -489,6 +443,5 @@ axut_suite *suite_for_btrie(ax_base *base)
 	axut_suite_add(suite, trie_rekey, 2);
 	axut_suite_add(suite, iterater, 2);
 
-	axut_suite_add(suite, clean, 255);
 	return suite;
 }

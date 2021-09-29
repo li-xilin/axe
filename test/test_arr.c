@@ -25,7 +25,6 @@
 #include "ax/iter.h"
 #include "ax/arr.h"
 #include "ax/algo.h"
-#include "ax/base.h"
 
 #include "axut.h"
 
@@ -37,17 +36,12 @@
 
 static void create(axut_runner *r)
 {
-	/*
-	ax_base* base = ax_base_create();
-
-	ax_base_destroy(base);
-	return;
 	ax_arr arr;
 	int array[32];
-	for (int i = 0; i < 32; i++) {
+	for (int i = 0; i < 32; i++)
 		array[i] = i;
-	}
-	ax_arr_r arr_r = ax_arr_make(&arr, base, ax_stuff_traits(AX_ST_I), array, 32);
+
+	ax_arr_r arr_r = ax_arr_make(&arr, ax_stuff_traits(AX_ST_I), array, 32);
 
 	axut_assert(r, ax_box_size(arr_r.box) == 32);
 
@@ -55,9 +49,6 @@ static void create(axut_runner *r)
 	ax_box_cforeach(arr_r.box, const int*, v) {
 		axut_assert(r, *v == j++);
 	}
-
-	ax_base_destroy(base);
-	*/
 }
 
 #if 0
@@ -174,10 +165,9 @@ static void seq_invert(axut_runner *r)
 }
 #endif
 
-axut_suite *suite_for_arr(ax_base *base)
+axut_suite *suite_for_arr()
 {
-	axut_suite* suite = axut_suite_create(ax_base_local(base), "arr");
-
+	axut_suite* suite = axut_suite_create("arr");
 	axut_suite_add(suite, create, 0);
 	//axut_suite_add(suite, iter, 0);
 	//axut_suite_add(suite, riter, 0);

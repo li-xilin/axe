@@ -23,7 +23,7 @@ include $(ROOT)/src/config.mak
 
 TARGET = $(LIB)/libax.a
 
-OBJS = stuff.o scope.o debug.o any.o vail.o vector.o base.o mem.o \
+OBJS = stuff.o debug.o any.o vail.o vector.o mem.o \
        one.o log.o algo.o oper.o seq.o iter.o list.o avl.o map.o \
        uintk.o buff.o string.o btrie.o trie.o stack.o queue.o arr.o \
        hmap.o dump.o

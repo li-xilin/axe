@@ -23,7 +23,7 @@ include $(ROOT)/src/config.mak
 
 TARGET = $(LIB)/libaxut.a
 
-OBJS = suite.o runner.o
+OBJS = suite.o runner.o case.o
 
 all: $(TARGET)
 $(TARGET): $(OBJS)

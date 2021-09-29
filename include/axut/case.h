@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2020 Li hsilin <lihsilyn@gmail.com>
+ * Copyright (c) 2021 Li hsilin <lihsilyn@gmail.com>
  *
- * Permission is hereby granted, free of charge, to one person obtaining a copy
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
@@ -20,35 +20,35 @@
  * THE SOFTWARE.
  */
 
-#ifndef AX_BASE_H
-#define AX_BASE_H
-#include <stddef.h>
+#ifndef AXUT_CASE_H
+#define AXUT_CASE_H
 
-#ifndef AX_BASE_DEFINED
-#define AX_BASE_DEFINED
-typedef struct ax_base_st ax_base;
+#include "../ax/stuff.h"
+
+#ifndef AXUT_CASE_DEFINED
+#define AXUT_CASE_DEFINED
+typedef struct axut_case_st axut_case;
 #endif
 
-#ifndef AX_SCOPE_DEFINED
-#define AX_SCOPE_DEFINED
-typedef struct ax_scope_st ax_scope;
+#ifndef AXUT_RUNNER_DEFINED
+#define AXUT_RUNNER_DEFINED
+typedef struct axut_runner_st axut_runner;
 #endif
 
-struct ax_base_func_set;
+typedef void (*axut_case_proc_f)(axut_runner *runner);
 
-ax_base *ax_base_create();
+struct axut_case_st
+{
+	axut_case_proc_f proc;
+	char *name;
+	char *log;
+	char *file;
+	unsigned int line;
+	int state;
+	const int priority;
+};
 
-void ax_base_destroy(ax_base* base);
-
-ax_scope *ax_base_global(ax_base *base);
-
-ax_scope *ax_base_local(ax_base *base);
-
-int ax_base_enter(ax_base *base);
-
-void ax_base_leave(ax_base *base, int depth);
-
-int ax_base_errno(ax_base *base);
+const ax_stuff_trait axut_case_tr;
 
 #endif
 

@@ -165,6 +165,7 @@ DECLARE_FLOAT_OPERSET_STRUCT(double)
 
 const ax_operset *ax_oper_for(int type)
 {
+	type = ax_stuff_fixed_type(type);
 	switch (type) {
 		case AX_ST_I8:  return &operset_int8_t;
 		case AX_ST_I16: return &operset_int16_t;

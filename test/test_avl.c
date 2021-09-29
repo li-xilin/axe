@@ -24,7 +24,6 @@
 
 #include "ax/avl.h"
 #include "ax/iter.h"
-#include "ax/base.h"
 
 #include <assert.h>
 #include <setjmp.h>
@@ -36,9 +35,8 @@
 
 static void insert(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
-	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
-			ax_stuff_traits(AX_ST_I32));
+	ax_avl_r avl_r = ax_class_new(avl, ax_tr("i32"), ax_tr("i32"));
+
 	for (int k = 0, v = 0; k < N; k++, v++) {
 		int32_t *ret = ax_map_put(avl_r.map, &k, &v);
 		axut_assert(r, *ret == v);
@@ -69,14 +67,13 @@ static void insert(axut_runner *r)
 	ax_iter_prev(&it_end);
 	axut_assert(r, ax_iter_dist(&it_begin, &it_end) == N-1);
 
-	
+	ax_one_free(avl_r.one);
 }
 
 static void complex(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
-	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
-			ax_stuff_traits(AX_ST_I32));
+
+	ax_avl_r avl_r = ax_class_new(avl, ax_tr("i32"), ax_tr("i32"));
 	for (int k = 0, v = 0; k < N; k++, v++) {
 		ax_map_put(avl_r.map, &k, &v);
 	}
@@ -99,14 +96,14 @@ static void complex(axut_runner *r)
 	for (int i = 0; i < N; i++) {
 		axut_assert(r, table[i] == 1);
 	}
+
+	ax_one_free(avl_r.one);
 }
 
 static void foreach(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
-	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
-			ax_stuff_traits(AX_ST_I32));
 
+	ax_avl_r avl_r = ax_class_new(avl, ax_tr("i32"), ax_tr("i32"));
 	int max = 50;
 	for (int32_t i = 0; i < max; i++) {
 		ax_map_put(avl_r.map, &i, &i);
@@ -126,14 +123,14 @@ static void foreach(axut_runner *r)
 		count++;
 	}
 	axut_assert_int_equal(r, 10, count);
+
+	ax_one_free(avl_r.one);
 }
 
 static void erase(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
-	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
-			ax_stuff_traits(AX_ST_I32));
 
+	ax_avl_r avl_r = ax_class_new(avl, ax_tr("i32"), ax_tr("i32"));
 	int count = 50;
 	for (int32_t i = 0; i < count; i++) {
 		ax_map_put(avl_r.map, &i, &i);
@@ -154,14 +151,13 @@ static void erase(axut_runner *r)
 	}
 	axut_assert_uint_equal(r, 0, ax_box_size(avl_r.box));
 
+	ax_one_free(avl_r.one);
 }
 
 static void duplicate(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
-	ax_avl_r avl = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
-			ax_stuff_traits(AX_ST_I32));
 
+	ax_avl_r avl = ax_class_new(avl, ax_tr("i32"), ax_tr("i32"));
 	uint32_t key, val = 0;
 
 	key = 1, val = 2;
@@ -191,33 +187,26 @@ static void duplicate(axut_runner *r)
 	axut_assert_uint_equal(r, 1, ax_box_size(avl.box));
 	ax_map_erase(avl.map, &key);
 	axut_assert_uint_equal(r, 1, ax_box_size(avl.box));
+
+	ax_one_free(avl.one);
 }
 
 static void clear(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
-	ax_avl_r avl_r = ax_avl_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
-			ax_stuff_traits(AX_ST_I32));
+
+	ax_avl_r avl_r = ax_class_new(avl, ax_tr("i32"), ax_tr("i32"));
 	for (int32_t i = 0; i < 50; i++) {
 		ax_map_put(avl_r.map, &i, &i);
 	}
 	ax_box_clear(avl_r.box);
 	axut_assert_uint_equal(r, ax_box_size(avl_r.box), 0);
+
+	ax_one_free(avl_r.one);
 }
 
-
-static void clean(axut_runner *r)
+axut_suite* suite_for_avl()
 {
-	ax_base *base = axut_runner_arg(r);
-	ax_base_destroy(base);
-}
-
-
-axut_suite* suite_for_avl(ax_base *base)
-{
-	axut_suite *suite = axut_suite_create(ax_base_local(base), "avl");
-
-	axut_suite_set_arg(suite, ax_base_create());
+	axut_suite *suite = axut_suite_create("avl");
 
 	axut_suite_add(suite, complex, 0);
 	axut_suite_add(suite, insert, 0);
@@ -225,7 +214,6 @@ axut_suite* suite_for_avl(ax_base *base)
 	axut_suite_add(suite, clear, 0);
 	axut_suite_add(suite, duplicate, 0);
 	axut_suite_add(suite, erase, 0);
-	axut_suite_add(suite, clean, 0xFF);
 
 	return suite;
 }

@@ -192,10 +192,12 @@ static int8_t make_format(const char *fmt, struct format_st *vfmt)
 				}
 				TYPE_ACCEPT(AX_ST_S);
 			default:
+				/*
 				if(isupper((int)fmt[pos])) {
 					term[term_pos].type = fmt[pos] - 'A' + AX_ST_PWL;
 					TYPE_ACCEPT(AX_ST_PTR);
 				}
+				*/
 				if(term_pos == 0 && term[term_pos].mut == 0) {
 					goto bad_char;
 				}

@@ -22,7 +22,6 @@
 
 #include "ax/pred.h"
 #include "ax/oper.h"
-#include "ax/base.h"
 
 #include "axut.h"
 
@@ -67,9 +66,9 @@ static void pred_binary(axut_runner *r)
 
 }
 
-axut_suite *suite_for_pred(ax_base *base)
+axut_suite *suite_for_pred()
 {
-	axut_suite *suite = axut_suite_create(ax_base_local(base), "pred");
+	axut_suite *suite = axut_suite_create("pred");
 
 	axut_suite_add(suite, pred_unary, 0);
 	axut_suite_add(suite, pred_binary, 0);

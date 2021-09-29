@@ -43,8 +43,6 @@ inline static AX_CLASS_CONSTRUCTOR(queue, const ax_stuff_trait *tr)
 	return __ax_queue_construct(tr);
 }
 
-ax_queue_r ax_queue_create(ax_scope *scope, const ax_stuff_trait *elem_tr);
-
 ax_fail ax_queue_push(ax_queue *queue, const void *);
 
 void ax_queue_pop(ax_queue *queue, const void *);

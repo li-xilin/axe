@@ -45,13 +45,7 @@
 typedef struct ax_one_st ax_one;
 #endif
 
-#ifndef AX_SCOPE_DEFINED
-#define AX_SCOPE_DEFINED
-typedef struct ax_scope_st ax_scope;
-#endif
-
 typedef void        (*ax_one_free_f) (ax_one *one);
-typedef ax_scope   *(*ax_one_scope_f)(const ax_one *one);
 
 typedef struct ax_one_trait_st
 {

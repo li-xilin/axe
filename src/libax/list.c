@@ -22,7 +22,6 @@
 
 #include <ax/list.h>
 #include <ax/def.h>
-#include <ax/scope.h>
 #include <ax/any.h>
 #include <ax/iter.h>
 #include <ax/debug.h>
@@ -325,7 +324,6 @@ static void one_free(ax_one *one)
 		return;
 
 	ax_list_r self_r = { .one = one };
-	ax_scope_detach(one);
 	box_clear(self_r.box);
 	free(one);
 }
@@ -815,24 +813,13 @@ ax_seq* __ax_list_construct(const ax_stuff_trait *elem_tr)
 	return self_r.seq;
 }
 
-ax_list_r ax_list_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
+ax_list_r ax_list_init(const char *fmt, ...)
 {
-	CHECK_PARAM_NULL(scope);
-	CHECK_PARAM_NULL(elem_tr);
-
-	ax_list_r self_r = { .seq = __ax_list_construct(elem_tr) };
-	ax_scope_attach(scope, self_r.one);
-	return self_r;
-}
-
-ax_list_r ax_list_init(ax_scope *scope, const char *fmt, ...)
-{
-	CHECK_PARAM_NULL(scope);
 	CHECK_PARAM_NULL(fmt);
 
 	va_list varg;
 	va_start(varg, fmt);
-	ax_list_r self_r = { .seq = ax_seq_vinit(scope, __ax_list_construct, fmt, varg) };
+	ax_list_r self_r = { .seq = ax_seq_vinit(__ax_list_construct, fmt, varg) };
 	va_end(varg);
 	return self_r;
 }

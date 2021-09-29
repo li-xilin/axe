@@ -45,15 +45,13 @@ inline static AX_CLASS_CONSTRUCTOR(vector, const ax_stuff_trait* trait)
 	return __ax_vector_construct(trait);
 }
 
-ax_vector_r ax_vector_create(ax_scope* scope, const ax_stuff_trait* elem_tr);
-
 void* ax_vector_buffer(ax_vector *vecor);
 
-inline static ax_vector_r ax_vector_init(ax_scope *scope, const char *fmt, ...)
+inline static ax_vector_r ax_vector_init(const char *fmt, ...)
 {
 	va_list varg;
 	va_start(varg, fmt);
-	ax_vector_r role = { .seq = ax_seq_vinit(scope, __ax_vector_construct, fmt, varg) };
+	ax_vector_r role = { .seq = ax_seq_vinit(__ax_vector_construct, fmt, varg) };
 	va_end(varg);
 	return role;
 }

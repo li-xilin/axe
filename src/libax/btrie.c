@@ -24,7 +24,6 @@
 #include <ax/avl.h>
 #include <ax/list.h>
 #include <ax/def.h>
-#include <ax/scope.h>
 #include <ax/any.h>
 #include <ax/iter.h>
 #include <ax/debug.h>
@@ -211,7 +210,6 @@ static void one_free(ax_one *one)
 		return;
 
 	ax_btrie_r self_r = { .one = one };
-	ax_scope_detach(one);
 	box_clear(self_r.box);
 	ax_avl_tr.box.any.one.free(self_r.btrie->root_r.one);
 	free(one);
@@ -799,14 +797,4 @@ fail:
 	return NULL;
 }
 
-ax_btrie_r ax_btrie_create(ax_scope *scope, const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)
-{
-	CHECK_PARAM_NULL(scope);
-	CHECK_PARAM_NULL(key_tr);
-	CHECK_PARAM_NULL(val_tr);
-
-	ax_btrie_r self_r = { .trie = __ax_btrie_construct(key_tr, val_tr) };
-	ax_scope_attach(scope, self_r.one);
-	return self_r;
-}
 

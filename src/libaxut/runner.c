@@ -20,15 +20,14 @@
  * THE SOFTWARE.
  */
 
-#include <axut/runner.h>
-#include <axut/suite.h>
+#include "axut/runner.h"
+#include "axut/suite.h"
 
 #include <ax/string.h>
 #include <ax/vector.h>
 #include <ax/mem.h>
 #include <ax/avl.h>
 #include <ax/seq.h>
-#include <ax/scope.h>
 
 #include <setjmp.h>
 #include <stdlib.h>
@@ -58,27 +57,18 @@ struct axut_runner_st
 	void *arg;
 };
 
-static void one_free(ax_one *one);
-
-static void one_free(ax_one *one)
+void axut_runner_destroy(axut_runner *r)
 {
-	if (!one)
+	if (!r)
 		return;
-
-	axut_runner_role runner_r = { .one = one };
-
-	ax_scope_detach(one);
-	ax_one_free(runner_r.runner->smap.one);
-	ax_one_free(runner_r.runner->output.one);
-	ax_one_free(runner_r.runner->suites.one);
-	free(runner_r.runner);
+	ax_one_free(r->smap.one);
+	ax_one_free(r->output.one);
+	ax_box_foreach(r->suites.box, axut_suite **, ptr) {
+		axut_suite_destroy(*ptr);
+	}
+	ax_one_free(r->suites.one);
+	free(r);
 }
-
-static const ax_one_trait one_trait = {
-	.name = "one.suite",
-	.free = one_free
-};
-
 
 static void default_output(const char *suite_name, axut_case *tc, ax_str *out)
 {
@@ -98,74 +88,51 @@ static void default_output(const char *suite_name, axut_case *tc, ax_str *out)
 	}
 }
 
-ax_one *__axut_runner_construct(axut_output_f output_cb)
+axut_runner *axut_runner_create(axut_output_f output_cb)
 {
 	axut_runner *runner = NULL;
-	ax_map *smap = NULL;
-	ax_seq *suites = NULL;
-	ax_str *output = NULL;
+	ax_avl_r smap = ax_null;
+	ax_vector_r suites = ax_null;
+	ax_string_r output = ax_null;
 
 	runner = malloc(sizeof(axut_runner));
 	if (!runner)
 		goto fail;
 
-	smap = __ax_avl_construct(ax_stuff_traits(AX_ST_PTR), ax_stuff_traits(AX_ST_PTR));
-	if (!smap)
+	smap = ax_class_new(avl, ax_tr("p"), ax_tr("p"));
+	if (!smap.one)
 		goto fail;
 
-	suites = __ax_vector_construct(ax_stuff_traits(AX_ST_PTR));
-	if (!suites)
+	suites = ax_class_new(vector, ax_tr("p"));
+	if (!suites.one)
 		goto fail;
 
-	output = __ax_string_construct();
-	if (!output)
+	output = ax_class_new0(string);
+	if (!output.one)
 		goto fail;
 
 	axut_runner runner_init = {
-		._one = {
-			.tr = &one_trait,
-			.env = {
-				.scope = { NULL },
-			},
-		},
 		.statistic = {
 			.pass = 0,
 			.fail = 0,
 			.term = 0
 		},
-		.smap = {
-			.map = smap 
-		},
-		.suites = {
-			.seq = suites
-		},
-		.output = { .str = output },
+		.smap = smap,
+		.suites = suites,
+		.output = output,
 		.output_cb = output_cb ,
 		.current = NULL,
 		.arg = NULL
-			
 	};
 	memcpy(runner, &runner_init, sizeof runner_init);
 
-	return axut_cast(runner, runner).one;
+	return runner;
 fail:
 	free(runner);
-	ax_one_free(ax_r(seq, suites).one);
-	ax_one_free(ax_r(map, smap).one);
-	ax_one_free(ax_r(str, output).one);
+	ax_one_free(suites.one);
+	ax_one_free(smap.one);
+	ax_one_free(output.one);
 	return NULL;
-}
-
-axut_runner *axut_runner_create(ax_scope *scope, axut_output_f ran_cb)
-{
-	CHECK_PARAM_NULL(scope);
-
-	axut_runner_role runner_r = { .one = __axut_runner_construct(ran_cb) };
-	if (runner_r.one == NULL)
-		return runner_r.runner;
-	ax_scope_attach(scope, runner_r.one);
-	return runner_r.runner;
-
 }
 
 const char *axut_runner_result(const axut_runner *r)

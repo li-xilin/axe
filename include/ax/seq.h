@@ -144,8 +144,8 @@ static inline const void *ax_seq_clast(const ax_seq *seq)
 	return seq->tr->last(seq);
 }
 
-ax_seq *ax_seq_init(ax_scope *scope, ax_seq_construct_f *builder, const char *fmt, ...);
-ax_seq *ax_seq_vinit(ax_scope *scope, ax_seq_construct_f *builder, const char *fmt, va_list varg); 
+ax_seq *ax_seq_init(ax_seq_construct_f *builder, const char *fmt, ...);
+ax_seq *ax_seq_vinit(ax_seq_construct_f *builder, const char *fmt, va_list varg); 
 
 
 ax_fail ax_seq_vpushl(ax_seq *seq, const char *fmt, va_list varg);

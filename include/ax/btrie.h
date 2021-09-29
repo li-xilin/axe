@@ -45,8 +45,6 @@ inline static AX_CLASS_CONSTRUCTOR(btrie, const ax_stuff_trait* key_tr, const ax
 	return __ax_btrie_construct(key_tr, val_tr);
 }
 
-ax_btrie_r ax_btrie_create(ax_scope* scope, const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr);
-
 void ax_btrie_dump(ax_btrie *btrie);
 
 #endif

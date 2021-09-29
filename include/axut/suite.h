@@ -23,7 +23,7 @@
 #ifndef AXUT_SUITE_H
 #define AXUT_SUITE_H
 
-#include "def.h"
+#include "case.h"
 #include "../ax/str.h"
 #include "../ax/box.h"
 
@@ -42,19 +42,6 @@ typedef struct axut_runner_st axut_runner;
 typedef struct axut_suite_st axut_suite;
 #endif
 
-#ifndef AXUT_CASE_DEFINED
-#define AXUT_CASE_DEFINED
-typedef struct axut_case_st axut_case;
-#endif
-
-typedef void (*axut_case_proc_f)(axut_runner *runner);
-
-typedef union
-{
-	axut_suite *suite;
-	ax_one *one;
-} axut_suite_role;
-
 typedef enum axut_case_state_en
 {
 	AXUT_CS_READY = 0,
@@ -63,26 +50,15 @@ typedef enum axut_case_state_en
 	AXUT_CS_TERM,
 } axut_case_state;
 
-struct axut_case_st
-{
-	axut_case_proc_f proc;
-	char *name;
-	char *log;
-	char *file;
-	unsigned int line;
-	int state;
-	const int priority;
-};
+axut_suite *axut_suite_create(const char* name);
 
-ax_one *__axut_suite_construct(const char* name);
-
-axut_suite *axut_suite_create(ax_scope *scope, const char* name);
+void axut_suite_destroy(axut_suite *s);
 
 void axut_suite_set_arg(axut_suite *s, void *arg);
 
 void *axut_suite_arg(const axut_suite *s);
 
-ax_fail axut_suite_add_case(axut_suite *suite, const char *name, axut_case_proc_f proc, int priority);
+ax_fail axut_suite_add_case(axut_suite *s, const char *name, axut_case_proc_f proc, int priority);
 
 const ax_seq *axut_suite_all_case(const axut_suite *suite);
 

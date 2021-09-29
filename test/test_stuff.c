@@ -22,7 +22,6 @@
 
 #include "assist.h"
 
-#include "ax/base.h"
 #include "ax/class.h"
 #include "ax/stuff.h"
 
@@ -64,9 +63,9 @@ static void stoi(axut_runner *r)
 	}
 }
 
-axut_suite *suite_for_stuff(ax_base *base)
+axut_suite *suite_for_stuff()
 {
-	axut_suite* suite = axut_suite_create(ax_base_local(base), "stuff");
+	axut_suite* suite = axut_suite_create("stuff");
 	axut_suite_add(suite, stoi, 0);
 	return suite;
 }

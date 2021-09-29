@@ -22,7 +22,6 @@
 
 #include "assist.h"
 
-#include "ax/base.h"
 #include "ax/mem.h"
 #include "axut.h"
 
@@ -88,9 +87,9 @@ static void strrepl(axut_runner *r)
 
 }
 
-axut_suite *suite_for_mem(ax_base *base)
+axut_suite *suite_for_mem()
 {
-	axut_suite* suite = axut_suite_create(ax_base_local(base), "mem");
+	axut_suite* suite = axut_suite_create("mem");
 	axut_suite_add(suite, strsplit, 0);
 	axut_suite_add(suite, strrepl, 0);
 	return suite;

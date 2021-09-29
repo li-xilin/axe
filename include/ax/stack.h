@@ -43,6 +43,4 @@ inline static AX_CLASS_CONSTRUCTOR(stack, const ax_stuff_trait *tr)
 	return __ax_stack_construct(tr);
 }
 
-ax_stack_r ax_stack_create(ax_scope *scope, const ax_stuff_trait *elem_tr);
-
 #endif

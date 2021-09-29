@@ -45,8 +45,6 @@ inline static AX_CLASS_CONSTRUCTOR(list, const ax_stuff_trait* trait)
 	return __ax_list_construct(trait);
 }
 
-ax_list_r ax_list_create(ax_scope *scope, const ax_stuff_trait *elem_tr);
-
-ax_list_r ax_list_init(ax_scope *scope, const char *fmt, ...);
+ax_list_r ax_list_init(const char *fmt, ...);
 
 #endif

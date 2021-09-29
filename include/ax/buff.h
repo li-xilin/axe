@@ -49,7 +49,9 @@ extern const ax_any_trait ax_buff_tr;
 
 ax_any *__ax_buff_construct();
 
-ax_buff_r ax_buff_create(ax_scope *scope);
+inline static AX_CLASS_CONSTRUCTOR0(buff) {
+	return __ax_buff_construct();
+}
 
 ax_fail ax_buff_set_max(ax_buff *buff, size_t max);
 

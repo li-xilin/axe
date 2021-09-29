@@ -23,7 +23,6 @@
 #include <ax/hmap.h>
 #include <ax/map.h>
 #include <ax/iter.h>
-#include <ax/scope.h>
 #include <ax/debug.h>
 #include <ax/log.h>
 
@@ -531,7 +530,6 @@ static void one_free(ax_one *one)
 		return;
 
 	ax_hmap_r hmap_r= { .one = one };
-	ax_scope_detach(hmap_r.one);
 	box_clear(hmap_r.box);
 	free(hmap_r.hmap->bucket_tab);
 	free(hmap_r.hmap);
@@ -707,19 +705,6 @@ ax_map *__ax_hmap_construct(const ax_stuff_trait *key_tr, const ax_stuff_trait *
 	hmap_init.bucket_tab->node_list = NULL;
 	memcpy(hmap, &hmap_init, sizeof hmap_init);
 	return (ax_map *) hmap;
-}
-
-ax_hmap_r ax_hmap_create(ax_scope *scope, const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)
-{
-	CHECK_PARAM_NULL(scope);
-	CHECK_PARAM_NULL(key_tr);
-	CHECK_PARAM_NULL(val_tr);
-
-	ax_hmap_r hmap_r =  { .map = __ax_hmap_construct(key_tr, val_tr) };
-	if (!hmap_r.one)
-		return hmap_r;
-	ax_scope_attach(scope, hmap_r.one);
-	return hmap_r;
 }
 
 void dump_hmap(ax_hmap *hmap)

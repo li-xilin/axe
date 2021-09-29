@@ -21,7 +21,6 @@
  */
 
 #include "ax/uintk.h"
-#include "ax/base.h"
 #include "ax/stuff.h"
 
 #include "axut.h"
@@ -67,9 +66,9 @@ static void test_factorial(axut_runner *r)
 
 
 }
-axut_suite *suite_for_uintk(ax_base *base)
+axut_suite *suite_for_uintk()
 {
-	axut_suite* suite = axut_suite_create(ax_base_local(base), "uintk");
+	axut_suite* suite = axut_suite_create("uintk");
 
 	axut_suite_add(suite, test_factorial, 0);
 

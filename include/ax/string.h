@@ -43,6 +43,4 @@ inline static AX_CLASS_CONSTRUCTOR0(string)
 	return __ax_string_construct();
 }
 
-ax_string_r ax_string_create(ax_scope *scope);
-
 #endif

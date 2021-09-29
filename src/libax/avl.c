@@ -25,7 +25,6 @@
 #include <ax/avl.h>
 #include <ax/map.h>
 #include <ax/iter.h>
-#include <ax/scope.h>
 #include <ax/debug.h>
 #include <ax/mem.h>
 
@@ -612,7 +611,6 @@ static void one_free(ax_one* one)
 	if (!one)
 		return;
 	ax_avl_r avl_r = { .one = one };
-	ax_scope_detach(one);
 	box_clear(avl_r.box);
 	free(one);
 }
@@ -828,15 +826,3 @@ ax_map *__ax_avl_construct(const ax_stuff_trait* key_tr, const ax_stuff_trait* v
 	return &avl->map;
 }
 
-ax_avl_r ax_avl_create(ax_scope *scope, const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)
-{
-	CHECK_PARAM_NULL(scope);
-	CHECK_PARAM_NULL(key_tr);
-	CHECK_PARAM_NULL(val_tr);
-
-	ax_avl_r avl_r =  { .map = __ax_avl_construct(key_tr, val_tr) };
-	if (avl_r.one == NULL)
-		return avl_r;
-	ax_scope_attach(scope, avl_r.one);
-	return avl_r;
-}

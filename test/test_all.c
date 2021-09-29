@@ -21,55 +21,51 @@
  */
 
 #include <axut.h>
-#include <ax/base.h>
 #include <stdio.h>
 
-extern axut_suite *suite_for_hmap(ax_base *base);
-extern axut_suite *suite_for_vector(ax_base *base);
-extern axut_suite *suite_for_string(ax_base *base);
-extern axut_suite *suite_for_scope(ax_base *base);
-extern axut_suite *suite_for_algo(ax_base *base);
-extern axut_suite *suite_for_vail(ax_base *base);
-extern axut_suite *suite_for_avl(ax_base *base);
-extern axut_suite *suite_for_list(ax_base *base);
-extern axut_suite *suite_for_pred(ax_base *base);
-extern axut_suite *suite_for_uintk(ax_base *base);
-extern axut_suite *suite_for_btrie(ax_base *base);
-extern axut_suite *suite_for_seq(ax_base *base);
-extern axut_suite *suite_for_stack(ax_base *base);
-extern axut_suite *suite_for_queue(ax_base *base);
-extern axut_suite *suite_for_arr(ax_base *base);
-extern axut_suite *suite_for_mem(ax_base *base);
-extern axut_suite *suite_for_class(ax_base *base);
-extern axut_suite *suite_for_stuff(ax_base *base);
+extern axut_suite *suite_for_hmap();
+extern axut_suite *suite_for_vector();
+extern axut_suite *suite_for_string();
+extern axut_suite *suite_for_algo();
+extern axut_suite *suite_for_vail();
+extern axut_suite *suite_for_avl();
+extern axut_suite *suite_for_list();
+extern axut_suite *suite_for_pred();
+extern axut_suite *suite_for_uintk();
+extern axut_suite *suite_for_btrie();
+extern axut_suite *suite_for_seq();
+extern axut_suite *suite_for_stack();
+extern axut_suite *suite_for_queue();
+extern axut_suite *suite_for_arr();
+extern axut_suite *suite_for_mem();
+extern axut_suite *suite_for_class();
+extern axut_suite *suite_for_stuff();
 
 int main()
 {
-	ax_base *base = ax_base_create();
+	axut_runner *r = axut_runner_create(NULL);
 
-	axut_runner *r = axut_runner_create(ax_base_local(base), NULL);
-	axut_runner_add(r, suite_for_seq(base));
-	axut_runner_add(r, suite_for_hmap(base));
-	axut_runner_add(r, suite_for_vector(base));
-	axut_runner_add(r, suite_for_string(base));
-	axut_runner_add(r, suite_for_scope(base));
-	axut_runner_add(r, suite_for_algo(base));
-	axut_runner_add(r, suite_for_avl(base));
-	axut_runner_add(r, suite_for_list(base));
-	axut_runner_add(r, suite_for_pred(base));
-	axut_runner_add(r, suite_for_uintk(base));
-	axut_runner_add(r, suite_for_btrie(base));
-	axut_runner_add(r, suite_for_stack(base));
-	axut_runner_add(r, suite_for_queue(base));
-	axut_runner_add(r, suite_for_arr(base));
-	axut_runner_add(r, suite_for_mem(base));
-	axut_runner_add(r, suite_for_class(base));
-	axut_runner_add(r, suite_for_stuff(base));
+	axut_runner_add(r, suite_for_seq());
+	axut_runner_add(r, suite_for_hmap());
+	axut_runner_add(r, suite_for_vector());
+	axut_runner_add(r, suite_for_string());
+	axut_runner_add(r, suite_for_algo());
+	axut_runner_add(r, suite_for_avl());
+	axut_runner_add(r, suite_for_list());
+	axut_runner_add(r, suite_for_pred());
+	axut_runner_add(r, suite_for_uintk());
+	axut_runner_add(r, suite_for_btrie());
+	axut_runner_add(r, suite_for_stack());
+	axut_runner_add(r, suite_for_queue());
+	axut_runner_add(r, suite_for_arr());
+	axut_runner_add(r, suite_for_mem());
+	axut_runner_add(r, suite_for_class());
+	axut_runner_add(r, suite_for_stuff());
 
 	axut_runner_run(r);
-
 	fputs(axut_runner_result(r), stdout);
 
-	ax_base_destroy(base);
+	axut_runner_destroy(r);
+	return 0;
 }
 

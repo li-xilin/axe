@@ -633,42 +633,38 @@ inline static int uint_fixed_type(int bits)
 	}
 }
 
+int ax_stuff_fixed_type(int type)
+{
+	switch(type) {
+		case AX_ST_C:
+		case AX_ST_UC:
+			type = uint_fixed_type(AX_IMAX_BITS(UCHAR_MAX));
+			break;
+		case AX_ST_H:
+		case AX_ST_UH:
+			type = uint_fixed_type(AX_IMAX_BITS(USHRT_MAX));
+			break;
+		case AX_ST_I:
+		case AX_ST_U:
+			type = uint_fixed_type(AX_IMAX_BITS(UINT_MAX));
+			break;
+		case AX_ST_L:
+		case AX_ST_UL:
+			type = uint_fixed_type(AX_IMAX_BITS(ULONG_MAX));
+			break;
+		case AX_ST_LL:
+		case AX_ST_ULL:
+			type = uint_fixed_type(AX_IMAX_BITS(ULLONG_MAX));
+			break;
+	}
+	return type;
+}
+
 /* -- Define functions that get trait structure pointer -- */
 const ax_stuff_trait* ax_stuff_traits(int type)
 {
 	CHECK_PARAM_VALIDITY(type, type >= 0);
-	switch(type) {
-		case AX_ST_C:
-			type = int_fixed_type(AX_IMAX_BITS((unsigned char)-1));
-			break;
-		case AX_ST_H:
-			type = int_fixed_type(AX_IMAX_BITS((unsigned short int)-1));
-			break;
-		case AX_ST_I:
-			type = int_fixed_type(AX_IMAX_BITS((unsigned int)-1));
-			break;
-		case AX_ST_L:
-			type = int_fixed_type(AX_IMAX_BITS((unsigned long int)-1));
-			break;
-		case AX_ST_LL:
-			type = int_fixed_type(AX_IMAX_BITS((unsigned long long int)-1));
-			break;
-		case AX_ST_UC:
-			type = uint_fixed_type(AX_IMAX_BITS((unsigned char)-1));
-			break;
-		case AX_ST_UH:
-			type = uint_fixed_type(AX_IMAX_BITS((unsigned short int)-1));
-			break;
-		case AX_ST_U:
-			type = uint_fixed_type(AX_IMAX_BITS((unsigned int)-1));
-			break;
-		case AX_ST_UL:
-			type = uint_fixed_type(AX_IMAX_BITS((unsigned long int)-1));
-			break;
-		case AX_ST_ULL:
-			type = uint_fixed_type(AX_IMAX_BITS((unsigned long long int)-1));
-			break;
-	}
+	type = ax_stuff_fixed_type(type);
 
 	switch(type) {
 		case AX_ST_NIL:  return &trait_nil;

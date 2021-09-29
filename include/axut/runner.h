@@ -23,7 +23,7 @@
 #ifndef AXUT_RUNNER_H
 #define AXUT_RUNNER_H
 
-#include "def.h"
+#include "case.h"
 
 #include "../ax/def.h"
 #include "../ax/str.h"
@@ -47,21 +47,9 @@ typedef struct axut_case_st axut_case;
 
 typedef void (*axut_output_f)(const char* suite_name, axut_case *tc, ax_str *out);
 
-typedef union
-{
-	const axut_runner *runner;
-	const ax_one *one;
-} axut_runner_crol;
+axut_runner *axut_runner_create(axut_output_f ran_cb);
 
-typedef union
-{
-	axut_runner *runner;
-	ax_one *one;
-} axut_runner_role;
-
-ax_one *__axut_runner_construct(axut_output_f ran_cb);
-
-axut_runner *axut_runner_create(ax_scope *scope, axut_output_f ran_cb);
+void axut_runner_destroy(axut_runner *r);
 
 const char *axut_runner_result(const axut_runner *r);
 
@@ -100,7 +88,6 @@ void __axut_term(axut_runner *r, const char *file, int line, const char *fmt, ..
 #define axut_assert_int_equal(r, ex, ac) __axut_assert_int_equal((r), ex, ac, __FILE__, __LINE__)
 
 #define axut_assert_uint_equal(r, ex, ac) __axut_assert_uint_equal((r), ex, ac, __FILE__, __LINE__)
-
 
 #endif
 

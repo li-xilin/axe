@@ -25,7 +25,6 @@
 #include <ax/buff.h>
 #include <ax/str.h>
 #include <ax/iter.h>
-#include <ax/scope.h>
 #include <ax/mem.h>
 #include <ax/log.h>
 #include <ax/dump.h>
@@ -254,7 +253,6 @@ static void one_free(ax_one* one)
 		return;
 
 	ax_string *self = (ax_string *) one;
-	ax_scope_detach(one);
 	ax_one_free(self->buff_r.one);
 	free(one);
 }
@@ -783,11 +781,3 @@ fail:
 	return NULL;
 }
 
-ax_string_r ax_string_create(ax_scope *scope)
-{
-	ax_string_r string_r = { .str = __ax_string_construct() };
-	if (string_r.one == NULL)
-		return string_r;
-	ax_scope_attach(scope, string_r.one);
-	return string_r;
-}

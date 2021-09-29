@@ -23,7 +23,6 @@
 #include <ax/queue.h>
 #include <ax/list.h>
 #include <ax/tube.h>
-#include <ax/scope.h>
 #include <ax/any.h>
 #include <ax/mem.h>
 #include <ax/dump.h>
@@ -122,7 +121,6 @@ static void one_free(ax_one *one)
 		return;
 
 	ax_queue_r self_r = { .one = one };
-	ax_scope_detach(one);
 	ax_list_tr.box.any.one.free(self_r.queue->list.one);
 	free(one);
 }
@@ -155,17 +153,5 @@ fail:
 	ax_one_free(ax_r(seq, list).one);
 	free(self);
 	return NULL;
-}
-
-ax_queue_r ax_queue_create(ax_scope *scope, const ax_stuff_trait *elem_tr)
-{
-	CHECK_PARAM_NULL(scope);
-	CHECK_PARAM_NULL(elem_tr);
-
-	ax_queue_r self_r = { .tube = __ax_queue_construct(elem_tr) };
-	if (!self_r.one)
-		return self_r;
-	ax_scope_attach(scope, self_r.one);
-	return self_r;
 }
 

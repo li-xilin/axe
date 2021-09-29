@@ -21,11 +21,8 @@
  */
 
 #include <axut.h>
-
 #include <ax/hmap.h>
 #include <ax/hmap.h>
-#include <ax/base.h>
-
 #include <assert.h>
 #include <setjmp.h>
 #include <stdlib.h>
@@ -36,9 +33,8 @@
 
 static void erase(axut_runner* r)
 {
-	ax_base* base = axut_runner_arg(r);
-	ax_hmap_r hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
-			ax_stuff_traits(AX_ST_I32));
+	ax_hmap_r hmap_r = ax_class_new(hmap, ax_tr("i"), ax_tr("i"));
+
 	for (int k = 0, v = 0; k < N; k++, v++) {
 		int32_t *ret = ax_map_put(hmap_r.map, &k, &v);
 		axut_assert(r, *ret == v);
@@ -62,13 +58,13 @@ static void erase(axut_runner* r)
 	for (int i = 0; i < N; i++) {
 		axut_assert(r, table[i] == 1);
 	}
+	ax_one_free(hmap_r.one);
 }
 
 static void iter_erase(axut_runner* r)
 {
-	ax_base* base = axut_runner_arg(r);
-	ax_hmap_r hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_I),
-			ax_stuff_traits(AX_ST_I));
+
+	ax_hmap_r hmap_r = ax_class_new(hmap, ax_tr("i"), ax_tr("i"));
 	for (int k = 0, v = 0; k < N; k++, v++) {
 		int32_t *ret = ax_map_put(hmap_r.map, &k, &v);
 		axut_assert(r, *ret == v);
@@ -92,15 +88,14 @@ static void iter_erase(axut_runner* r)
 	for (int i = 0; i < N; i++) {
 		axut_assert(r, table[i] == 1);
 	}
+	ax_one_free(hmap_r.one);
 }
 
 static void map_chkey(axut_runner* r)
 {
-	ax_base* base = axut_runner_arg(r);
-	ax_hmap_r hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_I),
-			ax_stuff_traits(AX_ST_I));
-	int k, v;
 
+	ax_hmap_r hmap_r = ax_class_new(hmap, ax_tr("i"), ax_tr("i"));
+	int k, v;
 	k = 1, v = 2;
 	if (!ax_map_put(hmap_r.map, &k, &v))
 		axut_term(r, "ax_map_put");
@@ -117,13 +112,13 @@ static void map_chkey(axut_runner* r)
 	axut_assert_int_equal(r, new, *kp);
 
 	axut_assert_int_equal(r, 2, *(int *)ax_map_get(hmap_r.map, &new));
+	ax_one_free(hmap_r.one);
 }
 
 static void duplicate(axut_runner *r)
 {
-	ax_base *base = axut_runner_arg(r);
-	ax_hmap_r hmap = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_I32),
-			ax_stuff_traits(AX_ST_I32));
+
+	ax_hmap_r hmap = ax_class_new(hmap, ax_tr("i"), ax_tr("i"));
 
 	uint32_t key, val = 0;
 
@@ -154,13 +149,14 @@ static void duplicate(axut_runner *r)
 	axut_assert_uint_equal(r, 1, ax_box_size(hmap.box));
 	ax_map_erase(hmap.map, &key);
 	axut_assert_uint_equal(r, 1, ax_box_size(hmap.box));
+
+	ax_one_free(hmap.one);
 }
 
 static void iterate(axut_runner *r)
 {
-	ax_base* base = axut_runner_arg(r);
-	ax_hmap_r hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_S),
-			ax_stuff_traits(AX_ST_I32));
+
+	ax_hmap_r hmap_r = ax_class_new(hmap, ax_tr("s"), ax_tr("i32"));
 	const int count = 100;
 	for (int32_t i = 0; i < count; i++) {
 		char key[4];
@@ -178,13 +174,13 @@ static void iterate(axut_runner *r)
 	}
 	for (int i = 0; i < count; i++) 
 		axut_assert(r, check_table[i] == 0);
+
+	ax_one_free(hmap_r.one);
 }
 
 static void rehash(axut_runner* r)
 {
-	ax_base* base = axut_runner_arg(r);
-	ax_hmap_r hmap_r = ax_hmap_create(ax_base_local(base), ax_stuff_traits(AX_ST_S),
-			ax_stuff_traits(AX_ST_I32));
+	ax_hmap_r hmap_r = ax_class_new(hmap, ax_tr("s"), ax_tr("i32"));
 	const int count = 100;
 	for (int32_t i = 0; i < count; i++) {
 		char key[4];
@@ -209,21 +205,13 @@ static void rehash(axut_runner* r)
 
 	ax_hmap_set_threshold(hmap_r.hmap, 100);
 	axut_assert_uint_equal(r, 100, ax_hmap_threshold(hmap_r.hmap));
+
+	ax_one_free(hmap_r.one);
 }
 
-static void clean(axut_runner *r)
+axut_suite *suite_for_hmap()
 {
-	ax_base_destroy(axut_runner_arg(r));
-}
-
-axut_suite *suite_for_hmap(ax_base *base)
-{
-	axut_suite *suite = axut_suite_create(ax_base_local(base), "hmap");
-
-	ax_base *base1 = ax_base_create();
-	if (!base1)
-		return NULL;
-	axut_suite_set_arg(suite, base1);
+	axut_suite *suite = axut_suite_create("hmap");
 
 	axut_suite_add(suite, iterate, 0);
 	axut_suite_add(suite, erase, 1);
@@ -231,6 +219,6 @@ axut_suite *suite_for_hmap(ax_base *base)
 	axut_suite_add(suite, map_chkey, 1);
 	axut_suite_add(suite, rehash, 1);
 	axut_suite_add(suite, duplicate, 1);
-	axut_suite_add(suite, clean, 0xFF);
+
 	return suite;
 }

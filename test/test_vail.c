@@ -21,11 +21,8 @@
  */
 
 #include "ax/vail.h"
-#include "ax/base.h"
 #include "ax/stuff.h"
-
 #include "axut.h"
-
 #include <assert.h>
 #include <setjmp.h>
 #include <stdlib.h>
@@ -128,9 +125,9 @@ static void test_vail(axut_runner *r)
 	ax_vail_destroy(vail);
 
 }
-axut_suite *suite_for_vail(ax_base *base)
+axut_suite *suite_for_vail()
 {
-	axut_suite* suite = axut_suite_create(ax_base_local(base), "vail");
+	axut_suite* suite = axut_suite_create("vail");
 
 	axut_suite_add(suite, test_vail, 0);
 

@@ -20,17 +20,13 @@
  * THE SOFTWARE.
  */
 
-
 #include <ax/seq.h>
 #include <ax/vail.h>
-#include <ax/scope.h>
 #include <ax/dump.h>
-
 #include "check.h"
-
 #include <errno.h>
 
-ax_seq *ax_seq_vinit(ax_scope *scope, ax_seq_construct_f *builder, const char *fmt, va_list varg) 
+ax_seq *ax_seq_vinit(ax_seq_construct_f *builder, const char *fmt, va_list varg) 
 {
 	CHECK_PARAM_NULL(builder);
 	CHECK_PARAM_NULL(fmt);
@@ -73,7 +69,6 @@ ax_seq *ax_seq_vinit(ax_scope *scope, ax_seq_construct_f *builder, const char *f
 
 	}
 	ax_vail_destroy(vail);
-	ax_scope_attach(scope, (ax_one *)seq);
 	return seq;
 fail:
 	ax_one_free(ax_r(seq, seq).one);
@@ -81,11 +76,11 @@ fail:
 	return NULL;
 }
 
-ax_seq *ax_seq_init(ax_scope *scope, ax_seq_construct_f *builder, const char *fmt, ...) 
+ax_seq *ax_seq_init(ax_seq_construct_f *builder, const char *fmt, ...) 
 {
 	va_list varg;
 	va_start(varg, fmt);
-	ax_seq *seq = ax_seq_vinit(scope, builder, fmt, varg);
+	ax_seq *seq = ax_seq_vinit(builder, fmt, varg);
 	va_end(varg);
 	return seq;
 }

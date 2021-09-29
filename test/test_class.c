@@ -21,8 +21,6 @@
  */
 
 #include "assist.h"
-
-#include "ax/base.h"
 #include "ax/class.h"
 #include "ax/list.h"
 #include "ax/vector.h"
@@ -66,11 +64,19 @@ static void new(axut_runner *r)
 	axut_assert(r, obj7.one != NULL);
 	axut_assert(r, obj7.trie->env.key_tr == ax_stuff_traits(AX_ST_F));
 	axut_assert(r, obj7.trie->env.box.elem_tr == ax_stuff_traits(AX_ST_WS));
+
+	ax_one_free(obj1.one);
+	ax_one_free(obj2.one);
+	ax_one_free(obj3.one);
+	ax_one_free(obj4.one);
+	ax_one_free(obj5.one);
+	ax_one_free(obj6.one);
+	ax_one_free(obj7.one);
 }
 
-axut_suite *suite_for_class(ax_base *base)
+axut_suite *suite_for_class()
 {
-	axut_suite* suite = axut_suite_create(ax_base_local(base), "class");
+	axut_suite* suite = axut_suite_create("class");
 	axut_suite_add(suite, new, 0);
 	return suite;
 }

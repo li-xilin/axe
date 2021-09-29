@@ -72,7 +72,5 @@ ax_fail __ax_any_print(const ax_any *any, const char *file, int line);
 
 extern const ax_stuff_trait ax_any_tr;
 
-ax_any *ax_any_seal(ax_scope *scope, ax_any *any);
-
 #endif
 

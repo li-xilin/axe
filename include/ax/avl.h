@@ -50,10 +50,5 @@ inline static AX_CLASS_CONSTRUCTOR(avl, const ax_stuff_trait* key_tr, const ax_s
 	return __ax_avl_construct(key_tr, val_tr);
 }
 
-ax_avl_r ax_avl_create(ax_scope *scope,
-		const ax_stuff_trait *key_tr,
-		const ax_stuff_trait *val_tr
-);
-
 #endif
 

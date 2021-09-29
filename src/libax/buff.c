@@ -22,7 +22,6 @@
 
 #include <ax/buff.h>
 #include <ax/any.h>
-#include <ax/scope.h>
 #include <ax/def.h>
 
 #include <stdlib.h>
@@ -51,7 +50,6 @@ static void one_free(ax_one *one)
 {
 	if (!one)
 		return;
-	ax_scope_detach(one);
 	free(((ax_buff *)one)->buf);
 	free(one);
 }
@@ -137,19 +135,6 @@ fail:
 	free(buff);
 	return NULL;
 }
-
-ax_buff_r ax_buff_create(ax_scope *scope)
-{
-	CHECK_PARAM_NULL(scope);
-
-	ax_any *any = __ax_buff_construct();
-	ax_buff_r buff_r = { .any = any };
-	if (!any)
-		return buff_r;
-	ax_scope_attach(scope, buff_r.one);
-	return buff_r;
-}
-
 
 ax_fail ax_buff_set_max(ax_buff *buff, size_t max)
 {

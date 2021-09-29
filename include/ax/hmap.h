@@ -48,12 +48,6 @@ inline static AX_CLASS_CONSTRUCTOR(hmap, const ax_stuff_trait* key_tr, const ax_
 	return __ax_hmap_construct(key_tr, val_tr);
 }
 
-ax_hmap_r ax_hmap_create(
-		ax_scope *scope,
-		const ax_stuff_trait *key_tr,
-		const ax_stuff_trait *val_tr
-);
-
 ax_fail ax_hmap_set_threshold(ax_hmap *hmap, size_t threshold);
 
 size_t ax_hmap_threshold(ax_hmap *hmap);
