@@ -1,4 +1,4 @@
-#include <ax/vector.h>
+#include "ax/vector.h"
 
 int main()
 {
@@ -7,7 +7,7 @@ int main()
 	int *arrap = ax_arraya(int, 8, 4, 7, 9, 1, 6, 5, 4, 2, 1, 1);
 	ax_seq_push_arraya(v.seq, arrap);
 
-	ax_iter cur = ax_box_begin(v.box), end = ax_box_end(v.box);
+	ax_iter end = ax_box_end(v.box);
 
 	ax_box_iterate(v.box, i) {
 		ax_iter j = i;

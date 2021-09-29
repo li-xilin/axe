@@ -1,5 +1,5 @@
-#include <ax/string.h>
-#include <ax/algo.h>
+#include "ax/string.h"
+#include "ax/algo.h"
 #include <ctype.h>
 
 void to_upper(void *out, const void *in, void *arg)

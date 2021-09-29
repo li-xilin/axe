@@ -1,11 +1,11 @@
 LDFLAGS = -L../lib -lax
  CFLAGS = -Wall -std=c99 -O2 -I../include
-   OBJS = $(wildcard *.c)
-TARGETS = $(OBJS:.c=)
+   SRCS = $(wildcard *.c)
+TARGETS = $(SRCS:.c=)
 
 all: $(TARGETS)
 %:%.c
-	$(CC) -o $@ $^ -lax
+	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 clean:
 	$(RM) $(TARGETS)
 
