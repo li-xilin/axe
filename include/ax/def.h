@@ -24,6 +24,8 @@
 #define AX_DEF_H
 
 #include "narg.h"
+#include "arraya.h"
+
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -69,33 +71,6 @@ typedef uint_fast32_t ax_fast_uint;
 #define ax_stringy(_x) __ax_stringy(_x)
 
 #define ax_ptrof(_t, _v) ((_t [1]) { _v })
-
-#define __ax_sizeof_arr(_t, ...) \
-	sizeof((_t[]){ __VA_ARGS__ })
-
-#define __AX_ARRAYA_MAGIC 0xCCCCCCCCCCCCCCCC
-
-#define ax_arraya(_t, ...) \
-	(_t *) ( \
-	  ( \
-	    ( \
-	      struct { \
-	        uint64_t _mag, _len; \
-	        _t _arr[__ax_sizeof_arr(_t, __VA_ARGS__) / sizeof(_t)]; \
-	      } [1] \
-	    ) \
-	    { \
-	      { \
-	        ._mag = __AX_ARRAYA_MAGIC, \
-	        ._len = __ax_sizeof_arr(_t, __VA_ARGS__), \
-		._arr = { __VA_ARGS__}, \
-	      } \
-	    } \
-	  ) ->_arr \
-	)
-
-#define ax_arraya_size(_p) \
-	(size_t)(*((uint64_t *)(_p) - 1))
 
 #endif
 
