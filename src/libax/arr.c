@@ -347,15 +347,25 @@ static void *seq_first(const ax_seq *seq)
 	return (ax_byte *)self_r.arr->arr;
 }
 
+static void one_free(ax_one *one)
+{
+}
+
+static ax_dump *any_dump(const ax_any *any)
+{
+	ax_seq_cr self = { .any = any };
+	return ax_seq_dump(self.seq);
+}
+
 const ax_seq_trait ax_arr_tr =
 {
 	.box = {
 		.any = {
 			.one = {
 				.name = AX_ARR_NAME,
-				.free = NULL,
+				.free = one_free,
 			},
-			.dump = NULL,
+			.dump = any_dump,
 			.copy = any_copy,
 		},
 		.iter = {
