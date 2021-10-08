@@ -35,26 +35,26 @@
 
 static void insert(axut_runner *r)
 {
-	ax_avl_r avl_r = ax_class_new(avl, ax_tr("i32"), ax_tr("i32"));
+	ax_avl_r avl = ax_class_new(avl, ax_t(i32), ax_t(i32));
 
 	for (int k = 0, v = 0; k < N; k++, v++) {
-		int32_t *ret = ax_map_put(avl_r.map, &k, &v);
+		int32_t *ret = ax_map_put(avl.map, &k, &v);
 		axut_assert(r, *ret == v);
 
 	}
 
 	for (int k = 0; k < N; k++) {
-		int *p = ax_map_get(avl_r.map, &k);
+		int *p = ax_map_get(avl.map, &k);
 		axut_assert(r, *p == k);
 	}
 
 	int i = 0;
-	ax_map_foreach(avl_r.map, const int32_t *, key, int32_t *, val) {
+	ax_map_foreach(avl.map, const int32_t *, key, int32_t *, val) {
 		 axut_assert(r, *key == i++);
 	}
 
 	i = N-1;
-	ax_iter it = ax_box_rbegin(avl_r.box), end = ax_box_rend(avl_r.box);
+	ax_iter it = ax_box_rbegin(avl.box), end = ax_box_rend(avl.box);
 	while (!ax_iter_equal(&it, &end)) {
 		uint32_t *k = (uint32_t*)ax_map_iter_key(&it);
 		axut_assert(r, *k == i);
@@ -62,24 +62,24 @@ static void insert(axut_runner *r)
 		i--;
 	}
 
-	ax_iter it_begin = ax_box_begin(avl_r.box);
-	ax_iter it_end = ax_box_end(avl_r.box);
+	ax_iter it_begin = ax_box_begin(avl.box);
+	ax_iter it_end = ax_box_end(avl.box);
 	ax_iter_prev(&it_end);
 	axut_assert(r, ax_iter_dist(&it_begin, &it_end) == N-1);
 
-	ax_one_free(avl_r.one);
+	ax_one_free(avl.one);
 }
 
 static void complex(axut_runner *r)
 {
 
-	ax_avl_r avl_r = ax_class_new(avl, ax_tr("i32"), ax_tr("i32"));
+	ax_avl_r avl = ax_class_new(avl, ax_t(i32), ax_t(i32));
 	for (int k = 0, v = 0; k < N; k++, v++) {
-		ax_map_put(avl_r.map, &k, &v);
+		ax_map_put(avl.map, &k, &v);
 	}
 
 	int table[N] = {0};
-	ax_iter it = ax_box_begin(avl_r.box), end = ax_box_end(avl_r.box);
+	ax_iter it = ax_box_begin(avl.box), end = ax_box_end(avl.box);
 	while (!ax_iter_equal(&it, &end)) {
 		uint32_t *k = (uint32_t*)ax_map_iter_key(&it);
 		uint32_t *v = (uint32_t*)ax_iter_get(&it);
@@ -89,75 +89,75 @@ static void complex(axut_runner *r)
 	}
 
 	for (int i = 0; i < N; i++) {
-		ax_map_erase(avl_r.map, &i);
+		ax_map_erase(avl.map, &i);
 	}
-	axut_assert_uint_equal(r, 0, ax_box_size(avl_r.box));
+	axut_assert_uint_equal(r, 0, ax_box_size(avl.box));
 
 	for (int i = 0; i < N; i++) {
 		axut_assert(r, table[i] == 1);
 	}
 
-	ax_one_free(avl_r.one);
+	ax_one_free(avl.one);
 }
 
 static void foreach(axut_runner *r)
 {
 
-	ax_avl_r avl_r = ax_class_new(avl, ax_tr("i32"), ax_tr("i32"));
+	ax_avl_r avl = ax_class_new(avl, ax_t(i32), ax_t(i32));
 	int max = 50;
 	for (int32_t i = 0; i < max; i++) {
-		ax_map_put(avl_r.map, &i, &i);
+		ax_map_put(avl.map, &i, &i);
 	}
 
 	int count = 0;
-	ax_map_foreach(avl_r.map, const int *, k, int *, v) {
+	ax_map_foreach(avl.map, const int *, k, int *, v) {
 		axut_assert_uint_equal(r, *k, *v);
 		count++;
 	}
 	axut_assert_int_equal(r, max, count);
 
 	count = 0;
-	ax_map_cforeach(avl_r.map, const int *, k, const int *, v) {
+	ax_map_cforeach(avl.map, const int *, k, const int *, v) {
 		if (*k == 10)
 			break;
 		count++;
 	}
 	axut_assert_int_equal(r, 10, count);
 
-	ax_one_free(avl_r.one);
+	ax_one_free(avl.one);
 }
 
 static void erase(axut_runner *r)
 {
 
-	ax_avl_r avl_r = ax_class_new(avl, ax_tr("i32"), ax_tr("i32"));
+	ax_avl_r avl = ax_class_new(avl, ax_t(i32), ax_t(i32));
 	int count = 50;
 	for (int32_t i = 0; i < count; i++) {
-		ax_map_put(avl_r.map, &i, &i);
+		ax_map_put(avl.map, &i, &i);
 	}
 
-	ax_iter it = ax_box_begin(avl_r.box), end = ax_box_end(avl_r.box);
+	ax_iter it = ax_box_begin(avl.box), end = ax_box_end(avl.box);
 	while (!ax_iter_equal(&it, &end)) {
 		ax_iter_erase(&it);
 	}
-	axut_assert_uint_equal(r, 0, ax_box_size(avl_r.box));
+	axut_assert_uint_equal(r, 0, ax_box_size(avl.box));
 
 	for (int32_t i = 0; i < count; i++) {
-		ax_map_put(avl_r.map, &i, &i);
+		ax_map_put(avl.map, &i, &i);
 	}
 
 	for (int32_t i = 0; i < count; i++) {
-		ax_map_erase(avl_r.map, &i);
+		ax_map_erase(avl.map, &i);
 	}
-	axut_assert_uint_equal(r, 0, ax_box_size(avl_r.box));
+	axut_assert_uint_equal(r, 0, ax_box_size(avl.box));
 
-	ax_one_free(avl_r.one);
+	ax_one_free(avl.one);
 }
 
 static void duplicate(axut_runner *r)
 {
 
-	ax_avl_r avl = ax_class_new(avl, ax_tr("i32"), ax_tr("i32"));
+	ax_avl_r avl = ax_class_new(avl, ax_t(i32), ax_t(i32));
 	uint32_t key, val = 0;
 
 	key = 1, val = 2;
@@ -194,14 +194,14 @@ static void duplicate(axut_runner *r)
 static void clear(axut_runner *r)
 {
 
-	ax_avl_r avl_r = ax_class_new(avl, ax_tr("i32"), ax_tr("i32"));
+	ax_avl_r avl = ax_class_new(avl, ax_t(i32), ax_t(i32));
 	for (int32_t i = 0; i < 50; i++) {
-		ax_map_put(avl_r.map, &i, &i);
+		ax_map_put(avl.map, &i, &i);
 	}
-	ax_box_clear(avl_r.box);
-	axut_assert_uint_equal(r, ax_box_size(avl_r.box), 0);
+	ax_box_clear(avl.box);
+	axut_assert_uint_equal(r, ax_box_size(avl.box), 0);
 
-	ax_one_free(avl_r.one);
+	ax_one_free(avl.one);
 }
 
 axut_suite* suite_for_avl()

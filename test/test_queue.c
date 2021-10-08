@@ -30,7 +30,7 @@
 
 static void create(axut_runner *r)
 {
-	ax_queue_r queue = ax_class_new(queue, ax_tr("i"));
+	ax_queue_r queue = ax_class_new(queue, ax_t(int));
 	axut_assert_uint_equal(r, 0, ax_tube_size(queue.tube));
 	ax_one_free(queue.one);
 }
@@ -38,7 +38,7 @@ static void create(axut_runner *r)
 static void operate(axut_runner *r)
 {
 
-	ax_queue_r queue = ax_class_new(queue, ax_tr("i"));
+	ax_queue_r queue = ax_class_new(queue, ax_t(int));
 	int value;
 
 	value = 1;

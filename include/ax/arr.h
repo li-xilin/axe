@@ -46,6 +46,15 @@ inline static void* ax_arr_ptr(ax_arr *arr)
 	return arr->arr;
 }
 
-ax_arr_r ax_arr_make(ax_arr *arr, const ax_stuff_trait *elem_tr, void *ptr, size_t size);
+#define __ax_arr_construct3(_etr, _ptr, _size) \
+	((struct ax_seq_st *)(struct ax_arr_st[1]) { \
+		 	[0].seq.env.box.elem_tr = (_etr), \
+			[0].seq.tr = &ax_arr_tr, \
+			[0].size = (_size) / (_etr)->size, \
+			[0].arr = (_ptr), \
+		})
+
+#define __ax_arr_construct2(_etr, _size) \
+	__ax_arr_construct3(_etr, (uint8_t [(_size)]) { 0 }, _size)
 
 #endif

@@ -637,22 +637,32 @@ int ax_stuff_fixed_type(int type)
 {
 	switch(type) {
 		case AX_ST_C:
+			type = int_fixed_type(AX_IMAX_BITS(UCHAR_MAX));
+			break;
 		case AX_ST_UC:
 			type = uint_fixed_type(AX_IMAX_BITS(UCHAR_MAX));
 			break;
 		case AX_ST_H:
+			type = int_fixed_type(AX_IMAX_BITS(USHRT_MAX));
+			break;
 		case AX_ST_UH:
 			type = uint_fixed_type(AX_IMAX_BITS(USHRT_MAX));
 			break;
 		case AX_ST_I:
+			type = int_fixed_type(AX_IMAX_BITS(UINT_MAX));
+			break;
 		case AX_ST_U:
 			type = uint_fixed_type(AX_IMAX_BITS(UINT_MAX));
 			break;
 		case AX_ST_L:
+			type = int_fixed_type(AX_IMAX_BITS(ULONG_MAX));
+			break;
 		case AX_ST_UL:
 			type = uint_fixed_type(AX_IMAX_BITS(ULONG_MAX));
 			break;
 		case AX_ST_LL:
+			type = uint_fixed_type(AX_IMAX_BITS(ULLONG_MAX));
+			break;
 		case AX_ST_ULL:
 			type = uint_fixed_type(AX_IMAX_BITS(ULLONG_MAX));
 			break;

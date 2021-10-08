@@ -30,7 +30,7 @@
 
 static void create(axut_runner *r)
 {
-	ax_stack_r stack = ax_class_new(stack, ax_tr("i"));
+	ax_stack_r stack = ax_class_new(stack, ax_t(int));
 	axut_assert_uint_equal(r, 0, ax_tube_size(stack.tube));
 	ax_one_free(stack.one);
 }
@@ -38,7 +38,7 @@ static void create(axut_runner *r)
 static void operate(axut_runner *r)
 {
 
-	ax_stack_r stack = ax_class_new(stack, ax_tr("i"));
+	ax_stack_r stack = ax_class_new(stack, ax_t(int));
 	int value;
 
 	value = 1;

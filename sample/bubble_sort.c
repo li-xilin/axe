@@ -2,7 +2,7 @@
 
 int main()
 {
-	ax_vector_r v = ax_class_new(vector, ax_tr("i"));
+	ax_vector_r v = ax_class_new(vector, ax_t(int));
 
 	int *arrap = ax_arraya(int, 8, 4, 7, 9, 1, 6, 5, 4, 2, 1, 1);
 	ax_seq_push_arraya(v.seq, arrap);

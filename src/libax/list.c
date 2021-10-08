@@ -813,14 +813,3 @@ ax_seq* __ax_list_construct(const ax_stuff_trait *elem_tr)
 	return self_r.seq;
 }
 
-ax_list_r ax_list_init(const char *fmt, ...)
-{
-	CHECK_PARAM_NULL(fmt);
-
-	va_list varg;
-	va_start(varg, fmt);
-	ax_list_r self_r = { .seq = ax_seq_vinit(__ax_list_construct, fmt, varg) };
-	va_end(varg);
-	return self_r;
-}
-

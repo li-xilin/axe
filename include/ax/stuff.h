@@ -71,6 +71,34 @@ typedef struct ax_dump_st ax_dump;
 
 #define AX_ST_PWL   26
 
+#define __AX_ST_nil    AX_ST_NIL
+#define __AX_ST_i8     AX_ST_I8 
+#define __AX_ST_i16    AX_ST_I16
+#define __AX_ST_i32    AX_ST_I32
+#define __AX_ST_i64    AX_ST_I64
+#define __AX_ST_u8     AX_ST_U8 
+#define __AX_ST_u16    AX_ST_U16
+#define __AX_ST_u32    AX_ST_U32
+#define __AX_ST_u64    AX_ST_U64
+#define __AX_ST_size   AX_ST_Z
+#define __AX_ST_float  AX_ST_F
+#define __AX_ST_double AX_ST_LF
+#define __AX_ST_str    AX_ST_S
+#define __AX_ST_wcs    AX_ST_WS
+#define __AX_ST_ptr    AX_ST_PTR
+#define __AX_ST_char   AX_ST_C
+#define __AX_ST_short  AX_ST_H
+#define __AX_ST_int    AX_ST_I
+#define __AX_ST_long   AX_ST_L
+#define __AX_ST_llong  AX_ST_LL
+#define __AX_ST_uchar  AX_ST_UC
+#define __AX_ST_ushort AX_ST_UH
+#define __AX_ST_uint   AX_ST_U
+#define __AX_ST_ulong  AX_ST_UL
+#define __AX_ST_ullong AX_ST_ULL
+
+#define ax_t(_name) ax_stuff_traits(__AX_ST_##_name)
+
 union ax_stuff_un
 {
 	int8_t   i8;
@@ -181,14 +209,12 @@ const ax_stuff_trait *ax_stuff_traits(int type);
 
 int ax_stuff_stoi(const char *s);
 
-inline static const ax_stuff_trait *ax_tr(const char *t)
-{
-	int n = ax_stuff_stoi(t);
-	ax_assert(n != -1, "invalid stuff type '%s'", t);
-	return ax_stuff_traits(n);
-}
-
-#define ax_t(_t) ax_tr(ax_stringy(_t))
+//inline static const ax_stuff_trait *ax_tr(const char *t)
+//{
+//	int n = ax_stuff_stoi(t);
+//	ax_assert(n != -1, "invalid stuff type '%s'", t);
+//	return ax_stuff_traits(n);
+//}
 
 #undef __ax_require
 

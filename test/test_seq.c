@@ -34,53 +34,19 @@
 #include <string.h>
 
 
-static void init(axut_runner *r)
+static void push_arraya(axut_runner *r)
 {
-	int32_t table[] = {1, 2, 3, 4, 5};
-	ax_vector_r vec_r;
-	ax_list_r list_r;
-
-	vec_r = ax_vector_init("i32x5", 1, 2, 3, 4, 5);
-	axut_assert(r, seq_equal_array(vec_r.seq, table, sizeof table));
-	ax_one_free(vec_r.one);
-
-	vec_r = ax_vector_init("i32x1", 1);
-	axut_assert(r, seq_equal_array(vec_r.seq, table, sizeof *table));
-	ax_one_free(vec_r.one);
-
-	vec_r = ax_vector_init("i32_i32_i32_i32_i32", 1, 2, 3, 4, 5);
-	axut_assert(r, seq_equal_array(vec_r.seq, table, sizeof table));
-	ax_one_free(vec_r.one);
-
-	list_r = ax_list_init("i32x5", 1, 2, 3, 4, 5);
-	axut_assert(r, seq_equal_array(list_r.seq, table, sizeof table));
-	ax_one_free(list_r.one);
-
-	list_r = ax_list_init("&i32", table, 5);
-	axut_assert(r, seq_equal_array(list_r.seq, table, sizeof table));
-	ax_one_free(list_r.one);
+	ax_list_r list_r = ax_class_new(list, ax_t(int));
+	ax_seq_push_arraya(list_r.seq, ax_arraya(int, 1, 2, 3, 4, 5));
+	int arr[] = { 1, 2 ,3 ,4, 5 };
+	seq_equal_array(list_r.seq, arr, sizeof(arr));
 }
 
-static void pushl(axut_runner *r)
-{
-	int32_t table[] = {1, 2, 3, 4, 5};
-	ax_list_r list = ax_class_new(list, ax_stuff_traits(AX_ST_I32));
-	ax_seq_pushl(list.seq, "i32x5", 1, 2, 3, 4, 5);
-	axut_assert(r, seq_equal_array(list.seq, table, sizeof table));
-
-	ax_vector_r vector = ax_class_new(vector, ax_stuff_traits(AX_ST_I32));
-	ax_seq_pushl(vector.seq, "i32x5", 1, 2, 3, 4, 5);
-	axut_assert(r, seq_equal_array(vector.seq, table, sizeof table));
-
-	ax_one_free(list.one);
-	ax_one_free(vector.one);
-}
 
 axut_suite *suite_for_seq()
 {
 	axut_suite* suite = axut_suite_create("seq");
 
-	axut_suite_add(suite, init, 0);
-	axut_suite_add(suite, pushl, 0);
+	axut_suite_add(suite, push_arraya, 0);
 	return suite;
 }

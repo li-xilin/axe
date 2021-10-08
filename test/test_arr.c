@@ -41,12 +41,21 @@ static void create(axut_runner *r)
 	for (int i = 0; i < 32; i++)
 		array[i] = i;
 
-	ax_arr_r arr_r = ax_arr_make(&arr, ax_stuff_traits(AX_ST_I), array, 32);
+	ax_arr_r arr1 = ax_class_new(arr, ax_t(int), array, 32 * sizeof(int));
 
-	axut_assert(r, ax_box_size(arr_r.box) == 32);
+	ax_arr_r arr2 = ax_class_new(arr, ax_t(int), 32 * sizeof(int));
+	for (int i = 0; i < 32; i++)
+		((int *)ax_arr_ptr(arr2.arr))[i] = i;
+
+	axut_assert(r, ax_box_size(arr1.box) == 32);
+	axut_assert(r, ax_box_size(arr2.box) == 32);
 
 	int j = 0;
-	ax_box_cforeach(arr_r.box, const int*, v) {
+	ax_box_cforeach(arr1.box, const int*, v) {
+		axut_assert(r, *v == j++);
+	}
+	j = 0;
+	ax_box_cforeach(arr2.box, const int*, v) {
 		axut_assert(r, *v == j++);
 	}
 }
