@@ -99,11 +99,11 @@ axut_runner *axut_runner_create(axut_output_f output_cb)
 	if (!runner)
 		goto fail;
 
-	smap = ax_class_new(avl, ax_tr("p"), ax_tr("p"));
+	smap = ax_class_new(avl, ax_t(ptr), ax_t(ptr));
 	if (!smap.one)
 		goto fail;
 
-	suites = ax_class_new(vector, ax_tr("p"));
+	suites = ax_class_new(vector, ax_t(ptr));
 	if (!suites.one)
 		goto fail;
 
