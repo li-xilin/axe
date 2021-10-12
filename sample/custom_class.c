@@ -1,0 +1,152 @@
+#include <ax/any.h>
+#include <ax/dump.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+/* -- Interface sharp base on any -- */
+#define AX_CLASS_BASE_sharp any
+#define AX_CLASS_ROLE_sharp(_l) _l AX_CLASS_PTR(sharp); AX_CLASS_ROLE_any(_l)
+
+typedef struct ax_sharp_st ax_sharp;
+
+AX_BEGIN_ENV(sharp)
+AX_END;
+
+AX_BEGIN_TRAIT(sharp)
+	float (*area)(const struct ax_sharp_st *sharp);
+	float (*side_length)(const struct ax_sharp_st *sharp);
+AX_END;
+AX_BLESS(sharp);
+
+inline static float ax_sharp_area(const struct ax_sharp_st *sharp)
+{
+	return sharp->tr->area(sharp);
+}
+
+inline static float ax_sharp_side_length(const struct ax_sharp_st *sharp)
+{
+	return sharp->tr->side_length(sharp);
+}
+
+/* -- Class base on sharp -- */
+#define AX_CLASS_BASE_circle sharp
+#define AX_CLASS_ROLE_circle(_l) _l AX_CLASS_PTR(circle); AX_CLASS_ROLE_sharp(_l)
+
+AX_CLASS_STRUCT_ROLE(circle);
+
+AX_CLASS_STRUCT_ENTRY(circle)
+	float radius;
+AX_END;
+
+static void one_free(ax_one *one);
+static ax_dump *any_dump(const ax_any *any);
+static ax_any *any_copy(const ax_any *any);
+static float sharp_area(const struct ax_sharp_st *sharp);
+static float sharp_side_length(const struct ax_sharp_st *sharp);
+static void ax_circle_set_radius(struct ax_circle_st *circle, float radius);
+static float ax_circle_radius(const struct ax_circle_st *circle);
+inline static AX_CLASS_CONSTRUCTOR0(circle);
+inline static AX_CLASS_CONSTRUCTOR(circle, int radius);
+
+/* Implementation */
+
+static void one_free(ax_one *one)
+{
+	free(one);
+}
+
+static ax_dump *any_dump(const ax_any *any)
+{
+	ax_circle_cr r = { .any = any };
+	ax_dump *blk = ax_dump_block("circle", 3);
+	ax_dump *radius = ax_dump_pair();
+	ax_dump_bind(radius, 0, ax_dump_symbol("Radius"));
+	ax_dump_bind(radius, 1, ax_dump_float(ax_circle_radius(r.circle)));
+	ax_dump *area = ax_dump_pair();
+	ax_dump_bind(area, 0, ax_dump_symbol("Area"));
+	ax_dump_bind(area, 1, ax_dump_float(ax_sharp_area(r.sharp)));
+	ax_dump *sidelen = ax_dump_pair();
+	ax_dump_bind(sidelen, 0, ax_dump_symbol("SideLen"));
+	ax_dump_bind(sidelen, 1, ax_dump_float(ax_sharp_side_length(r.sharp)));
+	ax_dump_bind(blk, 0, radius);
+	ax_dump_bind(blk, 1, area);
+	ax_dump_bind(blk, 2, sidelen);
+	return blk;
+}
+
+static ax_any *any_copy(const ax_any *any)
+{
+	ax_circle_cr src = { .any = any };
+	return ax_class_new(circle, src.circle->radius).any;
+}
+
+static float sharp_area(const struct ax_sharp_st *sharp)
+{
+	ax_circle_cr cir = { .sharp = sharp };
+	return 3.14159 * pow(cir.circle->radius, 2);
+}
+
+static float sharp_side_length(const struct ax_sharp_st *sharp)
+{
+	ax_circle_cr cir = { .sharp = sharp };
+	return 2 * 3.14159 * cir.circle->radius;
+}
+
+static void ax_circle_set_radius(struct ax_circle_st *circle, float radius)
+{
+	circle->radius = radius;
+}
+
+static float ax_circle_radius(const struct ax_circle_st *circle)
+{
+	return circle->radius;
+}
+
+static const ax_sharp_trait ax_circle_tr = {
+	.any = {
+		.one.name = "one.any.sharp.circle",
+		.one.free = one_free,
+		.dump = any_dump,
+		.copy = any_copy,
+	},
+	.area = sharp_area,
+	.side_length = sharp_side_length,
+};
+
+inline static AX_CLASS_CONSTRUCTOR(circle, int radius)
+{
+	ax_circle_r circ = ax_class_new0(circle);
+	ax_circle_set_radius(circ.circle, radius);
+	return circ.sharp;
+}
+
+inline static AX_CLASS_CONSTRUCTOR0(circle)
+{
+	ax_circle_r circ = { malloc(sizeof(struct ax_circle_st)) };
+	const struct ax_sharp_st init = {
+		.tr = &ax_circle_tr,
+	};
+	memcpy(circ.sharp, &init, sizeof init);
+	if (!circ.one)
+		return NULL;
+	return circ.sharp;
+}
+
+/* -- Client -- */
+
+int main()
+{
+	ax_circle_r cir1 = ax_class_new(circle, 2);
+	printf("Name of cir1: %s\n", ax_one_name(cir1.one));
+	printf("Area of cir1: %f\n", ax_sharp_area(cir1.sharp));
+	printf("Side length of cir1: %f\n", ax_sharp_side_length(cir1.sharp));
+
+	ax_circle_r cir2 = { .any = ax_any_copy(cir1.any) };
+	printf("Radius of cir2: %f\n", ax_circle_radius(cir2.circle));
+
+	ax_circle_r cir3 = ax_class_new0(circle);
+	ax_circle_set_radius(cir3.circle, 5);
+	ax_any_so(cir3.any); /* Dump out */
+
+}
