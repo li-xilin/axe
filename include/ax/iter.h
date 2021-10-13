@@ -127,6 +127,34 @@ inline static void ax_iter_prev(ax_iter *it)
 	ax_citer_prev(ax_iter_c(it));
 }
 
+inline static ax_citer ax_citer_ret_next(const ax_citer *it)
+{
+	ax_citer next = *it;
+	it->tr->next(&next);
+	return next;
+}
+
+inline static ax_iter ax_iter_ret_next(const ax_iter *it)
+{
+	ax_iter next = *it;
+	it->tr->next(ax_iter_c(&next));
+	return next;
+}
+
+inline static ax_citer ax_citer_ret_prev(const ax_citer *it)
+{
+	ax_citer prev = *it;
+	it->tr->prev(&prev);
+	return prev;
+}
+
+inline static ax_iter ax_iter_ret_prev(const ax_iter *it)
+{
+	ax_iter prev = *it;
+	it->tr->prev(ax_iter_c(&prev));
+	return prev;
+}
+
 inline static void ax_iter_erase(ax_iter *it)
 {
 	it->tr->erase(it);
