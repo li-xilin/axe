@@ -49,35 +49,17 @@ ax_dump *ax_map_dump(const ax_map *map)
 		*ktr = map->env.key_tr;
 
 	size_t i = 0;
-	ax_dump *pair_dmp, *val_dmp;
 	ax_map_cforeach(self.map, const void *, k, const void *, v) {
-		pair_dmp = NULL;
 
-		pair_dmp = ax_dump_pair();
-		if (!pair_dmp)
-			goto clean_pair;
+		ax_dump *pair_dmp = ax_dump_pair(
+				ax_stuff_dump(ktr, ax_stuff_in(ktr, k), ktr->size),
+				ax_stuff_dump(etr, ax_stuff_in(etr, v), etr->size)
+				);
 
-		val_dmp = ktr->dump(ktr->link ? &k : k, ktr->size);
-		if (!val_dmp)
-			goto clean_pair;
-		ax_dump_bind(pair_dmp, 0, val_dmp);
-
-		val_dmp = etr->dump(etr->link ? &v : v, etr->size);
-		if (!val_dmp)
-			goto clean_pair;
-		ax_dump_bind(pair_dmp, 1, val_dmp);
 		ax_dump_bind(block_dmp, i, pair_dmp);
 
 		i++;
-		continue;
-clean_pair:
-		ax_dump_free(pair_dmp);
-		goto fail;
-
 	}
 	
 	return block_dmp;
-fail:
-	ax_dump_free(block_dmp);
-	return NULL;
 }

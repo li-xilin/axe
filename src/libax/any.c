@@ -101,8 +101,6 @@ const ax_stuff_trait* __ax_any_stuff_trait()
 ax_fail __ax_any_print(const ax_any *any, const char *file, int line)
 {
 	ax_dump *dmp = ax_any_dump(any);
-	if (!dmp)
-		return true;
 	fprintf(stdout, "%s:%d:", file, line);
 	ax_fail ret = ax_dump_fput(dmp, stdout);
 	ax_dump_free(dmp);

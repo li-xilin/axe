@@ -49,7 +49,7 @@ ax_dump *ax_dump_mem(const void *ptr, size_t size);
 
 ax_dump *ax_dump_symbol(const char *sym);
 
-ax_dump *ax_dump_pair();
+ax_dump *ax_dump_pair(ax_dump *d1, ax_dump *d2);
 
 ax_dump *ax_dump_block(const char* name, size_t elem_cnt);
 

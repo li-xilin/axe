@@ -109,8 +109,7 @@ static ax_dump *any_dump(const ax_any *any)
 {
 	ax_stack_cr self = { .any = any };
 	ax_dump *dmp = ax_any_dump(self.stack->vector.any);
-	if (ax_dump_set_name(dmp, ax_one_name(self.one)))
-		return NULL;
+	ax_dump_set_name(dmp, ax_one_name(self.one));
 	return dmp;
 }
 

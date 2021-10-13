@@ -113,42 +113,21 @@ static bool trie_dump_cb(const ax_trie *trie, const ax_seq *key, const void *val
 {
 	struct trie_dump_args *args = ctx;
 	size_t size = ax_box_size(ax_cr(seq, key).box);
-	ax_dump *pair_dmp = NULL, *key_dmp = NULL, *val_dmp = NULL;
-	pair_dmp = ax_dump_pair();
-	if (!pair_dmp)
-		goto fail;
-	key_dmp = ax_dump_block(AX_SEQ_NAME, size);
-	if (!key_dmp) {
-		goto fail;
-	}
 
 	const ax_stuff_trait
 		*ktr = trie->env.key_tr,
 		*vtr = trie->env.box.elem_tr;
 
-	val_dmp = ax_stuff_dump(vtr, ax_stuff_in(vtr, val), vtr->size);
-	if (!val_dmp)
-		goto fail;
-
+	ax_dump *key_dmp = ax_dump_block(AX_SEQ_NAME, size);
 	size_t i = 0;
 	ax_box_cforeach(ax_cr(seq, key).box, const void *, word) {
-		ax_dump *word_dmp = ktr->dump(ktr->link ? &word : word, ktr->size);
-		if (!word_dmp)
-			goto fail;
-		ax_dump_bind(key_dmp, i, word_dmp);
+		ax_dump_bind(key_dmp, i, ax_stuff_dump(ktr, ax_stuff_in(ktr, word), ktr->size));
 		i++;
 	}
-
-	ax_dump_bind(pair_dmp, 0, key_dmp);
-	ax_dump_bind(pair_dmp, 1, val_dmp);
-	ax_dump_bind(args->trie_dmp, args->cnt, pair_dmp);
+	ax_dump_bind(args->trie_dmp, args->cnt, ax_dump_pair(key_dmp,
+				ax_stuff_dump(vtr, ax_stuff_in(vtr, val), vtr->size)));
 	args->cnt++;;
 	return false;
-fail:
-	ax_dump_free(pair_dmp);
-	ax_dump_free(key_dmp);
-	ax_dump_free(val_dmp);
-	return true;
 }
 
 ax_dump *ax_trie_dump(const ax_trie *trie)

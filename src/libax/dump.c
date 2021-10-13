@@ -51,7 +51,7 @@ do { \
 #define check_symbol(_sym) (void)0
 #endif
 
-enum {
+enum dump_type {
 	DTYPE_SNUM,
 	DTYPE_UNUM,
 	DTYPE_FNUM,
@@ -62,9 +62,9 @@ enum {
 	DTYPE_SYM,
 	DTYPE_PAIR,
 	DTYPE_BLOCK,
+	DTYPE_NOMEM,
+	DTYPE_BIND = 0x10,
 };
-
-#define DTYPE_BIND 0x0100
 
 struct search_args
 {
@@ -101,15 +101,37 @@ union value_u
 
 struct ax_dump_st
 {
-	int type;
+	enum dump_type type;
 	char value[];
 };
+
+struct ax_dump_st g_dmp_nomem = { .type = DTYPE_NOMEM };
+#define NOMEM_DMP (&g_dmp_nomem)
+
+
+inline static bool bind_bit(const ax_dump *dmp, bool nomem_bit);
+inline static void set_bind_bit(ax_dump *dmp, bool set);
+static void dump_rec_free(ax_dump *dmp);
+inline static void char2hex(char dst[2], char src);
+static int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args);
+
+inline static bool bind_bit(const ax_dump *dmp, bool nomem_bit)
+{
+	return dmp->type == DTYPE_NOMEM ? nomem_bit : (dmp->type & DTYPE_BIND);
+}
+
+inline static void set_bind_bit(ax_dump *dmp, bool set)
+{
+	if (dmp->type != DTYPE_NOMEM)
+		dmp->type = set ? (dmp->type | DTYPE_BIND)
+			: (dmp->type & ~DTYPE_BIND);
+}
 
 ax_dump *ax_dump_int(int64_t val)
 {
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof val);
 	if (!dmp)
-		return NULL;
+		return NOMEM_DMP;
 	dmp->type = DTYPE_SNUM;
 	((union value_u *)dmp->value)->snum = val;
 	return dmp;
@@ -119,7 +141,7 @@ ax_dump *ax_dump_uint(uint64_t val)
 {
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof val);
 	if (!dmp)
-		return NULL;
+		return NOMEM_DMP;
 	dmp->type = DTYPE_UNUM;
 	((union value_u *)dmp->value)->unum = val;
 	return dmp;
@@ -129,7 +151,7 @@ ax_dump *ax_dump_float(double val)
 {
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof val);
 	if (!dmp)
-		return NULL;
+		return NOMEM_DMP;
 	dmp->type = DTYPE_FNUM;
 	((union value_u *)dmp->value)->fnum = val;
 	return dmp;
@@ -139,7 +161,7 @@ ax_dump *ax_dump_ptr(const void *val)
 {
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof val);
 	if (!dmp)
-		return NULL;
+		return NOMEM_DMP;
 	dmp->type = DTYPE_PTR;
 	((union value_u *)dmp->value)->ptr = val;
 	return dmp;
@@ -154,7 +176,7 @@ ax_dump *ax_dump_str(const char *val)
 	size_t siz = (len + 1) * sizeof(char);
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof(struct value_mem_st) + siz);
 	if (!dmp)
-		return NULL;
+		return NOMEM_DMP;
 
 	dmp->type = DTYPE_STR;
 	union value_u *value = (void *)dmp->value;
@@ -173,7 +195,7 @@ ax_dump *ax_dump_wcs(const wchar_t *val)
 	size_t siz = (len + 1) * sizeof(wchar_t);
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof(struct value_mem_st) + siz);
 	if (!dmp)
-		return NULL;
+		return NOMEM_DMP;
 
 	dmp->type = DTYPE_WCS;
 	union value_u *value = (void *)dmp->value;
@@ -191,7 +213,7 @@ ax_dump *ax_dump_mem(const void *ptr, size_t size)
 
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof(struct value_mem_st) + size);
 	if (!dmp)
-		return NULL;
+		return NOMEM_DMP;
 
 	dmp->type = DTYPE_MEM;
 	union value_u *value = (void *)dmp->value;
@@ -211,7 +233,7 @@ ax_dump *ax_dump_symbol(const char *sym)
 	size_t siz = (len + 1) * sizeof(char);
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof(struct value_mem_st) + siz);
 	if (!dmp)
-		return NULL;
+		return NOMEM_DMP;
 
 	dmp->type = DTYPE_SYM;
 	union value_u *value = (void *)dmp->value;
@@ -221,17 +243,26 @@ ax_dump *ax_dump_symbol(const char *sym)
 	return dmp;
 }
 
-ax_dump *ax_dump_pair()
+ax_dump *ax_dump_pair(ax_dump *d1, ax_dump *d2)
 {
+	ax_assert(!bind_bit(d1, 0), "The first dump already bound with other one");
+	ax_assert(!bind_bit(d2, 0), "The second dump already bound with other one");
+
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof(struct value_pair_st));
-	if (!dmp)
-		return NULL;
+	if (!dmp) {
+		set_bind_bit(d1, 1);
+		set_bind_bit(d2, 1);
+		dump_rec_free(d1);
+		dump_rec_free(d2);
+		return NOMEM_DMP;
+	}
 
 	dmp->type = DTYPE_PAIR;
 	struct value_pair_st *pair = (void *)dmp->value;
-	pair->first = NULL;
-	pair->second = NULL;
-
+	set_bind_bit(d1, 1);
+	set_bind_bit(d2, 1);
+	pair->first = d1;
+	pair->second = d2;
 	return dmp;
 }
 
@@ -241,7 +272,7 @@ ax_dump *ax_dump_block(const char *sym, size_t len)
 
 	ax_dump *dmp = calloc(1, sizeof(ax_dump) + sizeof(struct value_block_st) + len * sizeof (ax_dump *) );
 	if (!dmp)
-		return NULL;
+		return NOMEM_DMP;
 
 	dmp->type = DTYPE_BLOCK;
 	struct value_block_st *block = (void *) dmp->value;
@@ -249,12 +280,11 @@ ax_dump *ax_dump_block(const char *sym, size_t len)
 	block->name = ax_strdup(sym);
 	if (!block->name ) {
 		free(dmp);
-		return NULL;
+		return NOMEM_DMP;
 	}
 
-	for (size_t i = 0; i < len; i++) {
+	for (size_t i = 0; i < len; i++)
 		block->dumps[i] = NULL;
-	}
 
 	return dmp;
 }
@@ -278,64 +308,39 @@ void ax_dump_bind(ax_dump *dmp, int index, ax_dump* binding)
 	CHECK_PARAM_NULL(dmp);
 	CHECK_PARAM_NULL(index >= 0);
 	CHECK_PARAM_NULL(binding);
-	ax_assert(dmp->type == DTYPE_PAIR || dmp->type == DTYPE_BLOCK,
-			"binding operation only support pair and block"); 
-	ax_assert(!(binding->type & DTYPE_BIND),
-			"instance is already in binding");
-
-	union {
-		struct value_block_st *block;
-		struct value_pair_st *pair;
-	} val;
-
+	ax_assert(!bind_bit(dmp, 0), "binding operation is denied");
+	ax_assert(dmp->type == DTYPE_BLOCK || dmp->type == DTYPE_NOMEM,
+			"binding operation only support block and nomem"); 
+	ax_assert(!bind_bit(binding, 0), "instance is already in binding");
+	struct value_block_st *block = (void *) dmp->value;
 #ifdef AX_DEBUG
-	switch (binding->type) {
-		case DTYPE_PAIR:
-			val.pair = (void *) binding->value;
-			ax_assert(val.pair->first, "incomplete dump of pair, NULL pointer field of first");
-			ax_assert(val.pair->second, "incomplete dump of pair, NULL pointer field of second");
-			break;
-		case DTYPE_BLOCK:
-			val.block = (void *) binding->value;
-			for (int i = 0; i < val.block->len; i++) {
-				ax_assert(val.block->dumps[i], "incomplete dump of block, NULL pointer field #%d", i);
-			}
-			break;
+	if (binding->type == DTYPE_BLOCK) {
+		block = (void *) binding->value;
+		for (int i = 0; i < block->len; i++) {
+			ax_assert(block->dumps[i], "incomplete dump of block, NULL pointer field #%d", i);
+		}
 	}
 #endif
 
 	switch (dmp->type) {
-		case DTYPE_PAIR:
-			val.pair = (void *) dmp->value;
-			ax_assert(index == 0 || index == 1, "exceed index %d", index);
-			switch (index) {
-				case 0:
-					ax_assert(!val.pair->first, "first field exists value");
-					val.pair->first = binding;
-					binding->type |= DTYPE_BIND;
-					break;
-				case 1:
-					ax_assert(!val.pair->second, "second field exists value");
-					val.pair->second = binding;
-					binding->type |= DTYPE_BIND;
-					break;
-			}
-			break;
 		case DTYPE_BLOCK:
-			val.block = (void *) dmp->value;
-			ax_assert(index >= 0 && index < val.block->len, "dump: exceed block field index %d", index);
-			ax_assert(!val.block->dumps[index], "field #%d already set", index);
-			val.block->dumps[index] = binding;
-			binding->type |= DTYPE_BIND;
+			ax_assert(index >= 0 && index < block->len, "dump: exceed block field index %d", index);
+			ax_assert(!block->dumps[index], "field #%d already set", index);
+			block->dumps[index] = binding;
+			set_bind_bit(binding, 1);
+			break;
+		case DTYPE_NOMEM:
+			set_bind_bit(binding, 1);
+			dump_rec_free(binding);
+			break;
+		default:
 			break;
 	}
 }
 
 static void dump_rec_free(ax_dump *dmp)
 {
-	if (!dmp)
-		return;
-	assert((dmp->type & DTYPE_BIND));
+	assert(bind_bit(dmp, 1));
 	union {
 		struct value_block_st *block;
 		struct value_pair_st *pair;
@@ -362,6 +367,8 @@ static void dump_rec_free(ax_dump *dmp)
 			}
 			free(val.block->name);
 			break;
+		case DTYPE_NOMEM:
+			return;
 		default:
 			abort();
 	}
@@ -371,10 +378,10 @@ static void dump_rec_free(ax_dump *dmp)
 void ax_dump_free(ax_dump *dmp)
 {
 	CHECK_PARAM_NULL(dmp);
-	ax_assert(!(dmp->type & DTYPE_BIND),
+	ax_assert(!bind_bit(dmp, 0),
 			"failed to free dump, the instance has beed bound");
 
-	dmp->type |= DTYPE_BIND;
+	set_bind_bit(dmp, 1);
 	dump_rec_free(dmp);
 }
 
@@ -391,7 +398,7 @@ ax_fail ax_dump_fput(const ax_dump *dmp, FILE *fp)
 	return ax_dump_out(dmp, write_file_cb, fp) ? true : false;
 }
 
-static void char2hex(char dst[2], char src)
+inline static void char2hex(char dst[2], char src)
 {
 	char major = src >> 4,
 	     minor = src & 0x0F;
@@ -400,7 +407,7 @@ static void char2hex(char dst[2], char src)
 	dst[1] = minor < 0xA ? '0' + minor : 'A' + major;
 }
 
-int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args)
+static int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args)
 {
 	int rc;
 	union value_u *value = (void *)dmp->value;
@@ -484,6 +491,13 @@ int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args)
 			if ((rc = args->cb(value->sym.data, value->sym.size, args->ctx)))
 				return rc;
 			break;
+		case DTYPE_NOMEM:
+			{
+				char nomem_str[] = "!NOMEM";
+				if ((rc = args->cb(nomem_str, sizeof(nomem_str), args->ctx)))
+					return rc;
+			}
+			break;
 		case DTYPE_PAIR:
 			if ((rc = dump_out_dfs(value->pair.first, depth + 1, args)))
 				return rc;
@@ -493,7 +507,7 @@ int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args)
 				return rc;
 			break;
 		case DTYPE_BLOCK:
-			if ((rc = args->cb(value->block.name, strlen(value->block.name), args->ctx)))
+			if (value->block.name && (rc = args->cb(value->block.name, strlen(value->block.name), args->ctx)))
 				return rc;
 			strcpy(args->buf, " {");
 			if ((rc = args->cb(args->buf, 2, args->ctx)))
