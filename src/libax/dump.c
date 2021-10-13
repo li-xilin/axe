@@ -349,8 +349,8 @@ static void dump_rec_free(ax_dump *dmp)
 		case DTYPE_WCS:
 		case DTYPE_MEM:
 		case DTYPE_SYM:
-		case DTYPE_PAIR:
 			break;
+		case DTYPE_PAIR:
 			val.pair = (void *) dmp->value;
 			dump_rec_free(val.pair->first);
 			dump_rec_free(val.pair->second);
@@ -360,6 +360,7 @@ static void dump_rec_free(ax_dump *dmp)
 			for (size_t i = 0; i < val.block->len; i++) {
 				dump_rec_free(val.block->dumps[i]);
 			}
+			free(val.block->name);
 			break;
 		default:
 			abort();
