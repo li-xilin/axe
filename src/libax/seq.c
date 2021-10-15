@@ -21,7 +21,6 @@
  */
 
 #include <ax/seq.h>
-#include <ax/vail.h>
 #include <ax/dump.h>
 #include "check.h"
 #include <errno.h>

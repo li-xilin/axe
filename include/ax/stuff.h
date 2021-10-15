@@ -99,26 +99,6 @@ typedef struct ax_dump_st ax_dump;
 
 #define ax_t(_name) ax_stuff_traits(__AX_ST_##_name)
 
-union ax_stuff_un
-{
-	int8_t   i8;
-	int16_t  i16;
-	int32_t  i32;
-	int64_t  i64;
-	uint8_t  u8;
-	uint16_t u16;
-	uint32_t u32;
-	uint64_t u64;
-	size_t   z;
-	float    f;
-	double   lf;
-	char*    str;
-	wchar_t* wstr;
-	void*    ptr;
-	void*    raw;
-};
-typedef union ax_stuff_un ax_stuff;
-
 typedef void    (*ax_stuff_free_f)(void* p);
 typedef bool    (*ax_stuff_compare_f) (const void* p1, const void* p2, size_t size);
 typedef size_t  (*ax_stuff_hash_f)(const void* p, size_t size);
