@@ -32,7 +32,7 @@
 typedef struct ax_tube_st ax_tube;
 #endif
 
-typedef ax_tube *(ax_tube_construct_f)(const ax_stuff_trait *elem_tr);
+typedef ax_tube *(ax_tube_construct_f)(const ax_trait *elem_tr);
 
 #define AX_CLASS_BASE_tube any
 #define AX_CLASS_ROLE_tube(_l) _l AX_CLASS_PTR(tube); AX_CLASS_ROLE_any(_l)
@@ -45,7 +45,7 @@ AX_BEGIN_TRAIT(tube)
 AX_END;
 
 AX_BEGIN_ENV(tube)
-	const ax_stuff_trait *const elem_tr;
+	const ax_trait *const elem_tr;
 AX_END;
 
 AX_BLESS(tube);

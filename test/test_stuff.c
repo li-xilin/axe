@@ -21,51 +21,13 @@
  */
 
 #include "assist.h"
-
 #include "ax/class.h"
-#include "ax/stuff.h"
-
+#include "ax/trait.h"
 #include "axut.h"
 #include <stdio.h>
-
-static void stoi(axut_runner *r)
-{
-	static const struct { const char *name; int value; } table[] = {
-		{ "",   	AX_ST_NIL },
-		{ "?",  	0         },
-		{ "c",  	AX_ST_C   },
-		{ "f",  	AX_ST_F   },
-		{ "h",  	AX_ST_H   },
-		{ "i",  	AX_ST_I   },
-		{ "i16",	AX_ST_I16 },
-		{ "i32",	AX_ST_I32 },
-		{ "i64",	AX_ST_I64 },
-		{ "i8", 	AX_ST_I8  },
-		{ "l",  	AX_ST_L   },
-		{ "lf", 	AX_ST_LF  },
-		{ "ll", 	AX_ST_LL  },
-		{ "p",  	AX_ST_PTR },
-		{ "s",  	AX_ST_S   },
-		{ "u",  	AX_ST_U   },
-		{ "u16",	AX_ST_U16 },
-		{ "u32",	AX_ST_U32 },
-		{ "u64",	AX_ST_U64 },
-		{ "u8", 	AX_ST_U8  },
-		{ "uc", 	AX_ST_UC  },
-		{ "uh", 	AX_ST_UH  },
-		{ "ul", 	AX_ST_UL  },
-		{ "ull",	AX_ST_ULL },
-		{ "ws", 	AX_ST_WS  },
-		{ "z",  	AX_ST_Z   },
-	};
-	for (int i = 0; i < sizeof table/ sizeof *table; i++) {
-		axut_assert(r, table[i].value == ax_stuff_stoi(table[i].name));
-	}
-}
 
 axut_suite *suite_for_stuff()
 {
 	axut_suite* suite = axut_suite_create("stuff");
-	axut_suite_add(suite, stoi, 0);
 	return suite;
 }

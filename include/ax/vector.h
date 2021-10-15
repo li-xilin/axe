@@ -38,9 +38,9 @@ AX_CLASS_STRUCT_ROLE(vector);
 
 extern const ax_seq_trait ax_vector_tr;
 
-ax_seq*__ax_vector_construct(const ax_stuff_trait* elem_tr);
+ax_seq*__ax_vector_construct(const ax_trait* elem_tr);
 
-inline static AX_CLASS_CONSTRUCTOR(vector, const ax_stuff_trait* trait)
+inline static AX_CLASS_CONSTRUCTOR(vector, const ax_trait* trait)
 {
 	return __ax_vector_construct(trait);
 }

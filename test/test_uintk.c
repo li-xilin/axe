@@ -21,10 +21,7 @@
  */
 
 #include "ax/uintk.h"
-#include "ax/stuff.h"
-
 #include "axut.h"
-
 #include <assert.h>
 #include <setjmp.h>
 #include <stdlib.h>

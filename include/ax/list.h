@@ -38,9 +38,9 @@ AX_CLASS_STRUCT_ROLE(list);
 
 extern const ax_seq_trait ax_list_tr;
 
-ax_seq *__ax_list_construct(const ax_stuff_trait *elem_tr);
+ax_seq *__ax_list_construct(const ax_trait *elem_tr);
 
-inline static AX_CLASS_CONSTRUCTOR(list, const ax_stuff_trait* trait)
+inline static AX_CLASS_CONSTRUCTOR(list, const ax_trait* trait)
 {
 	return __ax_list_construct(trait);
 }

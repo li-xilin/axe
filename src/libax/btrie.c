@@ -27,7 +27,7 @@
 #include <ax/any.h>
 #include <ax/iter.h>
 #include <ax/debug.h>
-#include <ax/stuff.h>
+#include <ax/trait.h>
 #include <ax/dump.h>
 #include <ax/class.h>
 
@@ -96,7 +96,7 @@ static bool clean_path(ax_map *last);
 static void rec_remove(ax_btrie *self, ax_map *map);
 inline static ax_btrie *iter_get_self(const ax_iter *it);
 
-static const ax_stuff_trait node_tr;
+static const ax_trait node_tr;
 
 inline static ax_btrie *iter_get_self(const ax_iter *it)
 {
@@ -146,23 +146,23 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	ax_btrie *self = iter_get_self(it);
 
 	struct node_st *node = ax_avl_tr.box.iter.get(ax_iter_cc(it));
-	const ax_stuff_trait *etr = self->trie.env.box.elem_tr;
+	const ax_trait *etr = self->trie.env.box.elem_tr;
 	if (node->val) {
-		ax_stuff_free(etr, node->val);
+		ax_trait_free(etr, node->val);
 	} else { 
 		node->val = malloc(etr->size);
 		if (!node->val)
 			return true;
 	}
 
-	return ax_stuff_copy(etr, node->val, val);
+	return ax_trait_copy(etr, node->val, val);
 }
 
 static void node_free_value(ax_btrie *btrie, struct node_st *node)
 {
 	if (node->val) {
-		const ax_stuff_trait *etr = btrie->trie.env.box.elem_tr;
-		etr->free(node->val);
+		const ax_trait *etr = btrie->trie.env.box.elem_tr;
+		ax_trait_free(etr, node->val);
 		free(node->val);
 		node->val = NULL;
 		btrie->size --;
@@ -227,7 +227,7 @@ static ax_any *any_copy(const ax_any *any)
 	// TODO
 #if 0
 	ax_btrie_cr self_r = { .any = any };
-	const ax_stuff_trait *etr = self_r.seq->env.box.elem_tr;
+	const ax_trait *etr = self_r.seq->env.box.elem_tr;
 
 	ax_base *base = ax_one_base(self_r.one);
 	ax_btrie_r new_r = { .seq = __ax_btrie_construct(base, etr) };
@@ -377,7 +377,7 @@ static int match_key(const ax_btrie *self, const ax_seq *key, ax_citer *it_misma
 
 static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *val)
 {
-	const ax_stuff_trait *vtr = self->trie.env.box.elem_tr;
+	const ax_trait *vtr = self->trie.env.box.elem_tr;
 	void *value = NULL;
 
 	value = malloc(vtr->size);
@@ -385,7 +385,7 @@ static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *
 		goto fail;
 	}
 
-	if (ax_stuff_copy_or_init(vtr, value, val))
+	if (ax_trait_copy_or_init(vtr, value, val))
 		goto fail;
 
 	if (node->val) {
@@ -695,14 +695,14 @@ static bool trie_it_valued(const ax_citer *it)
 }
 
 
-static const ax_stuff_trait node_tr = { 
+static const ax_trait node_tr = { 
 	.size  = sizeof(struct node_st),
 	.equal = NULL,
 	.less  = NULL,
 	.hash  = NULL,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
@@ -750,7 +750,7 @@ const ax_trie_trait ax_btrie_tr =
 	.it_valued = trie_it_valued
 };
 
-ax_trie *__ax_btrie_construct(const ax_stuff_trait *key_tr, const ax_stuff_trait *val_tr)
+ax_trie *__ax_btrie_construct(const ax_trait *key_tr, const ax_trait *val_tr)
 {
 	CHECK_PARAM_NULL(key_tr);
 	CHECK_PARAM_NULL(key_tr->equal);
@@ -770,7 +770,7 @@ ax_trie *__ax_btrie_construct(const ax_stuff_trait *key_tr, const ax_stuff_trait
 		goto fail;
 	}
 
-	root = __ax_avl_construct(ax_stuff_traits(AX_ST_NIL), &node_tr);
+	root = ax_class_new(avl, ax_t(nil), &node_tr).map;
 	if (!root) {
 		goto fail;
 	}

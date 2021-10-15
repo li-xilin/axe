@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-#include <ax/stuff.h>
+#include <ax/trait.h>
 #include <ax/debug.h>
 #include <ax/mem.h>
 #include <ax/dump.h>
@@ -39,7 +39,7 @@
 
 inline static int int_fixed_type(int bits);
 
-size_t ax_stuff_size(int type)
+size_t ax_trait_size(int type)
 {
 	switch(type) {
 		case AX_ST_NIL:  return 0;
@@ -92,7 +92,7 @@ static const struct { const char *name; int value; } st_table[] = {
 
 };
 
-int ax_stuff_stoi(const char *s)
+int ax_trait_stoi(const char *s)
 {
 	int l = 0, r = sizeof st_table/ sizeof *st_table - 1;
 	assert(r > 0);
@@ -374,32 +374,32 @@ static size_t hash_ws(const void* p, size_t size)
 	return ax_wcshash(*(wchar_t**)p);
 } 
 
-void ax_stuff_mem_free(void* p)
+void ax_trait_mem_free(void* p)
 {
 
 }
 
-ax_dump *ax_stuff_mem_dump(const void* p, size_t size)
+ax_dump *ax_trait_mem_dump(const void* p, size_t size)
 {
 	return ax_dump_mem(p, size);
 }
 
-bool ax_stuff_mem_less(const void* p1, const void* p2, size_t size)
+bool ax_trait_mem_less(const void* p1, const void* p2, size_t size)
 {
 	return memcmp(p1, p2, size) < 0;
 }
 
-bool ax_stuff_mem_equal(const void* p1, const void* p2, size_t size)
+bool ax_trait_mem_equal(const void* p1, const void* p2, size_t size)
 {
 	return memcmp(p1, p2, size) == 0;
 }
 
-size_t ax_stuff_mem_hash(const void* p, size_t size)
+size_t ax_trait_mem_hash(const void* p, size_t size)
 {
 	return ax_memhash(p, size);
 }
 
-ax_fail ax_stuff_mem_copy(void* dst, const void* src, size_t size)
+ax_fail ax_trait_mem_copy(void* dst, const void* src, size_t size)
 {
 	switch(size) {
 		case 1: *(uint8_t *)dst = *(uint8_t *)src; break;
@@ -411,7 +411,7 @@ ax_fail ax_stuff_mem_copy(void* dst, const void* src, size_t size)
 	return false;
 }
 
-ax_fail ax_stuff_mem_init(void* p, size_t size)
+ax_fail ax_trait_mem_init(void* p, size_t size)
 {
 	memset(p, 0, size);
 	return false;
@@ -427,163 +427,163 @@ static void free_ws(void* p)
 	free(*(char**)p);
 }
 
-static const ax_stuff_trait trait_nil = { 
+static const ax_trait trait_nil = { 
 	.size  = 0,
 	.equal = equal_nil,
 	.less  = less_nil,
 	.dump  = dump_nil,
-	.hash  = ax_stuff_mem_hash,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.hash  = ax_trait_mem_hash,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
-static const ax_stuff_trait trait_i8 = { 
+static const ax_trait trait_i8 = { 
 	.size  = sizeof(int8_t),
 	.equal = equal_i8,
 	.less  = less_i8,
 	.dump  = dump_i8,
-	.hash  = ax_stuff_mem_hash,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.hash  = ax_trait_mem_hash,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
-static const ax_stuff_trait trait_i16 = { 
+static const ax_trait trait_i16 = { 
 	.size  = sizeof(int16_t),
 	.equal = equal_i16,
 	.less  = less_i16,
 	.dump  = dump_i16,
-	.hash  = ax_stuff_mem_hash,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.hash  = ax_trait_mem_hash,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
-static const ax_stuff_trait trait_i32 = { 
+static const ax_trait trait_i32 = { 
 	.size  = sizeof(int32_t),
 	.equal = equal_i32,
 	.less  = less_i32,
 	.dump  = dump_i32,
-	.hash  = ax_stuff_mem_hash,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.hash  = ax_trait_mem_hash,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
-static const ax_stuff_trait trait_i64 = { 
+static const ax_trait trait_i64 = { 
 	.size  = sizeof(int64_t),
 	.equal = equal_i64,
 	.less  = less_i64,
 	.dump  = dump_i64,
-	.hash  = ax_stuff_mem_hash,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.hash  = ax_trait_mem_hash,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
-static const ax_stuff_trait trait_u8 = { 
+static const ax_trait trait_u8 = { 
 	.size  = sizeof(uint8_t),
 	.equal = equal_u8,
 	.less  = less_u8,
 	.dump  = dump_u8,
-	.hash  = ax_stuff_mem_hash,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.hash  = ax_trait_mem_hash,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
-static const ax_stuff_trait trait_u16 = { 
+static const ax_trait trait_u16 = { 
 	.size  = sizeof(uint16_t),
 	.equal = equal_u16,
 	.less  = less_u16,
 	.dump  = dump_u16,
-	.hash  = ax_stuff_mem_hash,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.hash  = ax_trait_mem_hash,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
-static const ax_stuff_trait trait_u32 = { 
+static const ax_trait trait_u32 = { 
 	.size  = sizeof(uint32_t),
 	.equal = equal_u32,
 	.less  = less_u32,
 	.dump  = dump_u32,
-	.hash  = ax_stuff_mem_hash,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.hash  = ax_trait_mem_hash,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
-static const ax_stuff_trait trait_u64 = { 
+static const ax_trait trait_u64 = { 
 	.size  = sizeof(int64_t),
 	.equal = equal_u64,
 	.less  = less_u64,
 	.dump  = dump_u64,
-	.hash  = ax_stuff_mem_hash,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.hash  = ax_trait_mem_hash,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
-static const ax_stuff_trait trait_z = { 
+static const ax_trait trait_z = { 
 	.size  = sizeof(size_t),
 	.equal = equal_z,
 	.less  = less_z,
 	.dump  = dump_z,
-	.hash  = ax_stuff_mem_hash,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.hash  = ax_trait_mem_hash,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
-static const ax_stuff_trait trait_f = { 
+static const ax_trait trait_f = { 
 	.size  = sizeof(float),
 	.equal = equal_f,
 	.less  = less_f,
 	.dump  = dump_f,
-	.hash  = ax_stuff_mem_hash,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.hash  = ax_trait_mem_hash,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
-static const ax_stuff_trait trait_lf = { 
+static const ax_trait trait_lf = { 
 	.size  = sizeof(double),
 	.equal = equal_lf,
 	.less  = less_lf,
 	.dump  = dump_lf,
-	.hash  = ax_stuff_mem_hash,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.hash  = ax_trait_mem_hash,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
-static const ax_stuff_trait trait_ptr= { 
+static const ax_trait trait_ptr= { 
 	.size  = sizeof(void *),
 	.equal = equal_ptr,
 	.less  = less_ptr,
 	.dump  = dump_ptr,
-	.hash  = ax_stuff_mem_hash,
-	.free  = ax_stuff_mem_free,
-	.copy  = ax_stuff_mem_copy,
-	.init  = ax_stuff_mem_init,
+	.hash  = ax_trait_mem_hash,
+	.free  = ax_trait_mem_free,
+	.copy  = ax_trait_mem_copy,
+	.init  = ax_trait_mem_init,
 	.link  = false
 };
 
-static const ax_stuff_trait trait_s = { 
+static const ax_trait trait_s = { 
 	.size  = sizeof(void*),
 	.equal = equal_s,
 	.less  = less_s,
@@ -595,7 +595,7 @@ static const ax_stuff_trait trait_s = {
 	.link  = true
 };
 
-static const ax_stuff_trait trait_ws = { 
+static const ax_trait trait_ws = { 
 	.size  = sizeof(void*),
 	.equal = equal_ws,
 	.less  = less_ws,
@@ -633,7 +633,7 @@ inline static int uint_fixed_type(int bits)
 	}
 }
 
-int ax_stuff_fixed_type(int type)
+int ax_trait_fixed_type(int type)
 {
 	switch(type) {
 		case AX_ST_C:
@@ -671,10 +671,10 @@ int ax_stuff_fixed_type(int type)
 }
 
 /* -- Define functions that get trait structure pointer -- */
-const ax_stuff_trait* ax_stuff_traits(int type)
+const ax_trait* ax_trait_get(int type)
 {
 	CHECK_PARAM_VALIDITY(type, type >= 0);
-	type = ax_stuff_fixed_type(type);
+	type = ax_trait_fixed_type(type);
 
 	switch(type) {
 		case AX_ST_NIL:  return &trait_nil;
@@ -696,7 +696,7 @@ const ax_stuff_trait* ax_stuff_traits(int type)
 	}
 }
 
-ax_dump *ax_stuff_dump(const ax_stuff_trait *tr, const void* p, size_t size)
+ax_dump *ax_trait_dump(const ax_trait *tr, const void* p, size_t size)
 {
 	return tr->dump ? tr->dump(p, size) : ax_dump_symbol("?");
 }

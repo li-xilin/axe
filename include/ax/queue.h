@@ -36,9 +36,9 @@ typedef struct ax_queue_st ax_queue;
 #define AX_CLASS_ROLE_queue(_l) _l AX_CLASS_PTR(queue); AX_CLASS_ROLE_tube(_l)
 AX_CLASS_STRUCT_ROLE(queue);
 
-ax_tube *__ax_queue_construct(const ax_stuff_trait *elem_tr);
+ax_tube *__ax_queue_construct(const ax_trait *elem_tr);
 
-inline static AX_CLASS_CONSTRUCTOR(queue, const ax_stuff_trait *tr)
+inline static AX_CLASS_CONSTRUCTOR(queue, const ax_trait *tr)
 {
 	return __ax_queue_construct(tr);
 }

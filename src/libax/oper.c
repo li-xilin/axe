@@ -21,7 +21,7 @@
  */
 
 #include <ax/oper.h>
-#include <ax/stuff.h>
+#include <ax/trait.h>
 #include <ax/def.h>
 
 #define ptr_add(_type, _in1, _in2, _out) (*(_type*)_out = *(_type*)_in1 + *(_type*)_in2)
@@ -165,7 +165,7 @@ DECLARE_FLOAT_OPERSET_STRUCT(double)
 
 const ax_operset *ax_oper_for(int type)
 {
-	type = ax_stuff_fixed_type(type);
+	type = ax_trait_fixed_type(type);
 	switch (type) {
 		case AX_ST_I8:  return &operset_int8_t;
 		case AX_ST_I16: return &operset_int16_t;

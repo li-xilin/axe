@@ -38,9 +38,9 @@ AX_CLASS_STRUCT_ROLE(btrie);
 
 extern const ax_trie_trait ax_btrie_tr;
 
-ax_trie *__ax_btrie_construct(const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr);
+ax_trie *__ax_btrie_construct(const ax_trait* key_tr, const ax_trait* val_tr);
 
-inline static AX_CLASS_CONSTRUCTOR(btrie, const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr)
+inline static AX_CLASS_CONSTRUCTOR(btrie, const ax_trait* key_tr, const ax_trait* val_tr)
 {
 	return __ax_btrie_construct(key_tr, val_tr);
 }

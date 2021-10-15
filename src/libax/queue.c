@@ -124,7 +124,7 @@ static void one_free(ax_one *one)
 	free(one);
 }
 
-ax_tube *__ax_queue_construct(const ax_stuff_trait *elem_tr)
+ax_tube *__ax_queue_construct(const ax_trait *elem_tr)
 {
 	CHECK_PARAM_NULL(elem_tr);
 

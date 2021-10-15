@@ -30,10 +30,10 @@ static bool case_less(const void *p1, const void *p2, size_t size);
 static bool case_equal(const void *p1, const void *p2, size_t size);
 static ax_fail case_copy(void* dst, const void* src, size_t size);
 
-const ax_stuff_trait axut_case_tr =
+const ax_trait axut_case_tr =
 {
 	.copy = case_copy,
-	.init = ax_stuff_mem_init,
+	.init = ax_trait_mem_init,
 	.less = case_less,
 	.equal = case_equal,
 	.free = case_free,

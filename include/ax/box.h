@@ -84,7 +84,7 @@ AX_BEGIN_TRAIT(box)
 AX_END;
 
 AX_BEGIN_ENV(box)
-	const ax_stuff_trait *const elem_tr;
+	const ax_trait *const elem_tr;
 AX_END;
 
 AX_BLESS(box);

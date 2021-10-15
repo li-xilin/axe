@@ -41,11 +41,11 @@ AX_CLASS_STRUCT_ROLE(avl);
 extern const ax_map_trait ax_hmap_tr;
 
 ax_map *__ax_avl_construct(
-		const ax_stuff_trait* key_tr,
-		const ax_stuff_trait* val_tr
+		const ax_trait* key_tr,
+		const ax_trait* val_tr
 );
 
-inline static AX_CLASS_CONSTRUCTOR(avl, const ax_stuff_trait* key_tr, const ax_stuff_trait* val_tr)
+inline static AX_CLASS_CONSTRUCTOR(avl, const ax_trait* key_tr, const ax_trait* val_tr)
 {
 	return __ax_avl_construct(key_tr, val_tr);
 }

@@ -36,9 +36,9 @@ typedef struct ax_stack_st ax_stack;
 #define AX_CLASS_ROLE_stack(_l) _l AX_CLASS_PTR(stack); AX_CLASS_ROLE_tube(_l)
 AX_CLASS_STRUCT_ROLE(stack);
 
-ax_tube *__ax_stack_construct(const ax_stuff_trait *elem_tr);
+ax_tube *__ax_stack_construct(const ax_trait *elem_tr);
 
-inline static AX_CLASS_CONSTRUCTOR(stack, const ax_stuff_trait *tr)
+inline static AX_CLASS_CONSTRUCTOR(stack, const ax_trait *tr)
 {
 	return __ax_stack_construct(tr);
 }

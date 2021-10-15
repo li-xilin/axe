@@ -59,7 +59,7 @@ AX_BEGIN_TRAIT(trie)
 AX_END;
 
 AX_BEGIN_ENV(trie)
-	const ax_stuff_trait *key_tr;
+	const ax_trait *key_tr;
 AX_END;
 
 AX_BLESS(trie);
@@ -191,7 +191,7 @@ inline static bool ax_trie_iter_top(const ax_citer *it)
 }
 */
 
-inline static const ax_stuff_trait *ax_trie_key_tr(const ax_trie *trie)
+inline static const ax_trait *ax_trie_key_tr(const ax_trie *trie)
 {
 	ax_trie_cr self_r = { .trie = trie };
 	return self_r.trie->env.key_tr;

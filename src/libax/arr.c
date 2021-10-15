@@ -25,7 +25,7 @@
 #include <ax/iter.h>
 #include <ax/debug.h>
 #include <ax/mem.h>
-#include <ax/stuff.h>
+#include <ax/trait.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -70,7 +70,7 @@ static inline bool iter_if_valid(const ax_citer *it)
 {
 
 	const ax_arr *self = it->owner;
-	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
+	const ax_trait *etr = self->seq.env.box.elem_tr;
 	ax_byte *ptr = self->arr;
 	size_t size = etr->size * self->size;
 
@@ -84,7 +84,7 @@ static inline bool iter_if_have_value(const ax_citer *it)
 {
 	const ax_arr *self = it->owner;
 	const ax_byte *ptr = self->arr;
-	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
+	const ax_trait *etr = self->seq.env.box.elem_tr;
 	size_t size = etr->size * self->size;
 	return (ax_byte *)it->point >= ptr && (ax_byte *)it->point < ptr + size;
 }
@@ -190,9 +190,9 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_cc(it)));
 
 	const ax_arr *self = it->owner;
-	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
-	ax_stuff_free(etr, it->point);
-	if (ax_stuff_copy_or_init(etr, it->point, val))
+	const ax_trait *etr = self->seq.env.box.elem_tr;
+	ax_trait_free(etr, it->point);
+	if (ax_trait_copy_or_init(etr, it->point, val))
 		return true;
 	return false;
 }
@@ -239,7 +239,7 @@ static ax_iter box_end(ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	ax_arr *self = (ax_arr *) box;
-	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
+	const ax_trait *etr = self->seq.env.box.elem_tr;
 
 	ax_iter it = {
 		.owner = (void*)box,
@@ -255,7 +255,7 @@ static ax_iter box_rbegin(ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	ax_arr *self = (ax_arr *) box;
-	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
+	const ax_trait *etr = self->seq.env.box.elem_tr;
 
 	ax_iter it = {
 		.owner = (void*)box,
@@ -271,7 +271,7 @@ static ax_iter box_rend(ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	ax_arr *self = (ax_arr *) box;
-	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
+	const ax_trait *etr = self->seq.env.box.elem_tr;
 	ax_iter it = {
 		.owner = (void *)box,
 		.point = (ax_byte *)self->arr - etr->size,
@@ -286,7 +286,7 @@ static void seq_invert(ax_seq *seq)
 	CHECK_PARAM_NULL(seq);
 
 	ax_arr *self = (ax_arr *) seq;
-	const ax_stuff_trait *etr = self->seq.env.box.elem_tr;
+	const ax_trait *etr = self->seq.env.box.elem_tr;
 	size_t size = self->size * etr->size;
 	ax_byte *ptr = self->arr;
 
@@ -317,7 +317,7 @@ static ax_iter seq_at(const ax_seq *seq, size_t index)
 	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(ax_cr(seq, seq).box));
 
 	ax_arr *self = (ax_arr *) seq;
-	const ax_stuff_trait *etr = seq->env.box.elem_tr;
+	const ax_trait *etr = seq->env.box.elem_tr;
 
 	ax_iter it = {
 		.owner = self,
@@ -333,7 +333,7 @@ static void *seq_last(const ax_seq *seq)
 	ax_assert(ax_box_size(ax_cr(seq, seq).box) > 0, "empty");
 
 	ax_arr_cr self_r = { .seq = seq };
-	const ax_stuff_trait *etr = self_r.arr->seq.env.box.elem_tr;
+	const ax_trait *etr = self_r.arr->seq.env.box.elem_tr;
 	return (ax_byte *)self_r.arr->arr + (etr->size  - 1) * self_r.arr->size;
 }
 
@@ -417,7 +417,7 @@ const ax_seq_trait ax_arr_tr =
 };
 
 
-ax_arr_r ax_arr_make(ax_arr *arr, const ax_stuff_trait *elem_tr, void *ptr, size_t size)
+ax_arr_r ax_arr_make(ax_arr *arr, const ax_trait *elem_tr, void *ptr, size_t size)
 {
 	CHECK_PARAM_NULL(elem_tr);
 	CHECK_PARAM_NULL(elem_tr->copy);

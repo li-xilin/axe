@@ -22,6 +22,7 @@
 
 #include <ax/seq.h>
 #include <ax/dump.h>
+#include <ax/trait.h>
 #include "check.h"
 #include <errno.h>
 
@@ -46,10 +47,10 @@ ax_dump *ax_seq_dump(const ax_seq *seq)
 	ax_seq_cr self = ax_cr(seq, seq);
 	size_t size = ax_box_size(self.box);
 	ax_dump *block_dmp = ax_dump_block(ax_one_name(self.one), size);
-	const ax_stuff_trait *etr = self.box->env.elem_tr;
+	const ax_trait *etr = self.box->env.elem_tr;
 	size_t i = 0;
 	ax_box_cforeach(self.box, const void *, p) {
-		ax_dump_bind(block_dmp, i, ax_stuff_dump(etr, ax_stuff_in(etr, p), etr->size));
+		ax_dump_bind(block_dmp, i, ax_trait_dump(etr, ax_trait_in(etr, p), etr->size));
 		i++;
 	}
 	return block_dmp;

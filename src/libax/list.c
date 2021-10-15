@@ -25,7 +25,7 @@
 #include <ax/any.h>
 #include <ax/iter.h>
 #include <ax/debug.h>
-#include <ax/stuff.h>
+#include <ax/trait.h>
 #include <ax/class.h>
 #include <string.h>
 #include <stdlib.h>
@@ -280,11 +280,11 @@ static ax_fail iter_set(const ax_iter *it, const void *val)
 
 	struct node_st *node = it->point;
 	ax_list *list = (ax_list *) it->owner;
-	const ax_stuff_trait *etr = list->seq.env.box.elem_tr;
+	const ax_trait *etr = list->seq.env.box.elem_tr;
 
-	ax_stuff_free(etr, node->data);
+	ax_trait_free(etr, node->data);
 
-	if (ax_stuff_copy_or_init(etr, node->data, val)) {
+	if (ax_trait_copy_or_init(etr, node->data, val)) {
 		free(node);
 		return true;
 	}
@@ -310,8 +310,8 @@ static void iter_erase(ax_iter *it)
 		node->next->pre = node->pre;
 	}
 	list->size --;
-	const ax_stuff_trait *etr = list->seq.env.box.elem_tr;
-	ax_stuff_free(etr, node->data);
+	const ax_trait *etr = list->seq.env.box.elem_tr;
+	ax_trait_free(etr, node->data);
 	free(node);
 }
 
@@ -338,7 +338,7 @@ static ax_any *any_copy(const ax_any *any)
 	CHECK_PARAM_NULL(any);
 
 	ax_list_cr self_r = { .any = any };
-	const ax_stuff_trait *etr = self_r.box->env.elem_tr;
+	const ax_trait *etr = self_r.box->env.elem_tr;
 
 	ax_list_r new_r = { .seq = __ax_list_construct(etr) };
 	if (new_r.one == NULL) {
@@ -439,11 +439,11 @@ static void box_clear(ax_box *box)
 	if (list->size == 0)
 		return;
 
-	const ax_stuff_trait *etr = list->seq.env.box.elem_tr;
+	const ax_trait *etr = list->seq.env.box.elem_tr;
 	struct node_st *node = list->head;
 	do {	
 		struct node_st *next = node->next;
-		ax_stuff_free(etr, node->data);
+		ax_trait_free(etr, node->data);
 		free(node);
 		node = next;
 	} while (node != list->head);
@@ -461,13 +461,13 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	ax_list_r self_r = { .seq = seq };
 	CHECK_PARAM_VALIDITY(it, (it->point ? !!self_r.list->head : 1));
 
-	const ax_stuff_trait *etr = self_r.box->env.elem_tr;
+	const ax_trait *etr = self_r.box->env.elem_tr;
 	struct node_st *node = malloc(sizeof(struct node_st) + etr->size);
 	if (node == NULL) {
 		return true;
 	}
 
-	if (ax_stuff_copy_or_init(etr, node->data, val)) {
+	if (ax_trait_copy_or_init(etr, node->data, val)) {
 		free(node);
 		return true;
 	}
@@ -503,14 +503,14 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	return false;
 }
 
-inline static struct node_st *make_node(const ax_stuff_trait *etr, const void *val)
+inline static struct node_st *make_node(const ax_trait *etr, const void *val)
 {
 	struct node_st *node = NULL;
 	node = malloc(sizeof(struct node_st) + etr->size);
 	if (!node)
 		goto fail;
 
-	if (ax_stuff_copy_or_init(etr, node->data, val))
+	if (ax_trait_copy_or_init(etr, node->data, val))
 		goto fail;
 
 	return node;
@@ -525,7 +525,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 
 	ax_list_r self_r = { .seq = seq };
 
-	const ax_stuff_trait *etr = self_r.box->env.elem_tr;
+	const ax_trait *etr = self_r.box->env.elem_tr;
 
 	struct node_st *node = make_node(etr, val);
 	if (!node) {
@@ -566,9 +566,9 @@ static ax_fail seq_pop(ax_seq *seq)
 		list->head = NULL;
 	}
 
-	const ax_stuff_trait *etr = seq->env.box.elem_tr;
+	const ax_trait *etr = seq->env.box.elem_tr;
 
-	ax_stuff_free(etr, node->data);
+	ax_trait_free(etr, node->data);
 	free(node);
 
 	list->size --;
@@ -580,7 +580,7 @@ static ax_fail seq_pushf(ax_seq *seq, const void *val)
 	CHECK_PARAM_NULL(seq);
 
 	ax_list_r self_r = { .seq = seq };
-	const ax_stuff_trait *etr = self_r.box->env.elem_tr;
+	const ax_trait *etr = self_r.box->env.elem_tr;
 	struct node_st *node = make_node(etr, val);
 	if (!node) {
 		free(node);
@@ -620,8 +620,8 @@ static ax_fail seq_popf(ax_seq *seq)
 		list->head = NULL;
 	}
 
-	const ax_stuff_trait *etr = seq->env.box.elem_tr;
-	ax_stuff_free(etr, node->data);
+	const ax_trait *etr = seq->env.box.elem_tr;
+	ax_trait_free(etr, node->data);
 	free(node);
 	list->size --;
 	return false;
@@ -787,7 +787,7 @@ const ax_seq_trait ax_list_tr =
 };
 
 
-ax_seq* __ax_list_construct(const ax_stuff_trait *elem_tr)
+ax_seq* __ax_list_construct(const ax_trait *elem_tr)
 {
 	CHECK_PARAM_NULL(elem_tr);
 

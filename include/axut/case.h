@@ -23,7 +23,7 @@
 #ifndef AXUT_CASE_H
 #define AXUT_CASE_H
 
-#include "../ax/stuff.h"
+#include "../ax/trait.h"
 
 #ifndef AXUT_CASE_DEFINED
 #define AXUT_CASE_DEFINED
@@ -48,7 +48,7 @@ struct axut_case_st
 	const int priority;
 };
 
-const ax_stuff_trait axut_case_tr;
+const ax_trait axut_case_tr;
 
 #endif
 

@@ -23,7 +23,7 @@
 #ifndef AX_ITER_H
 #define AX_ITER_H
 #include "debug.h"
-#include "stuff.h"
+#include "trait.h"
 #include "mem.h"
 #include <stdint.h>
 
@@ -67,8 +67,8 @@ typedef struct ax_iter_trait_st
 #define __AX_ITER_STRUCT_BLOCK(_const) \
 { \
 	_const void *owner; \
-	const ax_iter_trait *tr; \
-	const ax_stuff_trait *etr; \
+	const struct ax_iter_trait_st *tr; \
+	const struct ax_trait_st *etr; \
 	void *point; \
 }
 struct ax_iter_st __AX_ITER_STRUCT_BLOCK();
@@ -162,17 +162,17 @@ inline static void ax_iter_erase(ax_iter *it)
 
 inline static void *ax_iter_get(const ax_iter *it)
 {
-	return ax_stuff_out(it->etr, it->tr->get(ax_iter_cc(it)));
+	return ax_trait_out(it->etr, it->tr->get(ax_iter_cc(it)));
 }
 
 inline static const void *ax_citer_get(const ax_citer *it)
 {
-	return ax_stuff_out(it->etr, it->tr->get(it));
+	return ax_trait_out(it->etr, it->tr->get(it));
 }
 
 inline static ax_fail ax_iter_set(const ax_iter *it, const void *val)
 {
-	return it->tr->set(it, ax_stuff_in(it->etr, val));
+	return it->tr->set(it, ax_trait_in(it->etr, val));
 }
 
 inline static bool ax_citer_equal(const ax_citer *it1, const ax_citer *it2)

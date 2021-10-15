@@ -41,7 +41,7 @@ typedef ax_iter (*ax_seq_at_f)     (const ax_seq *seq, size_t index);
 typedef ax_fail (*ax_seq_insert_f) (ax_seq *seq, ax_iter *iter, const void *val);
 typedef void   *(*ax_seq_end_f)    (const ax_seq *seq);
 
-typedef ax_seq *(ax_seq_construct_f)(const ax_stuff_trait *tr);
+typedef ax_seq *(ax_seq_construct_f)(const ax_trait *tr);
 
 #define AX_CLASS_BASE_seq box
 #define AX_CLASS_ROLE_seq(_l) _l AX_CLASS_PTR(seq); AX_CLASS_ROLE_box(_l)
@@ -67,7 +67,7 @@ AX_BLESS(seq);
 inline static ax_fail ax_seq_push(ax_seq *seq, const void *val)
 {
 	ax_trait_require(seq, seq->tr->push);
-	return seq->tr->push(seq, ax_stuff_in(seq->env.box.elem_tr, val));
+	return seq->tr->push(seq, ax_trait_in(seq->env.box.elem_tr, val));
 }
 
 inline static ax_fail ax_seq_pop(ax_seq *seq)
@@ -79,7 +79,7 @@ inline static ax_fail ax_seq_pop(ax_seq *seq)
 inline static ax_fail ax_seq_pushf(ax_seq *seq, const void *val)
 {
 	ax_trait_optional(seq, seq->tr->pushf);
-	return seq->tr->pushf(seq, ax_stuff_in(seq->env.box.elem_tr, val));
+	return seq->tr->pushf(seq, ax_trait_in(seq->env.box.elem_tr, val));
 }
 
 inline static ax_fail ax_seq_popf(ax_seq *seq)
@@ -117,7 +117,7 @@ inline static ax_citer ax_seq_cat(const ax_seq *seq, size_t index)
 static inline ax_fail ax_seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 {
 	ax_trait_optional(seq, seq->tr->at);
-	return seq->tr->insert(seq, it, ax_stuff_in(seq->env.box.elem_tr, val));
+	return seq->tr->insert(seq, it, ax_trait_in(seq->env.box.elem_tr, val));
 }
 
 static inline void *ax_seq_first(ax_seq *seq)

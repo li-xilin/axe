@@ -28,6 +28,7 @@
 #include <ax/mem.h>
 #include <ax/log.h>
 #include <ax/dump.h>
+#include <ax/trait.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -488,8 +489,7 @@ static ax_seq *str_split (const ax_str* str, const char ch)
 	char *buffer = ax_buff_ptr(buff);
 	char *cur = buffer, *head = buffer;
 
-	ax_vector_r ret_r = { NULL };
-	ret_r.seq = __ax_vector_construct(ax_stuff_traits(AX_ST_S));
+	ax_vector_r ret_r = ax_class_new(vector, ax_t(str));
 	if (ret_r.one == NULL)
 		goto fail;
 
@@ -752,9 +752,7 @@ ax_str *__ax_string_construct()
 	ax_string string_init = {
 		.str = {
 			.tr = &ax_string_tr,
-			.env = {
-				.seq.box.elem_tr = ax_stuff_traits(AX_ST_C)
-			},
+			.env.seq.box.elem_tr = ax_t(char)
 		},
 		.buff_r = buff_r,
 	};

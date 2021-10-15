@@ -26,11 +26,6 @@
 
 #define AX_ANY_NAME AX_ONE_NAME ".any"
 
-#ifndef AX_STUFF_TRAIT_DEFINED
-#define AX_STUFF_TRAIT_DEFINED
-typedef struct ax_stuff_trait_st ax_stuff_trait;
-#endif
-
 #ifndef AX_DUMP_DEFINED
 #define AX_DUMP_DEFINED
 typedef struct ax_dump_st ax_dump;
@@ -70,7 +65,7 @@ ax_fail __ax_any_print(const ax_any *any, const char *file, int line);
 
 #define ax_any_so(_any) __ax_any_print(_any, __FILE__, __LINE__)
 
-extern const ax_stuff_trait ax_any_tr;
+//extern const ax_trait ax_any_tr;
 
 #endif
 

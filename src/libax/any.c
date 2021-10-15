@@ -21,7 +21,7 @@
  */
 
 #include "ax/any.h"
-#include <ax/stuff.h>
+#include <ax/trait.h>
 #include <ax/debug.h>
 #include <ax/dump.h>
 #include <ax/def.h>
@@ -33,70 +33,6 @@
 
 #undef free
 
-static bool stuff_equal(const void* p1, const void* p2, size_t size)
-{
-	CHECK_PARAM_NULL(p1);
-	CHECK_PARAM_NULL(p2);
-
-	return (void*)p1 == (void*)p2;
-}
-
-static bool stuff_less(const void* p1, const void* p2, size_t size)
-{
-	CHECK_PARAM_NULL(p1);
-	CHECK_PARAM_NULL(p2);
-
-	return(void*)p1 < (void*)p2;
-}
-
-static void stuff_free(void* p)
-{
-	CHECK_PARAM_NULL(p);
-
-	ax_one* one= (ax_one*)p;
-	one->tr->free(one);
-}
-
-static size_t stuff_hash(const void* p, size_t size)
-{
-	CHECK_PARAM_NULL(p);
-
-	return ax_stuff_traits(AX_ST_PTR)->hash(p, size);
-}
-
-static ax_fail stuff_copy(void* dst, const void* src, size_t size)
-{
-	CHECK_PARAM_NULL(dst);
-	CHECK_PARAM_NULL(src);
-
-	ax_any* anys = *(ax_any**)src;
-	return !(*(void**)dst = anys->tr->copy(src));
-}
-
-static bool stuff_init(void *p, size_t size)
-{
-	CHECK_PARAM_NULL(p);
-
-	*(void**)p = NULL;
-	return true;
-}
-
-static const ax_stuff_trait any_stuff_trait = {
-	.size = sizeof(void*),
-	.equal = stuff_equal,
-	.less = stuff_less,
-	.hash = stuff_hash,
-	.free = stuff_free,
-	.copy = stuff_copy,
-	.init = stuff_init,
-	.link = false
-
-};
-
-const ax_stuff_trait* __ax_any_stuff_trait()
-{
-	return &any_stuff_trait;
-}
 
 ax_fail __ax_any_print(const ax_any *any, const char *file, int line)
 {
