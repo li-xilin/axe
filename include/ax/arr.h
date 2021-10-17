@@ -23,6 +23,7 @@
 #ifndef AX_ARR_H
 #define AX_ARR_H
 #include "seq.h"
+#include <limits.h>
 
 #define AX_ARR_NAME AX_SEQ_NAME ".arr"
 
@@ -50,7 +51,7 @@ inline static void* ax_arr_ptr(ax_arr *arr)
 	((struct ax_seq_st *)(struct ax_arr_st[1]) { \
 		 	[0].seq.env.box.elem_tr = (_etr), \
 			[0].seq.tr = &ax_arr_tr, \
-			[0].size = (_size) / (_etr)->size, \
+			[0].size = (_etr)->size ? (_size) / (_etr)->size : SIZE_MAX, \
 			[0].arr = (_ptr), \
 		})
 
