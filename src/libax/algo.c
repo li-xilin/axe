@@ -237,7 +237,6 @@ static void quick_sort(const ax_iter *first, const ax_iter *last)
 ax_fail ax_quick_sort(const ax_iter *first, const ax_iter *last)
 {
 	CHECK_ITER_COMPARABLE(first, last);
-	ax_assert(ax_one_is(first->owner, "one.any.box.seq"), "unsupported container type");
 	ax_assert(ax_iter_is(first, AX_IT_BID), "unsupported iterator type");
 
 	quick_sort(first, last);
@@ -283,10 +282,9 @@ void ax_merge(const ax_citer *first1, const ax_citer *last1, const ax_citer *fir
 }
 
 struct merge_sort_context_st {
-	ax_seq *main;
 	void **imap;
-
-	ax_seq *aux;
+	void *main;
+	void *aux;
 };
 
 void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
@@ -338,48 +336,44 @@ void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
 ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 {
 	CHECK_ITER_COMPARABLE(first, last);
-	ax_assert(ax_one_is(first->owner, AX_SEQ_NAME), "unsupported one object type");
 	ax_assert(ax_iter_is(first, AX_IT_FORW), "unsupported iterator type");
 
-	ax_seq_r main_r = { first->owner };
-
 	size_t size = 0;
-	ax_iter cur = ax_box_begin(main_r.box);
+	ax_iter cur = *first;
 	while (!ax_iter_equal(&cur, last)) {
 		size++;
 		ax_iter_next(&cur);
 	}
 	
-	void **imap = malloc((size + 1) * sizeof *imap);
-	if (!imap) {
+	void **imap = malloc((size + 1) * sizeof(void *));
+	if (!imap)
 		return true;
-	}
 	
 	size_t pos = 0;
-	cur = ax_box_begin(main_r.box);
+	cur = *first;
 	while (!ax_iter_equal(&cur, last)) {
 		imap[pos++] = cur.point;
 		ax_iter_next(&cur);
 	}
 	imap[pos] = cur.point;
 
-	ax_seq *aux = ax_class_new(vector, first->etr).seq;
-	if (!aux) {
+	ax_vector_r aux = ax_class_new(vector, first->etr);
+	if (!aux.one) {
 		free(imap);
 		return true;
 	}
-	ax_seq_trunc(aux, size);
+	ax_seq_trunc(aux.seq, size);
 
 	struct merge_sort_context_st ext = {
 		.imap = imap,
-		.main = main_r.seq,
-		.aux = aux
+		.main = first->owner,
+		.aux = aux.one,
 	};
 
 	merge_sort(0, size, &ext);
 
 	free(imap);
-	ax_one_free((ax_one *)aux);
+	ax_one_free(aux.one);
 	
 	return false;
 }
