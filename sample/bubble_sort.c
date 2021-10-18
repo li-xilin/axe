@@ -12,7 +12,7 @@ int main()
 	ax_box_iterate(v.box, i) {
 		for (ax_iter j = ax_iter_ret_next(&i);
 				!ax_iter_equal(&j, &end); ax_iter_next(&j)) {
-			if (!ax_stuff_less(i.etr, i.tr->get(ax_iter_c(&i)),
+			if (!ax_trait_less(i.etr, i.tr->get(ax_iter_c(&i)),
 					j.tr->get(ax_iter_c(&j)))) {
 				ax_iter_swap(&i, &j);
 			}
@@ -20,6 +20,7 @@ int main()
 	}
 
 	ax_any_so(v.any);
+	ax_one_free(v.one);
 	return 0;
 }
 

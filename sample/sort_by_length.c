@@ -1,5 +1,5 @@
 #include "ax/arr.h"
-#include "ax/stuff.h"
+#include "ax/trait.h"
 #include "ax/algo.h"
 #include <stdio.h>
 
@@ -12,8 +12,8 @@ bool str_less(const char *a, const char *b, size_t size)
 int main()
 {
 	/* setup string trait for sorting */
-	ax_stuff_trait str_tr = *ax_t(str);
-	str_tr.less = (ax_stuff_compare_f)str_less;
+	ax_trait str_tr = *ax_t(str);
+	str_tr.less = (ax_trait_compare_f)str_less;
 
 	char *strs[] = {
 		"Amy",
@@ -26,7 +26,8 @@ int main()
 		"Ed"
 	};
 
-	/* alloc an ax_arr instance and initialize it with specified array */
+	/* alloc an ax_arr instance and initialize it with specified array 
+	   ax_arr need not be freed */
 	ax_arr_r arr = ax_class_new(arr, &str_tr, strs, sizeof(strs));
 	
 	/* sort the sequence in ascending order*/
