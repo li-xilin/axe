@@ -48,7 +48,7 @@ struct axut_case_st
 	const int priority;
 };
 
-const ax_trait axut_case_tr;
+extern const ax_trait axut_case_tr;
 
 #endif
 
