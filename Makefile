@@ -23,8 +23,8 @@ DEBUG ?= 1
 DESTDIR ?= /usr/local
 
 all clean:
-	$(MAKE) -C src/libax $@
-	$(MAKE) -C src/libaxut $@
+	$(MAKE) -C src/ax $@
+	$(MAKE) -C src/axut $@
 	$(MAKE) -C test $@
 
 install:
