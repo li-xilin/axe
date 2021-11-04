@@ -8,6 +8,6 @@ test/test_all
 test/test.exe
 .ycm_extra_conf.py
 .vscode
-example
 compile_commands.json
 *.swp
+.cache

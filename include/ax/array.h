@@ -20,42 +20,42 @@
  * THE SOFTWARE.
  */
 
-#ifndef AX_ARR_H
-#define AX_ARR_H
+#ifndef AX_ARRAY_H
+#define AX_ARRAY_H
 #include "seq.h"
 #include <limits.h>
 
-#define AX_ARR_NAME AX_SEQ_NAME ".arr"
+#define AX_ARRAY_NAME AX_SEQ_NAME ".array"
 
-#ifndef AX_ARR_DEFINED
-#define AX_ARR_DEFINED
-typedef struct ax_arr_st ax_arr;
+#ifndef AX_ARRAY_DEFINED
+#define AX_ARRAY_DEFINED
+typedef struct ax_array_st ax_array;
 #endif
 
-#define AX_CLASS_BASE_arr seq
-#define AX_CLASS_ROLE_arr(_l) _l AX_CLASS_PTR(arr); AX_CLASS_ROLE_seq(_l)
-AX_CLASS_STRUCT_ROLE(arr);
-AX_CLASS_STRUCT_ENTRY(arr)
+#define AX_CLASS_BASE_array seq
+#define AX_CLASS_ROLE_array(_l) _l AX_CLASS_PTR(array); AX_CLASS_ROLE_seq(_l)
+AX_CLASS_STRUCT_ROLE(array);
+AX_CLASS_STRUCT_ENTRY(array)
 	size_t size;
-	void *arr;
+	void *array;
 AX_END;
 
-extern const ax_seq_trait ax_arr_tr;
+extern const ax_seq_trait ax_array_tr;
 
-inline static void* ax_arr_ptr(ax_arr *arr)
+inline static void* ax_array_ptr(ax_array *array)
 {
-	return arr->arr;
+	return array->array;
 }
 
-#define __ax_arr_construct3(_etr, _ptr, _size) \
-	((struct ax_seq_st *)(struct ax_arr_st[1]) { \
+#define __ax_array_construct3(_etr, _ptr, _size) \
+	((struct ax_seq_st *)(struct ax_array_st[1]) { \
 		 	[0].seq.env.box.elem_tr = (_etr), \
-			[0].seq.tr = &ax_arr_tr, \
+			[0].seq.tr = &ax_array_tr, \
 			[0].size = (_etr)->size ? (_size) / (_etr)->size : SIZE_MAX, \
-			[0].arr = (_ptr), \
+			[0].array = (_ptr), \
 		})
 
-#define __ax_arr_construct2(_etr, _size) \
-	__ax_arr_construct3(_etr, (uint8_t [(_size)]) { 0 }, _size)
+#define __ax_array_construct2(_etr, _size) \
+	__ax_array_construct3(_etr, (uint8_t [(_size)]) { 0 }, _size)
 
 #endif
