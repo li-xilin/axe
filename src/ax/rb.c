@@ -353,7 +353,7 @@ static int rb_tree_find_or_insert(struct ax_rb_st  *tree, const void *key, struc
 		tree->root = new_candidate;
 		tree->rightmost = new_candidate;
 		RB_TREE_NODE_SET_COLOR(new_candidate, COLOR_BLACK);
-		ax_trait_copy(tree->map.env.key_tr, new_candidate->kvbuffer, key);
+		//ax_trait_copy(tree->map.env.key_tr, new_candidate->kvbuffer, key);
 		*value = new_candidate;
 		return 1;
 	}
@@ -391,7 +391,7 @@ static int rb_tree_find_or_insert(struct ax_rb_st  *tree, const void *key, struc
 	}
 
 	RB_TREE_NODE_SET_PARENT(new_candidate, node_prev);
-	ax_trait_copy(tree->map.env.key_tr, new_candidate->kvbuffer, key);
+	//ax_trait_copy(tree->map.env.key_tr, new_candidate->kvbuffer, key);
 
 	node = new_candidate;
 
@@ -776,9 +776,13 @@ static void *node_set_value(ax_map *map, struct node_st *node, const void *val)
 {
 	const ax_trait *vtr = map->env.box.elem_tr;
 	void *dst = node_val(map, node);
-	ax_trait_free(vtr, dst);
-	if (ax_trait_copy_or_init(vtr, dst, val))
+	ax_byte tmp[vtr->size];
+	memcpy(tmp, dst, vtr->size);
+	if (ax_trait_copy_or_init(vtr, dst, val)) {
+		memcpy(dst, tmp, vtr->size);
 		return NULL;
+	}
+	ax_trait_free(vtr, tmp);
 	return node_val(map, node);
 }
 
@@ -811,7 +815,7 @@ static void *map_put(ax_map* map, const void *key, const void *val)
 
 	ax_rb_r self = { .map = map };
 
-	const ax_trait *vtr = map->env.box.elem_tr;
+	const ax_trait *ktr = map->env.key_tr;
 
 	struct node_st *node = malloc(sizeof(struct node_st) + map->env.key_tr->size + map->env.box.elem_tr->size);
 	if (node == NULL)
@@ -822,13 +826,23 @@ static void *map_put(ax_map* map, const void *key, const void *val)
 	if (rb_tree_find_or_insert(self.rb, key, node, &candidate) == 0) {
 		free(node);
 		valptr = node_val(self.map, candidate);
-		ax_trait_free(vtr, valptr);
+		if (node_set_value(map, candidate, val))
+			return NULL;
 	} else {
 		valptr = node_val(self.map, candidate);
+		if (ax_trait_copy(ktr, candidate->kvbuffer, key)) {
+			rb_tree_remove(self.rb, candidate);
+			return NULL;
+		}
+
+		if (node_set_value(map, candidate, val)) {
+			rb_tree_remove(self.rb, candidate);
+			ax_trait_free(ktr, candidate->kvbuffer);
+			return NULL;
+		}
 		self.rb->size++;
 	}
 
-	ax_trait_copy_or_init(vtr, valptr, val);
 	return valptr;
 }
 
