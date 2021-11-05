@@ -1,4 +1,4 @@
-#include "ax/arr.h"
+#include "ax/array.h"
 #include "ax/trait.h"
 #include "ax/algo.h"
 #include <stdio.h>
@@ -28,7 +28,7 @@ int main()
 
 	/* alloc an ax_arr instance and initialize it with specified array 
 	   ax_arr need not be freed */
-	ax_arr_r arr = ax_class_new(arr, &str_tr, strs, sizeof(strs));
+	ax_array_r arr = ax_class_new(array, &str_tr, strs, sizeof(strs));
 	
 	/* sort the sequence in ascending order*/
 	ax_quick_sort(ax_ptrof(ax_iter, ax_box_begin(arr.box)), 
