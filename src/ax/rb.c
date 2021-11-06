@@ -28,6 +28,7 @@
 #include <ax/debug.h>
 #include <ax/mem.h>
 #include <ax/trait.h>
+#include <ax/arch.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -35,15 +36,15 @@
 #include <assert.h>
 #include <string.h>
 
-#if defined(__x86_64) && defined(_LP64)
-#define AX_RB_USE_AUGMENTED_PTR
+#if defined(AX_ARCH_AMD64) && defined(_LP64)
+# define USE_AUGMENTED_PTR
+# define COLOR_SHIFT 63
 #endif
-
 
 AX_CLASS_STRUCT_ENTRY(rb)
 	struct node_st {
 		struct node_st *left, *right, *parent;
-#ifndef AX_RB_USE_AUGMENTED_PTR /* Not using augmented pointer; i.e. a 32-bit platform */
+#ifndef USE_AUGMENTED_PTR
 		unsigned int color;
 #endif
 		ax_byte kvbuffer[];
@@ -55,19 +56,18 @@ AX_END;
 #define COLOR_BLACK 0x0ull
 #define COLOR_RED   0x1ull
 
-#ifdef AX_RB_USE_AUGMENTED_PTR /* Should we augment the pointer with the color metadata */
-# define RB_TREE_COLOR_SHIFT                         63 /* TODO: parameterize me */
-# define RB_TREE_PARENT_PTR_MASK                     ((1ull << RB_TREE_COLOR_SHIFT) - 1)
-# define _RB_TREE_GET_PARENT_COLOR_MASK(__node)      (((size_t)(__node)->parent) & ~RB_TREE_PARENT_PTR_MASK)
-# define RB_TREE_NODE_GET_COLOR(_node)               ((((size_t)(_node)->parent) >> RB_TREE_COLOR_SHIFT) & 1)
-# define RB_TREE_NODE_SET_COLOR(_node, _color)       do { (_node)->parent = (struct node_st *)((((size_t)(_node)->parent) & RB_TREE_PARENT_PTR_MASK) | ((_color) << RB_TREE_COLOR_SHIFT)); } while (0)
-# define RB_TREE_NODE_GET_PARENT(_node)              ((struct node_st *)(((size_t)(_node)->parent) & RB_TREE_PARENT_PTR_MASK))
-# define RB_TREE_NODE_SET_PARENT(_node, _parent)     do { (_node)->parent = (struct node_st *)((size_t)(_parent) | _RB_TREE_GET_PARENT_COLOR_MASK((_node))); } while (0)
+#ifdef USE_AUGMENTED_PTR /* Should we augment the pointer with the color metadata */
+# define PARENT_PTR_MASK                     ((1ull << COLOR_SHIFT) - 1)
+# define _GET_PARENT_COLOR_MASK(__node)      (((uintptr_t)(__node)->parent) & ~PARENT_PTR_MASK)
+# define NODE_GET_COLOR(_node)               ((((uintptr_t)(_node)->parent) >> COLOR_SHIFT) & 1)
+# define NODE_SET_COLOR(_node, _color)       ax_block { (_node)->parent = (struct node_st *)((((uintptr_t)(_node)->parent) & PARENT_PTR_MASK) | ((_color) << COLOR_SHIFT)); }
+# define NODE_GET_PARENT(_node)              ((struct node_st *)(((uintptr_t)(_node)->parent) & PARENT_PTR_MASK))
+# define NODE_SET_PARENT(_node, _parent)     ax_block { (_node)->parent = (struct node_st *)((uintptr_t)(_parent) | _GET_PARENT_COLOR_MASK((_node))); }
 #else
-# define RB_TREE_NODE_GET_COLOR(_node)               ((_node)->color)
-# define RB_TREE_NODE_SET_COLOR(_node, _color)       do { ((_node)->color = (_color)); } while (0)
-# define RB_TREE_NODE_GET_PARENT(_node)              ((_node)->parent)
-# define RB_TREE_NODE_SET_PARENT(_node, _parent)     do { ((_node)->parent = (_parent)); } while (0)
+# define NODE_GET_COLOR(_node)               ((_node)->color)
+# define NODE_SET_COLOR(_node, _color)       ax_block { ((_node)->color = (_color)); }
+# define NODE_GET_PARENT(_node)              ((_node)->parent)
+# define NODE_SET_PARENT(_node, _parent)     ax_block { ((_node)->parent = (_parent)); }
 #endif
 
 static void *map_put(ax_map* map, const void *key, const void *val);
@@ -134,13 +134,13 @@ static struct node_st *rb_tree_find(ax_rb *tree, const void *key)
 /* Helper function to get a node's grandparent */
 inline static struct node_st *get_grandparent(struct node_st *node)
 {
-	struct node_st *parent_node = RB_TREE_NODE_GET_PARENT(node);
+	struct node_st *parent_node = NODE_GET_PARENT(node);
 
 	if (parent_node == NULL) {
 		return NULL;
 	}
 
-	return RB_TREE_NODE_GET_PARENT(parent_node);
+	return NODE_GET_PARENT(parent_node);
 }
 
 /* Helper function to do a left rotation of a given node */
@@ -153,15 +153,15 @@ inline static void rotate_left(ax_rb *tree, struct node_st *node)
 
 	if (y->left != NULL) {
 		struct node_st *yleft = y->left;
-		RB_TREE_NODE_SET_PARENT(yleft, x);
+		NODE_SET_PARENT(yleft, x);
 	}
 
-	RB_TREE_NODE_SET_PARENT(y, RB_TREE_NODE_GET_PARENT(x));
+	NODE_SET_PARENT(y, NODE_GET_PARENT(x));
 
-	if (RB_TREE_NODE_GET_PARENT(x) == NULL) {
+	if (NODE_GET_PARENT(x) == NULL) {
 		tree->root = y;
 	} else {
-		struct node_st *xp = RB_TREE_NODE_GET_PARENT(x);
+		struct node_st *xp = NODE_GET_PARENT(x);
 		if (x == xp->left) {
 			xp->left = y;
 		} else {
@@ -170,7 +170,7 @@ inline static void rotate_left(ax_rb *tree, struct node_st *node)
 	}
 
 	y->left = x;
-	RB_TREE_NODE_SET_PARENT(x, y);
+	NODE_SET_PARENT(x, y);
 }
 
 /* Helper function to do a right rotation of a given node */
@@ -183,15 +183,15 @@ inline static void rotate_right(ax_rb *tree, struct node_st *node)
 
 	if (y->right != NULL) {
 		struct node_st *yright = y->right;
-		RB_TREE_NODE_SET_PARENT(yright, x);
+		NODE_SET_PARENT(yright, x);
 	}
 
-	RB_TREE_NODE_SET_PARENT(y, RB_TREE_NODE_GET_PARENT(x));
+	NODE_SET_PARENT(y, NODE_GET_PARENT(x));
 
-	if (RB_TREE_NODE_GET_PARENT(x) == NULL) {
+	if (NODE_GET_PARENT(x) == NULL) {
 		tree->root = y;
 	} else {
-		struct node_st *xp = RB_TREE_NODE_GET_PARENT(x);
+		struct node_st *xp = NODE_GET_PARENT(x);
 		if (x == xp->left) {
 			xp->left = y;
 		} else {
@@ -200,30 +200,30 @@ inline static void rotate_right(ax_rb *tree, struct node_st *node)
 	}
 
 	y->right = x;
-	RB_TREE_NODE_SET_PARENT(x, y);
+	NODE_SET_PARENT(x, y);
 }
 
 /* Function to perform a RB tree rebalancing after an insertion */
 static void insert_rebalance(ax_rb *tree, struct node_st *node)
 {
-	struct node_st *new_node_parent = RB_TREE_NODE_GET_PARENT(node);
+	struct node_st *new_node_parent = NODE_GET_PARENT(node);
 
-	if (new_node_parent != NULL && RB_TREE_NODE_GET_COLOR(new_node_parent) != COLOR_BLACK) {
+	if (new_node_parent != NULL && NODE_GET_COLOR(new_node_parent) != COLOR_BLACK) {
 		struct node_st *pnode = node;
 
 		/* Iterate until we're at the root (which we just color black) or
 		 * until we the parent node is no longer red.
 		 */
-		while ((tree->root != pnode) && (RB_TREE_NODE_GET_PARENT(pnode) != NULL) &&
-				(RB_TREE_NODE_GET_COLOR(
-							RB_TREE_NODE_GET_PARENT(pnode)) == COLOR_RED))
+		while ((tree->root != pnode) && (NODE_GET_PARENT(pnode) != NULL) &&
+				(NODE_GET_COLOR(
+							NODE_GET_PARENT(pnode)) == COLOR_RED))
 		{
-			struct node_st *parent = RB_TREE_NODE_GET_PARENT(pnode);
+			struct node_st *parent = NODE_GET_PARENT(pnode);
 			struct node_st *grandparent = get_grandparent(pnode);
 			struct node_st *uncle = NULL;
 			int uncle_is_left;
 
-			assert(RB_TREE_NODE_GET_COLOR(pnode) == COLOR_RED);
+			assert(NODE_GET_COLOR(pnode) == COLOR_RED);
 
 			if (parent == grandparent->left) {
 				uncle_is_left = 0;
@@ -234,31 +234,31 @@ static void insert_rebalance(ax_rb *tree, struct node_st *node)
 			}
 
 			/* Case 1: Uncle is not black */
-			if (uncle && RB_TREE_NODE_GET_COLOR(uncle) == COLOR_RED) {
+			if (uncle && NODE_GET_COLOR(uncle) == COLOR_RED) {
 				/* Color parent and uncle black */
-				RB_TREE_NODE_SET_COLOR(parent, COLOR_BLACK);
-				RB_TREE_NODE_SET_COLOR(uncle, COLOR_BLACK);
+				NODE_SET_COLOR(parent, COLOR_BLACK);
+				NODE_SET_COLOR(uncle, COLOR_BLACK);
 
 				/* Color Grandparent as Red */
-				RB_TREE_NODE_SET_COLOR(grandparent, COLOR_RED);
+				NODE_SET_COLOR(grandparent, COLOR_RED);
 				pnode = grandparent;
 				/* Continue iteration, processing grandparent */
 			} else {
 				/* Case 2 - node's parent is red, but uncle is black */
 				if (!uncle_is_left && parent->right == pnode) {
-					pnode = RB_TREE_NODE_GET_PARENT(pnode);
+					pnode = NODE_GET_PARENT(pnode);
 					rotate_left(tree, pnode);
 				} else if (uncle_is_left && parent->left == pnode) {
-					pnode = RB_TREE_NODE_GET_PARENT(pnode);
+					pnode = NODE_GET_PARENT(pnode);
 					rotate_right(tree, pnode);
 				}
 
 				/* Case 3 - Recolor and rotate*/
-				parent = RB_TREE_NODE_GET_PARENT(pnode);
-				RB_TREE_NODE_SET_COLOR(parent, COLOR_BLACK);
+				parent = NODE_GET_PARENT(pnode);
+				NODE_SET_COLOR(parent, COLOR_BLACK);
 
 				grandparent = get_grandparent(pnode);
-				RB_TREE_NODE_SET_COLOR(grandparent, COLOR_RED);
+				NODE_SET_COLOR(grandparent, COLOR_RED);
 				if (!uncle_is_left) {
 					rotate_right(tree, grandparent);
 				} else {
@@ -269,7 +269,7 @@ static void insert_rebalance(ax_rb *tree, struct node_st *node)
 
 		/* Make sure the tree root is black (Case 1: Continued) */
 		struct node_st *tree_root = tree->root;
-		RB_TREE_NODE_SET_COLOR(tree_root, COLOR_BLACK);
+		NODE_SET_COLOR(tree_root, COLOR_BLACK);
 	}
 }
 
@@ -291,7 +291,7 @@ static int rb_tree_insert(struct ax_rb_st *tree, const void *key, struct node_st
 	if (tree->root == NULL) {
 		tree->root = node;
 		tree->rightmost = node;
-		RB_TREE_NODE_SET_COLOR(node, COLOR_BLACK);
+		NODE_SET_COLOR(node, COLOR_BLACK);
 		return 0;
 	}
 
@@ -322,9 +322,9 @@ static int rb_tree_insert(struct ax_rb_st *tree, const void *key, struct node_st
 		}
 	}
 
-	RB_TREE_NODE_SET_PARENT(node, nd);
+	NODE_SET_PARENT(node, nd);
 	ax_trait_copy(tree->map.env.key_tr, node->kvbuffer, key);
-	RB_TREE_NODE_SET_COLOR(node, COLOR_RED);
+	NODE_SET_COLOR(node, COLOR_RED);
 
 	if (1 == rightmost) {
 		tree->rightmost = node;
@@ -352,8 +352,7 @@ static int rb_tree_find_or_insert(struct ax_rb_st  *tree, const void *key, struc
 	if (tree->root == NULL) {
 		tree->root = new_candidate;
 		tree->rightmost = new_candidate;
-		RB_TREE_NODE_SET_COLOR(new_candidate, COLOR_BLACK);
-		//ax_trait_copy(tree->map.env.key_tr, new_candidate->kvbuffer, key);
+		NODE_SET_COLOR(new_candidate, COLOR_BLACK);
 		*value = new_candidate;
 		return 1;
 	}
@@ -390,12 +389,12 @@ static int rb_tree_find_or_insert(struct ax_rb_st  *tree, const void *key, struc
 		node_prev->right = new_candidate;
 	}
 
-	RB_TREE_NODE_SET_PARENT(new_candidate, node_prev);
+	NODE_SET_PARENT(new_candidate, node_prev);
 	//ax_trait_copy(tree->map.env.key_tr, new_candidate->kvbuffer, key);
 
 	node = new_candidate;
 
-	RB_TREE_NODE_SET_COLOR(node, COLOR_RED);
+	NODE_SET_COLOR(node, COLOR_RED);
 
 	if (1 == rightmost) {
 		tree->rightmost = new_candidate;
@@ -415,11 +414,11 @@ static struct node_st *rb_tree_find_successor(struct node_st *node)
 		return lowest_node(x->right);
 	}
 
-	struct node_st *y = RB_TREE_NODE_GET_PARENT(x);
+	struct node_st *y = NODE_GET_PARENT(x);
 
 	while (y != NULL && x == y->right) {
 		x = y;
-		y = RB_TREE_NODE_GET_PARENT(y);
+		y = NODE_GET_PARENT(y);
 	}
 
 	return y;
@@ -432,10 +431,10 @@ static struct node_st *rb_tree_find_predecessor(struct node_st *node)
 	if (x->left != NULL) 
 		return highest_node(x->left);
 
-	struct node_st *y = RB_TREE_NODE_GET_PARENT(x);
+	struct node_st *y = NODE_GET_PARENT(x);
 
 	while (y != NULL && x == y->left)
-		x = y, y = RB_TREE_NODE_GET_PARENT(y);
+		x = y, y = NODE_GET_PARENT(y);
 
 	return y;
 }
@@ -445,9 +444,9 @@ static void swap_node(struct ax_rb_st *tree, struct node_st *x, struct node_st *
 {
 	struct node_st *left = x->left;
 	struct node_st *right = x->right;
-	struct node_st *parent = RB_TREE_NODE_GET_PARENT(x);
+	struct node_st *parent = NODE_GET_PARENT(x);
 
-	RB_TREE_NODE_SET_PARENT(y, parent);
+	NODE_SET_PARENT(y, parent);
 
 	if (parent != NULL) {
 		if (parent->left == x)
@@ -461,16 +460,16 @@ static void swap_node(struct ax_rb_st *tree, struct node_st *x, struct node_st *
 
 	y->right = right;
 	if (right != NULL)
-		RB_TREE_NODE_SET_PARENT(right, y);
+		NODE_SET_PARENT(right, y);
 
 	x->right = NULL;
 
 	y->left = left;
 	if (left != NULL)
-		RB_TREE_NODE_SET_PARENT(left, y);
+		NODE_SET_PARENT(left, y);
 	x->left = NULL;
 
-	RB_TREE_NODE_SET_COLOR(y, RB_TREE_NODE_GET_COLOR(x));
+	NODE_SET_COLOR(y, NODE_GET_COLOR(x));
 	x->parent = NULL;
 }
 
@@ -480,13 +479,13 @@ static void delete_rebalance(struct ax_rb_st *tree, struct node_st *node, struct
 	struct node_st *xp = parent;
 	int is_left = node_is_left;
 
-	while (x != tree->root && (x == NULL || RB_TREE_NODE_GET_COLOR(x) == COLOR_BLACK)) {
+	while (x != tree->root && (x == NULL || NODE_GET_COLOR(x) == COLOR_BLACK)) {
 		struct node_st *w = is_left ? xp->right : xp->left;    /* Sibling */
 
-		if (w != NULL && RB_TREE_NODE_GET_COLOR(w) == COLOR_RED) {
+		if (w != NULL && NODE_GET_COLOR(w) == COLOR_RED) {
 			/* Case 1: */
-			RB_TREE_NODE_SET_COLOR(w, COLOR_BLACK);
-			RB_TREE_NODE_SET_COLOR(xp, COLOR_RED);
+			NODE_SET_COLOR(w, COLOR_BLACK);
+			NODE_SET_COLOR(xp, COLOR_RED);
 			if (is_left)
 				rotate_left(tree, xp);
 			else
@@ -496,28 +495,28 @@ static void delete_rebalance(struct ax_rb_st *tree, struct node_st *node, struct
 
 		struct node_st *wleft = w != NULL ? w->left : NULL;
 		struct node_st *wright = w != NULL ? w->right : NULL;
-		if ( (wleft == NULL || RB_TREE_NODE_GET_COLOR(wleft) == COLOR_BLACK) &&
-				(wright == NULL || RB_TREE_NODE_GET_COLOR(wright) == COLOR_BLACK) )
+		if ( (wleft == NULL || NODE_GET_COLOR(wleft) == COLOR_BLACK) &&
+				(wright == NULL || NODE_GET_COLOR(wright) == COLOR_BLACK) )
 		{
 			/* Case 2: */
 			if (w != NULL)
-				RB_TREE_NODE_SET_COLOR(w, COLOR_RED);
+				NODE_SET_COLOR(w, COLOR_RED);
 			x = xp;
-			xp = RB_TREE_NODE_GET_PARENT(x);
+			xp = NODE_GET_PARENT(x);
 			is_left = xp && (x == xp->left);
 		} else {
-			if (is_left && (wright == NULL || RB_TREE_NODE_GET_COLOR(wright) == COLOR_BLACK)) {
+			if (is_left && (wright == NULL || NODE_GET_COLOR(wright) == COLOR_BLACK)) {
 				/* Case 3a: */
-				RB_TREE_NODE_SET_COLOR(w, COLOR_RED);
+				NODE_SET_COLOR(w, COLOR_RED);
 				if (wleft)
-					RB_TREE_NODE_SET_COLOR(wleft, COLOR_BLACK);
+					NODE_SET_COLOR(wleft, COLOR_BLACK);
 				rotate_right(tree, w);
 				w = xp->right;
-			} else if (!is_left && (wleft == NULL || RB_TREE_NODE_GET_COLOR(wleft) == COLOR_BLACK)) {
+			} else if (!is_left && (wleft == NULL || NODE_GET_COLOR(wleft) == COLOR_BLACK)) {
 				/* Case 3b: */
-				RB_TREE_NODE_SET_COLOR(w, COLOR_RED);
+				NODE_SET_COLOR(w, COLOR_RED);
 				if (wright)
-					RB_TREE_NODE_SET_COLOR(wright, COLOR_BLACK);
+					NODE_SET_COLOR(wright, COLOR_BLACK);
 				rotate_left(tree, w);
 				w = xp->left;
 			}
@@ -526,14 +525,14 @@ static void delete_rebalance(struct ax_rb_st *tree, struct node_st *node, struct
 			wleft = w->left;
 			wright = w->right;
 
-			RB_TREE_NODE_SET_COLOR(w, RB_TREE_NODE_GET_COLOR(xp));
-			RB_TREE_NODE_SET_COLOR(xp, COLOR_BLACK);
+			NODE_SET_COLOR(w, NODE_GET_COLOR(xp));
+			NODE_SET_COLOR(xp, COLOR_BLACK);
 
 			if (is_left && wright != NULL) {
-				RB_TREE_NODE_SET_COLOR(wright, COLOR_BLACK);
+				NODE_SET_COLOR(wright, COLOR_BLACK);
 				rotate_left(tree, xp);
 			} else if (!is_left && wleft != NULL) {
-				RB_TREE_NODE_SET_COLOR(wleft, COLOR_BLACK);
+				NODE_SET_COLOR(wleft, COLOR_BLACK);
 				rotate_right(tree, xp);
 			}
 			x = tree->root;
@@ -541,7 +540,7 @@ static void delete_rebalance(struct ax_rb_st *tree, struct node_st *node, struct
 	}
 
 	if (x != NULL) {
-		RB_TREE_NODE_SET_COLOR(x, COLOR_BLACK);
+		NODE_SET_COLOR(x, COLOR_BLACK);
 	}
 }
 
@@ -566,18 +565,18 @@ static void rb_tree_remove(struct ax_rb_st *tree, struct node_st *node)
 	x = (y->left != NULL) ?  y->left : y->right;
 
 	if (x != NULL) {
-		RB_TREE_NODE_SET_PARENT(x, RB_TREE_NODE_GET_PARENT(y));
-		xp = RB_TREE_NODE_GET_PARENT(x);
+		NODE_SET_PARENT(x, NODE_GET_PARENT(y));
+		xp = NODE_GET_PARENT(x);
 	} else {
-		xp = RB_TREE_NODE_GET_PARENT(y);
+		xp = NODE_GET_PARENT(y);
 	}
 
 	int is_left = 0;
-	if (RB_TREE_NODE_GET_PARENT(y) == NULL) {
+	if (NODE_GET_PARENT(y) == NULL) {
 		tree->root = x;
 		xp = NULL;
 	} else {
-		struct node_st *yp = RB_TREE_NODE_GET_PARENT(y);
+		struct node_st *yp = NODE_GET_PARENT(y);
 		if (y == yp->left) {
 			yp->left = x;
 			is_left = 1;
@@ -587,7 +586,7 @@ static void rb_tree_remove(struct ax_rb_st *tree, struct node_st *node)
 		}
 	}
 
-	int y_color = RB_TREE_NODE_GET_COLOR(y);
+	int y_color = NODE_GET_COLOR(y);
 
 	/* Swap in the node */
 	if (y != node) {
@@ -643,13 +642,13 @@ static struct node_st *lower_node(const ax_map *map, struct node_st *node)
 		while (node->right)
 			node = node->right;
 	} else {
-		struct node_st *parent = RB_TREE_NODE_GET_PARENT(node);
+		struct node_st *parent = NODE_GET_PARENT(node);
 		if (!parent)
 			return NULL;
-		while (node->parent && RB_TREE_NODE_GET_PARENT(node)->left == node)
-			node = RB_TREE_NODE_GET_PARENT(node);
-		if (node->parent && RB_TREE_NODE_GET_PARENT(node)->right == node)
-			node = RB_TREE_NODE_GET_PARENT(node);
+		while (node->parent && NODE_GET_PARENT(node)->left == node)
+			node = NODE_GET_PARENT(node);
+		if (node->parent && NODE_GET_PARENT(node)->right == node)
+			node = NODE_GET_PARENT(node);
 		else
 			return NULL;
 	}
@@ -664,13 +663,13 @@ static struct node_st *higher_node(const ax_map *map, struct node_st *node)
 		while (node->left)
 			node = node->left;
 	} else {
-		struct node_st *parent = RB_TREE_NODE_GET_PARENT(node);
+		struct node_st *parent = NODE_GET_PARENT(node);
 		if (!parent)
 			return NULL;
-		while (node->parent && RB_TREE_NODE_GET_PARENT(node)->right== node)
-			node = RB_TREE_NODE_GET_PARENT(node);
-		if (node->parent && RB_TREE_NODE_GET_PARENT(node)->left== node)
-			node = RB_TREE_NODE_GET_PARENT(node);
+		while (node->parent && NODE_GET_PARENT(node)->right== node)
+			node = NODE_GET_PARENT(node);
+		if (node->parent && NODE_GET_PARENT(node)->left== node)
+			node = NODE_GET_PARENT(node);
 		else
 			return NULL;
 	}
@@ -818,6 +817,7 @@ static void *map_put(ax_map* map, const void *key, const void *val)
 	const ax_trait *ktr = map->env.key_tr;
 
 	struct node_st *node = malloc(sizeof(struct node_st) + map->env.key_tr->size + map->env.box.elem_tr->size);
+	node->parent = NULL;
 	if (node == NULL)
 		return NULL;
 
