@@ -25,14 +25,6 @@ BIN = $(ROOT)/bin
 AR = ar
 RM = rm -f
 CC = gcc
-CFLAGS = -Wall --pedantic -Werror -std=c99 -fPIC\
-	 -I$(ROOT)/src/include \
-	 -I$(INCLUDE)\
-
-ifeq ($(DEBUG), 0)
-	CFLAGS += -O2
-else
-	CFLAGS += -O0 -DAX_DEBUG -g
-endif
-
-
+CFLAGS = -Wall --pedantic -Werror -std=c99 -fPIC -I$(ROOT)/src/include -I$(INCLUDE)
+DBGFLAGS = -g -O0
+RLSFLAGS = -O2 -DNDEBUG

@@ -27,10 +27,15 @@ OBJS = trait.o debug.o any.o vector.o mem.o one.o log.o algo.o oper.o seq.o \
        iter.o list.o avl.o map.o uintk.o buff.o string.o btrie.o trie.o stack.o \
        queue.o array.o hmap.o dump.o rb.o
 
+all: CFLAGS += $(RLSFLAGS)
 all: $(TARGET)
+
+debug: CFLAGS += $(DBGFLAGS)
+debug: $(TARGET)
+
 $(TARGET): $(OBJS)
 	$(AR) -rcs $@ $(OBJS)
 clean:
 	$(RM) $(OBJS) $(TARGET)
 
-.PHONY: all clean
+.PHONY: all clean debug

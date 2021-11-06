@@ -18,14 +18,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-DEBUG ?= 1
-
 DESTDIR ?= /usr/local
 
-all clean:
+all debug clean:
 	$(MAKE) -C src/ax $@
 	$(MAKE) -C src/axut $@
-	$(MAKE) -C test $@
 
 install:
 	install -m 755 -d $(DESTDIR)/lib $(DESTDIR)/include $(DESTDIR)/include/ax $(DESTDIR)/include/axut
@@ -36,7 +33,7 @@ install:
 	install -m 644 include/axut/*.h $(DESTDIR)/include/axut
 
 uninstall:
-	rm -r $(DESTDIR)/include/ax $(DESTDIR)/include/axut
-	rm $(DESTDIR)/include/ax.h $(DESTDIR)/include/axut.h $(DESTDIR)/lib/libax.a $(DESTDIR)/lib/libaxut.a
+	$(RM) -r $(DESTDIR)/include/ax $(DESTDIR)/include/axut
+	$(RM) $(DESTDIR)/include/ax.h $(DESTDIR)/include/axut.h $(DESTDIR)/lib/libax.a $(DESTDIR)/lib/libaxut.a
 
-.PHONY: all clean install uninstall
+.PHONY: all debug clean install uninstall

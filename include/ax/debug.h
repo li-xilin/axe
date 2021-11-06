@@ -26,7 +26,7 @@
 
 int __ax_debug_assert_fail (const char* file, const char* func, int line, const char* brief, const char* fmt, ...);
 
-#ifdef AX_DEBUG
+#ifndef NDEBUG
 # define ax_assert(_exp, ...) ((_exp) \
 	? (void)0 : (void)__ax_debug_assert_fail(__FILE__, __func__, __LINE__, "assertion failed", __VA_ARGS__))
 #else
@@ -34,3 +34,4 @@ int __ax_debug_assert_fail (const char* file, const char* func, int line, const 
 #endif
 
 #endif
+

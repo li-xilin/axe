@@ -65,7 +65,7 @@ static void    rciter_next(ax_citer *it);
 static void   *citer_get(const ax_citer *it);
 static ax_fail iter_set(const ax_iter *it, const void *val);
 
-#ifdef AX_DEBUG
+#ifndef NDEBUG
 static inline bool iter_if_valid(const ax_citer *it)
 {
 

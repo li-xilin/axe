@@ -28,7 +28,7 @@ typedef int ax_unit;
 
 #define AX_UNIT_INITIALIZER 0
 
-#ifdef AX_DEBUG
+#ifndef NDEBUG
 
 #define ax_unit_assert_ready(_uni) ((_uni) ? 0 : __ax_debug_assert_fail(__FILE__, __func__, __LINE__, \
 		"uninitialized unit", "%s, aborted", #_uni))

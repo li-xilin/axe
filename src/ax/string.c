@@ -89,7 +89,7 @@ static void    one_free(ax_one* one);
 
 const ax_str_trait ax_string_tr;
 
-#ifdef AX_DEBUG
+#ifndef NDEBUG
 bool iter_if_valid(const ax_citer *it);
 bool iter_if_have_value(const ax_citer *it);
 

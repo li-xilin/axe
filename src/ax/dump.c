@@ -34,7 +34,7 @@
 #include <inttypes.h>
 #include <ctype.h>
 
-#ifdef AX_DEBUG
+#ifndef NDEBUG
 #define check_symbol(_sym) \
 do { \
 	CHECK_PARAM_NULL(_sym); \
@@ -313,7 +313,7 @@ void ax_dump_bind(ax_dump *dmp, int index, ax_dump* binding)
 			"binding operation only support block and nomem"); 
 	ax_assert(!bind_bit(binding, 0), "instance is already in binding");
 	struct value_block_st *block = (void *) dmp->value;
-#ifdef AX_DEBUG
+#ifndef NDEBUG
 	if (binding->type == DTYPE_BLOCK) {
 		block = (void *) binding->value;
 		for (int i = 0; i < block->len; i++) {
