@@ -23,15 +23,12 @@
 #ifndef AXE_H
 #define AXE_H
 
-#include "ax/obj.h"
-#include "ax/list.h"
 #include "ax/vector.h"
-#include "ax/arr.h"
-#include "ax/avl.h"
-#include "ax/hmap.h"
+#include "ax/rb.h"
 #include "ax/log.h"
 #include "ax/debug.h"
 #include "ax/unit.h"
-#include "ax/base.h"
+#include "ax/string.h"
+#include "ax/algo.h"
 
 #endif
