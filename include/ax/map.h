@@ -24,6 +24,8 @@
 #define AX_MAP_H
 #include "box.h"
 #include "def.h"
+#include "trait.h"
+#include <stdarg.h>
 
 #define AX_MAP_NAME AX_BOX_NAME ".map"
 
@@ -54,11 +56,14 @@
 typedef struct ax_map_st ax_map;
 #endif
 
+typedef ax_map *ax_map_init_f(const ax_trait* tr1, const ax_trait* tr2);
+
 #define AX_CLASS_BASE_map box
 #define AX_CLASS_ROLE_map(_l) _l AX_CLASS_PTR(map); AX_CLASS_ROLE_box(_l)
 
 AX_BEGIN_TRAIT(map)
-	void *(*put) (ax_map *map, const void *key, const void *val);
+	void *(*put) (ax_map *map, const void *key, const void *val, va_list *ap);
+	//void *(*vput) (ax_map *map, const void *key, va_list *ap);
 	void *(*get) (const ax_map *map, const void *key);
 	ax_iter (*at) (const ax_map *map, const void *key);
 	bool (*exist) (const ax_map *map, const void *key);
@@ -76,8 +81,19 @@ AX_BLESS(map);
 inline static void *ax_map_put(ax_map *map, const void *key, const void *val)
 {
 	ax_trait_require(map, map->tr->put);
-	return map->tr->put(map, ax_trait_in(map->env.key_tr, key),
-			ax_trait_in(map->env.box.elem_tr, val));
+	return ax_trait_out(map->env.box.elem_tr, map->tr->put(map, ax_trait_in(map->env.key_tr, key),
+			ax_trait_in(map->env.box.elem_tr, val), NULL));
+}
+
+inline static void *ax_map_iput(ax_map *map, const void *key, ...)
+{
+	ax_trait_require(map, map->tr->put);
+
+	va_list ap;
+	va_start(ap, key);
+	void *val = map->tr->put(map, ax_trait_in(map->env.key_tr, key), NULL, &ap);
+	va_end(ap);
+	return ax_trait_out(map->env.box.elem_tr, val);
 }
 
 inline static ax_fail ax_map_erase(ax_map *map, const void *key)

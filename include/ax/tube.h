@@ -38,7 +38,7 @@ typedef ax_tube *(ax_tube_construct_f)(const ax_trait *elem_tr);
 #define AX_CLASS_ROLE_tube(_l) _l AX_CLASS_PTR(tube); AX_CLASS_ROLE_any(_l)
 
 AX_BEGIN_TRAIT(tube)
-	ax_fail (*push)   (ax_tube *tube, const void *val);
+	ax_fail (*push)   (ax_tube *tube, const void *val, va_list *ap);
 	void    (*pop)    (ax_tube *tube);
 	void   *(*prime)  (const ax_tube *tube);
 	size_t  (*size)   (const ax_tube *tube);
@@ -53,7 +53,17 @@ AX_BLESS(tube);
 inline static ax_fail ax_tube_push(ax_tube *tube, const void *val)
 {
 	ax_trait_require(tube, tube->tr->push);
-	return tube->tr->push(tube, val);
+	return tube->tr->push(tube, val, NULL);
+}
+
+inline static ax_fail ax_tube_ipush(ax_tube *tube, ...)
+{
+	ax_trait_require(tube, tube->tr->push);
+	va_list ap;
+	va_start(ap, tube);
+	ax_fail fail = tube->tr->push(tube, NULL, &ap);
+	va_end(ap);
+	return fail;
 }
 
 inline static void ax_tube_pop(ax_tube *tube)

@@ -53,7 +53,7 @@ AX_CLASS_STRUCT_ENTRY(btrie)
 	size_t capacity;
 AX_END;
 
-static void    *trie_put(ax_trie *trie, const ax_seq *key, const void *val);
+static void    *trie_put(ax_trie *trie, const ax_seq *key, const void *val, va_list *ap);
 static void    *trie_get(const ax_trie *trie, const ax_seq *key);
 static ax_iter  trie_at(const ax_trie *trie, const ax_seq *key);
 static bool     trie_exist(const ax_trie *trie, const ax_seq *key, bool *valued);
@@ -86,11 +86,11 @@ static void     citer_next(ax_citer *it);
 static ax_box  *citer_box(const ax_citer *it);
 
 static void    *citer_get(const ax_citer *it);
-static ax_fail  iter_set(const ax_iter *it, const void *val);
+static ax_fail  iter_set(const ax_iter *it, const void *val, va_list *ap);
 static void     iter_erase(ax_iter *it);
 
 static int match_key(const ax_btrie *self, const ax_seq *key, ax_citer *it_mismatched, struct node_st **last_node);
-static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *val);
+static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *val, va_list *ap);
 static void node_free_value(ax_btrie *btrie, struct node_st *node);
 static bool clean_path(ax_map *last);
 static void rec_remove(ax_btrie *self, ax_map *map);
@@ -137,11 +137,11 @@ static void *citer_get(const ax_citer *it)
 	return node->val;
 }
 
-static ax_fail iter_set(const ax_iter *it, const void *val)
+static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 {
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr && it->point);
 
-	return ax_avl_tr.box.iter.set(it, val);
+	return ax_avl_tr.box.iter.set(it, val, ap);
 
 	ax_btrie *self = iter_get_self(it);
 
@@ -375,7 +375,7 @@ static int match_key(const ax_btrie *self, const ax_seq *key, ax_citer *it_misma
 	return match_len;
 }
 
-static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *val)
+static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *val, va_list *ap)
 {
 	const ax_trait *vtr = self->trie.env.box.elem_tr;
 	void *value = NULL;
@@ -385,7 +385,7 @@ static ax_fail node_set_value(ax_btrie *self, struct node_st *node, const void *
 		goto fail;
 	}
 
-	if (ax_trait_copy_or_init(vtr, value, val))
+	if (ax_trait_copy_or_init(vtr, value, val, ap))
 		goto fail;
 
 	if (node->val) {
@@ -465,7 +465,7 @@ fail:
 	return NULL;
 }
 
-static void *trie_put(ax_trie *trie, const ax_seq *key, const void *val)
+static void *trie_put(ax_trie *trie, const ax_seq *key, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(trie);
 	CHECK_PARAM_NULL(key);
@@ -477,7 +477,7 @@ static void *trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 	if (!node)
 		return NULL;
 	
-	if (node_set_value(self_r.btrie, node, val))
+	if (node_set_value(self_r.btrie, node, val, ap))
 		return NULL;
 
 	return node->val;
@@ -694,16 +694,10 @@ static bool trie_it_valued(const ax_citer *it)
 	return !!node->val;
 }
 
-
 static const ax_trait node_tr = { 
 	.size  = sizeof(struct node_st),
-	.equal = NULL,
-	.less  = NULL,
-	.hash  = NULL,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
-	.link  = false
 };
 
 const ax_trie_trait ax_btrie_tr =

@@ -1,5 +1,5 @@
 LDFLAGS = -L../lib -lax
- CFLAGS = -Wall -std=c99 -O2 -I../include
+ CFLAGS = -Wall -std=c99 -O2 -I../include -g
    SRCS = $(wildcard *.c)
 TARGETS = $(SRCS:.c=)
 

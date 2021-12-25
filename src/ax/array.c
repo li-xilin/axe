@@ -63,7 +63,7 @@ static void    rciter_prev(ax_citer *it);
 static void    rciter_next(ax_citer *it);
 
 static void   *citer_get(const ax_citer *it);
-static ax_fail iter_set(const ax_iter *it, const void *val);
+static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap);
 
 #ifndef NDEBUG
 static inline bool iter_if_valid(const ax_citer *it)
@@ -185,14 +185,14 @@ static void *citer_get(const ax_citer *it)
 	return it->point;
 }
 
-static ax_fail iter_set(const ax_iter *it, const void *val)
+static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 {
 	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_cc(it)));
 
 	const ax_array *self = it->owner;
 	const ax_trait *etr = self->seq.env.box.elem_tr;
 	ax_trait_free(etr, it->point);
-	if (ax_trait_copy_or_init(etr, it->point, val))
+	if (ax_trait_copy_or_init(etr, it->point, val, ap))
 		return true;
 	return false;
 }

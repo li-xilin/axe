@@ -56,7 +56,7 @@ static long    rciter_dist(const ax_citer *it1, const ax_citer *it2);
 
 
 static void   *citer_get(const ax_citer *it);
-static ax_fail iter_set(const ax_iter *it, const void *val);
+static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap);
 static void    iter_erase(ax_iter *it);
 
 static ax_fail str_append(ax_str *str, const char *s);
@@ -68,11 +68,11 @@ static ax_str *str_substr(const ax_str* str, size_t start, size_t len);
 static ax_seq *str_split(const ax_str* str, const char ch);
 static ax_fail str_sprintf(ax_str* str, const char *fmt, va_list args); 
 
-static ax_fail seq_push(ax_seq *seq, const void *val);
+static ax_fail seq_push(ax_seq *seq, const void *val, va_list *ap);
 static ax_fail seq_pop(ax_seq *seq);
 static ax_fail seq_trunc(ax_seq *seq, size_t size);
 static ax_iter seq_at(const ax_seq *seq, size_t index);
-static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val);
+static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap);
 
 static size_t  box_size(const ax_box* box);
 static size_t  box_maxsize(const ax_box* box);
@@ -219,9 +219,10 @@ static void *citer_get(const ax_citer *it)
 	return (char *)it->point;
 }
 
-static ax_fail iter_set(const ax_iter *it, const void *val)
+static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(it);
+	CHECK_PARAM_NULL(val);
 	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_cc(it)));
 
 	*(char *)it->point = *(char *) val;
@@ -528,14 +529,12 @@ static ax_fail str_sprintf(ax_str* str, const char *fmt, va_list args)
 	return false;
 }
 
-static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
+static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(seq);
+	CHECK_PARAM_NULL(val);
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, it->owner == seq && iter_if_valid(ax_iter_c(it)));
-
-	if (!val || *(char *)val == '\0')
-		return false;
 
 	ax_string *self = (ax_string *) seq;
 	ax_buff *buff = self->buff_r.buff;
@@ -562,7 +561,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	return false;
 }
 
-static ax_fail seq_push(ax_seq *seq, const void *val)
+static ax_fail seq_push(ax_seq *seq, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(seq);
 	CHECK_PARAM_NULL(val);

@@ -43,7 +43,7 @@ typedef struct ax_trie_st ax_trie;
 
 AX_BEGIN_TRAIT(trie)
 	const ax_iter_trait iter_root;
-	void       *(*put)      (ax_trie *trie, const ax_seq *key, const void *val);
+	void       *(*put)      (ax_trie *trie, const ax_seq *key, const void *val, va_list *ap);
 	void       *(*get)      (const ax_trie *trie, const ax_seq *key);
 	ax_iter     (*at)       (const ax_trie *trie, const ax_seq *key);
 	bool        (*exist)    (const ax_trie *trie, const ax_seq *key, bool *valued);
@@ -67,7 +67,17 @@ AX_BLESS(trie);
 inline static void *ax_trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 {
 	ax_trait_require(trie, trie->tr->put);
-	return trie->tr->put(trie, key, val);
+	return trie->tr->put(trie, key, val, NULL);
+}
+
+inline static void *ax_trie_iput(ax_trie *trie, const ax_seq *key, ...)
+{
+	ax_trait_require(trie, trie->tr->put);
+	va_list ap;
+	va_start(ap, key);
+	void *ret = trie->tr->put(trie, key, NULL, &ap);
+	va_end(ap);
+	return ret;
 }
 
 inline static bool ax_trie_erase(ax_trie *trie, const ax_seq *key)

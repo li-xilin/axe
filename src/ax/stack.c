@@ -44,7 +44,7 @@ struct ax_stack_st
 	ax_vector_r vector;
 };
 
-static ax_fail  tube_push(ax_tube *tube, const void *val);
+static ax_fail  tube_push(ax_tube *tube, const void *val, va_list *ap);
 static void     tube_pop(ax_tube *tube);
 static size_t   tube_size(const ax_tube *tube);
 static void    *tube_prime(const ax_tube *tube);
@@ -68,12 +68,12 @@ const ax_tube_trait ax_stack_tr =
 	.prime = tube_prime,
 };
 
-static ax_fail tube_push(ax_tube *tube, const void *val)
+static ax_fail tube_push(ax_tube *tube, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(tube);
 
 	ax_stack_cr self_r = { .tube = tube };
-	return ax_vector_tr.push(self_r.stack->vector.seq, val);
+	return ax_vector_tr.push(self_r.stack->vector.seq, val, ap);
 }
 
 static void tube_pop(ax_tube *tube)

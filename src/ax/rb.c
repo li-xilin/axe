@@ -70,7 +70,7 @@ AX_END;
 # define NODE_SET_PARENT(_node, _parent)     ax_block { ((_node)->parent = (_parent)); }
 #endif
 
-static void *map_put(ax_map* map, const void *key, const void *val);
+static void *map_put(ax_map* map, const void *key, const void *val, va_list *ap);
 static ax_fail map_erase(ax_map* map, const void *key);
 static void *map_get(const ax_map* map, const void *key);
 static ax_iter map_at(const ax_map* map, const void *key);
@@ -95,7 +95,7 @@ static void rciter_next(ax_citer *it);
 static bool rciter_less(const ax_citer *it1, const ax_citer *it2);
 static long rciter_dist(const ax_citer *it1, const ax_citer *it2);
 static void *citer_get(const ax_citer *it);
-static ax_fail iter_set(const ax_iter *it, const void *val);
+static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap);
 static void iter_erase(ax_iter *it);
 inline static void *node_val(const ax_map *map, struct node_st *node);
 inline static struct node_st *lowest_node(struct node_st *node);
@@ -771,13 +771,13 @@ static void *citer_get(const ax_citer *it)
 	return node_val(it->owner, it->point);
 }
 
-static void *node_set_value(ax_map *map, struct node_st *node, const void *val)
+static void *node_set_value(ax_map *map, struct node_st *node, const void *val, va_list *ap)
 {
 	const ax_trait *vtr = map->env.box.elem_tr;
 	void *dst = node_val(map, node);
 	ax_byte tmp[vtr->size];
 	memcpy(tmp, dst, vtr->size);
-	if (ax_trait_copy_or_init(vtr, dst, val)) {
+	if (ax_trait_copy_or_init(vtr, dst, val, ap)) {
 		memcpy(dst, tmp, vtr->size);
 		return NULL;
 	}
@@ -785,12 +785,12 @@ static void *node_set_value(ax_map *map, struct node_st *node, const void *val)
 	return node_val(map, node);
 }
 
-static ax_fail iter_set(const ax_iter *it, const void *val)
+static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
 
 	ax_rb_r rb_r = { .one = (ax_one *)it->owner };
-	return !node_set_value(rb_r.map, it->point, val);
+	return !node_set_value(rb_r.map, it->point, val, ap);
 }
 
 static void iter_erase(ax_iter *it)
@@ -808,7 +808,7 @@ static void iter_erase(ax_iter *it)
 	free(node);
 }
 
-static void *map_put(ax_map* map, const void *key, const void *val)
+static void *map_put(ax_map* map, const void *key, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(map);
 
@@ -826,7 +826,7 @@ static void *map_put(ax_map* map, const void *key, const void *val)
 	if (rb_tree_find_or_insert(self.rb, key, node, &candidate) == 0) {
 		free(node);
 		valptr = node_val(self.map, candidate);
-		if (node_set_value(map, candidate, val))
+		if (node_set_value(map, candidate, val, ap))
 			return NULL;
 	} else {
 		valptr = node_val(self.map, candidate);
@@ -835,7 +835,7 @@ static void *map_put(ax_map* map, const void *key, const void *val)
 			return NULL;
 		}
 
-		if (node_set_value(map, candidate, val)) {
+		if (node_set_value(map, candidate, val, ap)) {
 			rb_tree_remove(self.rb, candidate);
 			ax_trait_free(ktr, candidate->kvbuffer);
 			return NULL;

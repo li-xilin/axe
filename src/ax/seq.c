@@ -65,7 +65,7 @@ ax_fail ax_seq_push_arraya(ax_seq *seq, const void *arrp)
 	const ax_byte *p = arrp;
 	size_t i;
 	for (i = 0; i < size / esize; i++) {
-		if (seq->tr->push(seq, p + esize * i))
+		if (seq->tr->push(seq, p + esize * i, NULL))
 			goto fail;
 	}
 	return false;

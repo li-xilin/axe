@@ -103,7 +103,7 @@ typedef void    (*ax_trait_free_f)(void* p);
 typedef bool    (*ax_trait_compare_f) (const void* p1, const void* p2, size_t size);
 typedef size_t  (*ax_trait_hash_f)(const void* p, size_t size);
 typedef ax_fail (*ax_trait_copy_f)(void* dst, const void* src, size_t size);
-typedef ax_fail (*ax_trait_init_f)(void* p, size_t size);
+typedef ax_fail (*ax_trait_init_f)(void* p, va_list *ap);
 typedef ax_dump*(*ax_trait_dump_f)(const void* p, size_t size);
 
 struct ax_trait_st
@@ -121,7 +121,7 @@ struct ax_trait_st
 
 #define ax_trait_in(_tr, _ptr) ((_tr)->link ? &(_ptr) : *&(_ptr))
 
-#define ax_trait_out(_tr, _ptr) ((_tr)->link ? *(void **)(_ptr) : (void *)(_ptr))
+#define ax_trait_out(_tr, _ptr) (((_tr)->link && (_ptr)) ? *(void **)(_ptr) : (void *)(_ptr))
 
 inline static bool ax_trait_equal(const ax_trait *tr, const void *p1, const void *p2)
 {
@@ -138,6 +138,8 @@ inline static size_t ax_trait_hash(const ax_trait *tr, const void *p)
 inline static void ax_trait_free(const ax_trait *tr, void *p)
 {
 	__ax_require(tr->free);
+	if (tr->link && !*(void **)p)
+		return;
 	tr->free(p);
 }
 
@@ -153,16 +155,16 @@ inline static ax_fail ax_trait_copy(const ax_trait *tr, void* dst, const void* s
 	return tr->copy(dst, src, tr->size);
 }
 
-inline static ax_fail ax_trait_init(const ax_trait *tr, void* p)
+inline static ax_fail ax_trait_init(const ax_trait *tr, void* p, va_list *ap)
 {
 	__ax_require(tr->init);
-	return tr->init(p, tr->size);
+	return tr->init(p, ap);
 }
 
-inline static ax_fail ax_trait_copy_or_init(const ax_trait *tr, void* dst, const void *src)
+inline static ax_fail ax_trait_copy_or_init(const ax_trait *tr, void* dst, const void *src, va_list *ap)
 {
 	return src ? ax_trait_copy(tr, dst, src)
-		: ax_trait_init(tr, dst);
+		: ax_trait_init(tr, dst, ap);
 }
 
 ax_dump *ax_trait_dump(const ax_trait *tr, const void* p, size_t size);
@@ -175,8 +177,6 @@ size_t  ax_trait_mem_hash(const void* p, size_t size);
 
 ax_fail ax_trait_mem_copy(void* dst, const void* src, size_t size);
 
-ax_fail ax_trait_mem_init(void* p, size_t size);
-
 void  ax_trait_mem_free(void* p);
 
 ax_dump *ax_trait_mem_dump(const void* p, size_t size);
@@ -187,7 +187,7 @@ int ax_trait_fixed_type(int type);
 
 const ax_trait *ax_trait_get(int type);
 
-int ax_trait_stoi(const char *s);
+//int ax_trait_stoi(const char *s);
 
 #undef __ax_require
 

@@ -33,7 +33,6 @@ static ax_fail case_copy(void* dst, const void* src, size_t size);
 const ax_trait axut_case_tr =
 {
 	.copy = case_copy,
-	.init = ax_trait_mem_init,
 	.less = case_less,
 	.equal = case_equal,
 	.free = case_free,

@@ -57,7 +57,7 @@ typedef struct ax_iter_trait_st
 	void     (*next)  (      ax_citer *it);
 	void     (*move)  (      ax_citer *it, long i);
 	void     (*erase) (      ax_iter *it);
-	ax_fail  (*set)   (const ax_iter *it, const void *p);
+	ax_fail  (*set)   (const ax_iter *it, const void *p, va_list *ap);
 	void    *(*get)   (const ax_citer *it);
 	ax_box  *(*box)   (const ax_citer *it);
 	bool     (norm);
@@ -172,7 +172,16 @@ inline static const void *ax_citer_get(const ax_citer *it)
 
 inline static ax_fail ax_iter_set(const ax_iter *it, const void *val)
 {
-	return it->tr->set(it, ax_trait_in(it->etr, val));
+	return it->tr->set(it, ax_trait_in(it->etr, val), NULL);
+}
+
+inline static ax_fail ax_iter_iset(const ax_iter *it, ...)
+{
+	va_list ap;
+	va_start(ap, it);
+	ax_fail fail = it->tr->set(it, NULL, &ap);
+	va_end(ap);
+	return fail;
 }
 
 inline static bool ax_citer_equal(const ax_citer *it1, const ax_citer *it2)

@@ -44,7 +44,7 @@ struct ax_queue_st
 	ax_list_r list;
 };
 
-static ax_fail  tube_push(ax_tube *tube, const void *val);
+static ax_fail  tube_push(ax_tube *tube, const void *val, va_list *ap);
 static void     tube_pop(ax_tube *tube);
 static size_t   tube_size(const ax_tube *tube);
 static void    *tube_prime(const ax_tube *tube);
@@ -69,12 +69,12 @@ const ax_tube_trait ax_queue_tr =
 };
 
 
-static ax_fail tube_push(ax_tube *tube, const void *val)
+static ax_fail tube_push(ax_tube *tube, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(tube);
 
 	ax_queue_cr self_r = { .tube = tube };
-	return ax_list_tr.push(self_r.queue->list.seq, val);
+	return ax_list_tr.push(self_r.queue->list.seq, val, ap);
 }
 
 static void tube_pop(ax_tube *tube)

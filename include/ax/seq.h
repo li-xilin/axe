@@ -33,12 +33,12 @@
 typedef struct ax_seq_st ax_seq;
 #endif
 
-typedef ax_fail (*ax_seq_push_f)   (ax_seq *seq, const void *val);
+typedef ax_fail (*ax_seq_push_f)   (ax_seq *seq, const void *val, va_list *ap);
 typedef ax_fail (*ax_seq_pop_f)    (ax_seq *seq);
 typedef void    (*ax_seq_invert_f) (ax_seq *seq);
 typedef ax_fail (*ax_seq_trunc_f)  (ax_seq *seq, size_t size);
 typedef ax_iter (*ax_seq_at_f)     (const ax_seq *seq, size_t index);
-typedef ax_fail (*ax_seq_insert_f) (ax_seq *seq, ax_iter *iter, const void *val);
+typedef ax_fail (*ax_seq_insert_f) (ax_seq *seq, ax_iter *iter, const void *val, va_list *ap);
 typedef void   *(*ax_seq_end_f)    (const ax_seq *seq);
 
 typedef ax_seq *(ax_seq_construct_f)(const ax_trait *tr);
@@ -67,7 +67,17 @@ AX_BLESS(seq);
 inline static ax_fail ax_seq_push(ax_seq *seq, const void *val)
 {
 	ax_trait_require(seq, seq->tr->push);
-	return seq->tr->push(seq, ax_trait_in(seq->env.box.elem_tr, val));
+	return seq->tr->push(seq, ax_trait_in(seq->env.box.elem_tr, val), NULL);
+}
+
+inline static ax_fail ax_seq_ipush(ax_seq *seq, ...)
+{
+	ax_trait_require(seq, seq->tr->push);
+	va_list ap;
+	va_start(ap, seq);
+	ax_fail fail = seq->tr->push(seq, NULL, &ap);
+	va_end(ap);
+	return fail;
 }
 
 inline static ax_fail ax_seq_pop(ax_seq *seq)
@@ -79,7 +89,7 @@ inline static ax_fail ax_seq_pop(ax_seq *seq)
 inline static ax_fail ax_seq_pushf(ax_seq *seq, const void *val)
 {
 	ax_trait_optional(seq, seq->tr->pushf);
-	return seq->tr->pushf(seq, ax_trait_in(seq->env.box.elem_tr, val));
+	return seq->tr->pushf(seq, ax_trait_in(seq->env.box.elem_tr, val), NULL);
 }
 
 inline static ax_fail ax_seq_popf(ax_seq *seq)
@@ -117,7 +127,17 @@ inline static ax_citer ax_seq_cat(const ax_seq *seq, size_t index)
 static inline ax_fail ax_seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 {
 	ax_trait_optional(seq, seq->tr->at);
-	return seq->tr->insert(seq, it, ax_trait_in(seq->env.box.elem_tr, val));
+	return seq->tr->insert(seq, it, ax_trait_in(seq->env.box.elem_tr, val), NULL);
+}
+
+static inline ax_fail ax_seq_iinsert(ax_seq *seq, ax_iter *it, ...)
+{
+	ax_trait_optional(seq, seq->tr->at);
+	va_list ap;
+	va_start(ap, it);
+	ax_fail fail = seq->tr->insert(seq, it, NULL, &ap);
+	va_end(ap);
+	return fail;
 }
 
 static inline void *ax_seq_first(ax_seq *seq)

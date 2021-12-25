@@ -44,7 +44,7 @@ AX_CLASS_STRUCT_ENTRY(vector)
 	ax_buff *buff;
 AX_END;
 
-static ax_fail seq_push(ax_seq *seq, const void *val);
+static ax_fail seq_push(ax_seq *seq, const void *val, va_list *ap);
 static ax_fail seq_pop(ax_seq *seq);
 static void    seq_invert(ax_seq *seq);
 static ax_fail seq_trunc(ax_seq *seq, size_t size);
@@ -52,7 +52,7 @@ static ax_iter seq_at(const ax_seq *seq, size_t index);
 static void   *seq_last(const ax_seq *seq);
 static void   *seq_first(const ax_seq *seq);
 
-static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val);
+static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap);
 
 static size_t  box_size(const ax_box *box);
 static size_t  box_maxsize(const ax_box *box);
@@ -79,7 +79,7 @@ static void    rciter_next(ax_citer *it);
 
 static void   *citer_get(const ax_citer *it);
 static void    iter_erase(ax_iter *it);
-static ax_fail iter_set(const ax_iter *it, const void *val);
+static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap);
 
 #ifndef NDEBUG
 static inline bool iter_if_valid(const ax_citer *it)
@@ -206,14 +206,14 @@ static void *citer_get(const ax_citer *it)
 	return it->point;
 }
 
-static ax_fail iter_set(const ax_iter *it, const void *val)
+static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 {
 	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_cc(it)));
 
 	ax_vector_r self = { it->owner };
 	const ax_trait *etr = self.box->env.elem_tr;
 	ax_trait_free(etr, it->point);
-	if (ax_trait_copy_or_init(etr, it->point, val)) 
+	if (ax_trait_copy_or_init(etr, it->point, val, ap)) 
 		return true;
 	return false;
 }
@@ -371,7 +371,7 @@ static void box_clear(ax_box *box)
 	ax_buff_adapt(self->buff, 0);
 }
 
-static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
+static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(seq);
 	CHECK_PARAM_NULL(it);
@@ -396,7 +396,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 		memcpy(p, p - etr->size, etr->size);
 	}
 
-	if (ax_trait_copy_or_init(etr, ins, val)) {
+	if (ax_trait_copy_or_init(etr, ins, val, ap)) {
 		ax_buff_resize(self->buff, size);
 		return true;
 	}
@@ -406,7 +406,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 	return false;
 }
 
-static ax_fail seq_push(ax_seq *seq, const void *val)
+static ax_fail seq_push(ax_seq *seq, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(seq);
 
@@ -420,7 +420,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val)
 
 	ax_byte *ptr = ax_buff_ptr(self->buff);
 
-	if (ax_trait_copy_or_init(etr, ptr + size, val)) {
+	if (ax_trait_copy_or_init(etr, ptr + size, val, ap)) {
 		ax_buff_resize(self->buff, size);
 		return true;
 	}
@@ -495,7 +495,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 		ax_byte *ptr = ax_buff_ptr(self->buff);
 
 		for (size_t off = old_size; off < size ; off += etr->size) {
-			ax_trait_init(etr, ptr + off);
+			ax_trait_init(etr, ptr + off, NULL);
 		}
 	}
 	return false;
@@ -604,7 +604,6 @@ ax_seq *__ax_vector_construct(const ax_trait *elem_tr)
 	CHECK_PARAM_NULL(elem_tr->copy);
 	CHECK_PARAM_NULL(elem_tr->equal);
 	CHECK_PARAM_NULL(elem_tr->free);
-	CHECK_PARAM_NULL(elem_tr->init);
 
 	ax_buff *buff = NULL;
 	ax_seq *seq = NULL;

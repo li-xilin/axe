@@ -334,7 +334,6 @@ static bool less_ptr(const void* p1, const void* p2, size_t size)
 	return *(intptr_t**) p1 < *(intptr_t**) p2;
 }
 
-
 static ax_fail copy_s(void* dst, const void* src, size_t size)
 {
 	return !((*(char**)dst = ax_strdup(*(char**)src)));
@@ -346,21 +345,27 @@ static ax_fail copy_ws(void* dst, const void* src, size_t size)
 	return !(*(wchar_t**)dst = ax_wcsdup(*(wchar_t**)src));
 }
 
-static ax_fail init_s(void* p, size_t size) {
-	char *s = malloc(sizeof(char));
-	if (s == NULL)
+static ax_fail init_s(void* p, va_list *ap) {
+	char *str = ap ? va_arg(*ap, void *) : "";
+	size_t len = strlen(str);
+
+	char *newstr = malloc(len + 1);
+	if (!newstr)
 		return true;
-	*s = '\0';
-	*(void**)  p = s;
+	memcpy(newstr, str, (len + 1) * sizeof(char));
+	*(void**)  p = newstr;
 	return false;
 }
 
-static bool init_ws(void* p, size_t size) {
-	wchar_t *s = malloc(sizeof(wchar_t));
-	if (s == NULL)
+static ax_fail init_ws(void* p, va_list *ap) {
+	wchar_t *str = ap ? va_arg(*ap, void *) : "";
+	size_t len = wcslen(str);
+
+	wchar_t *newstr = malloc((len + 1) * sizeof(wchar_t));
+	if (!newstr)
 		return true;
-	*s = L'\0';
-	*(void**)  p = s;
+	memcpy(newstr, str, (len + 1) * sizeof(wchar_t));
+	*(void**)  p = newstr;
 	return false;
 }
 
@@ -411,9 +416,86 @@ ax_fail ax_trait_mem_copy(void* dst, const void* src, size_t size)
 	return false;
 }
 
-ax_fail ax_trait_mem_init(void* p, size_t size)
+ax_fail ax_trait_mem_init(void* p, size_t size, va_list *ap)
 {
 	memset(p, 0, size);
+	return false;
+}
+
+inline static bool do_nothing_ret_false()
+{
+	return false;
+}
+
+ax_fail init_i8(void* p, va_list *ap)
+{
+	*(int8_t *)p = ap ? va_arg(*ap, int) : 0;
+	return false;
+}
+
+ax_fail init_i16(void* p, va_list *ap)
+{
+	*(int16_t *)p = ap ? va_arg(*ap, int) : 0;
+	return false;
+}
+
+ax_fail init_i32(void* p, va_list *ap)
+{
+	*(int32_t *)p = ap ? va_arg(*ap, int32_t) : 0;
+	return false;
+}
+
+ax_fail init_i64(void* p, va_list *ap)
+{
+	*(int64_t *)p = ap ? va_arg(*ap, uint64_t) : 0;
+	return false;
+}
+
+ax_fail init_u8(void* p, va_list *ap)
+{
+	*(uint8_t *)p = ap ? va_arg(*ap, int) : 0;
+	return false;
+}
+
+ax_fail init_u16(void* p, va_list *ap)
+{
+	*(uint16_t *)p = ap ? va_arg(*ap, int) : 0;
+	return false;
+}
+
+ax_fail init_u32(void* p, va_list *ap)
+{
+	*(uint32_t *)p = ap ? va_arg(*ap, uint32_t) : 0;
+	return false;
+}
+
+ax_fail init_u64(void* p, va_list *ap)
+{
+	*(uint64_t *)p = ap ? va_arg(*ap, uint64_t) : 0;
+	return false;
+}
+
+ax_fail init_z(void* p, va_list *ap)
+{
+	*(size_t *)p = ap ? va_arg(*ap, size_t) : 0;
+	return false;
+}
+
+ax_fail init_f(void* p, va_list *ap)
+{
+	*(float *)p = ap ? va_arg(*ap, double) : 0;
+	return false;
+}
+
+ax_fail init_lf(void* p, va_list *ap)
+{
+	*(double *)p = ap ? va_arg(*ap, double) : 0;
+	return false;
+}
+
+ax_fail init_ptr(void* p, va_list *ap)
+{
+	*(void **)p = ap ? va_arg(*ap, void *) : NULL;
 	return false;
 }
 
@@ -435,7 +517,7 @@ static const ax_trait trait_nil = {
 	.hash  = ax_trait_mem_hash,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
+	.init  = do_nothing_ret_false,
 	.link  = false
 };
 
@@ -447,7 +529,7 @@ static const ax_trait trait_i8 = {
 	.hash  = ax_trait_mem_hash,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
+	.init  = init_i8,
 	.link  = false
 };
 
@@ -459,7 +541,7 @@ static const ax_trait trait_i16 = {
 	.hash  = ax_trait_mem_hash,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
+	.init  = init_i16,
 	.link  = false
 };
 
@@ -471,7 +553,7 @@ static const ax_trait trait_i32 = {
 	.hash  = ax_trait_mem_hash,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
+	.init  = init_i32,
 	.link  = false
 };
 
@@ -483,7 +565,7 @@ static const ax_trait trait_i64 = {
 	.hash  = ax_trait_mem_hash,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
+	.init  = init_i64,
 	.link  = false
 };
 
@@ -495,7 +577,7 @@ static const ax_trait trait_u8 = {
 	.hash  = ax_trait_mem_hash,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
+	.init  = init_u8,
 	.link  = false
 };
 
@@ -507,7 +589,7 @@ static const ax_trait trait_u16 = {
 	.hash  = ax_trait_mem_hash,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
+	.init  = init_u16,
 	.link  = false
 };
 
@@ -519,7 +601,7 @@ static const ax_trait trait_u32 = {
 	.hash  = ax_trait_mem_hash,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
+	.init  = init_u32,
 	.link  = false
 };
 
@@ -531,7 +613,7 @@ static const ax_trait trait_u64 = {
 	.hash  = ax_trait_mem_hash,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
+	.init  = init_u64,
 	.link  = false
 };
 
@@ -543,7 +625,7 @@ static const ax_trait trait_z = {
 	.hash  = ax_trait_mem_hash,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
+	.init  = init_z,
 	.link  = false
 };
 
@@ -555,7 +637,7 @@ static const ax_trait trait_f = {
 	.hash  = ax_trait_mem_hash,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
+	.init  = init_f,
 	.link  = false
 };
 
@@ -567,7 +649,7 @@ static const ax_trait trait_lf = {
 	.hash  = ax_trait_mem_hash,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
+	.init  = init_lf,
 	.link  = false
 };
 
@@ -579,7 +661,7 @@ static const ax_trait trait_ptr= {
 	.hash  = ax_trait_mem_hash,
 	.free  = ax_trait_mem_free,
 	.copy  = ax_trait_mem_copy,
-	.init  = ax_trait_mem_init,
+	.init  = init_ptr,
 	.link  = false
 };
 

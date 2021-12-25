@@ -35,7 +35,6 @@ ax_fail ax_trie_enum(const ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx)
 	ax_trait iter_tr = {
 		.size = sizeof(ax_iter),
 		.copy = ax_trait_mem_copy,
-		.init = ax_trait_mem_init,
 		.free = ax_trait_mem_free
 	};
 

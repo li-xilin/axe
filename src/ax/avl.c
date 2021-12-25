@@ -48,7 +48,7 @@ AX_CLASS_STRUCT_ENTRY(avl)
 	size_t size;
 AX_END;	
 
-static void *map_put(ax_map* map, const void *key, const void *val);
+static void *map_put(ax_map* map, const void *key, const void *val, va_list *ap);
 static ax_fail map_erase(ax_map* map, const void *key);
 static void *map_get(const ax_map* map, const void *key);
 static ax_iter map_at(const ax_map* map, const void *key);
@@ -73,9 +73,10 @@ static void rciter_next(ax_citer *it);
 static bool rciter_less(const ax_citer *it1, const ax_citer *it2);
 static long rciter_dist(const ax_citer *it1, const ax_citer *it2);
 static void *citer_get(const ax_citer *it);
-static ax_fail iter_set(const ax_iter *it, const void *val);
+static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap);
 static void iter_erase(ax_iter *it);
 inline static void *node_val(const ax_map *map, struct node_st *node);
+static void *node_change_value(ax_map *map, struct node_st *node, const void *val, va_list *ap);
 
 inline static void *node_val(const ax_map *map, struct node_st *node)
 {
@@ -209,7 +210,7 @@ static struct node_st *rotate_left(struct node_st *root)
 	return new_root;
 }
 
-static struct node_st *make_node(ax_map *map, struct node_st *parent, const void *key, const void *value)
+static struct node_st *make_node(ax_map *map, struct node_st *parent, const void *key, const void *value, va_list *ap)
 {
 	struct node_st *node = malloc(sizeof(struct node_st) + map->env.key_tr->size + map->env.box.elem_tr->size);
 	if (node == NULL)
@@ -224,7 +225,7 @@ static struct node_st *make_node(ax_map *map, struct node_st *parent, const void
 		*vtr = map->env.box.elem_tr;
 	if(ax_trait_copy(ktr, node->kvbuffer, key))
 		goto failed;
-	if (ax_trait_copy_or_init(vtr, node_val(map, node), value))
+	if (ax_trait_copy_or_init(vtr, node_val(map, node), value, ap))
 		goto failed;
 	return node;
 failed:
@@ -402,22 +403,22 @@ static void *citer_get(const ax_citer *it)
 	return node_val(it->owner, it->point);
 }
 
-static void *node_change_value(ax_map *map, struct node_st *node, const void *val)
+static void *node_change_value(ax_map *map, struct node_st *node, const void *val, va_list *ap)
 {
 	const ax_trait *vtr = map->env.box.elem_tr;
 	void *dst = node_val(map, node);
 	ax_trait_free(vtr, dst);
-	if (ax_trait_copy_or_init(vtr, dst, val))
+	if (ax_trait_copy_or_init(vtr, dst, val, ap))
 		return NULL;
 	return node_val(map, node);
 }
 
-static ax_fail iter_set(const ax_iter *it, const void *val)
+static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
 
 	ax_avl_r self = { .one = (ax_one *)it->owner };
-	return !node_change_value(self.map, it->point, val);
+	return !node_change_value(self.map, it->point, val, ap);
 }
 
 static void iter_erase(ax_iter *it)
@@ -449,7 +450,7 @@ static void iter_erase(ax_iter *it)
 	self.avl->size --;
 }
 
-static void *map_put (ax_map* map, const void *key, const void *val)
+static void *map_put (ax_map* map, const void *key, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(map);
 
@@ -460,7 +461,7 @@ static void *map_put (ax_map* map, const void *key, const void *val)
 	struct node_st *current = self.avl->root, *new_node = NULL;
 
 	if(!self.avl->root) {
-		new_node = make_node(map, NULL, key, val);
+		new_node = make_node(map, NULL, key, val, ap);
 		if (new_node == NULL) {
 			return false;
 		}
@@ -477,7 +478,7 @@ static void *map_put (ax_map* map, const void *key, const void *val)
 			if (current->left)
 				current = current->left;
 			else {
-				new_node = make_node(map, current, key, val);
+				new_node = make_node(map, current, key, val, ap);
 				if (!new_node) {
 					return NULL;
 				}
@@ -489,7 +490,7 @@ static void *map_put (ax_map* map, const void *key, const void *val)
 			if (current->right) 
 				current = current->right;
 			else {
-				new_node = make_node(map, current, key, val);
+				new_node = make_node(map, current, key, val, ap);
 				if (!new_node) {
 					return NULL;
 				}
@@ -498,14 +499,14 @@ static void *map_put (ax_map* map, const void *key, const void *val)
 				break;
 			}
 		} else {
-			if (ax_trait_copy_or_init(vtr, node_val(map, current), val))
+			if (ax_trait_copy_or_init(vtr, node_val(map, current), val, ap))
 				return NULL;
 			return node_val(map, current);
 		}
 	}
 
 	if (!new_node)
-		return node_change_value(map, current, val);
+		return node_change_value(map, current, val, ap);
 
 	do {
 		current  = current->parent;
@@ -613,7 +614,7 @@ static ax_any *any_copy(const ax_any *any)
 	ax_avl_r dst_r = { .map = __ax_avl_construct(ktr, vtr)};
 
 	ax_map_cforeach(src_r.map, const void *, key, const void *, val) {
-		if (!map_put(dst_r.map, key, val))
+		if (!map_put(dst_r.map, key, val, NULL))
 			goto fail;
 	}
 
