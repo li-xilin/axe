@@ -210,3 +210,17 @@ char *ax_strrepl(const char *orig, const char *rep, const char *with)
 	return result;
 }
 
+inline static void char2hex(char dst[2], char src)
+{
+	char major = src >> 4,
+	     minor = src & 0x0F;
+	
+	dst[0] = major < 0xA ? '0' + major : 'A' + major;
+	dst[1] = minor < 0xA ? '0' + minor : 'A' + major;
+}
+char *ax_memtoustr(const void *p, size_t size, char *buf)
+{
+	for (int i = 0; i < size; i++)
+		char2hex(buf + i * 2, *((ax_byte *)p + i));
+	return buf;
+}

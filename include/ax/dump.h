@@ -31,7 +31,27 @@
 typedef struct ax_dump_st ax_dump;
 #endif
 
-typedef int (ax_dump_out_cb)(const char *str, size_t len, void *ctx);
+typedef int ax_dump_out_cb_f(const char *str, size_t len, void *ctx);
+
+typedef struct ax_dump_format_st
+{
+	int (*snumber)(int64_t value, ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*unumber)(uint64_t value, ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*fnumber)(double value, ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*pointer)(const void *value, ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*string)(const char *value, size_t length, ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*wstring)(const wchar_t *value, size_t length, ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*memory)(const ax_byte *value, size_t size, ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*symbol)(const char *name, ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*pair_left)(ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*pair_midst)(ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*pair_right)(ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*block_left)(const char *label, ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*block_midst)(size_t index, ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*block_right)(const char *label, ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*nomem)(ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*indent)(int depth, ax_dump_out_cb_f *out_cb, void *ctx);
+} ax_dump_format;
 
 ax_dump *ax_dump_int(int64_t val);
 
@@ -59,8 +79,10 @@ void ax_dump_bind(ax_dump *dmp, int index, ax_dump* binding);
 
 void ax_dump_free(ax_dump *dmp);
 
-ax_fail ax_dump_fput(const ax_dump *dmp, FILE *fp);
+ax_fail ax_dump_fput(const ax_dump *dmp, const ax_dump_format *format, FILE *fp);
 
-int ax_dump_out(const ax_dump *dmp, ax_dump_out_cb *cb, void *ctx);
+int ax_dump_out(const ax_dump *dmp, const ax_dump_format *format, ax_dump_out_cb_f *cb, void *ctx);
+
+const ax_dump_format *ax_dump_get_default_format();
 
 #endif

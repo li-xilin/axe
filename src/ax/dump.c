@@ -68,9 +68,10 @@ enum dump_type {
 
 struct search_args
 {
-       	char *buf;
-	size_t size;
-	ax_dump_out_cb *cb;
+	const ax_dump_format *format;
+	ax_dump_out_cb_f *out_cb;
+	ax_dump_out_cb_f *filter_cb;
+	int depth;
 	void *ctx;
 };
 
@@ -112,7 +113,6 @@ struct ax_dump_st g_dmp_nomem = { .type = DTYPE_NOMEM };
 inline static bool bind_bit(const ax_dump *dmp, bool nomem_bit);
 inline static void set_bind_bit(ax_dump *dmp, bool set);
 static void dump_rec_free(ax_dump *dmp);
-inline static void char2hex(char dst[2], char src);
 static int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args);
 
 inline static bool bind_bit(const ax_dump *dmp, bool nomem_bit)
@@ -393,158 +393,141 @@ int write_file_cb(const char *buf, size_t len, void *ctx)
 	return 0;
 }
 
-ax_fail ax_dump_fput(const ax_dump *dmp, FILE *fp)
+int indent_check_cb(const char *buf, size_t len, void *ctx)
 {
-	return ax_dump_out(dmp, write_file_cb, fp) ? true : false;
+	struct search_args *args = ctx;
+	for (size_t i = 0; i < len; i++) {
+		ax_assert(buf[i] != '\n' && buf[i] != '\0', "");
+	}
+	return args->out_cb(buf, len, args->ctx);
 }
 
-inline static void char2hex(char dst[2], char src)
+int filter_cb(const char *buf, size_t len, void *ctx)
 {
-	char major = src >> 4,
-	     minor = src & 0x0F;
-	
-	dst[0] = major < 0xA ? '0' + major : 'A' + major;
-	dst[1] = minor < 0xA ? '0' + minor : 'A' + major;
+
+	struct search_args *args = ctx;
+	size_t start = 0;
+	while (start != len) {
+		size_t end;
+		for (end = start; end < len; end++) {
+			switch (buf[end]) {
+			case '\n':
+				if (args->out_cb(buf + start, end - start + 1, args->ctx))
+					return -1;
+				args->format->indent(args->depth, indent_check_cb, args);
+				end += 1;
+				goto end_for;
+			case '\0':
+				if (args->out_cb(buf + start, end - start, args->ctx))
+					return -1;
+				if (args->out_cb("\\0", 2, args->ctx))
+					return -1;
+				end += 1;
+				goto end_for;
+			}
+		}
+		if (args->out_cb(buf + start, end - start, args->ctx))
+			return -1;
+end_for:
+		start = end;
+	}
+	return 0;
+}
+
+ax_fail ax_dump_fput(const ax_dump *dmp, const ax_dump_format *format, FILE *fp)
+{
+	return ax_dump_out(dmp, format, write_file_cb, fp) ? true : false;
 }
 
 static int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args)
 {
-	int rc;
+	int ret;
 	union value_u *value = (void *)dmp->value;
 	switch (dmp->type & ~DTYPE_BIND) {
 		case DTYPE_SNUM:
-			rc = sprintf(args->buf, "%" PRIi64, value->snum);
-			if ((rc = args->cb(args->buf, rc, args->ctx)))
-				return rc;
+			if (args->format->snumber(value->snum, args->filter_cb, args))
+				return -1;
 			break;
 		case DTYPE_UNUM:
-			rc = sprintf(args->buf, "%" PRIu64, value->unum);
-			if ((rc = args->cb(args->buf, rc, args->ctx)))
-				return rc;
+			if (args->format->unumber(value->unum, args->filter_cb, args))
+				return -1;
 			break;
 		case DTYPE_FNUM:
-			rc = sprintf(args->buf, "%lg", value->fnum);
-			if ((rc = args->cb(args->buf, rc, args->ctx)))
-				return rc;
+			if (args->format->fnumber(value->fnum, args->filter_cb, args))
+				return -1;
 			break;
 		case DTYPE_PTR:
-			rc = sprintf(args->buf, "%p", value->ptr);
-			if ((rc = args->cb(args->buf, rc, args->ctx)))
-				return rc;
+			if (args->format->pointer(value->ptr, args->filter_cb, args))
+				return -1;
 			break;
 		case DTYPE_STR:
-			rc = sprintf(args->buf, "%p \"", value->str.maddr);
-			if ((rc = args->cb(args->buf, rc, args->ctx)))
-				return rc;
-			if ((rc = args->cb(value->str.data, value->str.size, args->ctx)))
-				return rc;
-			strcpy(args->buf, "\"");
-			if ((rc = args->cb(args->buf, 1, args->ctx)))
-				return rc;
+			if (args->format->string(value->str.maddr, value->str.size, args->filter_cb, args))
+				return -1;
 			break;
 		case DTYPE_WCS:
-
-			rc = sprintf(args->buf, "%p L\"", value->str.maddr);
-			if ((rc = args->cb(args->buf, rc, args->ctx)))
-				return rc;
-			{
-				mbstate_t mbs = { 0 };
-				const wchar_t *p = (void *)value->wcs.data;
-				size_t conv = 0;
-				args->buf[args->size - 1] = '\0';
-				while (p && (conv = wcsrtombs(args->buf, &p, args->size - 1, &mbs)) != 0)
-					if ((rc = args->cb(args->buf, conv, args->ctx)))
-						return rc;
-				if (conv == (size_t)-1) 
-					if ((rc = args->cb("BADCHAR", sizeof "BADCHAR" -1, args->ctx)))
-						return rc;
-			}
-			strcpy(args->buf, "\"");
-			if ((rc = args->cb(args->buf, 1, args->ctx)))
-				return rc;
-
+			if (args->format->wstring(value->wcs.maddr, value->wcs.size, args->filter_cb, args))
+				return -1;
 			break;
 		case DTYPE_MEM:
-			rc = sprintf(args->buf, "%p \\", value->str.maddr);
-			if ((rc = args->cb(args->buf, rc, args->ctx)))
-				return rc;
-			{
-				assert(args->size >= 3);
-				size_t part_siz = (args->size - 1) / 2;
-				for (size_t j = 0; j < value->mem.size / part_siz; j++) {
-					for (size_t i = 0; i < part_siz; i++)
-						char2hex(args->buf + i * 2, value->mem.data[j * part_siz + i]);
-					args->buf[part_siz * 2] = '\0';
-					if ((rc = args->cb(args->buf, part_siz, args->ctx)))
-						return rc;
-				}
-				size_t rest_siz = value->mem.size % part_siz;
-				for (size_t i = 0; i < rest_siz; i++)
-					char2hex(args->buf + i * 2, value->mem.data[value->mem.size - rest_siz + i]);
-				args->buf[rest_siz * 2] = '\0';
-				if ((rc = args->cb(args->buf, rest_siz * 2, args->ctx)))
-					return rc;
-
-			}
+			if (args->format->memory(value->mem.maddr, value->mem.size, args->filter_cb, args))
+				return -1;
 			break;
 		case DTYPE_SYM:
-			if ((rc = args->cb(value->sym.data, value->sym.size, args->ctx)))
-				return rc;
+			if (args->format->symbol(value->sym.data, args->filter_cb, args))
+				return -1;
 			break;
 		case DTYPE_NOMEM:
-			{
-				char nomem_str[] = "!NOMEM";
-				if ((rc = args->cb(nomem_str, sizeof(nomem_str), args->ctx)))
-					return rc;
-			}
+			if (args->format->nomem(args->filter_cb, args))
+				return -1;
 			break;
 		case DTYPE_PAIR:
-			if ((rc = dump_out_dfs(value->pair.first, depth + 1, args)))
-				return rc;
-			strcpy(args->buf, " = ");
-			args->cb(args->buf, 3, args->ctx);
-			if ((rc = dump_out_dfs(value->pair.second, depth + 1, args)))
-				return rc;
+			if (args->format->pair_left(args->filter_cb, args))
+				return -1;
+			if (dump_out_dfs(value->pair.first, depth + 1, args))
+				return -1;
+			if (args->format->pair_midst(args->filter_cb, args))
+				return -1;
+			if (dump_out_dfs(value->pair.second, depth + 1, args))
+				return -1;
+			if (args->format->pair_right(args->filter_cb, args))
+				return -1;
 			break;
 		case DTYPE_BLOCK:
-			if (value->block.name && (rc = args->cb(value->block.name, strlen(value->block.name), args->ctx)))
-				return rc;
-			strcpy(args->buf, " {");
-			if ((rc = args->cb(args->buf, 2, args->ctx)))
-				return rc;
-
-			for (size_t i = 0; i < value->block.len; i++) {
-				if (i != 0) {
-					strcpy(args->buf, ", ");
-					if ((rc = args->cb(args->buf, 2, args->ctx)))
-						return rc;
-				}
-
-				if ((rc = dump_out_dfs(value->block.dumps[i], depth, args)))
-					return rc;
+			if (args->format->indent) {
+				args->depth++;
 			}
-			strcpy(args->buf, "}");
-			if ((rc = args->cb(args->buf, 2, args->ctx)))
-				return rc;
+			ret = args->format->block_left(value->block.name, args->filter_cb, args);
+			if (ret < 0)
+				return -1;
+				
+			for (size_t i = 0; i < value->block.len; i++) {
+				if (args->format->block_midst(i, args->filter_cb, args))
+					return -1;
+				if (dump_out_dfs(value->block.dumps[i], depth, args))
+					return -1;
+			}
+			if (args->format->indent)
+				args->depth--;
+			if (args->format->block_right(value->block.name, args->filter_cb, args))
+				return -1;
 			break;
-
 		default:
 			abort();
 	}
 	return 0;
 }
 
-int ax_dump_out(const ax_dump *dmp, ax_dump_out_cb *cb, void *ctx)
+int ax_dump_out(const ax_dump *dmp, const ax_dump_format *format, ax_dump_out_cb_f *cb, void *ctx)
 {
 	CHECK_PARAM_NULL(dmp);
 	CHECK_PARAM_NULL(cb);
 
-	char buf[1024];
 	struct search_args args = {
-		.buf = buf,
-		.size = sizeof buf,
-		.cb = cb,
-		.ctx = ctx
+		.filter_cb = filter_cb,
+		.format = format ? format : ax_dump_get_default_format(),
+		.out_cb = cb,
+		.depth = 0,
+		.ctx = ctx,
 	};
 	return dump_out_dfs(dmp, 0, &args);
 }
