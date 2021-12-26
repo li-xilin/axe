@@ -835,7 +835,7 @@ static void *map_put(ax_map* map, const void *key, const void *val, va_list *ap)
 			return NULL;
 		}
 
-		if (node_set_value(map, candidate, val, ap)) {
+		if (!node_set_value(map, candidate, val, ap)) {
 			rb_tree_remove(self.rb, candidate);
 			ax_trait_free(ktr, candidate->kvbuffer);
 			return NULL;
