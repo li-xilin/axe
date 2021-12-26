@@ -72,5 +72,8 @@ typedef uint_fast32_t ax_fast_uint;
 
 #define ax_ptrof(_t, _v) ((_t [1]) { _v })
 
+#define ax_strcommalen(s) ("" s), (sizeof(s) - 1)
+#define ax_vstrcommalen(s) (s), strlen(s)
+
 #endif
 
