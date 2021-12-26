@@ -602,7 +602,6 @@ ax_seq *__ax_vector_construct(const ax_trait *elem_tr)
 {
 	CHECK_PARAM_NULL(elem_tr);
 	CHECK_PARAM_NULL(elem_tr->copy);
-	CHECK_PARAM_NULL(elem_tr->equal);
 	CHECK_PARAM_NULL(elem_tr->free);
 
 	ax_buff *buff = NULL;

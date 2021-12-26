@@ -312,7 +312,7 @@ void ax_dump_bind(ax_dump *dmp, int index, ax_dump* binding)
 	ax_assert(dmp->type == DTYPE_BLOCK || dmp->type == DTYPE_NOMEM,
 			"binding operation only support block and nomem"); 
 	ax_assert(!bind_bit(binding, 0), "instance is already in binding");
-	struct value_block_st *block = (void *) dmp->value;
+	struct value_block_st *block;
 #ifndef NDEBUG
 	if (binding->type == DTYPE_BLOCK) {
 		block = (void *) binding->value;
@@ -321,7 +321,7 @@ void ax_dump_bind(ax_dump *dmp, int index, ax_dump* binding)
 		}
 	}
 #endif
-
+	block = (void *) dmp->value;
 	switch (dmp->type) {
 		case DTYPE_BLOCK:
 			ax_assert(index >= 0 && index < block->len, "dump: exceed block field index %d", index);
