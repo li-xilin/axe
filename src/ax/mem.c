@@ -27,6 +27,8 @@
 #include <string.h>
 #include <wchar.h>
 #include <errno.h>
+#include <ctype.h>
+#include <stdio.h>
 
 #include "check.h"
 void ax_memxor(void *ptr1, void *ptr2, size_t size)
@@ -212,15 +214,31 @@ char *ax_strrepl(const char *orig, const char *rep, const char *with)
 
 inline static void char2hex(char dst[2], char src)
 {
-	char major = src >> 4,
-	     minor = src & 0x0F;
+	unsigned char major = (src >> 4) , minor = src & 0x0F;
+	//printf("major = %X\n", major);
 	
-	dst[0] = major < 0xA ? '0' + major : 'A' + major;
-	dst[1] = minor < 0xA ? '0' + minor : 'A' + major;
+	dst[0] = major < 0xA ? '0' + major : 'A' + major - 0xA;
+	dst[1] = minor < 0xA ? '0' + minor : 'A' + minor - 0xA;
+	//printf("%c %c\n", dst[0], dst[1]);
 }
-char *ax_memtoustr(const void *p, size_t size, char *buf)
+
+char *ax_memtohex(const void *p, size_t size, char *out)
 {
 	for (int i = 0; i < size; i++)
-		char2hex(buf + i * 2, *((ax_byte *)p + i));
-	return buf;
+		char2hex(out + i * 2, *((ax_byte *)p + i));
+	out[size * 2] = '\0';
+	return out;
+}
+
+void ax_membyhex(const char *text, void *out)
+{
+	char *buf = out;
+	int i = 0;
+	for (i = 0; text[i] != '\0'; i++)
+		ax_assert(isdigit(text[i]) || (text[i] >= 'A' && text[i] <= 'Z'), "invalid charactor '%c'", text[i]);
+	ax_assert(i % 2 == 0, "length of text is odd number");
+
+	for (i = 0; text[i] != '\0'; i += 2)
+		buf[i / 2] = (text[i] - (isdigit(text[i]) ? '0' : ('A' - 10))) * 0x10
+			+ (text[i + 1] - (isdigit(text[i + 1]) ? '0' : ('A' - 10)));
 }

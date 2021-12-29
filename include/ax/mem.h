@@ -62,5 +62,9 @@ char *ax_strrepl(const char *orig, const char *rep, const char *with);
 
 char *ax_memtoustr(const void *p, size_t size, char *buf);
 
+char *ax_memtohex(const void *p, size_t size, char *out);
+
+void ax_membyhex(const char *text, void *out);
+
 #endif
 
