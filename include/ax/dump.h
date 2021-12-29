@@ -77,6 +77,11 @@ ax_fail ax_dump_set_name(ax_dump *dmp, const char *sym);
 
 void ax_dump_bind(ax_dump *dmp, int index, ax_dump* binding);
 
+inline static void ax_dump_named_bind(ax_dump *dmp, int index, const char *name, ax_dump* binding)
+{
+	ax_dump_bind(dmp, index, ax_dump_pair(ax_dump_symbol(name), binding));
+}
+
 void ax_dump_free(ax_dump *dmp);
 
 ax_fail ax_dump_fput(const ax_dump *dmp, const ax_dump_format *format, FILE *fp);
