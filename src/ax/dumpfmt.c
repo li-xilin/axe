@@ -92,7 +92,7 @@ static int memory(const ax_byte *value, size_t size, ax_dump_out_cb_f *out_cb, v
 	size_t shift = 0;
 	while (shift != size) {
 		size_t partsiz = (size - shift) % (sizeof(buf) / 2 - 1);
-		ax_memtoustr(value + shift, partsiz, buf);
+		ax_memtohex(value + shift, partsiz, buf);
 		if ((ret = out_cb(buf, partsiz * 2, ctx)))
 			return ret;
 		shift += partsiz;
