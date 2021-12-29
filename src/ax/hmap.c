@@ -333,6 +333,7 @@ static void iter_erase(ax_iter *it)
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_NULL(it->point);
 
+
 	ax_hmap_r hmap_r = { it->owner };
 	struct node_st *node = it->point;
 	void *pkey = node->kvbuffer;
@@ -342,12 +343,19 @@ static void iter_erase(ax_iter *it)
 	ax_assert(findpp, "bad iterator");
 	assert(it->point == *findpp);
 
+	void *next = (*findpp)->next;
+	if (!next) {
+		if (bucket->next)
+			next = bucket->next->node_list;
+
+	}
+
 	free_node(hmap_r.map, findpp);
 	if (!bucket->node_list)
 		hmap_r.hmap->bucket_list = unlink_bucket(hmap_r.hmap->bucket_list, bucket);
 	hmap_r.hmap->size --;
 
-	it->point = NULL;
+	it->point = next;
 }
 
 inline static void *node_val(const ax_map* map, struct node_st *node)

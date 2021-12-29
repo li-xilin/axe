@@ -20,6 +20,9 @@
  * THE SOFTWARE.
  */
 
+#include "ax/box.h"
+#include "ax/map.h"
+#include "axut/runner.h"
 #include <axut.h>
 #include <ax/hmap.h>
 #include <ax/hmap.h>
@@ -209,6 +212,40 @@ static void rehash(axut_runner* r)
 	ax_one_free(hmap.one);
 }
 
+
+static void check_size(axut_runner* r)
+{
+	ax_hmap_r hmap = ax_class_new(hmap, ax_t(int), ax_t(nil));
+	for (int i = 0; i < 10000; i++) {
+		int val = rand();
+		ax_map_put(hmap.map, &val, NULL);
+	}
+	axut_assert_int_equal(r, 10000, ax_box_size(hmap.box));
+	ax_iter it = ax_box_begin(hmap.box);
+	size_t size = 0;
+	ax_box_iterate(hmap.box, it) {
+		size += 1;
+	}
+	axut_assert_int_equal(r, 10000, size);
+
+	for (int i = 0; i < 10000; i++) {
+		axut_assert_int_equal(r, 10000 - i, ax_box_size(hmap.box));
+		ax_iter_erase(&it);
+	}
+
+	for (int i = 0; i < 10000; i++) {
+		int val = rand();
+		ax_map_put(hmap.map, &val, NULL);
+	}
+	axut_assert_int_equal(r, 10000, ax_box_size(hmap.box));
+
+	for (int i = 0; i < 10000; i++) {
+		axut_assert_int_equal(r, 10000 - i, ax_box_size(hmap.box));
+		it = ax_box_begin(hmap.box);
+		ax_map_erase(hmap.map, ax_map_iter_key(&it));
+	}
+}
+
 axut_suite *suite_for_hmap()
 {
 	axut_suite *suite = axut_suite_create("hmap");
@@ -219,6 +256,7 @@ axut_suite *suite_for_hmap()
 	axut_suite_add(suite, map_chkey, 1);
 	axut_suite_add(suite, rehash, 1);
 	axut_suite_add(suite, duplicate, 1);
+	axut_suite_add(suite, check_size, 1);
 
 	return suite;
 }
