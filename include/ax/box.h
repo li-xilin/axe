@@ -159,4 +159,8 @@ static inline void ax_box_clear(ax_box* box)
 	box->tr->clear(box);
 }
 
+static inline bool ax_box_iter_ended(ax_box* box, ax_iter *it) {
+	return ax_iter_equal(it, ax_ptrof(ax_iter, ax_box_end(box)));
+}
+
 #endif
