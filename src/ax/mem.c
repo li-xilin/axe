@@ -212,20 +212,17 @@ char *ax_strrepl(const char *orig, const char *rep, const char *with)
 	return result;
 }
 
-inline static void char2hex(char dst[2], char src)
+inline static void char2hex(char dst[2], ax_byte src)
 {
-	unsigned char major = (src >> 4) , minor = src & 0x0F;
-	//printf("major = %X\n", major);
-	
-	dst[0] = major < 0xA ? '0' + major : 'A' + major - 0xA;
-	dst[1] = minor < 0xA ? '0' + minor : 'A' + minor - 0xA;
-	//printf("%c %c\n", dst[0], dst[1]);
+	ax_byte major = (src >> 4) , minor = src & 0x0F;
+	dst[0] = (major < 0xA) ? '0' + major : 'A' + (major - 0xA);
+	dst[1] = (minor < 0xA) ? '0' + minor : 'A' + (minor - 0xA);
 }
 
 char *ax_memtohex(const void *p, size_t size, char *out)
 {
 	for (int i = 0; i < size; i++)
-		char2hex(out + i * 2, *((ax_byte *)p + i));
+		char2hex(out + i * 2, ((ax_byte *)p)[i]);
 	out[size * 2] = '\0';
 	return out;
 }
@@ -239,6 +236,6 @@ void ax_membyhex(const char *text, void *out)
 	ax_assert(i % 2 == 0, "length of text is odd number");
 
 	for (i = 0; text[i] != '\0'; i += 2)
-		buf[i / 2] = (text[i] - (isdigit(text[i]) ? '0' : ('A' - 10))) * 0x10
-			+ (text[i + 1] - (isdigit(text[i + 1]) ? '0' : ('A' - 10)));
+		buf[i / 2] = (text[i] - (isdigit(text[i]) ? '0' : ('A' - 0xA))) * 0x10
+			+ (text[i + 1] - (isdigit(text[i + 1]) ? '0' : ('A' - 0xA)));
 }
