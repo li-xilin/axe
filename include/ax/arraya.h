@@ -24,6 +24,7 @@
 #define AX_ARRAYA_H
 
 #include <stdint.h>
+#include <stddef.h>
 #include "debug.h"
 
 #define __AX_ARRAYA_MAGIC "@arraya"

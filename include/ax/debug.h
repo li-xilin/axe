@@ -22,7 +22,6 @@
 
 #ifndef AX_DEBUG_H
 #define AX_DEBUG_H
-#include <stddef.h>
 
 int __ax_debug_assert_fail (const char* file, const char* func, int line, const char* brief, const char* fmt, ...);
 

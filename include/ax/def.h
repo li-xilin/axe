@@ -42,13 +42,13 @@ typedef uint_fast32_t ax_fast_uint;
 #define AX_IMAX_BITS(m) ((m) /((m)%0x3fffffffL+1) /0x3fffffffL %0x3fffffffL *30 \
                   + (m)%0x3fffffffL /((m)%31+1)/31%31*5 + 4-12/((m)%31+3))
 
-#define ax_block for(int __ax_block_flag = 0; __ax_block_flag != 1; __ax_block_flag = 1)
-
 #define ax_unused(_var) ((void)&(_var))
 
-#define ax_repeat(_n) for(size_t __ax_repeat_count = 0; __ax_repeat_count != (_n); __ax_repeat_count++)
+#define ax_block for(int __ax_block_flag = 0; __ax_block_flag != 1; __ax_block_flag = 1)
 
-#define ax_forever while(true)
+#define ax_repeat(_n) for(size_t _ = 0; _ != (_n); _++)
+
+#define ax_forever for(;;)
 
 #define ax_align(_size, _align) \
 	(!((_size) % (_align)) ? (_size) \
@@ -71,9 +71,13 @@ typedef uint_fast32_t ax_fast_uint;
 #define ax_stringy(_x) __ax_stringy(_x)
 
 #define ax_ptrof(_t, _v) ((_t [1]) { _v })
+#define ax_p(_type, _value) ((_type [1]) { _value })
 
 #define ax_strcommalen(s) ("" s), (sizeof(s) - 1)
 #define ax_vstrcommalen(s) (s), strlen(s)
+
+#define ax_nelems(_a) (ax_assert((void *)_a == (void *)&_a, "_a pass to ax_nelems is not array"), \
+		(sizeof(_a) / sizeof(*_a)))
 
 #endif
 
