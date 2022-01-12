@@ -40,6 +40,7 @@ extern axut_suite *suite_for_arr();
 extern axut_suite *suite_for_mem();
 extern axut_suite *suite_for_class();
 extern axut_suite *suite_for_stuff();
+extern void suite_for_maps(axut_runner *r);
 
 int main()
 {
@@ -61,6 +62,8 @@ int main()
 	axut_runner_add(r, suite_for_mem());
 	axut_runner_add(r, suite_for_class());
 	axut_runner_add(r, suite_for_stuff());
+
+	suite_for_maps(r);
 
 	axut_runner_run(r);
 	fputs(axut_runner_result(r), stdout);
