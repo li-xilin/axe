@@ -351,6 +351,7 @@ static int rb_tree_find_or_insert(struct ax_rb_st  *tree, const void *key, struc
 	/* Case 1: Tree is empty, so we just insert the node */
 	if (tree->root == NULL) {
 		tree->root = new_candidate;
+		//new_candidate->left = new_candidate->right = NULL;
 		tree->rightmost = new_candidate;
 		NODE_SET_COLOR(new_candidate, COLOR_BLACK);
 		*value = new_candidate;
@@ -771,18 +772,19 @@ static void *citer_get(const ax_citer *it)
 	return node_val(it->owner, it->point);
 }
 
-static void *node_set_value(ax_map *map, struct node_st *node, const void *val, va_list *ap)
+inline static void *node_set_value(ax_map *map, struct node_st *node, const void *val, va_list *ap, bool need_clean)
 {
 	const ax_trait *vtr = map->env.box.elem_tr;
-	void *dst = node_val(map, node);
 	ax_byte tmp[vtr->size];
-	memcpy(tmp, dst, vtr->size);
-	if (ax_trait_copy_or_init(vtr, dst, val, ap)) {
-		memcpy(dst, tmp, vtr->size);
+	if (ax_trait_copy_or_init(vtr, tmp, val, ap))
 		return NULL;
-	}
-	ax_trait_free(vtr, tmp);
-	return node_val(map, node);
+
+	void *ptr = node_val(map, node);
+	if (need_clean)
+		ax_trait_free(vtr, ptr);
+
+	memcpy(ptr, tmp, vtr->size);
+	return ptr;
 }
 
 static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
@@ -790,7 +792,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
 
 	ax_rb_r rb_r = { .one = (ax_one *)it->owner };
-	return !node_set_value(rb_r.map, it->point, val, ap);
+	return !node_set_value(rb_r.map, it->point, val, ap, true);
 }
 
 static void iter_erase(ax_iter *it)
@@ -801,11 +803,17 @@ static void iter_erase(ax_iter *it)
 	ax_rb_r self = { it->owner };
 	struct node_st * node = it->point;
 
+	struct node_st *next_node = ax_iter_norm(it)
+		? higher_node(self.map, node)
+		: lower_node(self.map, node);
+	it->point = next_node;
+
 	rb_tree_remove(self.rb, node);
 	self.rb->size--;
 	ax_trait_free(self.rb->map.env.key_tr, node_key(node));
 	ax_trait_free(self.rb->map.env.box.elem_tr, node_val(self.map, node));
 	free(node);
+
 }
 
 static void *map_put(ax_map* map, const void *key, const void *val, va_list *ap)
@@ -817,30 +825,33 @@ static void *map_put(ax_map* map, const void *key, const void *val, va_list *ap)
 	const ax_trait *ktr = map->env.key_tr;
 
 	struct node_st *node = malloc(sizeof(struct node_st) + map->env.key_tr->size + map->env.box.elem_tr->size);
-	node->parent = NULL;
 	if (node == NULL)
 		return NULL;
+	node->left = node->right = node->parent = NULL;
 
 	struct node_st * candidate = NULL;
 	char *valptr = NULL;
-	if (rb_tree_find_or_insert(self.rb, key, node, &candidate) == 0) {
-		free(node);
-		valptr = node_val(self.map, candidate);
-		if (node_set_value(map, candidate, val, ap))
-			return NULL;
-	} else {
-		valptr = node_val(self.map, candidate);
-		if (ax_trait_copy(ktr, candidate->kvbuffer, key)) {
-			rb_tree_remove(self.rb, candidate);
-			return NULL;
-		}
+	switch (rb_tree_find_or_insert(self.rb, key, node, &candidate)) {
+		case 0:
+			free(node);
+			valptr = node_val(self.map, candidate);
+			if (node_set_value(map, candidate, val, ap, true))
+				return NULL;
+			break;
+		case 1:
+			valptr = node_val(self.map, candidate);
+			if (ax_trait_copy(ktr, candidate->kvbuffer, key)) {
+				rb_tree_remove(self.rb, candidate);
+				return NULL;
+			}
 
-		if (!node_set_value(map, candidate, val, ap)) {
-			rb_tree_remove(self.rb, candidate);
-			ax_trait_free(ktr, candidate->kvbuffer);
-			return NULL;
-		}
-		self.rb->size++;
+			if (!node_set_value(map, candidate, val, ap, false)) {
+				rb_tree_remove(self.rb, candidate);
+				ax_trait_free(ktr, candidate->kvbuffer);
+				return NULL;
+			}
+			self.rb->size++;
+			break;
 	}
 
 	return valptr;
