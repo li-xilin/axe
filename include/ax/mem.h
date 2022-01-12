@@ -27,9 +27,11 @@
 
 #define ax_mem_pswap(_a, _b, _type) \
 do { \
-	_type tmp = *(_type *)(_a); \
-	*(_type*)(_a) = *(_type *)(_b); \
-	*(_type*)(_b) = tmp; \
+	_type a = *(_type *)(_a); \
+	_type b = *(_type *)(_b); \
+	_type tmp = a; \
+	a = b; \
+	b = tmp; \
 } while(0)
 
 inline static void ax_mem_swap(void *p1, void *p2, size_t size)
