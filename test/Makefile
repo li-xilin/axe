@@ -12,18 +12,18 @@ LDFLAGS = -L$(ROOT)/lib\
 	  -laxut \
 	  -lax  #-fsanitize=address
 
-OBJS = test_all.o test_pred.o test_vector.o test_list.o test_avl.o \
-       test_hmap.o test_uintk.o test_string.o test_seq.o test_algo.o \
-       test_stack.o test_queue.o test_array.o test_btrie.o test_mem.o \
-       test_class.o test_stuff.o
+OBJS = t_main.o t_pred.o t_vector.o t_list.o t_avl.o \
+       t_hmap.o t_uintk.o t_string.o t_seq.o t_algo.o \
+       t_stack.o t_queue.o t_array.o t_btrie.o t_mem.o \
+       t_class.o t_stuff.o
 
-TARGET = test_all
+TARGET = t_all
 
 
 all: $(TARGET)
 
 test: clean $(TARGET)
-	./test_all
+	./t_all
 
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $(OBJS) $(LDFLAGS)
