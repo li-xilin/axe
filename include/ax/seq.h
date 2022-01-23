@@ -66,13 +66,13 @@ AX_BLESS(seq);
 
 inline static ax_fail ax_seq_push(ax_seq *seq, const void *val)
 {
-	ax_trait_require(seq, seq->tr->push);
+	ax_require(seq, seq->tr->push);
 	return seq->tr->push(seq, ax_trait_in(seq->env.box.elem_tr, val), NULL);
 }
 
 inline static ax_fail ax_seq_ipush(ax_seq *seq, ...)
 {
-	ax_trait_require(seq, seq->tr->push);
+	ax_require(seq, seq->tr->push);
 	va_list ap;
 	va_start(ap, seq);
 	ax_fail fail = seq->tr->push(seq, NULL, &ap);
@@ -82,43 +82,43 @@ inline static ax_fail ax_seq_ipush(ax_seq *seq, ...)
 
 inline static ax_fail ax_seq_pop(ax_seq *seq)
 {
-	ax_trait_require(seq, seq->tr->pop);
+	ax_require(seq, seq->tr->pop);
 	return seq->tr->pop(seq);
 }
 
 inline static ax_fail ax_seq_pushf(ax_seq *seq, const void *val)
 {
-	ax_trait_optional(seq, seq->tr->pushf);
+	ax_require(seq, seq->tr->pushf);
 	return seq->tr->pushf(seq, ax_trait_in(seq->env.box.elem_tr, val), NULL);
 }
 
 inline static ax_fail ax_seq_popf(ax_seq *seq)
 {
-	ax_trait_optional(seq, seq->tr->popf);
+	ax_require(seq, seq->tr->popf);
 	return seq->tr->popf(seq);
 }
 
 inline static void ax_seq_invert(ax_seq *seq)
 {
-	ax_trait_require(seq, seq->tr->invert);
+	ax_require(seq, seq->tr->invert);
 	seq->tr->invert(seq);
 }
 
 inline static ax_fail ax_seq_trunc(ax_seq *seq, size_t size)
 {
-	ax_trait_optional(seq, seq->tr->trunc);
+	ax_require(seq, seq->tr->trunc);
 	return seq->tr->trunc(seq, size);
 }
 
 inline static ax_iter ax_seq_at(ax_seq *seq, size_t index)
 {
-	ax_trait_optional(seq, seq->tr->at);
+	ax_require(seq, seq->tr->at);
 	return seq->tr->at(seq, index);
 }
 
 inline static ax_citer ax_seq_cat(const ax_seq *seq, size_t index)
 {
-	ax_trait_optional(seq, seq->tr->at);
+	ax_require(seq, seq->tr->at);
 	ax_iter it = seq->tr->at((ax_seq *)seq, index);
 	void *p = &it;
 	return *(ax_citer *)p;
@@ -126,13 +126,13 @@ inline static ax_citer ax_seq_cat(const ax_seq *seq, size_t index)
 
 static inline ax_fail ax_seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 {
-	ax_trait_optional(seq, seq->tr->at);
+	ax_require(seq, seq->tr->at);
 	return seq->tr->insert(seq, it, ax_trait_in(seq->env.box.elem_tr, val), NULL);
 }
 
 static inline ax_fail ax_seq_iinsert(ax_seq *seq, ax_iter *it, ...)
 {
-	ax_trait_optional(seq, seq->tr->at);
+	ax_require(seq, seq->tr->at);
 	va_list ap;
 	va_start(ap, it);
 	ax_fail fail = seq->tr->insert(seq, it, NULL, &ap);
@@ -142,25 +142,25 @@ static inline ax_fail ax_seq_iinsert(ax_seq *seq, ax_iter *it, ...)
 
 static inline void *ax_seq_first(ax_seq *seq)
 {
-	ax_trait_optional(seq, seq->tr->first);
+	ax_require(seq, seq->tr->first);
 	return seq->tr->first(seq);
 }
 
 static inline const void *ax_seq_cfirst(const ax_seq *seq)
 {
-	ax_trait_optional(seq, seq->tr->first);
+	ax_require(seq, seq->tr->first);
 	return seq->tr->first(seq);
 }
 
 static inline void *ax_seq_last(ax_seq *seq)
 {
-	ax_trait_optional(seq, seq->tr->last);
+	ax_require(seq, seq->tr->last);
 	return seq->tr->last(seq);
 }
 
 static inline const void *ax_seq_clast(const ax_seq *seq)
 {
-	ax_trait_optional(seq, seq->tr->last);
+	ax_require(seq, seq->tr->last);
 	return seq->tr->last(seq);
 }
 

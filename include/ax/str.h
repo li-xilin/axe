@@ -22,6 +22,7 @@
 
 #ifndef AX_STR_H
 #define AX_STR_H
+#include "debug.h"
 #include "seq.h"
 #include <stdarg.h>
 
@@ -48,13 +49,46 @@ AX_END;
 AX_BEGIN_ENV(str) AX_END;
 AX_BLESS(str);
 
-inline static ax_fail  ax_str_append (      ax_str* str, const char *s) {return str->tr->append(str, s); }
-inline static size_t   ax_str_length (const ax_str* str) { return str->tr->length(str); }
-inline static ax_fail  ax_str_insert (      ax_str* str, size_t start, const char *s) { return str->tr->insert(str, start, s); }
-inline static char    *ax_str_strz   (      ax_str* str) { return str->tr->strz(str); }
-inline static int      ax_str_comp   (const ax_str* str, const char* s) { return str->tr->comp(str, s); }
-inline static ax_str  *ax_str_substr (const ax_str* str, size_t start, size_t len) { return str->tr->substr(str, start, len); }
-inline static ax_seq  *ax_str_split  (const ax_str* str, const char ch) { return str->tr->split(str, ch); }
+inline static ax_fail ax_str_append(ax_str* str, const char *s) {
+	ax_require(str, str->tr->append);
+	return str->tr->append(str, s);
+}
+
+inline static size_t ax_str_length(const ax_str* str)
+{
+	ax_require(str, str->tr->length);
+	return str->tr->length(str);
+}
+
+inline static ax_fail ax_str_insert(ax_str* str, size_t start, const char *s)
+{
+	ax_require(str, str->tr->insert);
+	return str->tr->insert(str, start, s);
+}
+
+inline static char *ax_str_strz(ax_str* str)
+{
+	ax_require(str, str->tr->strz);
+	return str->tr->strz(str);
+}
+
+inline static int ax_str_comp(const ax_str* str, const char* s)
+{
+	ax_require(str, str->tr->comp);
+	return str->tr->comp(str, s);
+}
+
+inline static ax_str *ax_str_substr(const ax_str* str, size_t start, size_t len)
+{
+	ax_require(str, str->tr->substr);
+	return str->tr->substr(str, start, len);
+}
+
+inline static ax_seq  *ax_str_split(const ax_str* str, const char ch)
+{
+	ax_require(str, str->tr->split);
+	return str->tr->split(str, ch);
+}
 
 inline static ax_fail ax_str_sprintf(ax_str* str, const char* fmt, ...)
 {

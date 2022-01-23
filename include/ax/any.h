@@ -51,13 +51,13 @@ AX_BLESS(any);
 
 inline static ax_any *ax_any_copy(const ax_any* any)
 {
-	ax_trait_require(any, any->tr->copy);
+	ax_require(any, any->tr->copy);
 	return any->tr->copy(any);
 }
 
 inline static ax_dump *ax_any_dump(const ax_any* any)
 {
-	ax_trait_require(any, any->tr->dump);
+	ax_require(any, any->tr->dump);
 	return any->tr->dump(any);
 }
 

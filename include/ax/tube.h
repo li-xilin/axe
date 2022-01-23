@@ -52,13 +52,13 @@ AX_BLESS(tube);
 
 inline static ax_fail ax_tube_push(ax_tube *tube, const void *val)
 {
-	ax_trait_require(tube, tube->tr->push);
+	ax_require(tube, tube->tr->push);
 	return tube->tr->push(tube, val, NULL);
 }
 
 inline static ax_fail ax_tube_ipush(ax_tube *tube, ...)
 {
-	ax_trait_require(tube, tube->tr->push);
+	ax_require(tube, tube->tr->push);
 	va_list ap;
 	va_start(ap, tube);
 	ax_fail fail = tube->tr->push(tube, NULL, &ap);
@@ -68,25 +68,25 @@ inline static ax_fail ax_tube_ipush(ax_tube *tube, ...)
 
 inline static void ax_tube_pop(ax_tube *tube)
 {
-	ax_trait_require(tube, tube->tr->pop);
+	ax_require(tube, tube->tr->pop);
 	tube->tr->pop(tube);
 }
 
 static inline void *ax_tube_prime(ax_tube *tube)
 {
-	ax_trait_optional(tube, tube->tr->prime);
+	ax_require(tube, tube->tr->prime);
 	return tube->tr->prime(tube);
 }
 
 static inline const void *ax_tube_cprime(const ax_tube *tube)
 {
-	ax_trait_optional(tube, tube->tr->prime);
+	ax_require(tube, tube->tr->prime);
 	return tube->tr->prime(tube);
 }
 
 static inline size_t ax_tube_size(const ax_tube *tube)
 {
-	ax_trait_optional(tube, tube->tr->size);
+	ax_require(tube, tube->tr->size);
 	return tube->tr->size(tube);
 }
 

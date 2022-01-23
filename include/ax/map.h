@@ -80,14 +80,14 @@ AX_BLESS(map);
 
 inline static void *ax_map_put(ax_map *map, const void *key, const void *val)
 {
-	ax_trait_require(map, map->tr->put);
+	ax_require(map, map->tr->put);
 	return ax_trait_out(map->env.box.elem_tr, map->tr->put(map, ax_trait_in(map->env.key_tr, key),
 			ax_trait_in(map->env.box.elem_tr, val), NULL));
 }
 
 inline static void *ax_map_iput(ax_map *map, const void *key, ...)
 {
-	ax_trait_require(map, map->tr->put);
+	ax_require(map, map->tr->put);
 
 	va_list ap;
 	va_start(ap, key);
@@ -98,26 +98,26 @@ inline static void *ax_map_iput(ax_map *map, const void *key, ...)
 
 inline static ax_fail ax_map_erase(ax_map *map, const void *key)
 {
-	ax_trait_require(map, map->tr->erase);
+	ax_require(map, map->tr->erase);
 	return map->tr->erase(map, key);
 }
 
 inline static void *ax_map_get(ax_map *map, const void *key)
 {
-	ax_trait_require(map, map->tr->get);
+	ax_require(map, map->tr->get);
 	return ax_trait_out(map->env.box.elem_tr,
 			map->tr->get(map, ax_trait_in(map->env.key_tr, key)));
 }
 
 inline static ax_iter ax_map_at(ax_map *map, const void *key)
 {
-	ax_trait_require(map, map->tr->at);
+	ax_require(map, map->tr->at);
 	return map->tr->at(map, ax_trait_in(map->env.key_tr, key));
 }
 
 inline static ax_citer ax_map_cat(const ax_map *map, const void *key)
 {
-	ax_trait_require(map, map->tr->at);
+	ax_require(map, map->tr->at);
 	ax_iter it = map->tr->at(map, ax_trait_in(map->env.key_tr, key));
 	void *p = &it;
 	return *(ax_citer *)p;
@@ -125,19 +125,19 @@ inline static ax_citer ax_map_cat(const ax_map *map, const void *key)
 
 inline static void *ax_map_cget(const ax_map *map, const void *key)
 {
-	ax_trait_require(map, map->tr->get);
+	ax_require(map, map->tr->get);
 	return map->tr->get(map, ax_trait_in(map->env.key_tr, key));
 }
 
 inline static bool ax_map_exist(const ax_map *map, const void *key)
 {
-	ax_trait_require(map, map->tr->exist);
+	ax_require(map, map->tr->exist);
 	return map->tr->exist(map, ax_trait_in(map->env.key_tr, key));
 }
 
 inline static void *ax_map_chkey(ax_map *map, const void *key, const void *new_key)
 {
-	ax_trait_require(map, map->tr->chkey);
+	ax_require(map, map->tr->chkey);
 	return map->tr->chkey(map, ax_trait_in(map->env.key_tr, key),
 			ax_trait_in(map->env.key_tr, new_key));
 }

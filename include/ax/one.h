@@ -28,15 +28,11 @@
 
 #define AX_ONE_NAME "one"
 
+#define ax_require(_one, _op) (ax_assert(_one, "NULL object is specified for ax_require"), ax_assert((_op), \
+		"operation for %s is required, but not implemented", \
+		((ax_one *)(_one))->tr->name))
+
 #define ax_null { .one = NULL }
-
-#define ax_trait_require(_one, _trait) ax_assert((_trait), \
-		"operation for %s is required, do implement it", \
-		((ax_one *)(_one))->tr->name)
-
-#define ax_trait_optional(_one, _trait) ax_assert((_trait), \
-		"operation for %s is not supported", \
-		((ax_one *)(_one))->tr->name)
 
 #define AX_CLASS_ROLE_one(_l) _l struct ax_one_st *one;
 
@@ -45,7 +41,7 @@
 typedef struct ax_one_st ax_one;
 #endif
 
-typedef void        (*ax_one_free_f) (ax_one *one);
+typedef void (*ax_one_free_f) (ax_one *one);
 
 typedef struct ax_one_trait_st
 {
@@ -65,14 +61,14 @@ AX_BLESS(one);
 
 static inline const char *ax_one_name(const ax_one *one)
 {
-	ax_trait_require(one, one->tr->name);
+	ax_require(one, one->tr->name);
 	return one->tr->name;
 }
 
 static inline void ax_one_free(ax_one *one) {
 	if (!one) 
 		return;
-	ax_trait_require(one, one->tr->free);
+	ax_require(one, one->tr->free);
 	one->tr->free(one);
 }
 
