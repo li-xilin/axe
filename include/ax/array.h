@@ -47,6 +47,13 @@ inline static void* ax_array_ptr(ax_array *array)
 	return array->array;
 }
 
+inline static void ax_array_reset(ax_array *array, char *ptr, size_t size)
+{
+	array->array = ptr;
+	int elem_size = array->seq.env.box.elem_tr->size;
+	array->size = elem_size ? size / elem_size : SIZE_MAX;
+}
+
 #define __ax_array_construct3(_etr, _ptr, _size) \
 	((struct ax_seq_st *)(struct ax_array_st[1]) { \
 		 	[0].seq.env.box.elem_tr = (_etr), \

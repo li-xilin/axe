@@ -99,6 +99,7 @@ inline static bool ax_iter_norm (const ax_iter *it)
 
 inline static void ax_citer_move(ax_citer *it, long s)
 {
+	ax_assert(it->tr->move, "operation not supported");
 	it->tr->move(it, s);
 }
 
@@ -109,6 +110,7 @@ inline static void ax_iter_move(ax_iter *it, long s)
 
 inline static void ax_citer_next(ax_citer *it)
 {
+	ax_assert(it->tr->next, "operation not supported");
 	it->tr->next(it);
 }
 
@@ -119,6 +121,7 @@ inline static void ax_iter_next(ax_iter *it)
 
 inline static void ax_citer_prev(ax_citer *it)
 {
+	ax_assert(it->tr->prev, "operation not supported");
 	it->tr->prev(it);
 }
 
@@ -129,6 +132,7 @@ inline static void ax_iter_prev(ax_iter *it)
 
 inline static ax_citer ax_citer_ret_next(const ax_citer *it)
 {
+	ax_assert(it->tr->next, "operation not supported");
 	ax_citer next = *it;
 	it->tr->next(&next);
 	return next;
@@ -136,6 +140,7 @@ inline static ax_citer ax_citer_ret_next(const ax_citer *it)
 
 inline static ax_iter ax_iter_ret_next(const ax_iter *it)
 {
+	ax_assert(it->tr->next, "operation not supported");
 	ax_iter next = *it;
 	it->tr->next(ax_iter_c(&next));
 	return next;
@@ -143,6 +148,7 @@ inline static ax_iter ax_iter_ret_next(const ax_iter *it)
 
 inline static ax_citer ax_citer_ret_prev(const ax_citer *it)
 {
+	ax_assert(it->tr->prev, "operation not supported");
 	ax_citer prev = *it;
 	it->tr->prev(&prev);
 	return prev;
@@ -150,6 +156,7 @@ inline static ax_citer ax_citer_ret_prev(const ax_citer *it)
 
 inline static ax_iter ax_iter_ret_prev(const ax_iter *it)
 {
+	ax_assert(it->tr->prev, "operation not supported");
 	ax_iter prev = *it;
 	it->tr->prev(ax_iter_c(&prev));
 	return prev;
@@ -157,26 +164,31 @@ inline static ax_iter ax_iter_ret_prev(const ax_iter *it)
 
 inline static void ax_iter_erase(ax_iter *it)
 {
+	ax_assert(it->tr->erase, "operation not supported");
 	it->tr->erase(it);
 }
 
 inline static void *ax_iter_get(const ax_iter *it)
 {
+	ax_assert(it->tr->get, "operation not supported");
 	return ax_trait_out(it->etr, it->tr->get(ax_iter_cc(it)));
 }
 
 inline static const void *ax_citer_get(const ax_citer *it)
 {
+	ax_assert(it->tr->get, "operation not supported");
 	return ax_trait_out(it->etr, it->tr->get(it));
 }
 
 inline static ax_fail ax_iter_set(const ax_iter *it, const void *val)
 {
+	ax_assert(it->tr->set, "operation not supported");
 	return it->tr->set(it, ax_trait_in(it->etr, val), NULL);
 }
 
 inline static ax_fail ax_iter_iset(const ax_iter *it, ...)
 {
+	ax_assert(it->tr->set, "operation not supported");
 	va_list ap;
 	va_start(ap, it);
 	ax_fail fail = it->tr->set(it, NULL, &ap);
@@ -209,6 +221,7 @@ inline static bool ax_iter_less(const ax_iter *it1, const ax_iter *it2)
 
 inline static long ax_citer_dist(const ax_citer *it1, const ax_citer *it2)
 {
+	ax_assert(it1->tr->dist, "operation not supported");
 	return it1->tr->dist(it1, it2);
 }
 
@@ -229,16 +242,19 @@ inline static bool ax_iter_is(const ax_iter *it, int type)
 
 inline static const ax_box *ax_citer_box(const ax_citer *it)
 {
+	ax_assert(it->tr->box, "operation not supported");
 	return it->tr->box(it);
 }
 
 inline static ax_box *ax_iter_box(const ax_iter *it)
 {
+	ax_assert(it->tr->box, "operation not supported");
 	return it->tr->box(ax_iter_cc(it));
 }
 
 inline static void ax_iter_swap(const ax_iter *it1, const ax_iter *it2)
 {
+	ax_assert(it1->tr->get && it2->tr->get, "operation not supported");
 	ax_mem_swap(it1->tr->get(ax_iter_cc(it1)),
 			it2->tr->get(ax_iter_cc(it2)), it1->etr->size);
 }
