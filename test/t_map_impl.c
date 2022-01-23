@@ -79,6 +79,7 @@ static void workflow(axut_runner *r)
 	axut_assert(r, !ax_map_exist(map, ax_p(int, 2)));
 
 	axut_assert_int_equal(r, 0, ax_box_size(ax_r(map, map).box));
+	ax_one_free(ax_r(map, map).one);
 }
 
 static void shuffle(int *arr, size_t size)
@@ -152,6 +153,7 @@ static void update(axut_runner *r)
 		axut_assert_int_equal(r, - *key, *val);
 		nums[*key] = -1;
 	}
+	ax_one_free(ax_r(map, map).one);
 }
 
 static void erase(axut_runner *r)
@@ -227,6 +229,8 @@ static void copy(axut_runner *r)
 		nums[*key] = -1;
 		axut_assert_int_equal(r, *key, *val);
 	}
+	ax_one_free(ax_r(map,map).one);
+	ax_one_free(ax_r(map,map1).one);
 }
 
 void suite_for_maps(axut_runner *r)

@@ -244,6 +244,7 @@ static void check_size(axut_runner* r)
 		it = ax_box_begin(hmap.box);
 		ax_map_erase(hmap.map, ax_map_iter_key(&it));
 	}
+	ax_one_free(hmap.one);
 }
 
 axut_suite *suite_for_hmap()
