@@ -44,11 +44,14 @@ extern const ax_seq_trait ax_array_tr;
 
 inline static void* ax_array_ptr(ax_array *array)
 {
+	ax_assert_not_null(array);
 	return array->array;
 }
 
 inline static void ax_array_reset(ax_array *array, char *ptr, size_t size)
 {
+	ax_assert_not_null(array);
+	ax_assert_not_null(ptr);
 	array->array = ptr;
 	int elem_size = array->seq.env.box.elem_tr->size;
 	array->size = elem_size ? size / elem_size : SIZE_MAX;
