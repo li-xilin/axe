@@ -25,7 +25,7 @@
 #include "def.h"
 #include <string.h>
 
-#define ax_mem_pswap(_a, _b, _type) \
+#define ax_swap(_a, _b, _type) \
 do { \
 	_type a = *(_type *)(_a); \
 	_type b = *(_type *)(_b); \
@@ -34,15 +34,20 @@ do { \
 	b = tmp; \
 } while(0)
 
-inline static void ax_mem_swap(void *p1, void *p2, size_t size)
+inline static void ax_memswp(void *p1, void *p2, size_t size)
 {
-	char tmp[size];
-	memcpy(tmp, p1, size);
-	memcpy(p1, p2, size);
-	memcpy(p2, tmp, size);
+	ax_byte tmp[0x1000];
+	size_t rest = size;
+	while (rest) {
+		size_t batch = rest % sizeof tmp;
+		memcpy(tmp, p1, batch);
+		memcpy(p1, p2, batch);
+		memcpy(p2, tmp, batch);
+		rest -= batch;
+	}
 }
 
-void ax_memxor(void *p1, void *p2, size_t size);
+void ax_memswp1(void *p1, void *p2, size_t size);
 
 char *ax_strdup(const char *str);
 

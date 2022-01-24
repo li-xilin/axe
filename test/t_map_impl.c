@@ -87,11 +87,8 @@ static void shuffle(int *arr, size_t size)
 	ax_repeat(size)
 		arr[_] = _;
 	
-	ax_repeat(size) {
-		//int ran = rand() % size;
-		//printf("%ld %d\n", _, ran);
-		ax_mem_pswap(arr + _, arr + (rand() % size), int);
-	}
+	ax_repeat(size)
+		ax_swap(arr + _, arr + (rand() % size), int);
 }
 
 static void insert(axut_runner *r)
@@ -101,14 +98,7 @@ static void insert(axut_runner *r)
 
 	int nums[0x10];
 	shuffle(nums, ax_nelems(nums));
-	puts("");
 	
-	/*
-	ax_repeat(ax_nelems(nums))
-		printf("%d, ", nums[_]);
-		*/
-	//exit(1);
-
 	ax_repeat(ax_nelems(nums))
 		ax_map_put(map, nums + _, nums + _);
 

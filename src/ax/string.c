@@ -613,7 +613,7 @@ static void seq_invert(ax_seq *seq)
 
 	size_t left = 0, right = size - sizeof('\0') - sizeof(char);
 	while (right - left > sizeof(char)) {
-		ax_mem_pswap(ptr + left, ptr + right, char);
+		ax_swap(ptr + left, ptr + right, char);
 		left += sizeof(char);
 		right -= sizeof(char);
 	}

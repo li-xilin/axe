@@ -31,7 +31,7 @@
 #include <stdio.h>
 
 #include "check.h"
-void ax_memxor(void *ptr1, void *ptr2, size_t size)
+void ax_memswp1(void *ptr1, void *ptr2, size_t size)
 {
 	CHECK_PARAM_NULL(ptr1);
 	CHECK_PARAM_NULL(ptr2);

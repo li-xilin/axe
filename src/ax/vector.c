@@ -461,7 +461,7 @@ static void seq_invert(ax_seq *seq)
 
 	size_t left = 0, right = size - etr->size;
 	while (right - left > etr->size) {
-		ax_mem_swap(ptr + left, ptr + right, seq->env.box.elem_tr->size);
+		ax_memswp(ptr + left, ptr + right, seq->env.box.elem_tr->size);
 		left += etr->size;
 		right -= etr->size;
 	}
@@ -495,7 +495,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 		ax_byte *ptr = ax_buff_ptr(self->buff);
 
 		for (size_t off = old_size; off < size ; off += etr->size) {
-			ax_trait_init(etr, ptr + off, NULL);
+			ax_trait_init(etr, ptr + off, NULL); //FIXME: maybe init failed
 		}
 	}
 	return false;

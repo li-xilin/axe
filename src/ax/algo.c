@@ -227,7 +227,7 @@ static void quick_sort(const ax_iter *first, const ax_iter *last)
 
 	ax_iter left_last = right_first;
 	ax_iter_prev(&left_last);
-	ax_mem_swap(left_last.tr->get(ax_iter_cc(&left_last)),
+	ax_memswp(left_last.tr->get(ax_iter_cc(&left_last)),
 			first->tr->get(ax_iter_cc(first)), first->etr->size);
 
 	quick_sort(first, &left_last);

@@ -295,7 +295,7 @@ static void seq_invert(ax_seq *seq)
 
 	size_t left = 0, right = size - etr->size;
 	while (right - left > etr->size) {
-		ax_mem_swap(ptr + left, ptr + right, seq->env.box.elem_tr->size);
+		ax_memswp(ptr + left, ptr + right, seq->env.box.elem_tr->size);
 		left += etr->size;
 		right -= etr->size;
 	}
