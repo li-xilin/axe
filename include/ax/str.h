@@ -57,7 +57,7 @@ inline static ax_fail ax_str_append(ax_str* str, const char *s) {
 inline static size_t ax_str_length(const ax_str* str)
 {
 	ax_require(str, str->tr->length);
-	return str->tr->length(str);
+	return ax_box_size(ax_cr(str, str).box);
 }
 
 inline static ax_fail ax_str_insert(ax_str* str, size_t start, const char *s)

@@ -60,7 +60,6 @@ static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap);
 static void    iter_erase(ax_iter *it);
 
 static ax_fail str_append(ax_str *str, const char *s);
-static size_t  str_length(const ax_str *str);
 static ax_fail str_insert(ax_str* str, size_t start, const char *s);
 static char   *str_strz(ax_str* str);
 static int     str_comp(const ax_str* str, const char* s);
@@ -160,7 +159,7 @@ static long citer_dist(const ax_citer *it1, const ax_citer *it2)
 	CHECK_PARAM_VALIDITY(it1, iter_if_valid(it1));
 	CHECK_PARAM_VALIDITY(it1, iter_if_valid(it2));
 
-	return ((char *)it2->point - (char *)it1->point) / sizeof(char);
+	return (uintptr_t)((char *)it2->point - (char *)it1->point) / sizeof(char);
 }
 
 static void rciter_move(ax_citer *it, long i)
@@ -208,7 +207,7 @@ static long rciter_dist(const ax_citer *it1, const ax_citer *it2)
 	CHECK_PARAM_VALIDITY(it1, iter_if_valid(it1));
 	CHECK_PARAM_VALIDITY(it1, iter_if_valid(it2));
 
-	return ((char *)it1->point - (char *)it2->point) / sizeof(char);
+	return (uintptr_t)((char *)it1->point - (char *)it2->point) / sizeof(char);
 }
 
 static void *citer_get(const ax_citer *it)
@@ -408,17 +407,10 @@ fail:
 	return true;
 }
 
-static size_t str_length(const ax_str* str)
-{
-	CHECK_PARAM_NULL(str);
-	ax_string_cr self_r = { .str = str };
-	return ax_box_size(self_r.box);
-}
-
 static ax_fail str_insert(ax_str* str, size_t start, const char *s)
 {
 	CHECK_PARAM_NULL(str);
-	CHECK_PARAM_VALIDITY(start, start < str_length(str));
+	CHECK_PARAM_VALIDITY(start, start < ax_box_size(ax_r(str, str).box));
 	
 	ax_string_r self_r = { .str = str };
 	ax_buff *buff = self_r.string->buff_r.buff;
@@ -726,7 +718,6 @@ const ax_str_trait ax_string_tr =
 		.insert = seq_insert,
 	},
 	.append = str_append,
-	.length = str_length,
 	.insert = str_insert,
 	.strz   = str_strz,
 	.comp   = str_comp,
