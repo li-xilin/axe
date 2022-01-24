@@ -371,7 +371,7 @@ static size_t box_size(const ax_box *box)
 
 static size_t box_maxsize(const ax_box *box)
 {
-	return 0xFF;
+	return SIZE_MAX;
 }
 
 static ax_iter box_begin(ax_box *box)
