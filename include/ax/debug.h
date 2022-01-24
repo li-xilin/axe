@@ -34,5 +34,7 @@ int __ax_debug_assert_fail (const char* file, const char* func,
 # define ax_assert(_exp, ...) ((void)0)
 #endif
 
+#define ax_assert_not_null(x) ax_assert((x), "unexpected NULL with `%s`", #x);
+
 #endif
 
