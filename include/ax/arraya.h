@@ -23,14 +23,12 @@
 #ifndef AX_ARRAYA_H
 #define AX_ARRAYA_H
 
+#include "debug.h"
+#include "narg.h"
 #include <stdint.h>
 #include <stddef.h>
-#include "debug.h"
 
 #define __AX_ARRAYA_MAGIC "@arraya"
-
-#define __ax_sizeof_arr(_t, ...) \
-	sizeof((_t[]){ __VA_ARGS__ })
 
 #define ax_arraya(_t, ...) \
 	(_t *) ( \
@@ -39,12 +37,12 @@
 	      struct { \
 	        uint64_t _len; \
 	       	char _mag[8]; \
-	        _t _arr[__ax_sizeof_arr(_t, __VA_ARGS__) / sizeof(_t)]; \
+	        _t _arr[AX_NARG_T(_t, __VA_ARGS__) / sizeof(_t)]; \
 	      } [1] \
 	    ) \
 	    { \
 	      { \
-	        ._len = __ax_sizeof_arr(_t, __VA_ARGS__), \
+	        ._len = AX_NARG_T(_t, __VA_ARGS__), \
 	        ._mag = __AX_ARRAYA_MAGIC, \
 		._arr = { __VA_ARGS__}, \
 	      } \

@@ -74,10 +74,13 @@ typedef uint_fast32_t ax_fast_uint;
 #define ax_p(_type, _value) ((_type [1]) { _value })
 
 #define ax_strcommalen(s) ("" s), (sizeof(s) - 1)
-#define ax_vstrcommalen(s) (s), strlen(s)
 
 #define ax_nelems(_a) (ax_assert((void *)_a == (void *)&_a, "_a pass to ax_nelems is not array"), \
 		(sizeof(_a) / sizeof(*_a)))
+
+#define ax_foreach(_t, ...) \
+	for (int64_t __ax_i = 1; __ax_i <= AX_NARG_T(_t, __VA_ARGS__); __ax_i = - __ax_i, __ax_i++) \
+		for (_t _ = ((_t[]){ __VA_ARGS__ })[__ax_i - 1]; __ax_i > 0; __ax_i = - __ax_i)
 
 #endif
 
