@@ -38,6 +38,8 @@ typedef uint_fast32_t ax_fast_uint;
 
 #define AX_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define AX_MAX(a, b) ((a) > (b) ? (a) : (b))
+#define AX_INC(i, n) ((i + 1) % n)
+#define AX_DEC(i, n) ((i + n - 1) % n)
 
 #define AX_IMAX_BITS(m) ((m) /((m)%0x3fffffffL+1) /0x3fffffffL %0x3fffffffL *30 \
                   + (m)%0x3fffffffL /((m)%31+1)/31%31*5 + 4-12/((m)%31+3))
