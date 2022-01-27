@@ -37,14 +37,14 @@
 	      struct { \
 	        uint64_t _len; \
 	       	char _mag[8]; \
-	        _t _arr[AX_NARG_T(_t, __VA_ARGS__) / sizeof(_t)]; \
+	        _t _arr[AX_NARG_T(_t, __VA_ARGS__)]; \
 	      } [1] \
 	    ) \
 	    { \
 	      { \
 	        ._len = AX_NARG_T(_t, __VA_ARGS__), \
 	        ._mag = __AX_ARRAYA_MAGIC, \
-		._arr = { __VA_ARGS__}, \
+			._arr = { __VA_ARGS__}, \
 	      } \
 	    } \
 	  ) ->_arr \
