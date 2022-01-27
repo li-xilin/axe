@@ -70,6 +70,7 @@ typedef struct ax_iter_trait_st
 	const struct ax_iter_trait_st *tr; \
 	const struct ax_trait_st *etr; \
 	void *point; \
+	uintptr_t extra; \
 }
 struct ax_iter_st __AX_ITER_STRUCT_BLOCK();
 struct ax_citer_st __AX_ITER_STRUCT_BLOCK(const);
