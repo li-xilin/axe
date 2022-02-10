@@ -35,16 +35,16 @@
 	  ( \
 	    ( \
 	      struct { \
-	        uint64_t _len; \
-	       	char _mag[8]; \
+	        uint64_t _size; \
+	       	char _magic[8]; \
 	        _t _arr[AX_NARG_T(_t, __VA_ARGS__)]; \
 	      } [1] \
 	    ) \
 	    { \
 	      { \
-	        ._len = AX_NARG_T(_t, __VA_ARGS__), \
-	        ._mag = __AX_ARRAYA_MAGIC, \
-			._arr = { __VA_ARGS__}, \
+	        ._size = AX_NARG_T(_t, __VA_ARGS__) * sizeof(_t), \
+	        ._magic = __AX_ARRAYA_MAGIC, \
+		._arr = { __VA_ARGS__}, \
 	      } \
 	    } \
 	  ) ->_arr \
@@ -53,13 +53,13 @@
 inline static size_t ax_arraya_size(const void *arra)
 {
 	struct arraya_hdr {
-	        uint64_t _len;
-		char _mag[8];
+	        uint64_t _size;
+		char _magic[8];
 		char data[];
 	} *blk = (void *)(((char *)arra) - sizeof(struct arraya_hdr));
 
-	ax_assert(*(uint64_t*)blk->_mag == *(uint64_t *)__AX_ARRAYA_MAGIC, "invalid arraya pointer");
-	return (size_t)blk->_len;
+	ax_assert(*(uint64_t*)blk->_magic == *(uint64_t *)__AX_ARRAYA_MAGIC, "invalid arraya pointer");
+	return (size_t)blk->_size;
 }
 
 #endif
