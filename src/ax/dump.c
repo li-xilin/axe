@@ -109,16 +109,16 @@ struct ax_dump_st
 struct ax_dump_st g_dmp_nomem = { .type = DTYPE_NOMEM };
 #define NOMEM_DMP (&g_dmp_nomem)
 
-
-inline static bool bind_bit(const ax_dump *dmp, bool nomem_bit);
 inline static void set_bind_bit(ax_dump *dmp, bool set);
 static void dump_rec_free(ax_dump *dmp);
 static int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args);
 
+#ifndef NDEBUG
 inline static bool bind_bit(const ax_dump *dmp, bool nomem_bit)
 {
 	return dmp->type == DTYPE_NOMEM ? nomem_bit : (dmp->type & DTYPE_BIND);
 }
+#endif
 
 inline static void set_bind_bit(ax_dump *dmp, bool set)
 {
