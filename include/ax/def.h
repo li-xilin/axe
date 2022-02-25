@@ -72,8 +72,8 @@ typedef uint_fast32_t ax_fast_uint;
 #define __ax_stringy(_x) #_x
 #define ax_stringy(_x) __ax_stringy(_x)
 
-#define ax_ptrof(_t, _v) ((_t [1]) { _v })
-#define ax_p(_type, _value) ((_type [1]) { _value })
+#define ax_ptrof(_type, ...) ((_type []) { __VA_ARGS__ })
+#define ax_p(_type, _value) ax_ptrof(_type, _value)
 
 #define ax_strcommalen(s) ("" s), (sizeof(s) - 1)
 
@@ -83,6 +83,10 @@ typedef uint_fast32_t ax_fast_uint;
 #define ax_foreach(_t, ...) \
 	for (int64_t __ax_i = 1; __ax_i <= AX_NARG_T(_t, __VA_ARGS__); __ax_i = - __ax_i, __ax_i++) \
 		for (_t _ = ((_t[]){ __VA_ARGS__ })[__ax_i - 1]; __ax_i > 0; __ax_i = - __ax_i)
+
+#define ax_forrange(type, first, ...) \
+	for (type _ = first; _ < ax_ptrof(type, __VA_ARGS__)[0]; \
+			_ += AX_NARG_T(type, __VA_ARGS__) > 1 ? ax_ptrof(type, __VA_ARGS__)[1] : 1)
 
 #endif
 
