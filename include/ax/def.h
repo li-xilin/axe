@@ -84,9 +84,21 @@ typedef uint_fast32_t ax_fast_uint;
 	for (int64_t __ax_i = 1; __ax_i <= AX_NARG_T(_t, __VA_ARGS__); __ax_i = - __ax_i, __ax_i++) \
 		for (_t _ = ((_t[]){ __VA_ARGS__ })[__ax_i - 1]; __ax_i > 0; __ax_i = - __ax_i)
 
-#define ax_forrange(type, first, ...) \
-	for (type _ = first; _ < ax_ptrof(type, __VA_ARGS__)[0]; \
-			_ += AX_NARG_T(type, __VA_ARGS__) > 1 ? ax_ptrof(type, __VA_ARGS__)[1] : 1)
+#define __AX_FORRANGE_STEP(...) \
+	(AX_NARG_T(ptrdiff_t, __VA_ARGS__) > 1 ? ax_ptrof(ptrdiff_t, __VA_ARGS__)[1] : 1)
+
+#define __AX_FORRANGE_LAST(...) \
+	ax_ptrof(ptrdiff_t, __VA_ARGS__)[0]
+
+#define __AX_FORRANGE_END(first, ...) \
+	(__AX_FORRANGE_LAST(__VA_ARGS__) \
+	 - (__AX_FORRANGE_LAST(__VA_ARGS__) - first - 1) % __AX_FORRANGE_STEP(__VA_ARGS__) \
+	 + __AX_FORRANGE_STEP(__VA_ARGS__)) - 1
+
+#define ax_forrange(first, ...) \
+	for (ptrdiff_t _ = first, __ax_forrange_end = __AX_FORRANGE_END(first, __VA_ARGS__); \
+		_ != __ax_forrange_end; \
+		_ += __AX_FORRANGE_STEP(__VA_ARGS__))
 
 #endif
 
