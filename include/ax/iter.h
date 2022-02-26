@@ -260,13 +260,4 @@ inline static void ax_iter_swap(const ax_iter *it1, const ax_iter *it2)
 			it2->tr->get(ax_iter_cc(it2)), it1->etr->size);
 }
 
-ax_citer ax_citer_npos(const ax_citer *it);
-
-inline static ax_iter ax_iter_npos(const ax_iter *it)
-{
-	ax_citer citer = ax_citer_npos(ax_iter_cc(it));
-	void *p = &citer;
-	return *(ax_iter *) p;
-}
-
 #endif

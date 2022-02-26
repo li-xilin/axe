@@ -25,12 +25,4 @@
 #include <ax/box.h>
 #include "check.h"
 
-ax_citer ax_citer_npos(const ax_citer *it)
-{
-	static int dummy;
-	return (ax_citer) {
-		.owner = it->owner,
-		.tr = it->tr,
-		.point = &dummy
-	};
-}
+
