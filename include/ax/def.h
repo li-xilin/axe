@@ -25,6 +25,7 @@
 
 #include "narg.h"
 #include "arraya.h"
+#include "flow.h"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -46,15 +47,10 @@ typedef uint_fast32_t ax_fast_uint;
 
 #define ax_unused(_var) ((void)&(_var))
 
-#define ax_block for(int __ax_block_flag = 0; __ax_block_flag != 1; __ax_block_flag = 1)
-
-#define ax_repeat(_n) for(size_t _ = 0; _ != (_n); _++)
-
-#define ax_forever for(;;)
+#define ax_cast(_t, _v) (*(_t [1]) { _v })
 
 #define ax_align(_size, _align) \
-	(!((_size) % (_align)) ? (_size) \
-	 : ((_size) + (_align) - ((_size) % (_align))))
+	((ax_cast(size_t, _size) + n - 1) / ax_cast(size_t, _align) * (_align))
 
 #define __AX_CATENATE_8(a1, a2, a3, a4, a5, a6, a7, a8) a1##a2##a3##a4##a5##a6##a7##a8
 #define __AX_CATENATE_7(a1, a2, a3, a4, a5, a6, a7) a1##a2##a3##a4##a5##a6##a7
@@ -79,26 +75,6 @@ typedef uint_fast32_t ax_fast_uint;
 
 #define ax_nelems(_a) (ax_assert((void *)_a == (void *)&_a, "_a pass to ax_nelems is not array"), \
 		(sizeof(_a) / sizeof(*_a)))
-
-#define ax_foreach(_t, ...) \
-	for (int64_t __ax_i = 1; __ax_i <= AX_NARG_T(_t, __VA_ARGS__); __ax_i = - __ax_i, __ax_i++) \
-		for (_t _ = ((_t[]){ __VA_ARGS__ })[__ax_i - 1]; __ax_i > 0; __ax_i = - __ax_i)
-
-#define __AX_FORRANGE_STEP(...) \
-	(AX_NARG_T(ptrdiff_t, __VA_ARGS__) > 1 ? ax_ptrof(ptrdiff_t, __VA_ARGS__)[1] : 1)
-
-#define __AX_FORRANGE_LAST(...) \
-	ax_ptrof(ptrdiff_t, __VA_ARGS__)[0]
-
-#define __AX_FORRANGE_END(first, ...) \
-	(__AX_FORRANGE_LAST(__VA_ARGS__) \
-	 - (__AX_FORRANGE_LAST(__VA_ARGS__) - first - 1) % __AX_FORRANGE_STEP(__VA_ARGS__) \
-	 + __AX_FORRANGE_STEP(__VA_ARGS__)) - 1
-
-#define ax_forrange(first, ...) \
-	for (ptrdiff_t _ = first, __ax_forrange_end = __AX_FORRANGE_END(first, __VA_ARGS__); \
-		_ != __ax_forrange_end; \
-		_ += __AX_FORRANGE_STEP(__VA_ARGS__))
 
 #endif
 
