@@ -25,6 +25,7 @@
 #include "def.h"
 #include "debug.h"
 #include "class.h"
+#include "flow.h"
 
 #define AX_ONE_NAME "one"
 
@@ -40,6 +41,12 @@
 #define AX_ONE_DEFINED
 typedef struct ax_one_st ax_one;
 #endif
+
+#define ax_scope(...) \
+	for (ax_one *__ax_auto_vars[] = { (ax_one *)1, __VA_ARGS__ }; \
+			__ax_auto_vars[0]; \
+			ax_one_multi_free(__ax_auto_vars + 1, ax_nelems(__ax_auto_vars) - 1), \
+				__ax_auto_vars[0] = NULL)
 
 typedef void (*ax_one_free_f) (ax_one *one);
 
@@ -78,6 +85,12 @@ static inline ax_one_env *ax_one_envp(const ax_one *one)
 }
 
 bool ax_one_is(const ax_one *one, const char *type);
+
+inline static void ax_one_multi_free(ax_one *one[], size_t count)
+{
+	ax_repeat(count)
+		ax_one_free(one[_]);
+}
 
 #endif
 
