@@ -61,9 +61,11 @@ typedef uint_fast32_t ax_fast_uint;
 #define __AX_CATENATE_2(a1, a2) a1##a2
 #define __AX_CATENATE_1(a1) a1
 
-#define __AX_CATENATE1_N(n, ...) __AX_CATENATE_##n(__VA_ARGS__)
-#define __AX_CATENATE_N(n, ...) __AX_CATENATE1_N(n, __VA_ARGS__)
-#define AX_CATENATE(...) __AX_CATENATE_N(AX_NARG(__VA_ARGS__), __VA_ARGS__)
+#define __AX_OVERLOAD_N1(sym, n, ...) sym##n(__VA_ARGS__)
+#define __AX_OVERLOAD_N(sym, n, ...) __AX_OVERLOAD_N1(sym, n, __VA_ARGS__)
+#define AX_OVERLOAD(sym, ...) __AX_OVERLOAD_N(sym, AX_NARG(__VA_ARGS__), __VA_ARGS__)
+
+#define AX_CATENATE(...) AX_OVERLOAD(__AX_CATENATE_, __VA_ARGS__)
 
 #define __ax_stringy(_x) #_x
 #define ax_stringy(_x) __ax_stringy(_x)
@@ -74,7 +76,7 @@ typedef uint_fast32_t ax_fast_uint;
 #define ax_strcommalen(s) ("" s), (sizeof(s) - 1)
 
 #define ax_nelems(_a) (ax_assert((void *)_a == (void *)&_a, "_a pass to ax_nelems is not array"), \
-		(sizeof(_a) / sizeof(*_a)))
+		(sizeof(_a) / sizeof(_a[0])))
 
 #endif
 
