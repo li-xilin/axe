@@ -90,5 +90,8 @@
 
 #define AX_CLASS_PTR(_name) struct AX_CATENATE(ax_, _name, _st) *(_name)
 
-#endif
+#define ax_r(type, ptr) ((ax_##type##_r){ .type = ptr })
 
+#define ax_cr(type, ptr) ((ax_##type##_cr){ .type = ptr })
+
+#endif

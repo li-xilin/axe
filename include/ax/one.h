@@ -79,8 +79,5 @@ static inline ax_one_env *ax_one_envp(const ax_one *one)
 
 bool ax_one_is(const ax_one *one, const char *type);
 
-#define ax_r(type, ptr) ((ax_##type##_r){ .type = ptr })
-#define ax_cr(type, ptr) ((ax_##type##_cr){ .type = ptr })
-
 #endif
 
