@@ -27,11 +27,14 @@
 
 #define __AX_CLASS_ENTRY_STRUCT(_name) struct AX_CATENATE(ax_, _name, _st)
 
+#define ax_class_new_n(_n, _name, ...) \
+	(ax_##_name##_r) { .ax_base_of(_name) = AX_CATENATE_4(__ax_, _name, _construct, _n)(__VA_ARGS__) }
+
 #define ax_class_new0(_name) \
-	(ax_##_name##_r) { .ax_base_of(_name) = AX_CATENATE(__ax_, _name, _construct0)() }
+	ax_class_new_n(0, _name, )
 
 #define ax_class_new(_name, ...) \
-	(ax_##_name##_r) { .ax_base_of(_name) = AX_CATENATE(__ax_, _name, _construct, AX_NARG(__VA_ARGS__))(__VA_ARGS__) }
+	ax_class_new_n(AX_NARG(__VA_ARGS__), _name, __VA_ARGS__)
 
 #define AX_CLASS_CONSTRUCTOR0(_name) \
 	__AX_CLASS_ENTRY_STRUCT(ax_base_of(_name)) *AX_CATENATE(__ax_, _name, _construct0)()
@@ -93,5 +96,31 @@
 #define ax_r(type, ptr) ((ax_##type##_r){ .type = ptr })
 
 #define ax_cr(type, ptr) ((ax_##type##_cr){ .type = ptr })
+
+/* To define a new class
+ *
+ * #include "object0.h"
+ * 
+ * #define AX_OBJECT1_NAME AX_OBJECT0_NAME ".object1"
+ * 
+ * #ifndef AX_LIST_DEFINED
+ * #define AX_LIST_DEFINED
+ * typedef struct ax_object1_st ax_object1;
+ * #endif
+ * 
+ * #define AX_CLASS_BASE_object1 object0
+ * #define AX_CLASS_ROLE_object1(_l) _l AX_CLASS_PTR(object1); AX_CLASS_ROLE_object0(_l)
+ *
+ * AX_BEGIN_TRAIT(object1)
+ *     ...
+ * AX_END;
+ * 
+ * AX_BEGIN_ENV(object1)
+ *     ...
+ * AX_END;
+ * 
+ * AX_BLESS(object1);
+ * 
+ */
 
 #endif
