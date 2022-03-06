@@ -314,7 +314,7 @@ static void one_free(ax_one *one)
 		return;
 	ax_deq_r self = { .one = one };
 	for (size_t i = 0; i < ring_size(&self.deq->map); i++)
-		free(ring_at(&self.deq->map, i));
+		free(*ring_at(&self.deq->map, i));
 	ring_free(&self.deq->map);
 	free(one);
 }
