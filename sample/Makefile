@@ -1,6 +1,6 @@
 LDFLAGS = -L../lib -lax -lm
- CFLAGS = -Wall -std=c99 -O0 -I../include -g
-   SRCS = $(wildcard *.c)
+ CFLAGS = -Wall -std=c99 -O2 -I../include -g -pedantic
+   SRCS = $(wildcard *.c container/*.c algorithm/*.c class/*.c)
 TARGETS = $(SRCS:.c=)
 
 all: $(TARGETS)
