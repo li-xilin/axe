@@ -83,7 +83,12 @@ static const ax_ptra_trait ax_ptra_tr =
 			[0].env.ptr = _ptr, \
 			})
 
-#define ax_ptra_make(_p, _f) \
-	ax_class_new(ptra, ax_p(const ax_trait, { .free = _f ? _f : free }), _p).one
+#define ax_onelize_2(_p, _f) \
+	ax_class_new_n(2, ptra, ax_p(const ax_trait, { .free = _f }), _p).one
+
+#define ax_onelize_1(_p) \
+	ax_onelize_2(_p, free)
+
+#define ax_onelize(...) AX_OVERLOAD(ax_onelize_, __VA_ARGS__)
 
 #endif
