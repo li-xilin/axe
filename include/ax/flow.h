@@ -29,7 +29,7 @@
 
 #define ax_forever for(;;)
 
-#define ax_foreach(_t, ...) \
+#define ax_forvalues(_t, ...) \
 	for (int64_t __ax_i = 1; __ax_i <= AX_NARG_T(_t, __VA_ARGS__); __ax_i = - __ax_i, __ax_i++) \
 		for (_t _ = ((_t[]){ __VA_ARGS__ })[__ax_i - 1]; __ax_i > 0; __ax_i = - __ax_i)
 
