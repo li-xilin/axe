@@ -322,6 +322,7 @@ static ax_iter seq_at(const ax_seq *seq, size_t index)
 	ax_iter it = {
 		.owner = self,
 		.tr = &ax_array_tr.box.iter,
+		.etr = self->seq.env.box.elem_tr,
 		.point =  (ax_byte *)self->array + index * etr->size
 	};
 	return it;
