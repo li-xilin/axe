@@ -45,7 +45,7 @@ struct ax_queue_st
 static ax_fail  tube_push(ax_tube *tube, const void *val, va_list *ap);
 static void     tube_pop(ax_tube *tube);
 static size_t   tube_size(const ax_tube *tube);
-static void    *tube_prime(const ax_tube *tube);
+static const void *tube_prime(const ax_tube *tube);
 static ax_any  *any_copy(const ax_any *any);
 static ax_dump *any_dump(const ax_any *any);
 static void     one_free(ax_one *one);
@@ -91,7 +91,7 @@ static size_t tube_size(const ax_tube *tube)
 	return ax_deq_tr.box.size(self_r.queue->deq.box);
 }
 
-static void *tube_prime(const ax_tube *tube)
+static const void *tube_prime(const ax_tube *tube)
 {
 	CHECK_PARAM_NULL(tube);
 

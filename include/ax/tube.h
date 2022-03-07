@@ -40,7 +40,7 @@ typedef ax_tube *(ax_tube_construct_f)(const ax_trait *elem_tr);
 AX_BEGIN_TRAIT(tube)
 	ax_fail (*push)   (ax_tube *tube, const void *val, va_list *ap);
 	void    (*pop)    (ax_tube *tube);
-	void   *(*prime)  (const ax_tube *tube);
+	const void *(*prime)  (const ax_tube *tube);
 	size_t  (*size)   (const ax_tube *tube);
 AX_END;
 
@@ -72,7 +72,7 @@ inline static void ax_tube_pop(ax_tube *tube)
 	tube->tr->pop(tube);
 }
 
-static inline void *ax_tube_prime(ax_tube *tube)
+static inline const void *ax_tube_prime(ax_tube *tube)
 {
 	ax_require(tube, tube->tr->prime);
 	return tube->tr->prime(tube);
