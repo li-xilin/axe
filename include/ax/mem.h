@@ -27,11 +27,11 @@
 
 #define ax_swap(_a, _b, _type) \
 do { \
-	_type a = *(_type *)(_a); \
-	_type b = *(_type *)(_b); \
-	_type tmp = a; \
-	a = b; \
-	b = tmp; \
+	register _type *a = ax_cast(_type *, _a); \
+	register _type *b = ax_cast(_type *, _b); \
+	register _type tmp = *a; \
+	*a = *b; \
+	*b = tmp; \
 } while(0)
 
 inline static void ax_memswp(void *p1, void *p2, size_t size)
