@@ -25,7 +25,7 @@ TARGET = $(LIB)/libax.a
 
 OBJS = trait.o debug.o any.o vector.o mem.o one.o log.o algo.o oper.o seq.o \
        iter.o list.o avl.o map.o uintk.o buff.o string.o btrie.o trie.o stack.o \
-       queue.o array.o hmap.o dump.o dumpfmt.o rb.o deq.o
+       queue.o array.o hmap.o dump.o dumpfmt.o rb.o deq.o pque.o
 
 all: CFLAGS += $(RLSFLAGS)
 all: $(TARGET)
