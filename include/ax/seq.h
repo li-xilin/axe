@@ -92,6 +92,16 @@ inline static ax_fail ax_seq_pushf(ax_seq *seq, const void *val)
 	return seq->tr->pushf(seq, ax_trait_in(seq->env.box.elem_tr, val), NULL);
 }
 
+inline static ax_fail ax_seq_ipushf(ax_seq *seq, ...)
+{
+	ax_require(seq, seq->tr->push);
+	va_list ap;
+	va_start(ap, seq);
+	ax_fail fail = seq->tr->pushf(seq, NULL, &ap);
+	va_end(ap);
+	return fail;
+}
+
 inline static ax_fail ax_seq_popf(ax_seq *seq)
 {
 	ax_require(seq, seq->tr->popf);
