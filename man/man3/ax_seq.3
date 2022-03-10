@@ -1,0 +1,92 @@
+.TH "ax_seq" 3 "Mar 9 2022" "axe"
+
+.SH NAME
+ax_seq \- 顺序表容器对象类型抽象，提供线性序列相关操作接口\&.  
+
+.SH SYNOPSIS
+.EX
+#include <ax/seq.h>
+
+typedef struct ax_seq_st ax_seq;
+
+继承自 \fBax_box\fP
+
+ax_fail ax_seq_push(ax_seq *seq, const void *val);
+
+ax_fail ax_seq_ipush(ax_seq *seq, ...);
+
+ax_fail ax_seq_pop(ax_seq *seq);
+
+ax_fail ax_seq_pushf(ax_seq *seq, const void *val);
+
+ax_fail ax_seq_popf(ax_seq *seq);
+
+void ax_seq_invert(ax_seq *seq);
+
+ax_fail ax_seq_trunc(ax_seq *seq, size_t size);
+
+ax_iter ax_seq_at(ax_seq *seq, size_t index);
+
+ax_citer ax_seq_cat(const ax_seq *seq, size_t index);
+
+ax_fail ax_seq_insert(ax_seq *seq, ax_iter *it, const void *val);
+
+ax_fail ax_seq_iinsert(ax_seq *seq, ax_iter *it, ...);
+
+void *ax_seq_first(ax_seq *seq);
+
+const void *ax_seq_cfirst(const ax_seq *seq);
+
+void *ax_seq_last(ax_seq *seq);
+
+const void *ax_seq_clast(const ax_seq *seq);
+
+size_t ax_seq_array(ax_seq *seq, void *elems[], size_t len);
+
+ax_fail ax_seq_push_arraya(ax_seq *seq, const void *arrp);
+
+ax_dump *ax_seq_dump(const ax_seq *seq);
+.EE
+
+.SH DESCRIPTION
+该类型提供了顺序表相关操作的抽象，包括插入、两端的压入和弹出、序列翻转、截断、随机访问等接口.
+.br
+这些函数或宏都包含了参数\fIseq\fP，用于指定需要操作的容器指针.
+.SS ax_seq_push
+将一个数值指针\fIval\fP压入容器尾部，如果内存分配失败则返回true. 该操作将调用元素特性的\fBax_trait_copy_or_init\fP方法，但\fIap\fP参数不会传入NULL以外的其他值.
+.SS ax_seq_ipush
+立即通过可变参数构造一个数值，并向序列尾部压入容器，如果内存分配失败则返回true. 该函数会调用元素特性的\fIax_trait_init\fP方法.
+.SS ax_seq_pop
+从序列尾部弹出一个元素. 该操作会调用元素特性的\fBax_trait_free\fP方法
+.SS ax_seq_pushf
+将一个数值指针\fIval\fP压入容器头部. 参见\fBax_seq_push\fP.
+.SS ax_seq_ipushf
+立即通过可变参数构造一个数值，并压入容器头部. 参见\fBax_seq_ipush\fP.
+.SS ax_seq_popf
+从序列头部弹出一个元素.
+.SS ax_seq_invert
+翻转序列.
+.SS ax_seq_trunc
+从头部开始截断容器中的元素序列. 参数\fIsize\fP指定要截断的长度，截断后元素数和该参数值相等，如果\fIsize\fP小于容器中元素个数，则多余的元素将被删除. 如果\fIsize\fP的值大于容器中元素的个数，则缺少的元素将通过\fBax_trait_init\fP初始化为默认.
+.SS ax_seq_at ax_seq_cat
+通过下标访问序列容器的第\fIindex\fP个参数，返回该元素的正向迭代器. 该方法通常被实现为常数复杂度，但也会出现线性复杂度. 后者是该操作的常量指针版本.
+.SS ax_seq_insert
+向迭代器\fIit\fP的指向的位置插入一个元素，参数\fIval\fP指定了要插入的元素指针. 该操作将调用元素特性的\fBax_trait_copy\fP方法.
+.SS ax_seq_iinsert
+向迭代器\fIit\fP的指向的位置构造插入一个元素，该函数将调用\fBax_trait_init\fP方法来构造元素.
+.SS ax_seq_first ax_seq_cfirst
+获取序列的第一个元素指针. 后者是其常量指针版本.
+.SS ax_seq_last ax_seq_clast
+获取序列的最后一个元素指针. 后者是其常量指针版本.
+.SS ax_seq_array
+将容器中的元素按顺序拷贝到数组中，\fIelems\fP指定了数组缓冲区的首地址，\fIlen\fP指定了缓冲区能容纳的最大元素数量. 该函数返回实际装入缓冲区的元素个数.
+.SS ax_seq_push_arraya
+向容器中压入一个\fBax_arraya\fP数据对象，参见\fBax_arraya\fP.
+.SS ax_seq_dump
+将对象转储，参见\fBax_dump\fP.
+
+.SH SEE ALSO
+\fBax_box\fP(3) \fBax_trait\fP(3) \fBax_iter\fP(3) \fBax_arraya\fP(3)
+
+.SH AUTHOR
+李希林 <lixilin@mail.ru>

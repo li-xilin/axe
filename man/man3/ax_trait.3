@@ -1,0 +1,167 @@
+.TH "ax_trait" 3 "Mar 9 2022" "axe"
+
+.SH NAME
+ax_trait \- 描述单个数据类型所支持的一组操作，用于描述容器中数据成员支持的特性.
+
+.SH SYNOPSIS
+.EX
+typedef void(*ax_trait_free_f)(void* p);
+
+typedef bool(*ax_trait_compare_f) (const void* p1, const void* p2, size_t size);
+
+typedef size_t(*ax_trait_hash_f)(const void* p, size_t size);
+
+typedef ax_fail(*ax_trait_copy_f)(void* dst, const void* src, size_t size);
+
+typedef ax_fail(*ax_trait_init_f)(void* p, va_list *ap);
+
+typedef ax_dump*(*ax_trait_dump_f)(const void* p, size_t size);
+
+typedef struct ax_trait_st
+{
+	const size_t       size;
+	ax_trait_compare_f equal;
+	ax_trait_compare_f less;
+	ax_trait_hash_f    hash;
+	ax_trait_free_f    free; 
+	ax_trait_copy_f    copy;
+	ax_trait_init_f    init;
+	ax_trait_dump_f    dump;
+	bool               link;
+} ax_trait;
+
+ax_trait_in(_tr, _ptr)
+
+ax_trait_out(_tr, _ptr)
+
+bool ax_trait_equal(const ax_trait *tr, const void *p1, const void *p2)
+
+size_t ax_trait_hash(const ax_trait *tr, const void *p)
+
+void ax_trait_free(const ax_trait *tr, void *p)
+
+bool ax_trait_less(const ax_trait *tr, const void *p1, const void *p2)
+
+ax_fail ax_trait_copy(const ax_trait *tr, void* dst, const void* src)
+
+ax_fail ax_trait_init(const ax_trait *tr, void* p, va_list *ap)
+
+ax_fail ax_trait_copy_or_init(const ax_trait *tr, void* dst, const void *src, va_list *ap)
+
+ax_dump *ax_trait_dump(const ax_trait *tr, const void* p, size_t size);
+
+size_t ax_trait_size(int type);
+
+ax_t(_name)
+.EE
+
+.SH DESCRIPTION
+\fBax_trait\fP用于描述一个数据单元的特性，描述的对象可以是基本数据类型、结构体或不定长的内存. 可以描述的特性包括同类型值的大小的比较、相等判定、数据散列值、数据拷贝、数据构造、数据转储、尺寸信息等，当前C中的大多数所有数据类型以及字符串和宽字符串的特性已经内建.
+.br
+当描述固定长度内存时，\fBax_trait.link\fP值为true，在描述不定长内存如字符串时，该值为false. 
+.br
+对于容器对象如\fBax_vector\fP等，在构造时，需要提供其内部数据成员的特性，即\fBax_trait\fP指针，但容器不会对该\fBax_trait\fP结构体进行拷贝. 所以需要考虑将其定义为全局变量或全局常量.
+
+.SS ax_trait_in ax_trait_out
+对输入和输出的数据指针进行辅助转换的宏函数，用于简化接口调用，通过判定\fBax_trait.link\fP的值，对输入或输出的指针进行解引用或取地址操作. 
+.SS ax_trait_equal
+对\fBax_trait.equeal\fP的内联函数封装，判定指针\fIp1\fP和\fIp1\fP指向的内存是否相等，相等返回true，否则返回false.
+.SS ax_trait_hash
+对\fBax_trait.hash\fP的内联函数封装，计算指针\fIp\fP所指向内存的散列值并返回.
+.SS ax_trait_free
+对\fBax_trait.free\fP的内联函数封装，清理指针\fIp\fP所指向的内存中的数据，但不会释放\fIp\fP所指向的内存.
+.SS ax_trait_less
+对\fBax_trait.less\fP的内联函数封装，判定\fIp1\fP所指向的数据是否小于\fIp2\fP，如果条件成立则返回true，否则返回false.
+.SS ax_trait_copy
+对\fBax_trait.copy\fP的内联函数封装，将\fIsrc\fP所指向的数据复制到\fIdst\fP所指向的位置.
+.SS ax_trait_init
+对\fBax_trait.init\fP的内联函数封装，将\fIap\fP所指向的内存进行初始化，\fIap\fP为NULL表示使用默认值构造数据.
+.SS ax_trait_copy_or_init
+对\fBax_trait.copy\fP和\fBax_trait.init\fP的内联函数封装，如果参数\fIsrc\fP为NULL时，将以参数\fIap\fP调用\fBax_trait_init\fP函数进行数据构造，否则调用\fBax_trait_copy\fP将\fIsrc\fP所指向的数据拷贝到\fIdst\fP所指向的内存.
+.SS ax_trait_dump
+对参数\fIp\fP所指向的数据进行转储，返回\fBax_dump\fP结构指针.
+.SS ax_trait_size
+对\fBax_trait.size\fP的内联函数封装，该值为静态值，不会根据数据的变化而变化. 当\fBax_trait.link\fP为true时，该函不会返回除了sizeof(void *)以外的任何值.
+.SS ax_t
+通过\fI_name\fP指定类型的名称获取数据类型的特性\fBax_trait\fP指针，为了兼用户定义数据类型特性，该函数由宏实现，内建的特性名称和数据类型对应关系如下:
+.TP
+nil
+void
+.TP
+int
+int
+.TP
+uint
+unsigned int
+.TP
+long
+long
+.TP
+ulong
+unsigned long
+.TP
+llong
+long long
+.TP
+ullong
+unsigned long long
+.TP
+char
+char
+.TP
+uchar
+unsigned char
+.TP
+short
+short
+.TP
+ushort
+unsigned short
+.TP
+i8
+int8_t
+.TP
+i16
+int16_t
+.TP
+i32
+int32_t
+.TP
+i64
+int64_t
+.TP
+u8
+uint8_t
+.TP
+u16
+uint16_t
+.TP
+u32
+uint32_t
+.TP
+u64
+uint64_t
+.TP
+float
+float
+.TP
+double
+double
+.TP
+str
+char *
+.TP
+wcs
+wchar_t *
+.TP
+size
+size_t
+.TP
+ptr
+void *
+
+.SH SEE ALSO
+\fBax_dump\fP
+
+.SH AUTHOR
+李希林 <lixilin@mail.ru>

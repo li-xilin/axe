@@ -1,0 +1,28 @@
+.TH "ax_any" 3 "Mar 9 2022" "axe"
+
+.SH NAME
+ax_any \- 可复制的对象类型，支持对象拷贝和转储等操作\&.  
+
+.SH SYNOPSIS
+.EX
+#include <ax/any.h>
+
+typedef struct ax_any_st ax_any;
+
+继承自 \fBax_one\fP
+
+ax_any *ax_any_copy(const ax_any* any);
+
+ax_dump *ax_any_dump(const ax_any* any);
+.EE
+
+.SH DESCRIPTION
+.SS ax_any_copy(3)
+从对象\fIany\fP拷贝出一个新的对象，并通过函数返回.新的对象由原对象经过深度拷贝活得，其内部数据的内存地址会发生变化.
+.SS ax_any_dump(3)
+对一个对象执行转储操作，返回一个\fBax_dump\fP类型指针，详细信息参见\fBax_dump\fP(3)
+.SH SEE ALSO
+\fBax_one\fP(3) \fBax_dump\fP(3)
+
+.SH AUTHOR
+李希林 <lixilin@mail.ru>

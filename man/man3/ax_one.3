@@ -1,0 +1,35 @@
+.TH "ax_one" 3 "Mar 9 2022" "axe"
+
+.SH NAME
+ax_one \- 所有对象的根类型，包含对象类型名称获取和对象释放等操作.
+
+.SH SYNOPSIS
+.EX
+#include <ax/one.h>
+
+typedef struct ax_one_st ax_one;
+
+inline static const char *ax_one_name(const ax_one *one);
+
+bool ax_one_is(const ax_one *one, const char *type);
+
+inline static void ax_one_free(ax_one *one);
+
+inline static void ax_one_multi_free(ax_one *one[], size_t count);
+.EE
+
+.SH DESCRIPTION
+.SS ax_one_name(3)
+获取对象所属类型的类型名，该字符串是由该类型继承的所有父类型的类型描述连接而成，使用符号'.'分割各个类型描述。如ax_vector的类型名为\fB"one.any.box.seq.vector"\fP.
+.SS ax_one_is(3)
+判定一个对象是否继承自某个类型，参数\fIone\fP指定对象指针，参数\fItype\fP指定类型名，当条件成立时返回true.
+.SS ax_one_free(3)
+释放一个对象的所有内存.
+.SS ax_one_multi_free(3)
+释放多个对象的所有内存，参数\fIone\fP指定保存对象的数组的首地址，参数\fIcount\fP指定对象的个数.
+
+.SH SEE ALSO
+\fBax_class_new\fP(3)
+
+.SH AUTHOR
+李希林 <lixilin@mail.ru>

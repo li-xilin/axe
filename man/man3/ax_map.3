@@ -1,0 +1,87 @@
+.TH "ax_map" 3 "Mar 9 2022" "axe"
+
+.SH NAME
+ax_map \- 支持键值映射的容器类型接口抽象\&.
+
+.SH SYNOPSIS
+#include <ax/map.h>
+.PP
+typedef struct ax_map_st ax_map;
+.PP
+继承自 \fBax_box\fP
+.PP
+void *ax_map_put(ax_map *map, const void *key, const void *val);
+.PP
+void *ax_map_iput(ax_map *map, const void *key, ...);
+.PP
+ax_fail ax_map_erase(ax_map *map, const void *key);
+.PP
+void *ax_map_get(ax_map *map, const void *key);
+.PP
+ax_iter ax_map_at(ax_map *map, const void *key);
+.PP
+ax_citer ax_map_cat(const ax_map *map, const void *key);
+.PP
+void *ax_map_cget(const ax_map *map, const void *key);
+.PP
+bool ax_map_exist(const ax_map *map, const void *key);
+.PP
+void *ax_map_chkey(ax_map *map, const void *key, const void *new_key);
+.PP
+const void *ax_map_citer_key(const ax_citer *it);
+.PP
+void *ax_map_iter_key(const ax_iter *it);
+.PP
+const void *ax_map_key(ax_map *map, const void *key);
+.PP
+ax_dump *ax_map_dump(const ax_map *map);
+.PP
+ax_map_foreach(_map, _key_type, _key, _val_type, _val) { ... }
+.PP
+ax_map_cforeach(_map, _key_type, _key, _val_type, _val) { ... }
+
+.SH DESCRIPTION
+
+该类型提供了键值映射相关操作的抽象，包括插入、删除、查找、遍历等接口.
+.br
+容器内的键值对由各自的特性\fBax_trait\fP所描述，其通常在容器构造时被指定. 其中，键的特性指针保存在\fBax_map_st\fP结构体的\fIenv.key_tr\fP成员中，而值的特性指针存储在\fBax_box_st\fP结构体的\fIenv.elem_tr\fP成员中.
+.br
+这些函数都包含了参数\fImap\fP，用于指定需要操作的容器对象指针.
+
+.SS ax_map_put
+向容器中插入一个键值对，键由参数\fIkey\fP指定，值由参数\fIval\fP指定. 该函数返回键值对中的值在容器内的内存首地址，如果内存分配失败则返回NULL. 该操作将调用键和值的特性的\fBax_trait_copy\fP方法和值特性的\fBax_trait_copy_or_init\fP方法.
+.SS ax_map_iput
+向容器中构造插入一个元素，返回元素在容器中的内存首地址. 如果内存分配失败则函数返回NULL. 该操作将调用键和值的特性的\fBax_trait_copy\fP方法和值特性的\fBax_trait_init\fP方法
+.SS ax_map_erase
+从容器中删除一个键值对，参数\fIkey\fP和\fIval\fP分别指定了键和值的内存首地址. 该操作会分别调用键和值特性的\fBax_trait_free\fP方法.
+.SS ax_map_get ax_map_cget
+查找由参数\fIkey\fP指定的键，查找成功返回该键所在的迭代器，查找失败返回正方向尾后迭代器. 第二个函数是其常量指针版本.
+.SS ax_map_at ax_map_cat
+查找由参数\fIkey\fP指定的键，查找成功返回该键所对应的值的首地址，查找失败返回NULL. 第二个函数是其常量指针版本.
+.SS ax_map_exist
+查找一个键是否存在，如果存在返回true，否则返回false.
+.SS ax_map_chkey
+查找由参数\fIkey\fP指定的键，如果查找成功则将其替换为\fIkey\fP.
+.SS ax_map_iter_key ax_map_citer_key
+获取迭代器指向的键值对的键在容器中的内存首地址. 后者是其常量指针版本.
+.SS ax_map_key
+查找由参数\fIkey\fP指定的键，查找成功返回容器中该键的内存首地址，查找失败返回NULL.
+.SS ax_map_dump
+执行转储操作，返回\fBax_dump\fP指针. 参见\fBax_dump\fP.
+.SS ax_map_foreach ax_map_foreach
+用于容器的迭代操作流程控制，\fI_key_type\fP和\fI_val_type\fP分别指定键和值的指针类型，\fI_key\fP和\fI_val\fP分别指定键和值的迭代变量的变量名.
+.br
+一个简单例子:
+.EX
+void print_all(const ax_map *map)
+{
+	ax_map_cforeach(map, int *, key, float *, val)
+		printf("key is %d, value is %f\n", *key, *val);
+}
+.EE
+
+.SH SEE ALSO
+\fBax_box\fP(3) \fBax_iter\fP(3) \fBax_trait\fP \fBax_dump\fP
+
+.SH AUTHOR
+李希林 <lixilin@mail.ru>

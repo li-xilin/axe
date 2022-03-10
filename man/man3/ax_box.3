@@ -1,0 +1,62 @@
+.TH "ax_box" 3 "Mar 9 2022" "axe"
+
+.SH NAME
+ax_box \- 支持多元素和可迭代的容器数据类型\&.
+
+.SH SYNOPSIS
+#include <ax/box.h>
+.PP
+typedef struct ax_box_st ax_box;
+.PP
+继承自 \fBax_any\fP
+.PP
+size_t ax_box_size(const ax_box* box);
+.PP
+size_t ax_box_maxsize(const ax_box* box);
+.PP
+ax_iter ax_box_begin(ax_box* box);
+.PP
+ax_iter ax_box_end(ax_box* box);
+.PP
+ax_iter ax_box_rbegin(ax_box* box);
+.PP
+ax_iter ax_box_rend(ax_box* box);
+.PP
+ax_citer ax_box_cbegin(const ax_box* box);
+.PP
+ax_citer ax_box_cend(const ax_box* box);
+.PP
+ax_citer ax_box_crbegin(const ax_box* box);
+.PP
+ax_citer ax_box_crend(const ax_box* box);
+.PP
+void ax_box_clear(ax_box* box);
+.PP
+bool ax_box_iter_ended(ax_box* box, ax_iter *it);
+
+.SH DESCRIPTION
+
+容器内的元素类型由元素的特性\fBax_trait\fP来决定，它通常在容器构造时被指定，并将其指针存储在\fBax_box_st\fP结构体的\fIenv.elem_tr\fP成员中. 
+
+.SS ax_box_size(3)
+获取一个容器对象的元素数.
+.SS ax_box_maxsize(3)
+获取一个容器对象的最大元素数，通常对于几乎所有的容器，实际使用中无法达到该改制.
+.SS ax_box_begin(3) ax_box_cbegin(3)
+获取容器对象的头部迭代器，后者是前者的常量指针版本.
+.SS ax_box_end(3) ax_box_cend(3)
+获取容器对象的尾后迭代器，后者是前者的常量指针版本.
+.SS ax_box_rbegin(3) ax_box_crbegin(3)
+获取容器对象的反方向头部迭代器，后者是前者的常量指针版本.
+.SS ax_box_rend(3) ax_box_crend(3)
+获取容器对象的反方向尾后迭代器，后者是前者的常量指针版本.
+.SS ax_box_clear(3)
+清空一个容器对象，使得容器内元素数为零.
+.SS ax_box_iter_ended(3)
+判定一个迭代器是否为尾后迭代器，对于某些容器，如该操作可能是低效率的.
+
+.SH SEE ALSO
+\fBax_any\fP(3) \fBax_iter\fP(3)
+
+.SH AUTHOR
+李希林 <lixilin@mail.ru>

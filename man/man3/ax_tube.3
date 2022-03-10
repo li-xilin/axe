@@ -1,0 +1,45 @@
+.TH "ax_tube" 3 "Mar 9 2022" "axe"
+
+.SH NAME
+ax_tube \- 一种单进单出容器抽象，通常用于实现栈和队列\&.
+
+.SH SYNOPSIS
+.EX
+#include <ax/tube.h>
+
+typedef struct ax_tube_st ax_tube;
+
+继承自 \fBax_any\fP
+
+ax_fail ax_tube_push(ax_tube *tube, const void *val);
+
+ax_fail ax_tube_ipush(ax_tube *tube, ...);
+
+void ax_tube_pop(ax_tube *tube);
+
+const void *ax_tube_prime(ax_tube *tube);
+
+const void *ax_tube_cprime(const ax_tube *tube);
+
+size_t ax_tube_size(const ax_tube *tube);
+.EE
+
+.SH DESCRIPTION
+该容器抽象可以实现为FIFO、FILO以及优先队列等，它支持元素压入、弹出和获取容器元素数量等操作.
+存储在容器中的元素由特性\fBax_trait\fP所描述，特性指针保存在\fBax_tube_st\fP结构体的\fIenv.elem_tr\fP成员中.
+.SS ax_tube_push
+向容器中压入一个元素，元素由参数\fIval\fP指定，如果内存分配失败返回true. 该操作会调用元素特性的\fBax_trait_copy_or_init\fP方法，其中\fIap\fP参数不会传入除了NULL以外的值.
+.SS ax_tube_ipush
+向容器中构造压入一个元素，元素由可变参数指定，如果内存分配失败返回true. 该操作会调用元素特性的\fBax_trait_init\fP方法.
+.SS ax_tube_pop
+从容器中弹出一个元素，该操作将调用元素特性的\fBax_trait_free\fP方法.
+.SS ax_tube_prime ax_tube_cprime
+获取下一个被弹出的元素的内存地址.
+.SS ax_tube_size
+获取当前容器的元素个数.
+
+.SH SEE ALSO
+\fBax_trait\fP \fBax_any\fP
+
+.SH AUTHOR
+李希林 <lixilin@mail.ru>
