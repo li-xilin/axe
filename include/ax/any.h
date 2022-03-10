@@ -24,8 +24,6 @@
 #define AX_ANY_H
 #include "one.h"
 
-#define AX_ANY_NAME AX_ONE_NAME ".any"
-
 #ifndef AX_DUMP_DEFINED
 #define AX_DUMP_DEFINED
 typedef struct ax_dump_st ax_dump;
@@ -36,18 +34,17 @@ typedef struct ax_dump_st ax_dump;
 typedef struct ax_any_st ax_any;
 #endif
 
-#define AX_CLASS_BASE_any one
-#define AX_CLASS_ROLE_any(_l) _l AX_CLASS_PTR(any); AX_CLASS_ROLE_one(_l)
+#define ax_baseof_any one
 
-AX_BEGIN_ENV(any)
-AX_END;
+ax_begin_env(any)
+ax_end;
 
-AX_BEGIN_TRAIT(any)
+ax_begin_trait(any)
 	ax_any *(*copy)(const ax_any* any);
 	ax_dump *(*dump)(const ax_any* any);
-AX_END;
+ax_end;
 
-AX_BLESS(any);
+ax_bless(1, any);
 
 inline static ax_any *ax_any_copy(const ax_any* any)
 {

@@ -33,6 +33,7 @@
 #include <assert.h>
 #include <errno.h>
 
+#include "ax/class.h"
 #include "check.h"
 
 #define DEFAULT_THRESHOLD 8
@@ -57,14 +58,14 @@ struct bucket_st
 	struct bucket_st *next;
 };
 
-AX_CLASS_STRUCT_ENTRY(hmap)
+ax_begin_entry(hmap)
 	size_t size;
 	size_t buckets;
 	size_t threshold;
 	size_t reserved;
 	struct bucket_st *bucket_list;
 	struct bucket_st *bucket_tab;
-AX_END;
+ax_end;
 
 static void    *map_put(ax_map *map, const void *key, const void *val, va_list *ap);
 static ax_fail  map_erase(ax_map *map, const void *key);
@@ -85,6 +86,7 @@ static ax_dump *any_dump(const ax_any *any);
 static ax_any  *any_copy(const ax_any *any);
 
 static void     one_free(ax_one *one);
+static const char *one_name(const ax_one *one);
 
 static void     citer_next(ax_citer *it);
 static void    *citer_get(const ax_citer *it);
@@ -544,6 +546,11 @@ static void one_free(ax_one *one)
 	free(hmap_r.hmap);
 }
 
+static const char *one_name(const ax_one *one)
+{
+	return ax_class_name(4, hmap);
+}
+
 static ax_dump *any_dump(const ax_any *any)
 {
 	ax_map_cr self = { .any = any };
@@ -640,7 +647,7 @@ const ax_map_trait ax_hmap_tr =
 	.box = {
 		.any = {
 			.one = {
-				.name  = AX_HMAP_NAME,
+				.name  = one_name,
 				.free  = one_free,
 			},
 			.dump = any_dump,

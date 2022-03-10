@@ -38,6 +38,8 @@
 
 #define MIN_SIZE
 
+static const char *one_name(const ax_one *one);
+
 static void    seq_invert(ax_seq *seq);
 static ax_iter seq_at(const ax_seq *seq, size_t index);
 static void   *seq_last(const ax_seq *seq);
@@ -352,6 +354,11 @@ static void one_free(ax_one *one)
 {
 }
 
+static const char *one_name(const ax_one *one)
+{
+	return ax_class_name(4, array);
+}
+
 static ax_dump *any_dump(const ax_any *any)
 {
 	ax_seq_cr self = { .any = any };
@@ -363,7 +370,7 @@ const ax_seq_trait ax_array_tr =
 	.box = {
 		.any = {
 			.one = {
-				.name = AX_ARRAY_NAME,
+				.name = one_name,
 				.free = one_free,
 			},
 			.dump = any_dump,

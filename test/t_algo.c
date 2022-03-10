@@ -36,9 +36,9 @@
 #include <string.h>
 #include <time.h>
 
-static void all_any_none_of(axut_runner *r)
+static void all_any_none_of(ax_runner *r)
 {
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 
 	for (int i = 0; i < 18; i++) { ax_seq_push(vec.seq, &i); }
 	ax_iter first = ax_box_begin(vec.box), last = ax_box_end(vec.box);
@@ -68,9 +68,9 @@ static void all_any_none_of(axut_runner *r)
 	ax_one_free(vec.one);
 }
 
-static void partation(axut_runner *r)
+static void partation(ax_runner *r)
 {
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 8, 2, 4, 9, 5, 3, 6, 7));
 
 	ax_iter first = ax_box_begin(vec.box);
@@ -96,9 +96,9 @@ static void partation(axut_runner *r)
 	ax_one_free(vec.one);
 }
 
-static void quick_sort(axut_runner *r)
+static void quick_sort(ax_runner *r)
 {
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 8, 2, 4, 9, 5, 3, 6, 7, 0));
 
 	ax_iter first = ax_box_begin(vec.box);
@@ -114,15 +114,15 @@ static void quick_sort(axut_runner *r)
 	ax_one_free(vec.one);
 }
 
-static void merge(axut_runner *r)
+static void merge(ax_runner *r)
 {
-	ax_vector_r vec1 = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec1 = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec1.seq, ax_arraya(int, 1, 3, 5));
 
-	ax_vector_r vec2 = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec2 = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec2.seq, ax_arraya(int, 2, 2, 6));
 
-	ax_vector_r vec3 = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec3 = ax_new(vector, ax_t(int));
 	ax_seq_trunc(vec3.seq, 6);
 
 	ax_iter first1 = ax_box_begin(vec1.box);
@@ -140,10 +140,10 @@ static void merge(axut_runner *r)
 	ax_one_free(vec3.one);
 }
 
-static void merge_sort(axut_runner *r)
+static void merge_sort(ax_runner *r)
 {
 
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 8, 2, 4, 9, 5, 3, 6, 7, 0));
 
 	ax_iter first = ax_box_begin(vec.box);
@@ -156,9 +156,9 @@ static void merge_sort(axut_runner *r)
 	ax_one_free(vec.one);
 }
 
-static void binary_search(axut_runner *r)
+static void binary_search(ax_runner *r)
 {
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 2, 3, 4));
 
 	ax_iter first = ax_box_begin(vec.box);
@@ -181,9 +181,9 @@ static void binary_search(axut_runner *r)
 	ax_one_free(vec.one);
 }
 
-static void binary_search_if_not(axut_runner *r)
+static void binary_search_if_not(ax_runner *r)
 {
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 3, 5, 7));
 
 	ax_citer first = ax_box_cbegin(vec.box);
@@ -217,9 +217,9 @@ static void binary_search_if_not(axut_runner *r)
 }
 
 
-static void insertion_sort(axut_runner *r)
+static void insertion_sort(ax_runner *r)
 {
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 8, 2, 4, 9, 5, 3, 6, 7, 0));
 
 	ax_iter first = ax_box_begin(vec.box);
@@ -251,17 +251,17 @@ static int qsort_compare_cb(const void* p1, const void* p2)
  * 0x3FFFFF 2.42, 2.25
  */
 
-static void sort_time(axut_runner *r) {
-	const size_t length = 0xFFF;
+static void sort_time(ax_runner *r) {
+	const size_t length = 0xFFFF;
 	//const size_t length = 0x3FFFFF;
 	ax_iter first, last;
 	clock_t time_before;
 	srand(20);
 	
-	ax_vector_r vec1 = ax_class_new(vector, ax_t(int)),
-		    vec2 = ax_class_new(vector, ax_t(int)),
-		    vec3 = ax_class_new(vector, ax_t(int)),
-		    vec4 = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec1 = ax_new(vector, ax_t(int)),
+		    vec2 = ax_new(vector, ax_t(int)),
+		    vec3 = ax_new(vector, ax_t(int)),
+		    vec4 = ax_new(vector, ax_t(int));
 
 	
 	//printf("Sorting 0x%lX numbers\n", length);

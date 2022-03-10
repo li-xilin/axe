@@ -27,14 +27,12 @@
 #include "../ax/str.h"
 #include "../ax/box.h"
 
-#define AXUT_SUITE_NAME AX_ONE_NAME ".one"
-
 #define AXUT_NAME_MAX 128
 #define AXUT_LOG_MAX 128
 
-#ifndef AXUT_RUNNER_DEFINED
-#define AXUT_RUNNER_DEFINED
-typedef struct axut_runner_st axut_runner;
+#ifndef AX_RUNNER_DEFINED
+#define AX_RUNNER_DEFINED
+typedef struct ax_runner_st ax_runner;
 #endif
 
 #ifndef AXUT_SUITE_DEFINED

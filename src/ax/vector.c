@@ -34,15 +34,17 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include "ax/class.h"
+#include "ax/one.h"
 #include "check.h"
 
 #undef free
 
 #define MIN_SIZE
 
-AX_CLASS_STRUCT_ENTRY(vector)
+ax_begin_entry(vector)
 	ax_buff *buff;
-AX_END;
+ax_end;
 
 static ax_fail seq_push(ax_seq *seq, const void *val, va_list *ap);
 static ax_fail seq_pop(ax_seq *seq);
@@ -65,6 +67,7 @@ static void    box_clear(ax_box *box);
 static ax_any *any_copy(const ax_any *any);
 
 static void    one_free(ax_one *one);
+static const char *one_name(const ax_one *one);
 
 static void    citer_move(ax_citer *it, long i);
 static void    citer_prev(ax_citer *it);
@@ -248,6 +251,11 @@ static void one_free(ax_one *one)
 	box_clear(self.box);
 	ax_one_free(ax_r(buff, self.vector->buff).one);
 	free(one);
+}
+
+static const char *one_name(const ax_one *one)
+{
+	return ax_class_name(4, vector);
 }
 
 static ax_dump *any_dump(const ax_any *any)
@@ -543,8 +551,8 @@ const ax_seq_trait ax_vector_tr =
 	.box = {
 		.any = {
 			.one = {
-				.name = AX_VECTOR_NAME,
 				.free = one_free,
+				.name = one_name,
 			},
 			.dump = any_dump,
 			.copy = any_copy,

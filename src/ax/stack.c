@@ -51,12 +51,13 @@ static const void *tube_prime(const ax_tube *tube);
 static ax_any  *any_copy(const ax_any *any);
 static ax_dump *any_dump(const ax_any *any);
 static void     one_free(ax_one *one);
+static const char *one_name(const ax_one *one);
 
 const ax_tube_trait ax_stack_tr =
 {
 	.any = {
 		.one = {
-			.name = AX_STACK_NAME,
+			.name = one_name,
 			.free = one_free,
 		},
 		.copy = any_copy,
@@ -121,6 +122,11 @@ static void one_free(ax_one *one)
 	ax_stack_r self_r = { .one = one };
 	ax_vector_tr.box.any.one.free(self_r.stack->vector.one);
 	free(one);
+}
+
+static const char *one_name(const ax_one *one)
+{
+	return ax_class_name(3, stack);
 }
 
 ax_tube *__ax_stack_construct(const ax_trait *elem_tr)

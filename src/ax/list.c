@@ -42,11 +42,11 @@ struct node_st
 	ax_byte data[];
 };
 
-AX_CLASS_STRUCT_ENTRY(list)
+ax_begin_entry(list)
 	struct node_st *head;
 	size_t size;
 	size_t capacity;
-AX_END;
+ax_end;
 
 static ax_fail seq_push(ax_seq *seq, const void *val, va_list *ap);
 static ax_fail seq_pop(ax_seq *seq);
@@ -70,6 +70,7 @@ static void    box_clear(ax_box *box);
 static ax_any *any_copy(const ax_any *any);
 
 static void    one_free(ax_one *one);
+static const char *one_name(const ax_one *one);
 
 static void    citer_prev(ax_citer *it);
 static void    citer_next(ax_citer *it);
@@ -315,8 +316,6 @@ static void iter_erase(ax_iter *it)
 	free(node);
 }
 
-
-
 static void one_free(ax_one *one)
 {
 	if (!one)
@@ -325,6 +324,11 @@ static void one_free(ax_one *one)
 	ax_list_r self_r = { .one = one };
 	box_clear(self_r.box);
 	free(one);
+}
+
+static const char *one_name(const ax_one *one)
+{
+	return ax_class_name(4, list);
 }
 
 static ax_dump *any_dump(const ax_any *any)
@@ -732,7 +736,7 @@ const ax_seq_trait ax_list_tr =
 	.box = {
 		.any = {
 			.one = {
-				.name = AX_LIST_NAME,
+				.name = one_name,
 				.free = one_free,
 			},
 			.dump = any_dump,

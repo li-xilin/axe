@@ -63,7 +63,7 @@ axut_suite *axut_suite_create(const char *name)
 	if (!suite)
 		return NULL;
 
-	cases = ax_class_new(vector, &axut_case_tr);
+	cases = ax_new(vector, &axut_case_tr);
 	if (!cases.one) {
 		return NULL;
 	}

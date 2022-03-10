@@ -22,19 +22,17 @@
 
 #ifndef AX_HMAP_H
 #define AX_HMAP_H
+#include "class.h"
 #include "map.h"
-
-#define AX_HMAP_NAME AX_MAP_NAME ".hmap"
 
 #ifndef AX_HMAP_DEFINED
 #define AX_HMAP_DEFINED
 typedef struct ax_hmap_st ax_hmap;
 #endif
 
-#define AX_CLASS_BASE_hmap map
-#define AX_CLASS_ROLE_hmap(_l) _l AX_CLASS_PTR(hmap); AX_CLASS_ROLE_map(_l)
+#define ax_baseof_hmap map
 
-AX_CLASS_STRUCT_ROLE(hmap);
+ax_role(4, hmap);
 
 extern const ax_map_trait ax_hmap_tr;
 
@@ -43,7 +41,7 @@ ax_map *__ax_hmap_construct(
 		const ax_trait* val_tr
 );
 
-inline static AX_CLASS_CONSTRUCTOR(hmap, const ax_trait* key_tr, const ax_trait* val_tr)
+inline static ax_class_constructor(hmap, const ax_trait* key_tr, const ax_trait* val_tr)
 {
 	return __ax_hmap_construct(key_tr, val_tr);
 }

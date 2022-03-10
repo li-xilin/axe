@@ -34,15 +34,15 @@
 #include <stdio.h>
 #include <string.h>
 
-static void create(axut_runner *r)
+static void create(ax_runner *r)
 {
 	int array[32];
 	for (int i = 0; i < 32; i++)
 		array[i] = i;
 
-	ax_array_r arr1 = ax_class_new(array, ax_t(int), array, 32 * sizeof(int));
+	ax_array_r arr1 = ax_new(array, ax_t(int), array, 32 * sizeof(int));
 
-	ax_array_r arr2 = ax_class_new(array, ax_t(int), 32 * sizeof(int));
+	ax_array_r arr2 = ax_new(array, ax_t(int), 32 * sizeof(int));
 	for (int i = 0; i < 32; i++)
 		((int *)ax_array_ptr(arr2.array))[i] = i;
 

@@ -34,9 +34,9 @@
 #include <string.h>
 
 
-static void push_arraya(axut_runner *r)
+static void push_arraya(ax_runner *r)
 {
-	ax_list_r list_r = ax_class_new(list, ax_t(int));
+	ax_list_r list_r = ax_new(list, ax_t(int));
 	ax_seq_push_arraya(list_r.seq, ax_arraya(int, 1, 2, 3, 4, 5));
 	int arr[] = { 1, 2 ,3 ,4, 5 };
 	seq_equal_array(list_r.seq, arr, sizeof(arr));

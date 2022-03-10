@@ -29,7 +29,7 @@
 #include <setjmp.h>
 #include <stdlib.h>
 
-static void pred_unary(axut_runner *r)
+static void pred_unary(ax_runner *r)
 {
 	uint32_t in = 1, out;
 	ax_pred pred = ax_pred_unary_make(ax_oper_for(AX_ST_U32)->bit_not, NULL, NULL);
@@ -43,7 +43,7 @@ static void pred_unary(axut_runner *r)
 
 }
 
-static void pred_binary(axut_runner *r)
+static void pred_binary(ax_runner *r)
 {
 	ax_pred pred;
 	uint32_t in1 = 3, in2 = 4, out;

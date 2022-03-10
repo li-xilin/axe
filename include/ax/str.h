@@ -22,21 +22,19 @@
 
 #ifndef AX_STR_H
 #define AX_STR_H
+#include "class.h"
 #include "debug.h"
 #include "seq.h"
 #include <stdarg.h>
-
-#define AX_STR_NAME AX_SEQ_NAME ".str"
 
 #ifndef AX_STR_DEFINED
 #define AX_STR_DEFINED
 typedef struct ax_str_st ax_str;
 #endif
 
-#define AX_CLASS_BASE_str seq
-#define AX_CLASS_ROLE_str(_l) _l AX_CLASS_PTR(str); AX_CLASS_ROLE_seq(_l)
+#define ax_baseof_str seq
 
-AX_BEGIN_TRAIT(str)
+ax_begin_trait(str)
 	ax_fail  (*append) (      ax_str *str, const char *s);
 	size_t   (*length) (const ax_str *str);
 	ax_fail  (*insert) (      ax_str *str, size_t start, const char *s);
@@ -45,9 +43,11 @@ AX_BEGIN_TRAIT(str)
 	ax_str  *(*substr) (const ax_str *str, size_t start, size_t len);
 	ax_seq  *(*split)  (const ax_str *str, const char ch);
 	ax_fail  (*sprintf)(      ax_str *str, const char *fmt, va_list args); 
-AX_END;
-AX_BEGIN_ENV(str) AX_END;
-AX_BLESS(str);
+ax_end;
+
+ax_begin_env(str) ax_end;
+
+ax_bless(4, str);
 
 inline static ax_fail ax_str_append(ax_str* str, const char *s) {
 	ax_require(str, str->tr->append);

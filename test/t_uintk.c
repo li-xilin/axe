@@ -47,7 +47,7 @@ void factorial(ax_uintk* n, ax_uintk* res)
 
 
 
-static void test_factorial(axut_runner *r)
+static void test_factorial(ax_runner *r)
 {
 	char resbuf[512];
 	char expect[] =

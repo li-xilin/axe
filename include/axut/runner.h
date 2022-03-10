@@ -28,11 +28,9 @@
 #include "../ax/def.h"
 #include "../ax/str.h"
 
-#define AXUT_RUNNER_NAME AX_ONE_NAME ".runner"
-
-#ifndef AXUT_RUNNER_DEFINED
-#define AXUT_RUNNER_DEFINED
-typedef struct axut_runner_st axut_runner;
+#ifndef AX_RUNNER_DEFINED
+#define AX_RUNNER_DEFINED
+typedef struct ax_runner_st ax_runner;
 #endif
 
 #ifndef AXUT_SUITE_DEFINED
@@ -45,35 +43,34 @@ typedef struct axut_suite_st axut_suite;
 typedef struct axut_case_st axut_case;
 #endif
 
+#define ax_baseof_runner one
+ax_role(1, runner);
+
 typedef void (*axut_output_f)(const char* suite_name, axut_case *tc, ax_str *out);
 
-axut_runner *axut_runner_create(axut_output_f ran_cb);
+const char *axut_runner_result(const ax_runner *r);
 
-void axut_runner_destroy(axut_runner *r);
+int axut_runner_summary(const ax_runner *r, int *pass, int *term);
 
-const char *axut_runner_result(const axut_runner *r);
+ax_fail axut_runner_add(ax_runner *r, axut_suite* s);
 
-int axut_runner_summary(const axut_runner *r, int *pass, int *term);
+void axut_runner_remove(ax_runner *r, axut_suite* s);
 
-ax_fail axut_runner_add(axut_runner *r, axut_suite* s);
+void axut_runner_run(ax_runner *r);
 
-void axut_runner_remove(axut_runner *r, axut_suite* s);
+void *axut_runner_arg(const ax_runner *r);
 
-void axut_runner_run(axut_runner *r);
+void __axut_assert(ax_runner *r, bool cond, const char *file, int line, const char *fmt, ...);
 
-void *axut_runner_arg(const axut_runner *r);
+void __axut_assert_str_equal(ax_runner *r, const char *ex, const char *ac, const char *file, int line);
 
-void __axut_assert(axut_runner *r, bool cond, const char *file, int line, const char *fmt, ...);
+void __axut_assert_int_equal(ax_runner *r, int64_t ex, int64_t ac, const char *file, int line);
 
-void __axut_assert_str_equal(axut_runner *r, const char *ex, const char *ac, const char *file, int line);
+void __axut_assert_uint_equal(ax_runner *r, uint64_t ex, uint64_t ac, const char *file, int line);
 
-void __axut_assert_int_equal(axut_runner *r, int64_t ex, int64_t ac, const char *file, int line);
+void __axut_fail(ax_runner *r, const char *file, int line, const char *fmt, ...);
 
-void __axut_assert_uint_equal(axut_runner *r, uint64_t ex, uint64_t ac, const char *file, int line);
-
-void __axut_fail(axut_runner *r, const char *file, int line, const char *fmt, ...);
-
-void __axut_term(axut_runner *r, const char *file, int line, const char *fmt, ...);
+void __axut_term(ax_runner *r, const char *file, int line, const char *fmt, ...);
 
 #define axut_assert(r, cond) __axut_assert((r), (cond), __FILE__, __LINE__, "assertion failed: %s", #cond)
 
@@ -88,6 +85,8 @@ void __axut_term(axut_runner *r, const char *file, int line, const char *fmt, ..
 #define axut_assert_int_equal(r, ex, ac) __axut_assert_int_equal((r), ex, ac, __FILE__, __LINE__)
 
 #define axut_assert_uint_equal(r, ex, ac) __axut_assert_uint_equal((r), ex, ac, __FILE__, __LINE__)
+
+ax_class_constructor(runner, axut_output_f ran_cb);
 
 #endif
 

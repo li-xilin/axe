@@ -22,23 +22,23 @@
 
 #ifndef AX_QUEUE_H
 #define AX_QUEUE_H
+#include "class.h"
 #include "seq.h"
 #include "tube.h"
-
-#define AX_QUEUE_NAME AX_TUBE_NAME ".queue"
 
 #ifndef AX_QUEUE_DEFINED
 #define AX_QUEUE_DEFINED
 typedef struct ax_queue_st ax_queue;
 #endif
 
-#define AX_CLASS_BASE_queue tube
-#define AX_CLASS_ROLE_queue(_l) _l AX_CLASS_PTR(queue); AX_CLASS_ROLE_tube(_l)
-AX_CLASS_STRUCT_ROLE(queue);
+
+#define ax_baseof_queue tube
+
+ax_role(3, queue);
 
 ax_tube *__ax_queue_construct(const ax_trait *elem_tr);
 
-inline static AX_CLASS_CONSTRUCTOR(queue, const ax_trait *tr)
+inline static ax_class_constructor(queue, const ax_trait *tr)
 {
 	return __ax_queue_construct(tr);
 }

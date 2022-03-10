@@ -27,8 +27,6 @@
 #include "trait.h"
 #include <stdarg.h>
 
-#define AX_MAP_NAME AX_BOX_NAME ".map"
-
 #define ax_map_foreach(_map, _key_type, _key, _val_type, _val)            \
 	for ( int _foreach_cont = 1; _foreach_cont; )                     \
 	for (_key_type _key; _foreach_cont; _foreach_cont = 0)            \
@@ -58,25 +56,23 @@ typedef struct ax_map_st ax_map;
 
 typedef ax_map *ax_map_init_f(const ax_trait* tr1, const ax_trait* tr2);
 
-#define AX_CLASS_BASE_map box
-#define AX_CLASS_ROLE_map(_l) _l AX_CLASS_PTR(map); AX_CLASS_ROLE_box(_l)
+#define ax_baseof_map box
 
-AX_BEGIN_TRAIT(map)
+ax_begin_trait(map)
 	void *(*put) (ax_map *map, const void *key, const void *val, va_list *ap);
-	//void *(*vput) (ax_map *map, const void *key, va_list *ap);
 	void *(*get) (const ax_map *map, const void *key);
 	ax_iter (*at) (const ax_map *map, const void *key);
 	bool (*exist) (const ax_map *map, const void *key);
 	void *(*chkey) (ax_map *map, const void *key, const void *new_key);
 	ax_fail (*erase) (ax_map *map, const void *key);
 	const void *(*itkey)(const ax_citer *it);
-AX_END;
+ax_end;
 
-AX_BEGIN_ENV(map)
+ax_begin_env(map)
 	const ax_trait *key_tr;
-AX_END;
+ax_end;
 
-AX_BLESS(map);
+ax_bless(3, map);
 
 inline static void *ax_map_put(ax_map *map, const void *key, const void *val)
 {

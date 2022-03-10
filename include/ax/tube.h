@@ -23,9 +23,8 @@
 #ifndef AX_TUBE_H
 #define AX_TUBE_H
 #include "box.h"
+#include "class.h"
 #include "def.h"
-
-#define AX_TUBE_NAME AX_ANY_NAME ".tube"
 
 #ifndef AX_TUBE_DEFINED
 #define AX_TUBE_DEFINED
@@ -34,21 +33,20 @@ typedef struct ax_tube_st ax_tube;
 
 typedef ax_tube *(ax_tube_construct_f)(const ax_trait *elem_tr);
 
-#define AX_CLASS_BASE_tube any
-#define AX_CLASS_ROLE_tube(_l) _l AX_CLASS_PTR(tube); AX_CLASS_ROLE_any(_l)
+#define ax_baseof_tube any
 
-AX_BEGIN_TRAIT(tube)
+ax_begin_trait(tube)
 	ax_fail (*push)   (ax_tube *tube, const void *val, va_list *ap);
 	void    (*pop)    (ax_tube *tube);
 	const void *(*prime)  (const ax_tube *tube);
 	size_t  (*size)   (const ax_tube *tube);
-AX_END;
+ax_end;
 
-AX_BEGIN_ENV(tube)
+ax_begin_env(tube)
 	const ax_trait *const elem_tr;
-AX_END;
+ax_end;
 
-AX_BLESS(tube);
+ax_bless(2, tube);
 
 inline static ax_fail ax_tube_push(ax_tube *tube, const void *val)
 {

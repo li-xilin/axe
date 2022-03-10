@@ -22,23 +22,23 @@
 
 #ifndef AX_ARRAY_H
 #define AX_ARRAY_H
+#include "class.h"
 #include "seq.h"
 #include <limits.h>
-
-#define AX_ARRAY_NAME AX_SEQ_NAME ".array"
 
 #ifndef AX_ARRAY_DEFINED
 #define AX_ARRAY_DEFINED
 typedef struct ax_array_st ax_array;
 #endif
 
-#define AX_CLASS_BASE_array seq
-#define AX_CLASS_ROLE_array(_l) _l AX_CLASS_PTR(array); AX_CLASS_ROLE_seq(_l)
-AX_CLASS_STRUCT_ROLE(array);
-AX_CLASS_STRUCT_ENTRY(array)
+#define ax_baseof_array seq
+
+ax_begin_entry(array)
 	size_t size;
 	void *array;
-AX_END;
+ax_end;
+
+ax_role(4, array);
 
 extern const ax_seq_trait ax_array_tr;
 

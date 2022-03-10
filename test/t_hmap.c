@@ -34,9 +34,9 @@
 
 #define N 400
 
-static void erase(axut_runner* r)
+static void erase(ax_runner* r)
 {
-	ax_hmap_r hmap = ax_class_new(hmap, ax_t(int), ax_t(int));
+	ax_hmap_r hmap = ax_new(hmap, ax_t(int), ax_t(int));
 
 	for (int k = 0, v = 0; k < N; k++, v++) {
 		int *ret = ax_map_put(hmap.map, &k, &v);
@@ -64,10 +64,10 @@ static void erase(axut_runner* r)
 	ax_one_free(hmap.one);
 }
 
-static void iter_erase(axut_runner* r)
+static void iter_erase(ax_runner* r)
 {
 
-	ax_hmap_r hmap = ax_class_new(hmap, ax_t(int), ax_t(int));
+	ax_hmap_r hmap = ax_new(hmap, ax_t(int), ax_t(int));
 	for (int k = 0, v = 0; k < N; k++, v++) {
 		int *ret = ax_map_put(hmap.map, &k, &v);
 		axut_assert(r, *ret == v);
@@ -94,10 +94,10 @@ static void iter_erase(axut_runner* r)
 	ax_one_free(hmap.one);
 }
 
-static void map_chkey(axut_runner* r)
+static void map_chkey(ax_runner* r)
 {
 
-	ax_hmap_r hmap = ax_class_new(hmap, ax_t(int), ax_t(int));
+	ax_hmap_r hmap = ax_new(hmap, ax_t(int), ax_t(int));
 	int k, v;
 	k = 1, v = 2;
 	if (!ax_map_put(hmap.map, &k, &v))
@@ -118,10 +118,10 @@ static void map_chkey(axut_runner* r)
 	ax_one_free(hmap.one);
 }
 
-static void duplicate(axut_runner *r)
+static void duplicate(ax_runner *r)
 {
 
-	ax_hmap_r hmap = ax_class_new(hmap, ax_t(int), ax_t(int));
+	ax_hmap_r hmap = ax_new(hmap, ax_t(int), ax_t(int));
 
 	int key, val = 0;
 
@@ -156,10 +156,10 @@ static void duplicate(axut_runner *r)
 	ax_one_free(hmap.one);
 }
 
-static void iterate(axut_runner *r)
+static void iterate(ax_runner *r)
 {
 
-	ax_hmap_r hmap = ax_class_new(hmap, ax_t(str), ax_t(int));
+	ax_hmap_r hmap = ax_new(hmap, ax_t(str), ax_t(int));
 	const int count = 100;
 	for (int i = 0; i < count; i++) {
 		char key[4];
@@ -181,9 +181,9 @@ static void iterate(axut_runner *r)
 	ax_one_free(hmap.one);
 }
 
-static void rehash(axut_runner* r)
+static void rehash(ax_runner* r)
 {
-	ax_hmap_r hmap = ax_class_new(hmap, ax_t(str), ax_t(int));
+	ax_hmap_r hmap = ax_new(hmap, ax_t(str), ax_t(int));
 	const int count = 100;
 	for (int i = 0; i < count; i++) {
 		char key[4];
@@ -213,9 +213,9 @@ static void rehash(axut_runner* r)
 }
 
 
-static void check_size(axut_runner* r)
+static void check_size(ax_runner* r)
 {
-	ax_hmap_r hmap = ax_class_new(hmap, ax_t(int), ax_t(nil));
+	ax_hmap_r hmap = ax_new(hmap, ax_t(int), ax_t(nil));
 	for (int i = 0; i < 10000; i++) {
 		int val = rand();
 		ax_map_put(hmap.map, &val, NULL);

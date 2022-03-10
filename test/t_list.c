@@ -40,13 +40,13 @@ static bool seq_equal_array(ax_seq *seq, void *arr, size_t mem_size)
 	return ax_equal_to_arr(&first, &last, arr, mem_size);
 }
 
-static void create(axut_runner *r)
+static void create(ax_runner *r)
 {
-	ax_list_r list1 = ax_class_new(list, ax_t(int));
+	ax_list_r list1 = ax_new(list, ax_t(int));
 	axut_assert(r, list1.any != NULL);
 	axut_assert(r, ax_box_size(list1.box) == 0);
 
-	ax_list_r list2 = ax_class_new(list, ax_t(int));
+	ax_list_r list2 = ax_new(list, ax_t(int));
 	ax_seq_push_arraya(list2.seq, ax_arraya(int, 1, 2, 3));
 
 	int i = 1;
@@ -58,10 +58,10 @@ static void create(axut_runner *r)
 	ax_one_free(list2.one);
 }
 
-static void push(axut_runner *r)
+static void push(ax_runner *r)
 {
 
-	ax_list_r list = ax_class_new(list, ax_t(int));
+	ax_list_r list = ax_new(list, ax_t(int));
 	for (int i = 0; i < 20; i++) {
 		ax_seq_push(list.seq, &i);
 	}
@@ -79,12 +79,12 @@ static void push(axut_runner *r)
 	ax_one_free(list.one);
 }
 
-static void iter(axut_runner *r)
+static void iter(ax_runner *r)
 {
 	ax_iter cur, last;
 	int i;
 
-	ax_list_r list = ax_class_new(list, ax_t(int));
+	ax_list_r list = ax_new(list, ax_t(int));
 
 	for (i = 0; i < 20; i++) {
 		ax_seq_push(list.seq, &i);
@@ -107,12 +107,12 @@ static void iter(axut_runner *r)
 	ax_one_free(list.one);
 }
 
-static void riter(axut_runner *r)
+static void riter(ax_runner *r)
 {
 	ax_iter cur, last;
 	int i;
 
-	ax_list_r list = ax_class_new(list, ax_t(int));
+	ax_list_r list = ax_new(list, ax_t(int));
 	for (i = 0; i < 20; i++) {
 		ax_seq_push(list.seq, &i);
 	}
@@ -145,11 +145,11 @@ static void riter(axut_runner *r)
 }
 
 
-static void seq_insert(axut_runner *r)
+static void seq_insert(ax_runner *r)
 {
 	int ins;
 
-	ax_list_r list = ax_class_new(list, ax_t(int));
+	ax_list_r list = ax_new(list, ax_t(int));
 	ax_seq_push_arraya(list.seq, ax_arraya(int, 1, 2));
 
 	ax_iter it = ax_box_begin(list.box);
@@ -174,10 +174,10 @@ static void seq_insert(axut_runner *r)
 }
 
 
-static void seq_insert_for_riter(axut_runner *r)
+static void seq_insert_for_riter(ax_runner *r)
 {
 	int ins;
-	ax_list_r list = ax_class_new(list, ax_t(int));
+	ax_list_r list = ax_new(list, ax_t(int));
 	ax_seq_push_arraya(list.seq, ax_arraya(int, 2, 1));
 
 	ax_iter it = ax_box_rbegin(list.box);
@@ -201,10 +201,10 @@ static void seq_insert_for_riter(axut_runner *r)
 	ax_one_free(list.one);
 }
 
-static void any_copy(axut_runner *r)
+static void any_copy(ax_runner *r)
 {
 
-	ax_list_r list1 = ax_class_new(list, ax_t(int));
+	ax_list_r list1 = ax_new(list, ax_t(int));
 	ax_seq_push_arraya(list1.seq, ax_arraya(int, 1, 2, 3, 4));
 	ax_list_r list2 = { .any = ax_any_copy(list1.any) };
 
@@ -222,9 +222,9 @@ static void any_copy(axut_runner *r)
 	ax_one_free(list3.one);
 }
 
-static void seq_trunc(axut_runner *r)
+static void seq_trunc(ax_runner *r)
 {
-	ax_list_r list = ax_class_new(list, ax_t(int));
+	ax_list_r list = ax_new(list, ax_t(int));
 	ax_seq_push_arraya(list.seq, ax_arraya(int, 1, 2, 3));
 
 	int table1[] = {1, 2, 3, 0, 0};
@@ -241,10 +241,10 @@ static void seq_trunc(axut_runner *r)
 	ax_one_free(list.one);
 }
 
-static void iter_erase(axut_runner *r)
+static void iter_erase(ax_runner *r)
 {
 
-	ax_list_r list = ax_class_new(list, ax_t(int));
+	ax_list_r list = ax_new(list, ax_t(int));
 	ax_seq_push_arraya(list.seq, ax_arraya(int, 1, 2, 3));
 
 	ax_iter cur = ax_box_begin(list.box),
@@ -258,9 +258,9 @@ static void iter_erase(axut_runner *r)
 	ax_one_free(list.one);
 }
 
-static void seq_invert(axut_runner *r)
+static void seq_invert(ax_runner *r)
 {
-	ax_list_r list = ax_class_new(list, ax_t(int));
+	ax_list_r list = ax_new(list, ax_t(int));
 	ax_seq_push_arraya(list.seq, ax_arraya(int, 1, 2, 3, 4, 5));
 
 	int table1[] = {5, 4, 3, 2, 1};

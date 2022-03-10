@@ -21,6 +21,7 @@
  */
 
 #include "ax/pque.h"
+#include "ax/class.h"
 #include "ax/tube.h"
 #include "ax/any.h"
 #include "ax/mem.h"
@@ -36,11 +37,9 @@
 
 #undef free
 
-struct ax_pque_st
-{
-	ax_tube tube;
+ax_begin_entry(pque)
 	struct ax_heap_st heap;
-};
+ax_end;
 
 static ax_fail  tube_push(ax_tube *tube, const void *val, va_list *ap);
 static void     tube_pop(ax_tube *tube);
@@ -49,12 +48,13 @@ static const void *tube_prime(const ax_tube *tube);
 static ax_any  *any_copy(const ax_any *any);
 static ax_dump *any_dump(const ax_any *any);
 static void     one_free(ax_one *one);
+static const char *one_name(const ax_one *one);
 
 const ax_tube_trait ax_pque_tr =
 {
 		.any = {
 			.one = {
-				.name = AX_PQUE_NAME,
+				.name = one_name,
 				.free = one_free,
 			},
 			.copy = any_copy,
@@ -128,6 +128,11 @@ static void one_free(ax_one *one)
 	free(one);
 }
 
+static const char *one_name(const ax_one *one)
+{
+	return ax_class_name(3, pque);
+}
+
 static bool less_then(const void *a, const void *b, void *ctx)
 {
 	const ax_trait *etr = (const void *)ctx;
@@ -135,7 +140,7 @@ static bool less_then(const void *a, const void *b, void *ctx)
 }
 
 
-AX_CLASS_CONSTRUCTOR(pque, const ax_trait *tr)
+ax_class_constructor(pque, const ax_trait *tr)
 {
 	CHECK_PARAM_NULL(tr);
 

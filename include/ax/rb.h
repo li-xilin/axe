@@ -22,6 +22,7 @@
 
 #ifndef AX_RB_H
 #define AX_RB_H
+#include "class.h"
 #include "map.h"
 
 #define AX_RB_NAME AX_MAP_NAME ".rb"
@@ -33,10 +34,9 @@ typedef struct ax_rb_st ax_rb;
 
 extern const ax_map_trait ax_rb_tr;
 
-#define AX_CLASS_BASE_rb map
-#define AX_CLASS_ROLE_rb(_l) _l AX_CLASS_PTR(rb); AX_CLASS_ROLE_map(_l)
+#define ax_baseof_rb map
 
-AX_CLASS_STRUCT_ROLE(rb);
+ax_role(4, rb);
 
 extern const ax_map_trait ax_hmap_tr;
 
@@ -45,7 +45,7 @@ ax_map *__ax_rb_construct(
 		const ax_trait* val_tr
 );
 
-inline static AX_CLASS_CONSTRUCTOR(rb, const ax_trait* key_tr, const ax_trait* val_tr)
+inline static ax_class_constructor(rb, const ax_trait* key_tr, const ax_trait* val_tr)
 {
 	return __ax_rb_construct(key_tr, val_tr);
 }

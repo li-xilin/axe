@@ -22,20 +22,19 @@
 
 #ifndef AX_BOX_H
 #define AX_BOX_H
+#include "class.h"
 #include "iter.h"
 #include "any.h"
 
-#define AX_BOX_NAME AX_ANY_NAME ".box"
-
-#define _ax_box_iterate(_box, _it, _cond)                  \
-	for (ax_iter _it = ax_box_begin(_box),             \
-			_it_end = ax_box_end(_box);        \
+#define _ax_box_iterate(_box, _it, _cond) \
+	for (ax_iter _it = ax_box_begin(_box), \
+			_it_end = ax_box_end(_box); \
 		!ax_iter_equal(&_it, &_it_end) && (_cond); \
 		ax_iter_next(&_it))
 
-#define _ax_box_citerate(_box, _it, _cond)                  \
-	for (ax_citer _it = ax_box_cbegin(_box),            \
-			_it_end = ax_box_cend(_box);        \
+#define _ax_box_citerate(_box, _it, _cond) \
+	for (ax_citer _it = ax_box_cbegin(_box), \
+			_it_end = ax_box_cend(_box); \
 		!ax_citer_equal(&_it, &_it_end) && (_cond); \
 		ax_citer_next(&_it))
 
@@ -43,32 +42,32 @@
 
 #define ax_box_citerate(_box, _it) _ax_box_citerate(_box, _it, true)
 
-#define ax_box_foreach(_box, _type, _var)                                               \
-	for ( int __ax_foreach_##_var##_flag = 1 ; __ax_foreach_##_var##_flag ; )       \
+#define ax_box_foreach(_box, _type, _var) \
+	for ( int __ax_foreach_##_var##_flag = 1 ; __ax_foreach_##_var##_flag ; ) \
 	for (_type  _var = NULL; __ax_foreach_##_var##_flag ; __ax_foreach_##_var##_flag = 0) \
-	for ( ax_iter __##_var##_iter = ax_box_begin(_box),                             \
-			__##_var##_end_iter = ax_box_end(_box);                         \
-		!ax_iter_equal(&__##_var##_iter, &__##_var##_end_iter)                  \
-			&& ((_var) = ax_iter_get(&__##_var##_iter), 1);                 \
+	for ( ax_iter __##_var##_iter = ax_box_begin(_box), \
+			__##_var##_end_iter = ax_box_end(_box); \
+		!ax_iter_equal(&__##_var##_iter, &__##_var##_end_iter) \
+			&& ((_var) = ax_iter_get(&__##_var##_iter), 1); \
 		ax_iter_next(&__##_var##_iter))
 
-#define ax_box_cforeach(_box, _type, _var)                                              \
-	for ( int __ax_foreach_##_var##_flag = 1 ; __ax_foreach_##_var##_flag ; )       \
+#define ax_box_cforeach(_box, _type, _var) \
+	for ( int __ax_foreach_##_var##_flag = 1 ; __ax_foreach_##_var##_flag ; ) \
 	for (_type  _var = NULL; __ax_foreach_##_var##_flag ; __ax_foreach_##_var##_flag = 0) \
-	for ( ax_citer __##_var##_iter = ax_box_cbegin(_box),                           \
-			__##_var##_end_iter = ax_box_cend(_box);                        \
-		!ax_citer_equal(&__##_var##_iter, &__##_var##_end_iter)                 \
-			&& ((_var) = ax_citer_get(&__##_var##_iter), 1);                \
+	for ( ax_citer __##_var##_iter = ax_box_cbegin(_box), \
+			__##_var##_end_iter = ax_box_cend(_box); \
+		!ax_citer_equal(&__##_var##_iter, &__##_var##_end_iter) \
+			&& ((_var) = ax_citer_get(&__##_var##_iter), 1); \
 		ax_citer_next(&__##_var##_iter))
+
+
+#define ax_baseof_box any
 
 typedef size_t  (*ax_box_size_f)  (const ax_box* box);
 typedef ax_iter (*ax_box_iter_f)  (      ax_box* box);
 typedef void    (*ax_box_clear_f) (      ax_box* box);
 
-#define AX_CLASS_BASE_box any
-#define AX_CLASS_ROLE_box(_l) _l AX_CLASS_PTR(box); AX_CLASS_ROLE_any(_l)
-
-AX_BEGIN_TRAIT(box)
+ax_begin_trait(box)
 	const ax_iter_trait iter;
 	const ax_iter_trait riter;
 
@@ -81,13 +80,13 @@ AX_BEGIN_TRAIT(box)
 	const ax_box_iter_f rend;
 
 	const ax_box_clear_f clear;
-AX_END;
+ax_end;
 
-AX_BEGIN_ENV(box)
+ax_begin_env(box)
 	const ax_trait *const elem_tr;
-AX_END;
+ax_end;
 
-AX_BLESS(box);
+ax_bless(2, box);
 
 static inline size_t ax_box_size(const ax_box* box)
 {

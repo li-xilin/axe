@@ -22,23 +22,21 @@
 
 #ifndef AX_STRING_H
 #define AX_STRING_H
+#include "class.h"
 #include "str.h"
 #include "debug.h"
-
-#define AX_STRING_NAME AX_STR_NAME ".string"
 
 #ifndef AX_STRING_DEFINED
 #define AX_STRING_DEFINED
 typedef struct ax_string_st ax_string;
 #endif
 
-#define AX_CLASS_BASE_string str
-#define AX_CLASS_ROLE_string(_l) _l AX_CLASS_PTR(string); AX_CLASS_ROLE_str(_l)
-AX_CLASS_STRUCT_ROLE(string);
+#define ax_baseof_string str
+ax_role(5, string);
 
 ax_str *__ax_string_construct();
 
-inline static AX_CLASS_CONSTRUCTOR0(string)
+inline static ax_class_constructor0(string)
 {
 	return __ax_string_construct();
 }

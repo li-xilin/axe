@@ -357,7 +357,7 @@ ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 	}
 	imap[pos] = cur.point;
 
-	ax_vector_r aux = ax_class_new(vector, first->etr);
+	ax_vector_r aux = ax_new(vector, first->etr);
 	if (!aux.one) {
 		free(imap);
 		return true;

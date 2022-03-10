@@ -23,31 +23,28 @@
 #ifndef AX_PTRA_H
 #define AX_PTRA_H
 
+#include "class.h"
 #include "one.h"
 #include "trait.h"
-
-#define AX_PTRA_NAME AX_ONE_NAME ".ptra"
 
 #ifndef AX_PTRA_DEFINED
 #define AX_PTRA_DEFINED
 typedef struct ax_ptra_st ax_ptra;
 #endif
 
-#define AX_CLASS_BASE_ptra one
-#define AX_CLASS_ROLE_ptra(_l) _l AX_CLASS_PTR(ptra); AX_CLASS_ROLE_one(_l)
-
-AX_BEGIN_TRAIT(ptra)
+#define ax_baseof_ptra one
+ax_begin_trait(ptra)
 	void *(*get)(ax_ptra* ptra);
 	void *(*reset)(ax_ptra* ptra, void *ptr);
-AX_END;
+ax_end;
 
-AX_BEGIN_ENV(ptra)
+ax_begin_env(ptra)
 	const ax_trait *const tr;
 	void *ptr;
 	size_t nref;
-AX_END;
+ax_end;
 
-AX_BLESS(ptra);
+ax_bless(1, ptra);
 
 inline static void *ax_ptra_get(ax_ptra* ptra)
 {
@@ -60,16 +57,21 @@ inline static void ax_ptra_reset(ax_ptra* ptra, void *ptr)
 	ptra->env.ptr = ptr;
 }
 
-static void ax_ptra_free(ax_ptra* ptra)
+static void ax_ptra_free(ax_ptra *ptra)
 {
 	ptra->env.tr->free(ptra->env.ptr);
 	ptra->env.ptr = NULL;
 }
 
+static const char *ax_ptra_name(const ax_ptra *ptra)
+{
+	return ax_class_name(1, ptra);
+}
+
 static const ax_ptra_trait ax_ptra_tr =
 {
 	.one = {
-		.name = AX_PTRA_NAME,
+		.name = (ax_one_name_f)ax_ptra_name,
 		.free = (ax_one_free_f)ax_ptra_free,
 	},
 	.get = &ax_ptra_get,

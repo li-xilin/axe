@@ -4,7 +4,7 @@
 int main()
 {
 	// Initialize de-queue
-	ax_deq_r d = ax_class_new(deq, ax_t(int));
+	ax_deq_r d = ax_new(deq, ax_t(int));
 	ax_forrange(0, 9) {
 		ax_seq_pushf(d.seq, ax_p(int, _));
 		ax_seq_push(d.seq, ax_p(int, _));

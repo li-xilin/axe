@@ -49,12 +49,13 @@ static const void *tube_prime(const ax_tube *tube);
 static ax_any  *any_copy(const ax_any *any);
 static ax_dump *any_dump(const ax_any *any);
 static void     one_free(ax_one *one);
+static const char *one_name(const ax_one *one);
 
 const ax_tube_trait ax_queue_tr =
 {
 		.any = {
 			.one = {
-				.name = AX_QUEUE_NAME,
+				.name = one_name,
 				.free = one_free,
 			},
 			.copy = any_copy,
@@ -122,12 +123,17 @@ static void one_free(ax_one *one)
 	free(one);
 }
 
+static const char *one_name(const ax_one *one)
+{
+	return ax_class_name(3, queue);
+}
+
 ax_tube *__ax_queue_construct(const ax_trait *elem_tr)
 {
 	CHECK_PARAM_NULL(elem_tr);
 
 	ax_tube *self= NULL;
-	ax_deq_r deq = ax_class_new(deq, elem_tr);
+	ax_deq_r deq = ax_new(deq, elem_tr);
 	if (!deq.one)
 		goto fail;
 

@@ -32,13 +32,13 @@
 #include <stdio.h>
 #include <string.h>
 
-static void create(axut_runner *r)
+static void create(ax_runner *r)
 {
-	ax_vector_r vec1 = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec1 = ax_new(vector, ax_t(int));
 	axut_assert(r, vec1.any != NULL);
 	axut_assert(r, ax_box_size(vec1.box) == 0);
 
-	ax_vector_r vec2 = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec2 = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec2.seq, ax_arraya(int, 1, 2, 3));
 	int i = 1;
 	ax_box_cforeach(vec2.box, const int*, v) {
@@ -48,10 +48,10 @@ static void create(axut_runner *r)
 	ax_one_free(vec2.one);
 }
 
-static void push(axut_runner *r)
+static void push(ax_runner *r)
 {
 
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 	for (int i = 0; i < 20; i++) {
 		ax_seq_push(vec.seq, &i);
 	}
@@ -69,12 +69,12 @@ static void push(axut_runner *r)
 	ax_one_free(vec.one);
 }
 
-static void iter(axut_runner *r)
+static void iter(ax_runner *r)
 {
 	ax_iter cur, last;
 	int i;
 
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 
 	for (i = 0; i < 20; i++) {
 		ax_seq_push(vec.seq, &i);
@@ -96,12 +96,12 @@ static void iter(axut_runner *r)
 	ax_one_free(vec.one);
 }
 
-static void riter(axut_runner *r)
+static void riter(ax_runner *r)
 {
 	ax_iter cur, last;
 	int i;
 
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 	for (i = 0; i < 20; i++) {
 		ax_seq_push(vec.seq, &i);
 	}
@@ -134,11 +134,11 @@ static void riter(axut_runner *r)
 }
 
 
-static void seq_insert(axut_runner *r)
+static void seq_insert(ax_runner *r)
 {
 	int ins;
 
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 2));
 
 	ax_iter it = ax_box_begin(vec.box);
@@ -162,11 +162,11 @@ static void seq_insert(axut_runner *r)
 	ax_one_free(vec.one);
 }
 
-static void seq_insert_for_riter(axut_runner *r)
+static void seq_insert_for_riter(ax_runner *r)
 {
 	int ins;
 
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec.seq, ax_arraya(int, 2, 1));
 
 	ax_iter it = ax_box_rbegin(vec.box);
@@ -190,10 +190,10 @@ static void seq_insert_for_riter(axut_runner *r)
 	ax_one_free(vec.one);
 }
 
-static void any_copy(axut_runner *r)
+static void any_copy(ax_runner *r)
 {
 
-	ax_vector_r vec1 = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec1 = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec1.seq, ax_arraya(int, 1, 2, 3, 4));
 	ax_vector_r vec2 = { .any = ax_any_copy(vec1.any) };
 
@@ -211,9 +211,9 @@ static void any_copy(axut_runner *r)
 	ax_one_free(vec3.one);
 }
 
-static void seq_trunc(axut_runner *r)
+static void seq_trunc(ax_runner *r)
 {
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 2, 3));
 
 	int table1[] = {1, 2, 3, 0, 0};
@@ -230,9 +230,9 @@ static void seq_trunc(axut_runner *r)
 	ax_one_free(vec.one);
 }
 
-static void seq_invert(axut_runner *r)
+static void seq_invert(ax_runner *r)
 {
-	ax_vector_r vec = ax_class_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(vector, ax_t(int));
 	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 2, 3, 4, 5));
 
 	int table1[] = {5, 4, 3, 2, 1};

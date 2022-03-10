@@ -23,6 +23,7 @@
 #ifndef AX_BUFF_H
 #define AX_BUFF_H
 
+#include "class.h"
 #include "debug.h"
 #include "any.h"
 #include "def.h"
@@ -40,16 +41,14 @@ typedef struct ax_buff_st ax_buff;
 #endif
 
 
-#define AX_CLASS_BASE_buff any
-#define AX_CLASS_ROLE_buff(_l) _l AX_CLASS_PTR(buff); AX_CLASS_ROLE_any(_l)
-
-AX_CLASS_STRUCT_ROLE(buff);
+#define ax_baseof_buff any
+ax_role(2, buff);
 
 extern const ax_any_trait ax_buff_tr;
 
 ax_any *__ax_buff_construct();
 
-inline static AX_CLASS_CONSTRUCTOR0(buff) {
+inline static ax_class_constructor0(buff) {
 	return __ax_buff_construct();
 }
 

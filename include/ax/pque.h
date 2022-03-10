@@ -22,6 +22,7 @@
 
 #ifndef AX_PQUE_H
 #define AX_PQUE_H
+#include "class.h"
 #include "seq.h"
 #include "tube.h"
 
@@ -32,10 +33,9 @@
 typedef struct ax_pque_st ax_pque;
 #endif
 
-#define AX_CLASS_BASE_pque tube
-#define AX_CLASS_ROLE_pque(_l) _l AX_CLASS_PTR(pque); AX_CLASS_ROLE_tube(_l)
-AX_CLASS_STRUCT_ROLE(pque);
+#define ax_baseof_pque tube
+ax_role(3, pque);
 
-AX_CLASS_CONSTRUCTOR(pque, const ax_trait *tr);
+ax_class_constructor(pque, const ax_trait *tr);
 
 #endif

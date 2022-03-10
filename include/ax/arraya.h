@@ -56,7 +56,7 @@ inline static size_t ax_arraya_size(const void *arra)
 	        uint64_t _size;
 		char _magic[8];
 		char data[];
-	} *blk = (void *)(((char *)arra) - sizeof(struct arraya_hdr));
+	} *blk = (struct arraya_hdr *)(((char *)arra) - sizeof(struct arraya_hdr));
 
 	ax_assert(*(uint64_t*)blk->_magic == *(uint64_t *)__AX_ARRAYA_MAGIC, "invalid arraya pointer");
 	return (size_t)blk->_size;

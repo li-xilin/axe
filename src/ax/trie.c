@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  */
 
+#include "ax/seq.h"
 #include <ax/trie.h>
 #include <ax/list.h>
 #include <ax/dump.h>
@@ -30,7 +31,7 @@
 ax_fail ax_trie_enum(const ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx)
 {
 	ax_fail retval = false;
-	ax_trie_cr self_r = { trie };
+	ax_trie_cr self_r = { .trie = trie };
 	
 	ax_trait iter_tr = {
 		.size = sizeof(ax_iter),
@@ -118,7 +119,7 @@ static bool trie_dump_cb(const ax_trie *trie, const ax_seq *key, const void *val
 		*ktr = trie->env.key_tr,
 		*vtr = trie->env.box.elem_tr;
 
-	ax_dump *key_dmp = ax_dump_block(AX_SEQ_NAME, size);
+	ax_dump *key_dmp = ax_dump_block(ax_class_name(3, seq), size);
 	size_t i = 0;
 	ax_box_cforeach(ax_cr(seq, key).box, const void *, word) {
 		ax_dump_bind(key_dmp, i, ax_trait_dump(ktr, ax_trait_in(ktr, word), ktr->size));

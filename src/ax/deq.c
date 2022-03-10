@@ -58,10 +58,10 @@
 
 #undef free
 
-AX_CLASS_STRUCT_ENTRY(deq)
+ax_begin_entry(deq)
 	struct ring_st map;
 	uint16_t front, rear;
-AX_END;
+ax_end;
 
 struct position
 {
@@ -91,6 +91,7 @@ static void    box_clear(ax_box *box);
 static ax_any *any_copy(const ax_any *any);
 
 static void    one_free(ax_one *one);
+static const char *one_name(const ax_one *one);
 
 static void    citer_prev(ax_citer *it);
 static void    citer_next(ax_citer *it);
@@ -317,6 +318,11 @@ static void one_free(ax_one *one)
 		free(*ring_at(&self.deq->map, i));
 	ring_free(&self.deq->map);
 	free(one);
+}
+
+static const char *one_name(const ax_one *one)
+{
+	return ax_class_name(4, deq);
 }
 
 static ax_dump *any_dump(const ax_any *any)
@@ -650,7 +656,7 @@ const ax_seq_trait ax_deq_tr =
 	.box = {
 		.any = {
 			.one = {
-				.name = AX_DEQ_NAME,
+				.name = one_name,
 				.free = one_free,
 			},
 			.dump = any_dump,

@@ -26,8 +26,6 @@
 #include "def.h"
 #include "class.h"
 
-#define AX_SEQ_NAME AX_BOX_NAME ".seq"
-
 #ifndef AX_SEQ_DEFINED
 #define AX_SEQ_DEFINED
 typedef struct ax_seq_st ax_seq;
@@ -43,13 +41,12 @@ typedef void   *(*ax_seq_end_f)    (const ax_seq *seq);
 
 typedef ax_seq *(ax_seq_construct_f)(const ax_trait *tr);
 
-#define AX_CLASS_BASE_seq box
-#define AX_CLASS_ROLE_seq(_l) _l AX_CLASS_PTR(seq); AX_CLASS_ROLE_box(_l)
+#define ax_baseof_seq box
 
-AX_BEGIN_ENV(seq)
-AX_END;
+ax_begin_env(seq)
+ax_end;
 
-AX_BEGIN_TRAIT(seq)
+ax_begin_trait(seq)
 	const ax_seq_push_f   push;
 	const ax_seq_pop_f    pop;
 	const ax_seq_push_f   pushf;
@@ -60,9 +57,9 @@ AX_BEGIN_TRAIT(seq)
 	const ax_seq_insert_f insert;
 	const ax_seq_end_f   first;
 	const ax_seq_end_f   last;
-AX_END;
+ax_end;
 
-AX_BLESS(seq);
+ax_bless(3, seq);
 
 inline static ax_fail ax_seq_push(ax_seq *seq, const void *val)
 {

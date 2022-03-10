@@ -22,6 +22,7 @@
 
 #ifndef AX_LIST_H
 #define AX_LIST_H
+#include "class.h"
 #include "seq.h"
 
 #define AX_LIST_NAME AX_SEQ_NAME ".list"
@@ -31,16 +32,15 @@
 typedef struct ax_list_st ax_list;
 #endif
 
-#define AX_CLASS_BASE_list seq
-#define AX_CLASS_ROLE_list(_l) _l AX_CLASS_PTR(list); AX_CLASS_ROLE_seq(_l)
+#define ax_baseof_list seq
 
-AX_CLASS_STRUCT_ROLE(list);
+ax_role(4, list);
 
 extern const ax_seq_trait ax_list_tr;
 
 ax_seq *__ax_list_construct(const ax_trait *elem_tr);
 
-inline static AX_CLASS_CONSTRUCTOR(list, const ax_trait* trait)
+inline static ax_class_constructor(list, const ax_trait* trait)
 {
 	return __ax_list_construct(trait);
 }

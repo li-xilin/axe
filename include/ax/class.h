@@ -24,77 +24,86 @@
 #define AX_CLASS_H
 
 #include "def.h"
+#include "macro.h"
 
-#define __AX_CLASS_ENTRY_STRUCT(_name) struct AX_CATENATE(ax_, _name, _st)
+#define __AX_CLASS_ENTRY_STRUCT(name) struct AX_CATENATE(ax_, name, _st)
+#define __AX_CLASS_TRAIT_STRUCT(name) struct AX_CATENATE(ax_, name, _trait_st)
+#define __AX_CLASS_ENV_STRUCT(name) struct AX_CATENATE(ax_, name, _env_st)
 
-#define ax_class_new_n(_n, _name, ...) \
-	(ax_##_name##_r) { .ax_base_of(_name) = AX_CATENATE_4(__ax_, _name, _construct, _n)(__VA_ARGS__) }
+#define ax_class_new_n(_n, name, ...) \
+	(ax_##name##_r) { .ax_base_of(1, name) = AX_CATENATE_4(__ax_, name, _construct, _n)(__VA_ARGS__) }
 
-#define ax_class_new0(_name) \
-	ax_class_new_n(0, _name, )
+#define ax_new0(name) \
+	ax_class_new_n(0, name, )
 
-#define ax_class_new(_name, ...) \
-	ax_class_new_n(AX_NARG(__VA_ARGS__), _name, __VA_ARGS__)
+#define ax_new(name, ...) \
+	ax_class_new_n(AX_NARG(__VA_ARGS__), name, __VA_ARGS__)
 
-#define AX_CLASS_CONSTRUCTOR0(_name) \
-	__AX_CLASS_ENTRY_STRUCT(ax_base_of(_name)) *AX_CATENATE(__ax_, _name, _construct0)()
+#define __AX_CLASS_EXTERN_TRAIT(name) \
+	extern const __AX_CLASS_TRAIT_STRUCT(ax_base_of(1, name)) AX_CATENATE(ax_, name, _tr)
 
-#define AX_CLASS_CONSTRUCTOR(_name, ...) \
-	__AX_CLASS_ENTRY_STRUCT(ax_base_of(_name)) *AX_CATENATE(__ax_, _name, _construct, AX_NARG(__VA_ARGS__))(__VA_ARGS__)
+#define ax_class_constructor0(name) \
+	__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) *AX_CATENATE(__ax_, name, _construct0)()
 
-#define AX_CLASS_STRUCT_TRAIT(_name) \
-	typedef struct ax_##_name##_trait_st  ax_##_name##_trait; \
-	struct ax_##_name##_trait_st \
+#define ax_class_constructor(name, ...) \
+	__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) *AX_CATENATE(__ax_, name, _construct, AX_NARG(__VA_ARGS__))(__VA_ARGS__)
 
-#define AX_BEGIN_TRAIT(_name) \
-	AX_CLASS_STRUCT_TRAIT(_name) { \
-		const struct AX_CATENATE(ax_, ax_base_of(_name), _trait_st) ax_base_of(_name);
+#define ax_begin_root_trait(name) \
+	typedef __AX_CLASS_TRAIT_STRUCT(name)  AX_CATENATE(ax_, name, _trait); \
+	__AX_CLASS_TRAIT_STRUCT(name) {\
 
-#define AX_END }
+#define ax_begin_trait(name) \
+	ax_begin_root_trait(name) \
+		const __AX_CLASS_TRAIT_STRUCT(ax_base_of(1, name)) ax_base_of(1, name);
 
-#define ax_base_of(_name) AX_CLASS_BASE_##_name
+#define ax_begin_root_env(name) \
+	typedef __AX_CLASS_ENV_STRUCT(name) AX_CATENATE(ax_, name, _env); \
+	__AX_CLASS_ENV_STRUCT(name) {
 
-#define __AX_CLASS_ENV_STRUCT(_name) struct AX_CATENATE(ax_, _name, _env_st)
+#define ax_begin_env(name) \
+	ax_begin_root_env(name) \
+		__AX_CLASS_ENV_STRUCT(ax_base_of(1, name)) ax_base_of(1, name);
 
+#define ax_begin_entry(name) \
+	__AX_CLASS_ENTRY_STRUCT(name) { \
+		__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) ax_base_of(1, name);
 
-#define AX_CLASS_STRUCT_ENV(_name) \
-	typedef __AX_CLASS_ENV_STRUCT(_name) AX_CATENATE(ax_, _name, _env); \
-	__AX_CLASS_ENV_STRUCT(_name)
+#define ax_end }
 
-#define AX_BEGIN_ENV(_name) \
-	AX_CLASS_STRUCT_ENV(_name) { \
-		struct AX_CATENATE(ax_, ax_base_of(_name), _env_st) ax_base_of(_name);
+#define __ax_base_of(n, name) __AX_MACRO_EXPAND_##n(ax_baseof_, name)
+#define ax_base_of(n, name) __ax_base_of(n, name)
 
-#define AX_CLASS_STRUCT_ROLE(_name) \
+#define __AX_CLASS_DECLARE_VAR(const, name) const struct AX_CATENATE_3(ax_, name, _st) *name; 
+#define __AX_CLASS_ROLE_ITEM(n, const, name) __AX_CLASS_DECLARE_VAR(const, ax_base_of(n, name))
+
+#define ax_role(n, name) \
 	typedef union \
 	{ \
-		AX_CLASS_ROLE_##_name(const) \
-	} AX_CATENATE(ax_, _name, _cr); \
+		AX_MACRO_PAVE(n, __AX_CLASS_ROLE_ITEM, const, name) \
+		__AX_CLASS_DECLARE_VAR(const,  name) \
+	} AX_CATENATE(ax_, name, _cr); \
+	\
 	typedef union \
 	{ \
-		AX_CLASS_ROLE_##_name() \
-	} AX_CATENATE(ax_, _name, _r) \
+		AX_MACRO_PAVE(n, __AX_CLASS_ROLE_ITEM, , name) \
+		__AX_CLASS_DECLARE_VAR(, name) \
+	} AX_CATENATE(ax_, name, _r)
 
-#define AX_CLASS_STRUCT_ENTRY(_name) \
-	struct ax_##_name##_st \
+#define AX_CLASS_STRUCT_TMPL(name) \
+	__AX_CLASS_ENTRY_STRUCT(name) \
 	{ \
-		struct AX_CATENATE(ax_, ax_base_of(_name), _st) ax_base_of(_name);
-
-#define AX_CLASS_STRUCT_TMPL(_name) \
-	struct ax_##_name##_st \
-	{ \
-		const struct AX_CATENATE(ax_, _name, _trait_st) *const tr; \
-		struct AX_CATENATE(ax_, _name, _env_st) env; \
+		const __AX_CLASS_TRAIT_STRUCT(name) *const tr; \
+		__AX_CLASS_ENV_STRUCT(name) env; \
 	}
 
-#define AX_BLESS(_name) \
-	AX_CLASS_STRUCT_ROLE(_name); \
-	AX_CLASS_STRUCT_TMPL(_name)
+#define __AX_CLASS_NAME_ITEM(n, name) ax_stringy(ax_base_of(n, name)) "."
+#define ax_class_name(n, name) AX_MACRO_PAVE(n, __AX_CLASS_NAME_ITEM, name) ax_stringy(name)
 
-#define AX_CLASS_PTR(_name) struct AX_CATENATE(ax_, _name, _st) *(_name)
+#define ax_bless(n, name) \
+	ax_role(n, name); \
+	AX_CLASS_STRUCT_TMPL(name)
 
 #define ax_r(type, ptr) ((ax_##type##_r){ .type = ptr })
-
 #define ax_cr(type, ptr) ((ax_##type##_cr){ .type = ptr })
 
 /* To define a new class

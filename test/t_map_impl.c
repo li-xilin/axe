@@ -44,20 +44,20 @@ struct create_map_func {
 
 static ax_map *create_empty_avl(void)
 {
-	return ax_class_new(avl, ax_t(int), ax_t(int)).map;
+	return ax_new(avl, ax_t(int), ax_t(int)).map;
 }
 
 static ax_map *create_empty_hmap(void)
 {
-	return ax_class_new(hmap, ax_t(int), ax_t(int)).map;
+	return ax_new(hmap, ax_t(int), ax_t(int)).map;
 }
 
 static ax_map *create_empty_rb(void)
 {
-	return ax_class_new(rb, ax_t(int), ax_t(int)).map;
+	return ax_new(rb, ax_t(int), ax_t(int)).map;
 }
 
-static void workflow(axut_runner *r)
+static void workflow(ax_runner *r)
 {
 	create_map_f *create = (create_map_f *)(intptr_t)axut_runner_arg(r);
 	ax_map *map = create();
@@ -91,7 +91,7 @@ static void shuffle(int *arr, size_t size)
 		ax_swap(arr + _, arr + (rand() % size), int);
 }
 
-static void insert(axut_runner *r)
+static void insert(ax_runner *r)
 {
 	create_map_f *create = (create_map_f *)(intptr_t)axut_runner_arg(r);
 	ax_map *map = create();
@@ -123,7 +123,7 @@ static void insert(axut_runner *r)
 	ax_one_free(ax_r(map, map).one);
 }
 
-static void update(axut_runner *r)
+static void update(ax_runner *r)
 {
 	create_map_f *create = (create_map_f *)(intptr_t)axut_runner_arg(r);
 	ax_map *map = create();
@@ -146,7 +146,7 @@ static void update(axut_runner *r)
 	ax_one_free(ax_r(map, map).one);
 }
 
-static void erase(axut_runner *r)
+static void erase(ax_runner *r)
 {
 	create_map_f *create = (create_map_f *)(intptr_t)axut_runner_arg(r);
 	ax_map *map = create();
@@ -181,7 +181,7 @@ static void erase(axut_runner *r)
 	ax_one_free(ax_r(map, map).one);
 }
 
-static void iterator(axut_runner *r)
+static void iterator(ax_runner *r)
 {
 	create_map_f *create = (create_map_f *)(intptr_t)axut_runner_arg(r);
 	ax_map *map = create();
@@ -201,7 +201,7 @@ static void iterator(axut_runner *r)
 	ax_one_free(ax_r(map, map).one);
 }
 
-static void copy(axut_runner *r)
+static void copy(ax_runner *r)
 {
 	create_map_f *create = (create_map_f *)(intptr_t)axut_runner_arg(r);
 	ax_map *map = create();
@@ -223,7 +223,7 @@ static void copy(axut_runner *r)
 	ax_one_free(ax_r(map,map1).one);
 }
 
-void suite_for_maps(axut_runner *r)
+void suite_for_maps(ax_runner *r)
 {
 	for (int i = 0; i < 3; i++) {
 		axut_suite *suite = NULL;

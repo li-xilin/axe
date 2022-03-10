@@ -22,6 +22,7 @@
 
 #ifndef AX_VECTOR_H
 #define AX_VECTOR_H
+#include "class.h"
 #include "seq.h"
 
 #define AX_VECTOR_NAME AX_SEQ_NAME ".vector"
@@ -34,13 +35,14 @@ typedef struct ax_vector_st ax_vector;
 #define AX_CLASS_BASE_vector seq
 #define AX_CLASS_ROLE_vector(_l) _l AX_CLASS_PTR(vector); AX_CLASS_ROLE_seq(_l)
 
-AX_CLASS_STRUCT_ROLE(vector);
+#define ax_baseof_vector seq
+ax_role(4, vector);
 
 extern const ax_seq_trait ax_vector_tr;
 
 ax_seq*__ax_vector_construct(const ax_trait* elem_tr);
 
-inline static AX_CLASS_CONSTRUCTOR(vector, const ax_trait* trait)
+inline static ax_class_constructor(vector, const ax_trait* trait)
 {
 	return __ax_vector_construct(trait);
 }

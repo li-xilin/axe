@@ -9,7 +9,7 @@ void to_upper(void *out, const void *in, void *arg)
 
 int main()
 {
-	ax_string_r s = ax_class_new0(string);
+	ax_string_r s = ax_new0(string);
 	ax_str_append(s.str, "Hello world");
 
 	ax_pred pred = ax_pred_unary_make(to_upper, NULL, NULL);

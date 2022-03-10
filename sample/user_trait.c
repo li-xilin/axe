@@ -58,13 +58,13 @@ ax_trait stuff_tr = {
 
 int main()
 {
-	ax_vector_r stuffs = ax_class_new(vector, &stuff_tr);
+	ax_vector_r stuffs = ax_new(vector, &stuff_tr);
 
 	ax_seq_ipush(stuffs.seq, 1, "Zhang San", "15200000001");
 	ax_seq_ipush(stuffs.seq, 2, "Li Si", "15200000002");
-	ax_seq_ipush(stuffs.seq, 3, "Wang wu", "15200000003");
+	ax_seq_ipush(stuffs.seq, 3, "Wang Wu", "15200000003");
 
-	struct stuff zhaoliu = { .id = 4, .name = "ZhaoLiu", .phone = "15200000004", };
+	struct stuff zhaoliu = { .id = 4, .name = "Zhao Liu", .phone = "15200000004", };
 	ax_seq_push(stuffs.seq, &zhaoliu);
 
 	ax_any_so(stuffs.any);

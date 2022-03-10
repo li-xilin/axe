@@ -23,10 +23,9 @@
 #ifndef AX_TRIE_H
 #define AX_TRIE_H
 #include "box.h"
+#include "class.h"
 #include "seq.h"
 #include "def.h"
-
-#define AX_TRIE_NAME AX_BOX_NAME ".trie"
 
 #ifndef AX_DUMP_DEFINED
 #define AX_DUMP_DEFINED
@@ -38,10 +37,9 @@ typedef struct ax_dump_st ax_dump;
 typedef struct ax_trie_st ax_trie;
 #endif
 
-#define AX_CLASS_BASE_trie box
-#define AX_CLASS_ROLE_trie(_l) _l AX_CLASS_PTR(trie); AX_CLASS_ROLE_box(_l)
+#define ax_baseof_trie box
 
-AX_BEGIN_TRAIT(trie)
+ax_begin_trait(trie)
 	const ax_iter_trait iter_root;
 	void       *(*put)      (ax_trie *trie, const ax_seq *key, const void *val, va_list *ap);
 	void       *(*get)      (const ax_trie *trie, const ax_seq *key);
@@ -56,13 +54,13 @@ AX_BEGIN_TRAIT(trie)
 	bool        (*it_parent)(const ax_citer *it, ax_iter *parent);
 	bool        (*it_valued)(const ax_citer *it);
 	void        (*it_clean) (const ax_iter *it);
-AX_END;
+ax_end;
 
-AX_BEGIN_ENV(trie)
+ax_begin_env(trie)
 	const ax_trait *key_tr;
-AX_END;
+ax_end;
 
-AX_BLESS(trie);
+ax_bless(3, trie);
 
 inline static void *ax_trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 {

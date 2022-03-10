@@ -65,7 +65,7 @@ AXUT 用于单元测试，头文件包括：
 void oper_rmodd(void *out, const void *in, void *args)
 {
 	const int *num = in;
-    int *ret = out;
+	int *ret = out;
 	if (*num % 2 == 1) /* 如果输入为基数，则输出为0 */
 		*ret = 0;
 }

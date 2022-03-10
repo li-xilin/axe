@@ -40,11 +40,11 @@ extern axut_suite *suite_for_arr();
 extern axut_suite *suite_for_mem();
 extern axut_suite *suite_for_class();
 extern axut_suite *suite_for_stuff();
-extern void suite_for_maps(axut_runner *r);
+extern void suite_for_maps(ax_runner *r);
 
 int main()
 {
-	axut_runner *r = axut_runner_create(NULL);
+	ax_runner *r = ax_new(runner, NULL).runner;
 
 	axut_runner_add(r, suite_for_seq());
 	axut_runner_add(r, suite_for_hmap());
@@ -68,7 +68,7 @@ int main()
 	axut_runner_run(r);
 	fputs(axut_runner_result(r), stdout);
 
-	axut_runner_destroy(r);
+	ax_one_free(ax_r(runner, r).one);
 	return 0;
 }
 

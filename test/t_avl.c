@@ -33,9 +33,9 @@
 
 #define N 50
 
-static void insert(axut_runner *r)
+static void insert(ax_runner *r)
 {
-	ax_avl_r avl = ax_class_new(avl, ax_t(i32), ax_t(i32));
+	ax_avl_r avl = ax_new(avl, ax_t(i32), ax_t(i32));
 
 	for (int k = 0, v = 0; k < N; k++, v++) {
 		int32_t *ret = ax_map_put(avl.map, &k, &v);
@@ -70,10 +70,10 @@ static void insert(axut_runner *r)
 	ax_one_free(avl.one);
 }
 
-static void complex(axut_runner *r)
+static void complex(ax_runner *r)
 {
 
-	ax_avl_r avl = ax_class_new(avl, ax_t(i32), ax_t(i32));
+	ax_avl_r avl = ax_new(avl, ax_t(i32), ax_t(i32));
 	for (int k = 0, v = 0; k < N; k++, v++) {
 		ax_map_put(avl.map, &k, &v);
 	}
@@ -100,10 +100,10 @@ static void complex(axut_runner *r)
 	ax_one_free(avl.one);
 }
 
-static void foreach(axut_runner *r)
+static void foreach(ax_runner *r)
 {
 
-	ax_avl_r avl = ax_class_new(avl, ax_t(i32), ax_t(i32));
+	ax_avl_r avl = ax_new(avl, ax_t(i32), ax_t(i32));
 	int max = 50;
 	for (int32_t i = 0; i < max; i++) {
 		ax_map_put(avl.map, &i, &i);
@@ -127,10 +127,10 @@ static void foreach(axut_runner *r)
 	ax_one_free(avl.one);
 }
 
-static void erase(axut_runner *r)
+static void erase(ax_runner *r)
 {
 
-	ax_avl_r avl = ax_class_new(avl, ax_t(i32), ax_t(i32));
+	ax_avl_r avl = ax_new(avl, ax_t(i32), ax_t(i32));
 	int count = 50;
 	for (int32_t i = 0; i < count; i++) {
 		ax_map_put(avl.map, &i, &i);
@@ -154,10 +154,10 @@ static void erase(axut_runner *r)
 	ax_one_free(avl.one);
 }
 
-static void duplicate(axut_runner *r)
+static void duplicate(ax_runner *r)
 {
 
-	ax_avl_r avl = ax_class_new(avl, ax_t(i32), ax_t(i32));
+	ax_avl_r avl = ax_new(avl, ax_t(i32), ax_t(i32));
 	uint32_t key, val = 0;
 
 	key = 1, val = 2;
@@ -191,10 +191,10 @@ static void duplicate(axut_runner *r)
 	ax_one_free(avl.one);
 }
 
-static void clear(axut_runner *r)
+static void clear(ax_runner *r)
 {
 
-	ax_avl_r avl = ax_class_new(avl, ax_t(i32), ax_t(i32));
+	ax_avl_r avl = ax_new(avl, ax_t(i32), ax_t(i32));
 	for (int32_t i = 0; i < 50; i++) {
 		ax_map_put(avl.map, &i, &i);
 	}

@@ -240,7 +240,7 @@ ax_trait location_tr = {
 
 int main()
 {
-	ax_rb_r rb = ax_class_new(rb, ax_t(str), &location_tr);
+	ax_rb_r rb = ax_new(rb, ax_t(str), &location_tr);
 	ax_map_iput(rb.map, "Beijing", 116.405289, 39.904987);
 	ax_map_iput(rb.map, "Tianjin", 117.190186, 39.125595);
 	ax_map_iput(rb.map, "Suihua", 126.992928, 46.637394);

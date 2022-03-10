@@ -22,6 +22,7 @@
 
 #ifndef AX_AVL_H
 #define AX_AVL_H
+#include "class.h"
 #include "map.h"
 
 #define AX_AVL_NAME AX_MAP_NAME ".avl"
@@ -33,10 +34,8 @@ typedef struct ax_avl_st ax_avl;
 
 extern const ax_map_trait ax_avl_tr;
 
-#define AX_CLASS_BASE_avl map
-#define AX_CLASS_ROLE_avl(_l) _l AX_CLASS_PTR(avl); AX_CLASS_ROLE_map(_l)
-
-AX_CLASS_STRUCT_ROLE(avl);
+#define ax_baseof_avl map
+ax_role(4, avl);
 
 extern const ax_map_trait ax_hmap_tr;
 
@@ -45,7 +44,7 @@ ax_map *__ax_avl_construct(
 		const ax_trait* val_tr
 );
 
-inline static AX_CLASS_CONSTRUCTOR(avl, const ax_trait* key_tr, const ax_trait* val_tr)
+inline static ax_class_constructor(avl, const ax_trait* key_tr, const ax_trait* val_tr)
 {
 	return __ax_avl_construct(key_tr, val_tr);
 }

@@ -34,13 +34,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "ax/class.h"
 #include "check.h"
 
 #define MIN_SIZE 16
 
-AX_CLASS_STRUCT_ENTRY(string)
+ax_begin_entry(string)
 	ax_buff_r buff_r;
-AX_END;
+ax_end;
 
 static void    citer_move(ax_citer *it, long i);
 static void    citer_prev(ax_citer *it);
@@ -85,6 +86,7 @@ static ax_dump*any_dump(const ax_any* any);
 static ax_any* any_copy(const ax_any* any);
 
 static void    one_free(ax_one* one);
+static const char *one_name(const ax_one *one);
 
 const ax_str_trait ax_string_tr;
 
@@ -256,6 +258,11 @@ static void one_free(ax_one* one)
 	ax_string *self = (ax_string *) one;
 	ax_one_free(self->buff_r.one);
 	free(one);
+}
+
+static const char *one_name(const ax_one *one)
+{
+	return ax_class_name(5, string);
 }
 
 static ax_dump *any_dump(const ax_any* any)
@@ -482,26 +489,26 @@ static ax_seq *str_split (const ax_str* str, const char ch)
 	char *buffer = ax_buff_ptr(buff);
 	char *cur = buffer, *head = buffer;
 
-	ax_vector_r ret_r = ax_class_new(vector, ax_t(str));
-	if (ret_r.one == NULL)
+	ax_vector_r ret = ax_new(vector, ax_t(str));
+	if (ret.one == NULL)
 		goto fail;
 
 	while (*cur) {
 		if (*cur == ch) {
 			char backup = *cur;
 			*cur = '\0';
-			if(ax_seq_push(ret_r.seq, head))
+			if(ax_seq_push(ret.seq, head))
 				goto fail;
 			*cur = backup;
 			head = cur + 1;
 		}
 		cur++;
 	}
-	if(ax_seq_push(ret_r.seq, head))
+	if(ax_seq_push(ret.seq, head))
 		goto fail;
-	return ret_r.seq;
+	return ret.seq;
 fail:
-	ax_one_free(ret_r.one);
+	ax_one_free(ret.one);
        return NULL;
 }
 
@@ -671,7 +678,7 @@ const ax_str_trait ax_string_tr =
 		.box = {
 			.any = {
 				.one = {
-					.name = AX_STRING_NAME,
+					.name = one_name,
 					.free = one_free,
 				},
 				.dump = any_dump,

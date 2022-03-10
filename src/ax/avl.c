@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  */
 
+#include "ax/class.h"
 #include "check.h"
 
 #include <ax/avl.h>
@@ -37,7 +38,7 @@
 
 #undef free
 
-AX_CLASS_STRUCT_ENTRY(avl)
+ax_begin_entry(avl)
 	struct node_st {
 		struct node_st *left;
 		struct node_st *right;
@@ -46,7 +47,7 @@ AX_CLASS_STRUCT_ENTRY(avl)
 		ax_byte kvbuffer[];
 	} *root;
 	size_t size;
-AX_END;	
+ax_end;	
 
 static void *map_put(ax_map* map, const void *key, const void *val, va_list *ap);
 static ax_fail map_erase(ax_map* map, const void *key);
@@ -64,6 +65,7 @@ static void box_clear(ax_box* box);
 static ax_dump *any_dump(const ax_any* any);
 static ax_any *any_copy(const ax_any* any);
 static void one_free(ax_one* one);
+static const char *one_name(const ax_one *one);
 static void citer_prev(ax_citer *it);
 static void citer_next(ax_citer *it);
 static bool citer_less(const ax_citer *it1, const ax_citer *it2);
@@ -583,7 +585,7 @@ static bool map_exist(const ax_map* map, const void *key)
 static const void *map_it_key(const ax_citer *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
-	CHECK_ITER_TYPE(it, AX_AVL_NAME);
+	CHECK_ITER_TYPE(it, __ax_avl_name);
 	const ax_map *map = it->owner;
 	return ax_trait_out(map->env.key_tr, node_key(it->point));
 }
@@ -595,6 +597,11 @@ static void one_free(ax_one* one)
 	ax_avl_r self = { .one = one };
 	box_clear(self.box);
 	free(one);
+}
+
+static const char *one_name(const ax_one *one)
+{
+	return ax_class_name(4, hmap);
 }
 
 static ax_dump *any_dump(const ax_any *any)
@@ -732,7 +739,7 @@ const ax_map_trait ax_avl_tr =
 	.box = {
 		.any = {
 			.one = {
-				.name  = AX_AVL_NAME,
+				.name  = one_name,
 				.free  = one_free,
 			},
 			.dump = any_dump,

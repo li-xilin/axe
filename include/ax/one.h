@@ -27,15 +27,14 @@
 #include "class.h"
 #include "flow.h"
 
-#define AX_ONE_NAME "one"
-
-#define ax_require(_one, _op) (ax_assert(_one, "NULL object is specified for ax_require"), ax_assert((_op), \
-		"operation for %s is required, but not implemented", \
-		((ax_one *)(_one))->tr->name))
+#define ax_require(_one, _op) ( \
+		ax_assert(_one, "NULL object is specified for ax_require"), \
+		ax_assert((_op), \
+			"operation for %s is required, but not implemented", \
+			((ax_one *)(_one))->tr->name) \
+)
 
 #define ax_null { .one = NULL }
-
-#define AX_CLASS_ROLE_one(_l) _l struct ax_one_st *one;
 
 #ifndef AX_ONE_DEFINED
 #define AX_ONE_DEFINED
@@ -48,38 +47,40 @@ typedef struct ax_one_st ax_one;
 			ax_one_multi_free(__ax_auto_vars + 1, ax_nelems(__ax_auto_vars) - 1), \
 				__ax_auto_vars[0] = NULL)
 
+#define ax_baseof_one
+
 typedef void (*ax_one_free_f) (ax_one *one);
+typedef const char *(*ax_one_name_f) (const ax_one *one);
 
-typedef struct ax_one_trait_st
-{
-	const char          *name;
-	const ax_one_free_f  free;
-} ax_one_trait;
+ax_begin_root_trait(one)
+	const ax_one_name_f name;
+	const ax_one_free_f free;
+ax_end;
 
-typedef struct ax_one_env_st
-{
+ax_begin_root_env(one)
 	struct {
 		ax_one *macro;
 		uintptr_t micro;
 	} scope;
-} ax_one_env;
+ax_end;
 
-AX_BLESS(one);
+ax_bless(0, one);
 
-static inline const char *ax_one_name(const ax_one *one)
+inline static const char *ax_one_name(const ax_one *one)
 {
 	ax_require(one, one->tr->name);
-	return one->tr->name;
+	return one->tr->name(one);
 }
 
-static inline void ax_one_free(ax_one *one) {
+inline static void ax_one_free(ax_one *one)
+{
 	if (!one) 
 		return;
 	ax_require(one, one->tr->free);
 	one->tr->free(one);
 }
 
-static inline ax_one_env *ax_one_envp(const ax_one *one)
+inline static ax_one_env *ax_one_envp(const ax_one *one)
 {
 	return (ax_one_env *)((char*)one + sizeof (ax_one_trait *));
 }

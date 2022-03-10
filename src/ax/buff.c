@@ -45,6 +45,7 @@ struct ax_buff_st
 static ax_any *any_copy(const ax_any *any);
 
 static void one_free(ax_one *one);
+static const char *one_name(const ax_one *one);
 
 static void one_free(ax_one *one)
 {
@@ -52,6 +53,11 @@ static void one_free(ax_one *one)
 		return;
 	free(((ax_buff *)one)->buf);
 	free(one);
+}
+
+static const char *one_name(const ax_one *one)
+{
+	return ax_class_name(4, buff);
 }
 
 static ax_any *any_copy(const ax_any *any)
@@ -106,7 +112,7 @@ static size_t mem_resize(const ax_buff *buff, size_t require)
 const ax_any_trait ax_buff_tr =
 {
 	.one = {
-		.name = AX_BUFF_NAME,
+		.name = one_name,
 		.free = one_free,
 	},
 	.copy = any_copy

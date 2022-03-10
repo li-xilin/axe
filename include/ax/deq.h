@@ -22,25 +22,23 @@
 
 #ifndef AX_DEQ_H
 #define AX_DEQ_H
+#include "class.h"
 #include "seq.h"
-
-#define AX_DEQ_NAME AX_SEQ_NAME ".deq"
 
 #ifndef AX_DEQ_DEFINED
 #define AX_DEQ_DEFINED
 typedef struct ax_deq_st ax_deq;
 #endif
 
-#define AX_CLASS_BASE_deq seq
-#define AX_CLASS_ROLE_deq(_l) _l AX_CLASS_PTR(deq); AX_CLASS_ROLE_seq(_l)
+#define ax_baseof_deq seq
 
-AX_CLASS_STRUCT_ROLE(deq);
+ax_role(4, deq);
 
 extern const ax_seq_trait ax_deq_tr;
 
 ax_seq *__ax_deq_construct(const ax_trait *elem_tr);
 
-inline static AX_CLASS_CONSTRUCTOR(deq, const ax_trait* trait)
+inline static ax_class_constructor(deq, const ax_trait* trait)
 {
 	return __ax_deq_construct(trait);
 }

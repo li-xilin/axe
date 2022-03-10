@@ -9,7 +9,7 @@ int main()
 {
 	uint32_t *p1 = malloc(sizeof *p1);
 	float *p2 = malloc(sizeof *p2);
-	ax_string_r s = ax_class_new0(string);
+	ax_string_r s = ax_new0(string);
 	ax_str_append(s.str, "a test string");
 
 	*p1 = 1;

@@ -30,12 +30,12 @@
 typedef struct axut_case_st axut_case;
 #endif
 
-#ifndef AXUT_RUNNER_DEFINED
-#define AXUT_RUNNER_DEFINED
-typedef struct axut_runner_st axut_runner;
+#ifndef AX_RUNNER_DEFINED
+#define AX_RUNNER_DEFINED
+typedef struct ax_runner_st ax_runner;
 #endif
 
-typedef void (*axut_case_proc_f)(axut_runner *runner);
+typedef void (*axut_case_proc_f)(ax_runner *runner);
 
 struct axut_case_st
 {

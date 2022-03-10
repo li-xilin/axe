@@ -47,11 +47,11 @@ struct node_st
 	ax_byte *val;
 };
 
-AX_CLASS_STRUCT_ENTRY(btrie)
+ax_begin_entry(btrie)
 	ax_avl_r root_r;
 	size_t size;
 	size_t capacity;
-AX_END;
+ax_end;
 
 static void    *trie_put(ax_trie *trie, const ax_seq *key, const void *val, va_list *ap);
 static void    *trie_get(const ax_trie *trie, const ax_seq *key);
@@ -80,6 +80,7 @@ static ax_any  *any_copy(const ax_any *any);
 static ax_dump *any_dump(const ax_any *any);
 
 static void     one_free(ax_one *one);
+static const char *one_name(const ax_one *one);
 
 static void     citer_prev(ax_citer *it);
 static void     citer_next(ax_citer *it);
@@ -97,6 +98,7 @@ static void rec_remove(ax_btrie *self, ax_map *map);
 inline static ax_btrie *iter_get_self(const ax_iter *it);
 
 static const ax_trait node_tr;
+
 
 inline static ax_btrie *iter_get_self(const ax_iter *it)
 {
@@ -212,6 +214,11 @@ static void one_free(ax_one *one)
 	box_clear(self_r.box);
 	ax_avl_tr.box.any.one.free(self_r.btrie->root_r.one);
 	free(one);
+}
+
+static const char *one_name(const ax_one *one)
+{
+	return ax_class_name(4, btrie);
 }
 
 static ax_dump *any_dump(const ax_any *any)
@@ -649,7 +656,7 @@ static ax_fail trie_rekey(ax_trie *trie, const ax_seq *key_from, const ax_seq *k
 static const void *trie_it_word(const ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, AX_AVL_NAME));
+	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
 
 	return ax_avl_tr.itkey(it);
 }
@@ -657,7 +664,7 @@ static const void *trie_it_word(const ax_citer *it)
 static ax_iter trie_it_begin(const ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, AX_AVL_NAME));
+	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
 
 	struct node_st *node = ax_avl_tr.box.iter.get(it);
 	ax_iter ret = ax_box_begin(node->submap_r.box);
@@ -668,7 +675,7 @@ static ax_iter trie_it_begin(const ax_citer *it)
 static ax_iter trie_it_end(const ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, AX_AVL_NAME));
+	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
 
 	struct node_st *node = ax_avl_tr.box.iter.get(it);
 	ax_iter ret = ax_box_end(node->submap_r.box);
@@ -679,7 +686,7 @@ static ax_iter trie_it_end(const ax_citer *it)
 static bool  trie_it_parent(const ax_citer *it, ax_iter *parent)
 {
 	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, AX_AVL_NAME));
+	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
 	UNSUPPORTED();
 
 	return false;
@@ -688,7 +695,7 @@ static bool  trie_it_parent(const ax_citer *it, ax_iter *parent)
 static bool trie_it_valued(const ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, AX_AVL_NAME));
+	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
 
 	struct node_st *node = ax_avl_tr.box.iter.get(it);
 	return !!node->val;
@@ -705,7 +712,7 @@ const ax_trie_trait ax_btrie_tr =
 	.box = {
 		.any = {
 			.one = {
-				.name = AX_BTRIE_NAME,
+				.name = one_name,
 				.free = one_free,
 			},
 			.dump = any_dump,
@@ -764,7 +771,7 @@ ax_trie *__ax_btrie_construct(const ax_trait *key_tr, const ax_trait *val_tr)
 		goto fail;
 	}
 
-	root = ax_class_new(avl, ax_t(nil), &node_tr).map;
+	root = ax_new(avl, ax_t(nil), &node_tr).map;
 	if (!root) {
 		goto fail;
 	}

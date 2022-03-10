@@ -27,7 +27,7 @@
 
 #include <stdlib.h>
 
-static void strsplit(axut_runner *r)
+static void strsplit(ax_runner *r)
 {
 	char str[] = "a|bb|ccc|dddd||e|";
 	char *next = str, *p;
@@ -49,7 +49,7 @@ static void strsplit(axut_runner *r)
 	axut_assert(r, p == NULL);
 }
 
-static void strrepl(axut_runner *r)
+static void strrepl(ax_runner *r)
 {
 	char *res = NULL;
 

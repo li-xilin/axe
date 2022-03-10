@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  */
 
+#include "ax/class.h"
 #include "check.h"
 
 #include <ax/rb.h>
@@ -41,7 +42,7 @@
 # define COLOR_SHIFT 63
 #endif
 
-AX_CLASS_STRUCT_ENTRY(rb)
+ax_begin_entry(rb)
 	struct node_st {
 		struct node_st *left, *right, *parent;
 #ifndef USE_AUGMENTED_PTR
@@ -51,7 +52,7 @@ AX_CLASS_STRUCT_ENTRY(rb)
 	} *root;
 size_t size;
 struct node_st *rightmost;
-AX_END;	
+ax_end;	
 
 #define COLOR_BLACK 0x0ull
 #define COLOR_RED   0x1ull
@@ -86,6 +87,7 @@ static void box_clear(ax_box* box);
 static ax_dump *any_dump(const ax_any* any);
 static ax_any *any_copy(const ax_any* any);
 static void one_free(ax_one* one);
+static const char *one_name(const ax_one *one);
 static void citer_prev(ax_citer *it);
 static void citer_next(ax_citer *it);
 static bool citer_less(const ax_citer *it1, const ax_citer *it2);
@@ -914,7 +916,7 @@ static bool map_exist(const ax_map* map, const void *key)
 static const void *map_it_key(const ax_citer *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
-	CHECK_ITER_TYPE(it, AX_RB_NAME);
+	CHECK_ITER_TYPE(it, __ax_rb_name);
 	const ax_map *map = it->owner;
 	return ax_trait_out(map->env.key_tr, node_key(it->point));
 }
@@ -926,6 +928,11 @@ static void one_free(ax_one* one)
 	ax_rb_r rb_r = { .one = one };
 	box_clear(rb_r.box);
 	free(one);
+}
+
+static const char *one_name(const ax_one *one)
+{
+	return ax_class_name(4, rb);
 }
 
 static ax_dump *any_dump(const ax_any *any)
@@ -1063,7 +1070,7 @@ const ax_map_trait ax_rb_tr =
 	.box = {
 		.any = {
 			.one = {
-				.name  = AX_RB_NAME,
+				.name  = one_name,
 				.free  = one_free,
 			},
 			.dump = any_dump,

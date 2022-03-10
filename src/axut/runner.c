@@ -21,6 +21,9 @@
  */
 
 #include "axut/runner.h"
+#include "ax/class.h"
+#include "ax/one.h"
+#include "ax/trait.h"
 #include "axut/suite.h"
 
 #include <ax/string.h>
@@ -38,9 +41,7 @@
 
 #include "check.h"
 
-struct axut_runner_st
-{
-	ax_one _one;
+ax_begin_entry(runner)
 	char *name;
 	axut_output_f output_cb;
 	ax_avl_r smap; // for removing suite
@@ -55,19 +56,25 @@ struct axut_runner_st
 	jmp_buf *jump_ptr;
 	axut_case *current;
 	void *arg;
-};
+ax_end;
 
-void axut_runner_destroy(axut_runner *r)
+void one_free(ax_one *one)
 {
-	if (!r)
+	if (!one)
 		return;
-	ax_one_free(r->smap.one);
-	ax_one_free(r->output.one);
-	ax_box_foreach(r->suites.box, axut_suite **, ptr) {
+	ax_runner_r self = { .one = one };
+	ax_one_free(self.runner->smap.one);
+	ax_one_free(self.runner->output.one);
+	ax_box_foreach(self.runner->suites.box, axut_suite **, ptr) {
 		axut_suite_destroy(*ptr);
 	}
-	ax_one_free(r->suites.one);
-	free(r);
+	ax_one_free(self.one);
+	free(self.one);
+}
+
+const char *one_name(const ax_one *one)
+{
+	return ax_class_name(1, runner);
 }
 
 static void default_output(const char *suite_name, axut_case *tc, ax_str *out)
@@ -88,59 +95,12 @@ static void default_output(const char *suite_name, axut_case *tc, ax_str *out)
 	}
 }
 
-axut_runner *axut_runner_create(axut_output_f output_cb)
-{
-	axut_runner *runner = NULL;
-	ax_avl_r smap = ax_null;
-	ax_vector_r suites = ax_null;
-	ax_string_r output = ax_null;
-
-	runner = malloc(sizeof(axut_runner));
-	if (!runner)
-		goto fail;
-
-	smap = ax_class_new(avl, ax_t(ptr), ax_t(ptr));
-	if (!smap.one)
-		goto fail;
-
-	suites = ax_class_new(vector, ax_t(ptr));
-	if (!suites.one)
-		goto fail;
-
-	output = ax_class_new0(string);
-	if (!output.one)
-		goto fail;
-
-	axut_runner runner_init = {
-		.statistic = {
-			.pass = 0,
-			.fail = 0,
-			.term = 0
-		},
-		.smap = smap,
-		.suites = suites,
-		.output = output,
-		.output_cb = output_cb ,
-		.current = NULL,
-		.arg = NULL
-	};
-	memcpy(runner, &runner_init, sizeof runner_init);
-
-	return runner;
-fail:
-	free(runner);
-	ax_one_free(suites.one);
-	ax_one_free(smap.one);
-	ax_one_free(output.one);
-	return NULL;
-}
-
-const char *axut_runner_result(const axut_runner *r)
+const char *axut_runner_result(const ax_runner *r)
 {
 	return ax_str_strz(r->output.str);
 }
 
-int axut_runner_summary(const axut_runner *r, int *pass, int *term)
+int axut_runner_summary(const ax_runner *r, int *pass, int *term)
 {
 	if (pass)
 		*pass = r->statistic.pass;
@@ -149,7 +109,7 @@ int axut_runner_summary(const axut_runner *r, int *pass, int *term)
 	return r->statistic.fail;
 }
 
-ax_fail axut_runner_add(axut_runner *r, axut_suite* s)
+ax_fail axut_runner_add(ax_runner *r, axut_suite* s)
 {
 	CHECK_PARAM_NULL(r);
 	CHECK_PARAM_NULL(s);
@@ -170,7 +130,7 @@ ax_fail axut_runner_add(axut_runner *r, axut_suite* s)
 	return false;
 }
 
-void axut_runner_remove(axut_runner *r, axut_suite* s)
+void axut_runner_remove(ax_runner *r, axut_suite* s)
 {
 	CHECK_PARAM_NULL(r);
 	CHECK_PARAM_NULL(s);
@@ -183,7 +143,7 @@ void axut_runner_remove(axut_runner *r, axut_suite* s)
 	ax_iter_erase(&last);
 }
 
-void axut_runner_run(axut_runner *r)
+void axut_runner_run(ax_runner *r)
 {
 	int case_count = 0, case_pass = 0;
 	axut_output_f output_cb = r->output_cb ? r->output_cb : default_output;
@@ -223,12 +183,12 @@ void axut_runner_run(axut_runner *r)
 	ax_str_sprintf(r->output.str, "PASS : %d / %d\n", case_pass, case_count);
 }
 
-void *axut_runner_arg(const axut_runner *r)
+void *axut_runner_arg(const ax_runner *r)
 {
 	return r->arg;
 }
 
-static void leave(axut_runner *r, axut_case_state cs, const char *file, int line, const char *fmt, va_list args)
+static void leave(ax_runner *r, axut_case_state cs, const char *file, int line, const char *fmt, va_list args)
 {
 	free(r->current->file);
 	r->current->file = ax_strdup(file);
@@ -250,7 +210,7 @@ static void leave(axut_runner *r, axut_case_state cs, const char *file, int line
 		longjmp(*r->jump_ptr, 2);
 }
 
-void __axut_assert(axut_runner *r, bool cond, const char *file, int line, const char *fmt, ...)
+void __axut_assert(ax_runner *r, bool cond, const char *file, int line, const char *fmt, ...)
 {
 	if (cond)
 		return;
@@ -260,28 +220,28 @@ void __axut_assert(axut_runner *r, bool cond, const char *file, int line, const 
 	va_end(args);
 }
 
-void __axut_assert_str_equal(axut_runner *r, const char *ex, const char *ac, const char *file, int line)
+void __axut_assert_str_equal(ax_runner *r, const char *ex, const char *ac, const char *file, int line)
 {
 	if (strcmp(ex, ac) == 0)
 		return;
 	__axut_fail(r, file, line, "assertion failed: expect '%s', but actually '%s'", ex, ac);
 }
 
-void __axut_assert_int_equal(axut_runner *r, int64_t ex, int64_t ac, const char *file, int line)
+void __axut_assert_int_equal(ax_runner *r, int64_t ex, int64_t ac, const char *file, int line)
 {
 	if (ex == ac)
 		return;
 	__axut_fail(r, file, line, "assertion failed: expect '%" PRId64 "', but actually '%" PRId64 "'", ex, ac);
 }
 
-void __axut_assert_uint_equal(axut_runner *r, uint64_t ex, uint64_t ac, const char *file, int line)
+void __axut_assert_uint_equal(ax_runner *r, uint64_t ex, uint64_t ac, const char *file, int line)
 {
 	if (ex == ac)
 		return;
 	__axut_fail(r, file, line, "assertion failed: expect '%" PRIu64 "', but actually '%" PRIu64 "'", ex, ac);
 }
 
-void __axut_fail(axut_runner *r, const char *file, int line, const char *fmt, ...)
+void __axut_fail(ax_runner *r, const char *file, int line, const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -289,11 +249,64 @@ void __axut_fail(axut_runner *r, const char *file, int line, const char *fmt, ..
 	va_end(args);
 }
 
-void __axut_term(axut_runner *r, const char *file, int line, const char *fmt, ...)
+void __axut_term(ax_runner *r, const char *file, int line, const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
 	leave(r, AXUT_CS_TERM, file, line, fmt, args);
 	va_end(args);
+}
+
+const ax_one_trait ax_runner_tr = {
+	.name = one_name,
+	.free = one_free,
+};
+
+ax_class_constructor(runner, axut_output_f output_cb)
+{
+	ax_runner *runner = NULL;
+	ax_avl_r smap = ax_null;
+	ax_vector_r suites = ax_null;
+	ax_string_r output = ax_null;
+
+	runner = malloc(sizeof(ax_runner));
+	if (!runner)
+		goto fail;
+
+	smap = ax_new(avl, ax_t(ptr), ax_t(ptr));
+	if (!smap.one)
+		goto fail;
+
+	suites = ax_new(vector, ax_t(ptr));
+	if (!suites.one)
+		goto fail;
+
+	output = ax_new0(string);
+	if (!output.one)
+		goto fail;
+
+	ax_runner runner_init = {
+		.one.tr = &ax_runner_tr,
+		.statistic = {
+			.pass = 0,
+			.fail = 0,
+			.term = 0
+		},
+		.smap = smap,
+		.suites = suites,
+		.output = output,
+		.output_cb = output_cb ,
+		.current = NULL,
+		.arg = NULL
+	};
+	memcpy(runner, &runner_init, sizeof runner_init);
+
+	return ax_r(runner, runner).one;
+fail:
+	free(runner);
+	ax_one_free(suites.one);
+	ax_one_free(smap.one);
+	ax_one_free(output.one);
+	return NULL;
 }
 

@@ -22,6 +22,7 @@
 
 #ifndef AX_BTRIE_H
 #define AX_BTRIE_H
+#include "class.h"
 #include "trie.h"
 
 #define AX_BTRIE_NAME AX_TRIE_NAME ".btrie"
@@ -31,16 +32,15 @@
 typedef struct ax_btrie_st ax_btrie;
 #endif
 
-#define AX_CLASS_BASE_btrie trie
-#define AX_CLASS_ROLE_btrie(_l) _l AX_CLASS_PTR(btrie); AX_CLASS_ROLE_trie(_l)
+#define ax_baseof_btrie trie
 
-AX_CLASS_STRUCT_ROLE(btrie);
+ax_role(4, btrie);
 
 extern const ax_trie_trait ax_btrie_tr;
 
 ax_trie *__ax_btrie_construct(const ax_trait* key_tr, const ax_trait* val_tr);
 
-inline static AX_CLASS_CONSTRUCTOR(btrie, const ax_trait* key_tr, const ax_trait* val_tr)
+inline static ax_class_constructor(btrie, const ax_trait* key_tr, const ax_trait* val_tr)
 {
 	return __ax_btrie_construct(key_tr, val_tr);
 }

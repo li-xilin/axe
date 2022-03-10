@@ -30,18 +30,18 @@
 #include <stdio.h>
 #include <string.h>
 
-static void create(axut_runner *r)
+static void create(ax_runner *r)
 {
-	ax_string_r str_r = ax_class_new0(string);
+	ax_string_r str_r = ax_new0(string);
 	axut_assert(r, str_r.any != NULL);
 	axut_assert(r, ax_box_size(str_r.box) == 0);
 	axut_assert(r, ax_str_length(str_r.str) == 0);
 	ax_one_free(str_r.one);
 }
 
-static void append(axut_runner *r)
+static void append(ax_runner *r)
 {
-	ax_string_r str_r = ax_class_new0(string);
+	ax_string_r str_r = ax_new0(string);
 	ax_str_append(str_r.str, "hello");
 	ax_str_append(str_r.str, " world");
 	axut_assert(r, strcmp(ax_str_strz(str_r.str), "hello world") == 0);
@@ -51,9 +51,9 @@ static void append(axut_runner *r)
 	ax_one_free(str_r.one);
 }
 
-static void split(axut_runner *r)
+static void split(ax_runner *r)
 {
-	ax_string_r str_r = ax_class_new0(string);
+	ax_string_r str_r = ax_new0(string);
 	ax_str_append(str_r.str, ":111:222::");
 	ax_seq_r ret = { .seq = ax_str_split(str_r.str, ':') };
 

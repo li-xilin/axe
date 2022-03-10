@@ -38,7 +38,7 @@
 	ax_assert((_it1)->tr == (_it2)->tr, "different direction for two iterators"); \
 }
 
-#define CHECK_ITER_TYPE(_it, _type) ax_assert(ax_one_is(it->owner, _type), "it->owner is not " _type);
+#define CHECK_ITER_TYPE(_it, _type) ax_assert(ax_one_is(it->owner, _type), "it->owner is not %s", _type);
 
 #define UNSUPPORTED() ax_assert(false, "trait unsupported");
 

@@ -19,21 +19,24 @@
 # THE SOFTWARE.
 
 DESTDIR ?= /usr/local
+MANDIR = $(DESTDIR)/share/man
 
 all debug clean:
 	$(MAKE) -C src/ax $@
 	$(MAKE) -C src/axut $@
 
 install:
-	install -m 755 -d $(DESTDIR)/lib $(DESTDIR)/include $(DESTDIR)/include/ax $(DESTDIR)/include/axut
+	install -m 755 -d $(DESTDIR)/lib $(DESTDIR)/include $(DESTDIR)/include/ax $(DESTDIR)/include/axut $(MANDIR)/man3
 	install -m 644 lib/libax.a lib/libaxut.a $(DESTDIR)/lib
 	install -m 644 include/ax.h $(DESTDIR)/include
 	install -m 644 include/ax/*.h $(DESTDIR)/include/ax
 	install -m 644 include/axut.h $(DESTDIR)/include
 	install -m 644 include/axut/*.h $(DESTDIR)/include/axut
+	install -m 644 man/man3/*.3 $(MANDIR)/man3
 
 uninstall:
 	$(RM) -r $(DESTDIR)/include/ax $(DESTDIR)/include/axut
 	$(RM) $(DESTDIR)/include/ax.h $(DESTDIR)/include/axut.h $(DESTDIR)/lib/libax.a $(DESTDIR)/lib/libaxut.a
+	$(RM) $(MANDIR)/share/man/man3/ax_*.3
 
 .PHONY: all debug clean install uninstall
