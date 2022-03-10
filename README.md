@@ -73,7 +73,7 @@ void oper_rmodd(void *out, const void *in, void *args)
 int main(void)
 {
 	/* 定义一个双链表 */
-	ax_list_r l = ax_class_new(list, ax_t(int));
+	ax_list_r l = ax_new(list, ax_t(int));
 
 	int *count = malloc(sizeof *count);
 
