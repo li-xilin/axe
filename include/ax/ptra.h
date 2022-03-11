@@ -38,29 +38,29 @@ ax_begin_trait(ptra)
 	void *(*reset)(ax_ptra* ptra, void *ptr);
 ax_end;
 
-ax_begin_env(ptra)
+ax_begin_data(ptra)
 	const ax_trait *const tr;
 	void *ptr;
 	size_t nref;
 ax_end;
 
-ax_bless(1, ptra);
+ax_concrete(1, ptra);
 
 inline static void *ax_ptra_get(ax_ptra* ptra)
 {
-	return ptra->env.ptr;
+	return ptra->ptr;
 }
 
 inline static void ax_ptra_reset(ax_ptra* ptra, void *ptr)
 {
-	ptra->env.tr->free(ptra->env.ptr);
-	ptra->env.ptr = ptr;
+	ptra->tr->free(ptra->ptr);
+	ptra->ptr = ptr;
 }
 
 static void ax_ptra_free(ax_ptra *ptra)
 {
-	ptra->env.tr->free(ptra->env.ptr);
-	ptra->env.ptr = NULL;
+	ptra->tr->free(ptra->ptr);
+	ptra->ptr = NULL;
 }
 
 static const char *ax_ptra_name(const ax_ptra *ptra)
@@ -68,21 +68,18 @@ static const char *ax_ptra_name(const ax_ptra *ptra)
 	return ax_class_name(1, ptra);
 }
 
-static const ax_ptra_trait ax_ptra_tr =
+static const ax_one_trait ax_ptra_tr =
 {
-	.one = {
-		.name = (ax_one_name_f)ax_ptra_name,
-		.free = (ax_one_free_f)ax_ptra_free,
-	},
-	.get = &ax_ptra_get,
+	.name = (ax_one_name_f)ax_ptra_name,
+	.free = (ax_one_free_f)ax_ptra_free,
 };
 
 #define __ax_ptra_construct2(_tr, _ptr) \
 	((struct ax_one_st *)(struct ax_ptra_st[1]) { \
-		 	[0].env.tr = (_tr), \
-			[0].tr = &ax_ptra_tr, \
-			[0].env.nref = 1, \
-			[0].env.ptr = _ptr, \
+			[0].one.tr = &ax_ptra_tr, \
+		 	[0].tr = (_tr), \
+			[0].nref = 1, \
+			[0].ptr = _ptr, \
 			})
 
 #define ax_onelize_2(_p, _f) \

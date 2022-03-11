@@ -47,7 +47,7 @@ ax_end;
 
 ax_begin_env(str) ax_end;
 
-ax_bless(4, str);
+ax_abstract(4, str);
 
 inline static ax_fail ax_str_append(ax_str* str, const char *s) {
 	ax_require(str, str->tr->append);

@@ -41,7 +41,7 @@
 
 #include "check.h"
 
-ax_begin_entry(runner)
+ax_begin_data(runner)
 	char *name;
 	axut_output_f output_cb;
 	ax_avl_r smap; // for removing suite

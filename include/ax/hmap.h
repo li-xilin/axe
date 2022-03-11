@@ -32,7 +32,7 @@ typedef struct ax_hmap_st ax_hmap;
 
 #define ax_baseof_hmap map
 
-ax_role(4, hmap);
+ax_concrete(4, hmap);
 
 extern const ax_map_trait ax_hmap_tr;
 

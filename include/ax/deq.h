@@ -32,7 +32,7 @@ typedef struct ax_deq_st ax_deq;
 
 #define ax_baseof_deq seq
 
-ax_role(4, deq);
+ax_concrete(4, deq);
 
 extern const ax_seq_trait ax_deq_tr;
 

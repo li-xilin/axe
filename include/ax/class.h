@@ -63,7 +63,7 @@
 	ax_begin_root_env(name) \
 		__AX_CLASS_ENV_STRUCT(ax_base_of(1, name)) ax_base_of(1, name);
 
-#define ax_begin_entry(name) \
+#define ax_begin_data(name) \
 	__AX_CLASS_ENTRY_STRUCT(name) { \
 		__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) ax_base_of(1, name);
 
@@ -75,7 +75,7 @@
 #define __AX_CLASS_DECLARE_VAR(const, name) const struct AX_CATENATE(ax_, name, _st) *name; 
 #define __AX_CLASS_ROLE_ITEM(n, const, name) __AX_CLASS_DECLARE_VAR(const, ax_base_of(n, name))
 
-#define ax_role(n, name) \
+#define __AX_CLASS_ROLE(n, name) \
 	typedef union \
 	{ \
 		AX_PAVE_TO(n, __AX_CLASS_ROLE_ITEM, const, name) \
@@ -88,7 +88,7 @@
 		__AX_CLASS_DECLARE_VAR(, name) \
 	} AX_CATENATE(ax_, name, _r)
 
-#define AX_CLASS_STRUCT_TMPL(name) \
+#define __AX_CLASS_ABSTRACT(name) \
 	__AX_CLASS_ENTRY_STRUCT(name) \
 	{ \
 		const __AX_CLASS_TRAIT_STRUCT(name) *const tr; \
@@ -98,37 +98,14 @@
 #define __AX_CLASS_NAME_ITEM(n, name) ax_stringy(ax_base_of(n, name)) "."
 #define ax_class_name(n, name) AX_PAVE_TO(n, __AX_CLASS_NAME_ITEM, name) ax_stringy(name)
 
-#define ax_bless(n, name) \
-	ax_role(n, name); \
-	AX_CLASS_STRUCT_TMPL(name)
+#define ax_abstract(n, name) \
+	__AX_CLASS_ROLE(n, name); \
+	__AX_CLASS_ABSTRACT(name)
+
+#define ax_concrete(n, name) \
+	__AX_CLASS_ROLE(n, name)
 
 #define ax_r(type, ptr) ((ax_##type##_r){ .type = ptr })
 #define ax_cr(type, ptr) ((ax_##type##_cr){ .type = ptr })
-
-/* To define a new class
- *
- * #include "object0.h"
- * 
- * #define AX_OBJECT1_NAME AX_OBJECT0_NAME ".object1"
- * 
- * #ifndef AX_LIST_DEFINED
- * #define AX_LIST_DEFINED
- * typedef struct ax_object1_st ax_object1;
- * #endif
- * 
- * #define AX_CLASS_BASE_object1 object0
- * #define AX_CLASS_ROLE_object1(_l) _l AX_CLASS_PTR(object1); AX_CLASS_ROLE_object0(_l)
- *
- * AX_BEGIN_TRAIT(object1)
- *     ...
- * AX_END;
- * 
- * AX_BEGIN_ENV(object1)
- *     ...
- * AX_END;
- * 
- * AX_BLESS(object1);
- * 
- */
 
 #endif

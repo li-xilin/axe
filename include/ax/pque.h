@@ -34,7 +34,7 @@ typedef struct ax_pque_st ax_pque;
 #endif
 
 #define ax_baseof_pque tube
-ax_role(3, pque);
+ax_concrete(3, pque);
 
 ax_class_constructor(pque, const ax_trait *tr);
 

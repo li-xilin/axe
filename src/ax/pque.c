@@ -37,7 +37,7 @@
 
 #undef free
 
-ax_begin_entry(pque)
+ax_begin_data(pque)
 	struct ax_heap_st heap;
 ax_end;
 

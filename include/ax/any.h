@@ -44,7 +44,7 @@ ax_begin_trait(any)
 	ax_dump *(*dump)(const ax_any* any);
 ax_end;
 
-ax_bless(1, any);
+ax_abstract(1, any);
 
 inline static ax_any *ax_any_copy(const ax_any* any)
 {

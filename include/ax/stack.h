@@ -32,7 +32,7 @@ typedef struct ax_stack_st ax_stack;
 #endif
 
 #define ax_baseof_stack tube
-ax_role(3, stack);
+ax_concrete(3, stack);
 
 ax_tube *__ax_stack_construct(const ax_trait *elem_tr);
 

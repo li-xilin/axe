@@ -34,7 +34,7 @@ typedef struct ax_btrie_st ax_btrie;
 
 #define ax_baseof_btrie trie
 
-ax_role(4, btrie);
+ax_concrete(4, btrie);
 
 extern const ax_trie_trait ax_btrie_tr;
 

@@ -42,7 +42,7 @@
 # define COLOR_SHIFT 63
 #endif
 
-ax_begin_entry(rb)
+ax_begin_data(rb)
 	struct node_st {
 		struct node_st *left, *right, *parent;
 #ifndef USE_AUGMENTED_PTR

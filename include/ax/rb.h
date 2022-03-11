@@ -36,7 +36,7 @@ extern const ax_map_trait ax_rb_tr;
 
 #define ax_baseof_rb map
 
-ax_role(4, rb);
+ax_concrete(4, rb);
 
 extern const ax_map_trait ax_hmap_tr;
 

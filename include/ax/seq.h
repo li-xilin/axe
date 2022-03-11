@@ -59,7 +59,7 @@ ax_begin_trait(seq)
 	const ax_seq_end_f   last;
 ax_end;
 
-ax_bless(3, seq);
+ax_abstract(3, seq);
 
 inline static ax_fail ax_seq_push(ax_seq *seq, const void *val)
 {

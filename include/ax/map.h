@@ -72,7 +72,7 @@ ax_begin_env(map)
 	const ax_trait *key_tr;
 ax_end;
 
-ax_bless(3, map);
+ax_abstract(3, map);
 
 inline static void *ax_map_put(ax_map *map, const void *key, const void *val)
 {

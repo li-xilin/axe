@@ -46,7 +46,7 @@ ax_begin_env(tube)
 	const ax_trait *const elem_tr;
 ax_end;
 
-ax_bless(2, tube);
+ax_abstract(2, tube);
 
 inline static ax_fail ax_tube_push(ax_tube *tube, const void *val)
 {

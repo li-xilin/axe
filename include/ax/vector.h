@@ -36,7 +36,7 @@ typedef struct ax_vector_st ax_vector;
 #define AX_CLASS_ROLE_vector(_l) _l AX_CLASS_PTR(vector); AX_CLASS_ROLE_seq(_l)
 
 #define ax_baseof_vector seq
-ax_role(4, vector);
+ax_concrete(4, vector);
 
 extern const ax_seq_trait ax_vector_tr;
 

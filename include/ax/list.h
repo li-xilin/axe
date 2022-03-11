@@ -34,7 +34,7 @@ typedef struct ax_list_st ax_list;
 
 #define ax_baseof_list seq
 
-ax_role(4, list);
+ax_concrete(4, list);
 
 extern const ax_seq_trait ax_list_tr;
 

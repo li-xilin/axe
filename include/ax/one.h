@@ -64,7 +64,7 @@ ax_begin_root_env(one)
 	} scope;
 ax_end;
 
-ax_bless(0, one);
+ax_abstract(0, one);
 
 inline static const char *ax_one_name(const ax_one *one)
 {

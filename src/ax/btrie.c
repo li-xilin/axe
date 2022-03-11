@@ -47,7 +47,7 @@ struct node_st
 	ax_byte *val;
 };
 
-ax_begin_entry(btrie)
+ax_begin_data(btrie)
 	ax_avl_r root_r;
 	size_t size;
 	size_t capacity;

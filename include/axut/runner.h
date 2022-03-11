@@ -44,7 +44,7 @@ typedef struct axut_case_st axut_case;
 #endif
 
 #define ax_baseof_runner one
-ax_role(1, runner);
+ax_concrete(1, runner);
 
 typedef void (*axut_output_f)(const char* suite_name, axut_case *tc, ax_str *out);
 

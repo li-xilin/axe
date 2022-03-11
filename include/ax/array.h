@@ -33,12 +33,12 @@ typedef struct ax_array_st ax_array;
 
 #define ax_baseof_array seq
 
-ax_begin_entry(array)
+ax_begin_data(array)
 	size_t size;
 	void *array;
 ax_end;
 
-ax_role(4, array);
+ax_concrete(4, array);
 
 extern const ax_seq_trait ax_array_tr;
 

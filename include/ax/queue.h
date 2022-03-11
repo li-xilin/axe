@@ -34,7 +34,7 @@ typedef struct ax_queue_st ax_queue;
 
 #define ax_baseof_queue tube
 
-ax_role(3, queue);
+ax_concrete(3, queue);
 
 ax_tube *__ax_queue_construct(const ax_trait *elem_tr);
 

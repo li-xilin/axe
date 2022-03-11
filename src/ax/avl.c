@@ -38,7 +38,7 @@
 
 #undef free
 
-ax_begin_entry(avl)
+ax_begin_data(avl)
 	struct node_st {
 		struct node_st *left;
 		struct node_st *right;

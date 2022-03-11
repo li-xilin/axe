@@ -58,7 +58,7 @@ struct bucket_st
 	struct bucket_st *next;
 };
 
-ax_begin_entry(hmap)
+ax_begin_data(hmap)
 	size_t size;
 	size_t buckets;
 	size_t threshold;

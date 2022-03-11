@@ -86,7 +86,7 @@ ax_begin_env(box)
 	const ax_trait *const elem_tr;
 ax_end;
 
-ax_bless(2, box);
+ax_abstract(2, box);
 
 static inline size_t ax_box_size(const ax_box* box)
 {

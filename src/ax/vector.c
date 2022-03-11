@@ -42,7 +42,7 @@
 
 #define MIN_SIZE
 
-ax_begin_entry(vector)
+ax_begin_data(vector)
 	ax_buff *buff;
 ax_end;
 

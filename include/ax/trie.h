@@ -60,7 +60,7 @@ ax_begin_env(trie)
 	const ax_trait *key_tr;
 ax_end;
 
-ax_bless(3, trie);
+ax_abstract(3, trie);
 
 inline static void *ax_trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 {

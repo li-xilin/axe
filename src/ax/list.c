@@ -42,7 +42,7 @@ struct node_st
 	ax_byte data[];
 };
 
-ax_begin_entry(list)
+ax_begin_data(list)
 	struct node_st *head;
 	size_t size;
 	size_t capacity;

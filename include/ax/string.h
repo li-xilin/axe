@@ -32,7 +32,7 @@ typedef struct ax_string_st ax_string;
 #endif
 
 #define ax_baseof_string str
-ax_role(5, string);
+ax_concrete(5, string);
 
 ax_str *__ax_string_construct();
 

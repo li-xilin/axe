@@ -42,7 +42,7 @@ typedef struct ax_buff_st ax_buff;
 
 
 #define ax_baseof_buff any
-ax_role(2, buff);
+ax_concrete(2, buff);
 
 extern const ax_any_trait ax_buff_tr;
 

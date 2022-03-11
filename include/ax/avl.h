@@ -35,7 +35,7 @@ typedef struct ax_avl_st ax_avl;
 extern const ax_map_trait ax_avl_tr;
 
 #define ax_baseof_avl map
-ax_role(4, avl);
+ax_concrete(4, avl);
 
 extern const ax_map_trait ax_hmap_tr;
 

@@ -18,7 +18,7 @@ ax_begin_trait(sharp)
 	float (*side_length)(const struct ax_sharp_st *sharp);
 ax_end;
 
-ax_bless(2, sharp);
+ax_abstract(2, sharp);
 
 inline static float ax_sharp_area(const struct ax_sharp_st *sharp)
 {
@@ -31,11 +31,14 @@ inline static float ax_sharp_side_length(const struct ax_sharp_st *sharp)
 }
 
 /* -- Class base on sharp -- */
+
 #define ax_baseof_circle sharp
-ax_begin_entry(circle)
+
+ax_begin_data(circle)
 	float radius;
 ax_end;
-ax_role(3, circle);
+
+ax_concrete(3, circle);
 
 static void one_free(ax_one *one);
 static ax_dump *any_dump(const ax_any *any);
