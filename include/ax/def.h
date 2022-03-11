@@ -52,20 +52,6 @@ typedef uint_fast32_t ax_fast_uint;
 #define ax_align(_size, _align) \
 	((ax_cast(size_t, _size) + n - 1) / ax_cast(size_t, _align) * (_align))
 
-#define __AX_OVERLOAD_N1(sym, n, ...) sym##n(__VA_ARGS__)
-#define __AX_OVERLOAD_N(sym, n, ...) __AX_OVERLOAD_N1(sym, n, __VA_ARGS__)
-#define AX_OVERLOAD(sym, ...) __AX_OVERLOAD_N(sym, AX_NARG(__VA_ARGS__), __VA_ARGS__)
-
-#define AX_CATENATE_8(a1, a2, a3, a4, a5, a6, a7, a8) a1##a2##a3##a4##a5##a6##a7##a8
-#define AX_CATENATE_7(a1, a2, a3, a4, a5, a6, a7) a1##a2##a3##a4##a5##a6##a7
-#define AX_CATENATE_6(a1, a2, a3, a4, a5, a6) a1##a2##a3##a4##a5##a6
-#define AX_CATENATE_5(a1, a2, a3, a4, a5) a1##a2##a3##a4##a5
-#define AX_CATENATE_4(a1, a2, a3, a4) a1##a2##a3##a4
-#define AX_CATENATE_3(a1, a2, a3) a1##a2##a3
-#define AX_CATENATE_2(a1, a2) a1##a2
-#define AX_CATENATE_1(a1) a1
-#define AX_CATENATE(...) AX_OVERLOAD(AX_CATENATE_, __VA_ARGS__)
-
 #define __ax_stringy(_x) #_x
 #define ax_stringy(_x) __ax_stringy(_x)
 

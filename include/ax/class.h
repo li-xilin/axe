@@ -23,15 +23,14 @@
 #ifndef AX_CLASS_H
 #define AX_CLASS_H
 
-#include "def.h"
-#include "macro.h"
+#include "trick.h"
 
 #define __AX_CLASS_ENTRY_STRUCT(name) struct AX_CATENATE(ax_, name, _st)
 #define __AX_CLASS_TRAIT_STRUCT(name) struct AX_CATENATE(ax_, name, _trait_st)
 #define __AX_CLASS_ENV_STRUCT(name) struct AX_CATENATE(ax_, name, _env_st)
 
 #define ax_class_new_n(_n, name, ...) \
-	(ax_##name##_r) { .ax_base_of(1, name) = AX_CATENATE_4(__ax_, name, _construct, _n)(__VA_ARGS__) }
+	(ax_##name##_r) { .ax_base_of(1, name) = __AX_CATENATE_4(__ax_, name, _construct, _n)(__VA_ARGS__) }
 
 #define ax_new0(name) \
 	ax_class_new_n(0, name, )
@@ -70,22 +69,22 @@
 
 #define ax_end }
 
-#define __ax_base_of(n, name) __AX_MACRO_EXPAND_##n(ax_baseof_, name)
+#define __ax_base_of(n, name) __AX_PREFIX_TO_##n(ax_baseof_, name)
 #define ax_base_of(n, name) __ax_base_of(n, name)
 
-#define __AX_CLASS_DECLARE_VAR(const, name) const struct AX_CATENATE_3(ax_, name, _st) *name; 
+#define __AX_CLASS_DECLARE_VAR(const, name) const struct AX_CATENATE(ax_, name, _st) *name; 
 #define __AX_CLASS_ROLE_ITEM(n, const, name) __AX_CLASS_DECLARE_VAR(const, ax_base_of(n, name))
 
 #define ax_role(n, name) \
 	typedef union \
 	{ \
-		AX_MACRO_PAVE(n, __AX_CLASS_ROLE_ITEM, const, name) \
+		AX_PAVE_TO(n, __AX_CLASS_ROLE_ITEM, const, name) \
 		__AX_CLASS_DECLARE_VAR(const,  name) \
 	} AX_CATENATE(ax_, name, _cr); \
 	\
 	typedef union \
 	{ \
-		AX_MACRO_PAVE(n, __AX_CLASS_ROLE_ITEM, , name) \
+		AX_PAVE_TO(n, __AX_CLASS_ROLE_ITEM, , name) \
 		__AX_CLASS_DECLARE_VAR(, name) \
 	} AX_CATENATE(ax_, name, _r)
 
@@ -97,7 +96,7 @@
 	}
 
 #define __AX_CLASS_NAME_ITEM(n, name) ax_stringy(ax_base_of(n, name)) "."
-#define ax_class_name(n, name) AX_MACRO_PAVE(n, __AX_CLASS_NAME_ITEM, name) ax_stringy(name)
+#define ax_class_name(n, name) AX_PAVE_TO(n, __AX_CLASS_NAME_ITEM, name) ax_stringy(name)
 
 #define ax_bless(n, name) \
 	ax_role(n, name); \

@@ -1,4 +1,5 @@
 #include "ax/def.h"
+#include "ax/trick.h"
 #include <stdlib.h>
 #include <string.h>
 

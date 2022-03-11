@@ -24,6 +24,7 @@
 
 #include "../mem.h"
 #include "../debug.h"
+#include "../trick.h"
 
 #define __AX_HEAP_PAGE_SIZE  4096
 
