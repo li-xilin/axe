@@ -916,7 +916,7 @@ static bool map_exist(const ax_map* map, const void *key)
 static const void *map_it_key(const ax_citer *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
-	CHECK_ITER_TYPE(it, __ax_rb_name);
+	CHECK_ITER_TYPE(it, one_name(NULL));
 	const ax_map *map = it->owner;
 	return ax_trait_out(map->env.key_tr, node_key(it->point));
 }
