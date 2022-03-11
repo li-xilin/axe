@@ -23,9 +23,7 @@
 #ifndef AX_DEF_H
 #define AX_DEF_H
 
-#include "narg.h"
 #include "arraya.h"
-#include "flow.h"
 
 #include <stdint.h>
 #include <stddef.h>

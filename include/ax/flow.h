@@ -23,6 +23,10 @@
 #ifndef AX_FLOW_H
 #define AX_FLOW_H
 
+#include "def.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #define ax_block for(register int __ax_block_flag = 0; __ax_block_flag != 1; __ax_block_flag = 1)
 
 #define ax_repeat(_n) for(size_t _ = 0; _ != (_n); _++)
