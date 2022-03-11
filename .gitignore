@@ -11,3 +11,4 @@ test/test.exe
 compile_commands.json
 *.swp
 .cache
+test/t_all
