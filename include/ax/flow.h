@@ -49,4 +49,22 @@
 		_ != __ax_forrange_end; \
 		_ += __AX_FORRANGE_STEP(__VA_ARGS__))
 
+#define __AX_SEGMENT_LABEL_ENTER(name, n) __ax_segment_enter_##name##_##n
+#define __AX_SEGMENT_LABEL_LEAVE(name, n) __ax_segment_leave_##name##_##n
+#define __AX_SEGMENT_CONTEXT_NAME(name) struct __ax_segment_context_##name
+
+#define __AX_SEGMENT_CASE(n, name) \
+		__AX_SEGMENT_LABEL_ENTER(name, n): \
+			if ( __ax_segment_no == n || (!__ax_segment_no && ((__ax_segment_no = n), 0)) ) { \
+				__ax_segment_no=0; goto __AX_SEGMENT_LABEL_LEAVE(name, n); \
+			} else
+
+#define ax_segment(name, n) \
+	for (register int __ax_segment_no = 0; __ax_segment_no ; ) \
+		AX_PAVE_TO(n, __AX_SEGMENT_CASE, name)
+
+#define ax_segment_do(name, n) \
+	goto __AX_SEGMENT_LABEL_ENTER(name, n); \
+	__AX_SEGMENT_LABEL_LEAVE(name, n):;
+
 #endif
