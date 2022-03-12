@@ -132,5 +132,5 @@ int main(void)
 
 ## AUTHOR
 
-李希林 <lihsilyn@gmailcom>
+李希林 <lihsilyn@gmail.com>
 
