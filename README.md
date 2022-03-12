@@ -1,60 +1,27 @@
-# Axe #
+![AXE](./logo.png)
 
-Axe 是一个容器库，他包含了通用容器和算法，可以有效简化对数据的封装。
+![](https://img.shields.io/badge/build-passing-green) ![](https://img.shields.io/badge/license-MIT-red) ![](https://img.shields.io/badge/language-C-purple)
 
-该工程包括两个模块：AX 和 AXUT
+---
 
-AX包含容器、算法和迭代器等基本模块，头文件包括：
+AXE是 一个面向C语言的工具函数库，包含了通用容器和算法，可以很大程度简化C程序的开发.
 
-| 名称          | 描述 |
-|---            |---   |
-| ax/def.h      | 基础类型定义和宏定义 |
-| ax/flow.h     | 程序流程控制结构 |
-| ax/narg.h     | 用于参数个数计算的辅助宏 |
-| ax/debug.h    | 可打印消息说明的断言函数 |
-| ax/arraya.h   | 匿名数组 |
-| ax/oper.h     | C语言运算符的函数封装 |
-| ax/dump.h     | 容器的可视化转储，用于调试 |
-| ax/log.h      | 日志打印 |
-| ax/pred.h     | 谓词对象创建和参数绑定 |
-| ax/arch.h     | 机器架构宏定义 |
-| ax/trait.h    | 类型特性，用于定义容器中元素支持的操作 |
-| ax/iter.h     | 迭代器操作 |
-| ax/algo.h     | 一些基于迭代器的算法 |
-| ax/mem.h      | 内存和串的操作 |
-| ax/uintk.h    | 1024位无符号整数操作 |
-| ax/one.h      | 根类型 |
-| ax/any.h      | 可序列化对象抽象 |
-| ax/box.h      | 可迭代容器抽象 |
-| ax/seq.h      | 线性表抽象 |
-| ax/str.h      | 字符串抽象 |
-| ax/map.h      | 映射表抽象 |
-| ax/trie.h     | 字典树抽象 |
-| ax/tube.h     | 单进单出管道抽象 |
-| ax/arr.h      | 静态数组的封装 |
-| ax/vector.h   | 向量标，支持随机访问，并自动管理内存 |
-| ax/deq.h      | 双端队列，可以从两端压入和弹出元素，支持随机访问 |
-| ax/list.h     | 双链表，支持快速插入、移除元素 |
-| ax/hmap.h     | 散列表，一种无序的映射表，常数时间的增删查和更新操作 |
-| ax/avl.h      | 自平衡树，一种有序的映射表，对数时间的增删查和更新操作 |
-| ax/rb.h       | 红黑树，与自平衡树类似，但是元素查找操作效率更高 |
-| ax/string.h   | 字符串 |
-| ax/btrie.h    | 平衡字典树 |
-| ax/queue.h    | 队列，一种先进先出容器 |
-| ax/stack.h    | 栈，一种后进先出容器 |
-| ax/pque.h     | 优先队列，根据元素优先级弹出元素的特殊队列容器 |
+## COMPILE AND INSTALL
 
-AXUT 用于单元测试，头文件包括：
+该函数库可以使用 *make*(1)编译和安装，使用`make debug`将函数库编译为调试版本，安装程序会将头文件、库文件和手册页文件正确复制到系统的特定目录中.
 
-| 名称          | 描述 |
-|---            |---   |
-| axut/case.h   | 测试用例结构定义 |
-| axut/suite.h  | 测试用例集合 |
-| axut/runner.h | 测试用例的执行和结果统计 |
+```
+$ cd axe
+$ make
+$ sudo make install
+```
 
-下面是一个简单的例子
+## HOW TO USE
+
+您可以直接通过引入相关头文件来使用它们的功能，下面是一个样例程序，这其中包括一些有趣的特性，比如链表、迭代器算法、RAII、对象转储和容器遍历等操作. 在编译客户程序时需要通过加入编译参数`-lax`或`-laxut`来连接相关的库文件. 详细的帮助文档请参考MAN手册页，它们位于工程目录的 *man/man3* 目录下，或参考单元测试程序和附带的样例程序，它们分别位于工程目录的 *test* 和 *sample* 目录. 
 
 ```c
+/* gcc foo.c -lax */
 #include "ax/algo.h" /* 引入算法函数 */
 #include "ax/list.h" /* 引入双连表 */
 #include "ax/ptra.h" /* 引入自动指针 */
@@ -113,3 +80,57 @@ int main(void)
 	return 0;
 }
 ```
+
+## HEADERS DESCRIPTION
+
+| 名称          | 描述 |
+|---            |---   |
+| ax/def.h      | 基础类型定义和宏定义 |
+| ax/flow.h     | 程序流程控制结构 |
+| ax/trick.h    | 低级辅助宏，用于宏定义 |
+| ax/narg.h     | 参数个数计算的辅助宏 |
+| ax/sys.h      | 操作系统探测宏 |
+| ax/arch.h     | 硬件架构探测宏 |
+| ax/debug.h    | 可打印消息说明的断言函数 |
+| ax/arraya.h   | 匿名数组 |
+| ax/oper.h     | C语言运算符的函数封装 |
+| ax/dump.h     | 容器的可视化转储，用于调试 |
+| ax/log.h      | 日志打印 |
+| ax/pred.h     | 谓词对象创建和参数绑定 |
+| ax/trait.h    | 类型特性，用于定义容器中元素支持的操作 |
+| ax/iter.h     | 迭代器操作 |
+| ax/algo.h     | 一些基于迭代器的算法 |
+| ax/mem.h      | 内存和串的操作 |
+| ax/uintk.h    | 1024位无符号整数操作 |
+| ax/one.h      | 根类型 |
+| ax/any.h      | 可序列化对象抽象 |
+| ax/box.h      | 可迭代容器抽象 |
+| ax/seq.h      | 线性表抽象 |
+| ax/str.h      | 字符串抽象 |
+| ax/map.h      | 映射表抽象 |
+| ax/trie.h     | 字典树抽象 |
+| ax/tube.h     | 单进单出管道抽象 |
+| ax/arr.h      | 静态数组的封装 |
+| ax/vector.h   | 向量标，支持随机访问，并自动管理内存 |
+| ax/deq.h      | 双端队列，可以从两端压入和弹出元素，支持随机访问 |
+| ax/list.h     | 双链表，支持快速插入、移除元素 |
+| ax/hmap.h     | 散列表，一种无序的映射表，常数时间的增删查和更新操作 |
+| ax/avl.h      | 自平衡树，一种有序的映射表，对数时间的增删查和更新操作 |
+| ax/rb.h       | 红黑树，与自平衡树类似，但是元素查找操作效率更高 |
+| ax/string.h   | 字符串 |
+| ax/btrie.h    | 平衡字典树 |
+| ax/queue.h    | 队列，一种先进先出容器 |
+| ax/stack.h    | 栈，一种后进先出容器 |
+| ax/pque.h     | 优先队列，根据元素优先级弹出元素的特殊队列容器 |
+| axut/case.h   | 测试用例结构定义 |
+| axut/suite.h  | 测试用例集合 |
+| axut/runner.h | 测试用例的执行和结果统计 |
+
+## LICENSE
+
+该软件程序基于MIT协议发布.
+
+## AUTHER
+
+李希林 <lihsilyn@gmailcom>
+
