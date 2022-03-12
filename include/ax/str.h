@@ -83,10 +83,10 @@ inline static ax_str *ax_str_substr(const ax_str* str, size_t start, size_t len)
 	return str->tr->substr(str, start, len);
 }
 
-inline static ax_seq  *ax_str_split(const ax_str* str, const char ch)
+inline static ax_seq_r ax_str_split(const ax_str* str, const char ch)
 {
 	ax_require(str, str->tr->split);
-	return str->tr->split(str, ch);
+	return ax_r(seq, str->tr->split(str, ch));
 }
 
 inline static ax_fail ax_str_sprintf(ax_str* str, const char* fmt, ...)
