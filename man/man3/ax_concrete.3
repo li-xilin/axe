@@ -1,0 +1,52 @@
+.TH "ax_concrete" 3 "Mar 9 2022" "axe"
+
+.SH NAME
+ax_class_constructor, ax_class_constructor0, ax_begin_data, ax_concrete \- 一组用于定义实体类型和构造器函数的宏
+
+.SH SYNOPSIS
+.EX
+#include <ax/class.h>
+
+ax_class_constructor0(name) [macro]
+
+ax_class_constructor(name, ...) [macro]
+
+ax_begin_data(name) ... ax_end [macro]
+
+ax_concrete(n, name) [macro]
+
+.EE
+
+.SH DESCRIPTION
+该组宏函数用于定义实体类型和相应的构造器函数，不同于抽象类型，实体类型只需要定义数据集(data)，而不必定义特性集(trait)和环境集(env)，因为它通过继承来获得这些信息. 定义一个实体类型需要以下工作：
+.TP
+1. 
+通过定义\fBax_baseof_*\fP宏，确定类型需要继承的抽象类型
+.br
+例如，\fBax_foo\fP实体类型继承自\fBax_bar\fP抽象类型的定义为：
+.br
+#define ax_baseof_foo bar
+.TP
+2.
+通过\fBax_concrete\fP宏引入类型角色等完整实体类型定义.
+.TP
+3.
+通过 \fBax_begin_data\fP(3)引入实体类型的结构体声明，并定义类型的成员数据变量.
+
+.SS ax_class_constructor(3)
+定义可重载的多参数构造器函数，重载的目标由不同的参数个数来区分. 该宏函树需要指定\fIname\fP作为类型描述，以及指定一个以上的构造参数，如果没有构造参数，使用\fBax_class_constructor0\fP(3)来代替.
+
+.SS ax_class_constructor0(3)
+和\fBax_class_constructor\fP(3)具有同样的功能，但提供对无参数构造函数定义的支持.
+
+.SS ax_begin_data(3)
+定义类型的结构体成员变量，使用\fBax_end\fP结束该声明
+
+.SS ax_concrete(3)
+该宏函数用于定义一个实体类.
+
+.SH SEE ALSO
+\fBax_abstract\fP(3)
+
+.SH AUTHOR
+李希林 <lixilin@mail.ru>

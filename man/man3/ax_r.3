@@ -1,0 +1,38 @@
+.TH "ax_r" 3 "Mar 9 2022" "axe"
+
+.SH NAME
+ax_r, ax_cr, ax_class_name, ax_base_of \- 类型基本操作，类型信息和强制类型转换
+
+.SH SYNOPSIS
+.EX
+#include <ax/class.h>
+
+ax_r(name, ptr) [macro]
+
+ax_cr(name, ptr) [macro]
+
+ax_base_of(n, name) [macro]
+
+ax_class_name(n, name) [macro]
+
+.EE
+
+.SH DESCRIPTION
+
+.SS ax_r(3)
+该宏函数可以转化一个对象指针类型到兼容的角色类型.
+
+.SS ax_cr(3)
+该宏函数可以转化一个对象指针类型到兼容的常角色类型，角色指向的对象不可更改.
+
+.SS ax_base_of(3)
+获取一个类型的父类，\fIname\fP指定了类型名，参数\fIn\fP指定了从当前类\fIname\fP开始的父类的层级，当\fIn\fP为1时，将获取该类的直接父类.
+
+.SS ax_class_name(3)
+获取类的名称描述，参数\fIname\fP指定类型名，参数\fIn\fP指定该类型的基类个数，返回形如"foo.bar.baz"的由点分割各个继承的类型名的字符串.
+
+.SH SEE ALSO
+\fBax_concrete\fP(3) \fBax_abstract\fP(3) \fBax_new\fP(3)
+
+.SH AUTHOR
+李希林 <lixilin@mail.ru>

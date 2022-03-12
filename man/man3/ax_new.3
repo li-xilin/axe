@@ -1,18 +1,31 @@
-.TH "ax_one" 3 "Mar 9 2022" "axe"
+.TH "ax_new" 3 "Mar 9 2022" "axe"
 
 .SH NAME
-ax_new, ax_new0 \- 创建AXE对象
+ax_new, ax_new0 \- 实例化AXE对象.
 
 .SH SYNOPSIS
 .EX
 #include <ax/class.h>
 
+ax_new0(name) [macro]
+
+ax_new(name, ...) [macro]
+
 .EE
 
 .SH DESCRIPTION
+.SS ax_new(3)
+该宏可调用由\fBax_class_constructor\fP(3)定义的构造函数. \fIname\fP参数指定了要调用的构造函数名称. 该宏实现了重载功能，可以根据指定的不同构造参数个数来选择不同的构造函数.
+
+.SS ax_new0(3)
+该宏可调用由\fBax_class_constructor0\fP(3)定义的无参数构造函数.
+
+.SH RETURN VALUE
+
+宏\fBax_new\fP(3)和\fBax_new0\fP(3)均返回角色类型，如果执行构造失败，则角色的所有对象指针全部为NULL，角色类型用来支持安全的类型转化，参考\fBax_role\fP(3).
 
 .SH SEE ALSO
-\fBax_one\fP(3)
+\fBax_role\fP(3) \fBax_class_constructor\fP(3)
 
 .SH AUTHOR
 李希林 <lixilin@mail.ru>

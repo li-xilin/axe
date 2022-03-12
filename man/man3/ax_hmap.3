@@ -1,0 +1,43 @@
+.TH "ax_hmap" 3 "Mar 9 2022" "axe"
+
+.SH NAME
+ax_hmap \- 散列表表实体类型.
+
+.SH SYNOPSIS
+.EX
+#include <ax/hmap.h>
+
+继承自 \fBax_map\fP
+
+typedef struct ax_hmap_st ax_hmap
+
+ax_hmap_r ax_new(hmap, const ax_trait* key_tr, const ax_trait* val_tr) [macro]
+
+ax_fail ax_hmap_set_threshold(ax_hmap *hmap, size_t threshold)
+
+size_t ax_hmap_threshold(ax_hmap *hmap)
+
+ax_fail ax_hmap_rehash(ax_hmap *hmap, size_t nbucket)
+.EE
+
+.SH DESCRIPTION
+
+\fBax_hmap\fP类型是对散列表的实现，支持正向迭代器，但不支持反向迭代器.
+
+.SS 实例化
+该类型支持二参数的构造函数，\fIkey_tr\fP指定键数据类型的特性，\fIval_tr\fP指定值数据类型的特性.
+
+.SS ax_hmap_set_threshold(3)
+设置散列表重分配阈值，当每个桶的平均元素数量大于\fIthreshold\fP时，散列表将进行重散列，以将每个桶的元素平均个数降低到\fIthreshold\fP以下.
+
+.SS ax_hmap_threshold(3)
+获取散列表容器的重分配阈值，参考\fBax_hmap_set_threshold\fP(3).
+
+.SS ax_hmap_rehash(3)
+对散列表执行散列操作，\fInbucket\fP指定了散列后桶的数量.
+
+.SH SEE ALSO
+\fBax_map\fP(3) \fBax_trait\fP(3)
+
+.SH AUTHOR
+李希林 <lixilin@mail.ru>

@@ -4,41 +4,43 @@
 ax_map \- 支持键值映射的容器类型接口抽象\&.
 
 .SH SYNOPSIS
+.EX
 #include <ax/map.h>
-.PP
+
 typedef struct ax_map_st ax_map;
-.PP
+
 继承自 \fBax_box\fP
-.PP
+
 void *ax_map_put(ax_map *map, const void *key, const void *val);
-.PP
+
 void *ax_map_iput(ax_map *map, const void *key, ...);
-.PP
+
 ax_fail ax_map_erase(ax_map *map, const void *key);
-.PP
+
 void *ax_map_get(ax_map *map, const void *key);
-.PP
+
 ax_iter ax_map_at(ax_map *map, const void *key);
-.PP
+
 ax_citer ax_map_cat(const ax_map *map, const void *key);
-.PP
+
 void *ax_map_cget(const ax_map *map, const void *key);
-.PP
+
 bool ax_map_exist(const ax_map *map, const void *key);
-.PP
+
 void *ax_map_chkey(ax_map *map, const void *key, const void *new_key);
-.PP
+
 const void *ax_map_citer_key(const ax_citer *it);
-.PP
+
 void *ax_map_iter_key(const ax_iter *it);
-.PP
+
 const void *ax_map_key(ax_map *map, const void *key);
-.PP
+
 ax_dump *ax_map_dump(const ax_map *map);
-.PP
-ax_map_foreach(_map, _key_type, _key, _val_type, _val) { ... }
-.PP
-ax_map_cforeach(_map, _key_type, _key, _val_type, _val) { ... }
+
+ax_map_foreach(_map, _key_type, _key, _val_type, _val) { ... } [macro]
+
+ax_map_cforeach(_map, _key_type, _key, _val_type, _val) { ... } [macro]
+.EE
 
 .SH DESCRIPTION
 
