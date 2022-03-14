@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Li hsilin <lihsilyn@gmail.com>
+ * Copyright (c) 2022 Li hsilin <lihsilyn@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@
 #      define AX_OS_MACOS
 #    endif
 #  else
-#    error "Axe has not been ported to this Apple platform"
+#    error "AXE has not been ported to this Apple platform"
 #  endif
 #elif defined(__WEBOS__)
 #  define AX_OS_WEBOS
@@ -116,7 +116,7 @@
 #  define AX_OS_HAIKU
 #elif defined(__MAKEDEPEND__)
 #else
-#  error "Qt has not been ported to this OS - see http://www.qt-project.org/"
+#  error "AXE has not been ported to this OS"
 #endif
 
 #if defined(AX_OS_WIN32) || defined(AX_OS_WIN64) || defined(AX_OS_WINRT)
