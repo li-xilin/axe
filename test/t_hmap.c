@@ -215,7 +215,7 @@ static void rehash(ax_runner* r)
 
 static void check_size(ax_runner* r)
 {
-	ax_hmap_r hmap = ax_new(hmap, ax_t(int), ax_t(nil));
+	ax_hmap_r hmap = ax_new(hmap, ax_t(int), ax_t(void));
 	for (int i = 0; i < 10000; i++) {
 		int val = rand();
 		ax_map_put(hmap.map, &val, NULL);

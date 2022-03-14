@@ -43,7 +43,7 @@ static void all_any_none_of(ax_runner *r)
 	for (int i = 0; i < 18; i++) { ax_seq_push(vec.seq, &i); }
 	ax_iter first = ax_box_begin(vec.box), last = ax_box_end(vec.box);
 	int one = 1;
-	ax_pred pred = ax_pred_binary_make(ax_oper_for(AX_ST_I)->add, NULL, &one, NULL);
+	ax_pred pred = ax_pred_binary_make(ax_op(int32_t).add, NULL, &one, NULL);
 	ax_transform(ax_iter_c(&first), ax_iter_c(&last), &first, &pred);
 
 	int i = 0;
@@ -54,7 +54,7 @@ static void all_any_none_of(ax_runner *r)
 
 	int twenty = 20;
 	bool ret;
-	pred = ax_pred_binary_make(ax_oper_for(AX_ST_I)->lt, NULL, &twenty, NULL);
+	pred = ax_pred_binary_make(ax_op(int32_t).lt, NULL, &twenty, NULL);
 
 	ret = ax_all_of(ax_iter_c(&first), ax_iter_c(&last), &pred);
 	axut_assert(r, ret == true);
@@ -76,7 +76,7 @@ static void partation(ax_runner *r)
 	ax_iter first = ax_box_begin(vec.box);
 	ax_iter last = ax_box_end(vec.box);
 	int pivot = 5;
-	ax_pred pred = ax_pred_binary_make(ax_oper_for(AX_ST_I)->lt, NULL, &pivot, NULL);
+	ax_pred pred = ax_pred_binary_make(ax_op(int32_t).lt, NULL, &pivot, NULL);
 	
 	ax_iter middle = first;
 	ax_partition(&middle, &last, &pred);
@@ -193,7 +193,7 @@ static void binary_search_if_not(ax_runner *r)
 	ax_citer res;
 
 	for (num = 0; num <= 6; num+=2) {
-		ax_pred pred = ax_pred_binary_make(ax_oper_for(AX_ST_I)->le, NULL, &num, NULL);
+		ax_pred pred = ax_pred_binary_make(ax_op(int32_t).le, NULL, &num, NULL);
 		res = first;
 		ax_binary_search_if_not(&res, &last, &pred);
 		axut_assert(r, !ax_citer_equal(&res, &last));
@@ -201,13 +201,13 @@ static void binary_search_if_not(ax_runner *r)
 	}
 
 	num = 7;
-	ax_pred pred = ax_pred_binary_make(ax_oper_for(AX_ST_I)->le, NULL, &num, NULL);
+	ax_pred pred = ax_pred_binary_make(ax_op(int32_t).le, NULL, &num, NULL);
 	res = first;
 	ax_binary_search_if_not(&res, &last, &pred);
 	axut_assert(r, ax_citer_equal(&res, &last));
 
 	num = 0;
-	pred = ax_pred_binary_make(ax_oper_for(AX_ST_I)->le, NULL, &num, NULL);
+	pred = ax_pred_binary_make(ax_op(int32_t).le, NULL, &num, NULL);
 	res = first;
 	ax_binary_search_if_not(&first, &last, &pred);
 	axut_assert(r, !ax_citer_equal(&res, &last));
@@ -249,6 +249,7 @@ static int qsort_compare_cb(const void* p1, const void* p2)
  * 0x3FFFFF 1.96, 2.24
  * 0x3FFFFF 2.35, 2.27
  * 0x3FFFFF 2.42, 2.25
+ * 0x3FFFFF 2.26, 2.27
  */
 
 static void sort_time(ax_runner *r) {
@@ -273,7 +274,7 @@ static void sort_time(ax_runner *r) {
 		ax_seq_push(vec4.seq, &n);
 	}
 
-	ax_pred pred = ax_pred_binary_make(ax_oper_for(AX_ST_I)->le, NULL, NULL, NULL);
+	ax_pred pred = ax_pred_binary_make(ax_op(int32_t).le, NULL, NULL, NULL);
 	{
 		first = ax_box_begin(vec1.box);
 		last = ax_box_end(vec1.box);

@@ -47,12 +47,12 @@
 #define ptr_ne(_type, _in1, _in2, _out) (*(bool*)_out = *(_type*)_in1 != *(_type*)_in2)
 
 #define DECLARE_UNARY_OPER(_type, _op) \
-	void _type##_op(void *out, const void *in, void *arg) { \
+	static void _type##_op(void *out, const void *in, void *arg) { \
 		ptr##_op(_type, in, out); \
 	}
 
 #define DECLARE_BINARY_OPER(_type, _op) \
-	void _type##_op(void *out, const void *in1, const void *in2, void *arg) { \
+	static void _type##_op(void *out, const void *in1, const void *in2, void *arg) { \
 		ptr##_op(_type, in1, in2, out); \
 	}
 
@@ -79,7 +79,7 @@
 
 
 #define DECLARE_INT_OPERSET_STRUCT(_type) \
-	const ax_operset operset_##_type = \
+	const struct ax_oper_st ax_oper_##_type = \
 	{ \
 		.add = _type##_add, \
 		.sub = _type##_sub, \
@@ -102,20 +102,19 @@
 		.hash = NULL \
 	};
 
-#define DECLARE_INT_OPERSET(_type) \
+#define DECLARE_INT_OPER(_type) \
 	DECLARE_INT_OPERSET_FUNCS(_type) \
 	DECLARE_INT_OPERSET_STRUCT(_type)
 
-DECLARE_INT_OPERSET(int8_t)
-DECLARE_INT_OPERSET(int16_t)
-DECLARE_INT_OPERSET(int32_t)
-DECLARE_INT_OPERSET(int64_t)
-DECLARE_INT_OPERSET(uint8_t)
-DECLARE_INT_OPERSET(uint16_t)
-DECLARE_INT_OPERSET(uint32_t)
-DECLARE_INT_OPERSET(uint64_t)
-DECLARE_INT_OPERSET(size_t)
-
+DECLARE_INT_OPER(int8_t)
+DECLARE_INT_OPER(int16_t)
+DECLARE_INT_OPER(int32_t)
+DECLARE_INT_OPER(int64_t)
+DECLARE_INT_OPER(uint8_t)
+DECLARE_INT_OPER(uint16_t)
+DECLARE_INT_OPER(uint32_t)
+DECLARE_INT_OPER(uint64_t)
+DECLARE_INT_OPER(size_t)
 
 #define DECLARE_FLOAT_OPERSET_FUNCS(_type) \
 	DECLARE_BINARY_OPER(_type, _add) \
@@ -130,7 +129,7 @@ DECLARE_INT_OPERSET(size_t)
 	DECLARE_BINARY_OPER(_type, _ne)
 
 #define DECLARE_FLOAT_OPERSET_STRUCT(_type) \
-	const ax_operset operset_##_type = \
+	const struct ax_oper_st ax_oper_##_type = \
 	{ \
 		.add = _type##_add, \
 		.sub = _type##_sub, \
@@ -162,23 +161,3 @@ DECLARE_FLOAT_OPERSET_FUNCS(float)
 DECLARE_FLOAT_OPERSET_FUNCS(double)
 DECLARE_FLOAT_OPERSET_STRUCT(float)
 DECLARE_FLOAT_OPERSET_STRUCT(double)
-
-const ax_operset *ax_oper_for(int type)
-{
-	type = ax_trait_fixed_type(type);
-	switch (type) {
-		case AX_ST_I8:  return &operset_int8_t;
-		case AX_ST_I16: return &operset_int16_t;
-		case AX_ST_I32: return &operset_int32_t;
-		case AX_ST_I64: return &operset_int64_t;
-		case AX_ST_U8:  return &operset_uint8_t;
-		case AX_ST_U16: return &operset_uint16_t;
-		case AX_ST_U32: return &operset_uint32_t;
-		case AX_ST_U64: return &operset_uint64_t;
-		case AX_ST_Z:   return &operset_size_t;
-		case AX_ST_F:   return &operset_float;
-		case AX_ST_LF:  return &operset_double;
-		default: return NULL;
-	}
-}
-

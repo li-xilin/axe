@@ -601,7 +601,7 @@ static void one_free(ax_one* one)
 
 static const char *one_name(const ax_one *one)
 {
-	return ax_class_name(4, hmap);
+	return ax_class_name(4, avl);
 }
 
 static ax_dump *any_dump(const ax_any *any)

@@ -40,71 +40,15 @@ typedef struct ax_dump_st ax_dump;
 #endif
 
 #define __ax_require(_fun) ax_assert(_fun, "NULL pointer of %s", _fun)
-enum {
-	AX_ST_NIL,
-	AX_ST_I8,
-	AX_ST_I16,
-	AX_ST_I32,
-	AX_ST_I64,
-	AX_ST_U8,
-	AX_ST_U16,
-	AX_ST_U32,
-	AX_ST_U64,
-	AX_ST_Z,
-	AX_ST_F,
-	AX_ST_LF,
-	AX_ST_S,
-	AX_ST_WS,
-	AX_ST_PTR,
 
-	AX_ST_C,
-	AX_ST_H,
-	AX_ST_I,
-	AX_ST_L,
-	AX_ST_LL,
-
-	AX_ST_UC,
-	AX_ST_UH,
-	AX_ST_U,
-	AX_ST_UL,
-	AX_ST_ULL,
-	AX_ST_PWL,
-};
-
-#define __AX_ST_nil    AX_ST_NIL
-#define __AX_ST_i8     AX_ST_I8 
-#define __AX_ST_i16    AX_ST_I16
-#define __AX_ST_i32    AX_ST_I32
-#define __AX_ST_i64    AX_ST_I64
-#define __AX_ST_u8     AX_ST_U8 
-#define __AX_ST_u16    AX_ST_U16
-#define __AX_ST_u32    AX_ST_U32
-#define __AX_ST_u64    AX_ST_U64
-#define __AX_ST_size   AX_ST_Z
-#define __AX_ST_float  AX_ST_F
-#define __AX_ST_double AX_ST_LF
-#define __AX_ST_str    AX_ST_S
-#define __AX_ST_wcs    AX_ST_WS
-#define __AX_ST_ptr    AX_ST_PTR
-#define __AX_ST_char   AX_ST_C
-#define __AX_ST_short  AX_ST_H
-#define __AX_ST_int    AX_ST_I
-#define __AX_ST_long   AX_ST_L
-#define __AX_ST_llong  AX_ST_LL
-#define __AX_ST_uchar  AX_ST_UC
-#define __AX_ST_ushort AX_ST_UH
-#define __AX_ST_uint   AX_ST_U
-#define __AX_ST_ulong  AX_ST_UL
-#define __AX_ST_ullong AX_ST_ULL
-
-#define ax_t(_name) ax_trait_get(__AX_ST_##_name)
+#define ax_t(_name) (&ax_trait_##_name)
 
 typedef void    (*ax_trait_free_f)(void* p);
-typedef bool    (*ax_trait_compare_f) (const void* p1, const void* p2, size_t size);
-typedef size_t  (*ax_trait_hash_f)(const void* p, size_t size);
-typedef ax_fail (*ax_trait_copy_f)(void* dst, const void* src, size_t size);
+typedef bool    (*ax_trait_compare_f) (const void* p1, const void* p2);
+typedef size_t  (*ax_trait_hash_f)(const void* p);
+typedef ax_fail (*ax_trait_copy_f)(void* dst, const void* src);
 typedef ax_fail (*ax_trait_init_f)(void* p, va_list *ap);
-typedef ax_dump*(*ax_trait_dump_f)(const void* p, size_t size);
+typedef ax_dump*(*ax_trait_dump_f)(const void* p);
 
 struct ax_trait_st
 {
@@ -119,6 +63,73 @@ struct ax_trait_st
 	bool               link;
 };
 
+
+#define ax_trait_char ax_trait_i8
+#define ax_trait_uchar ax_trait_u8
+
+#if USHRT_MAX == UINT8_MAX
+#define ax_trait_short ax_trait_i8
+#define ax_trait_ushort ax_trait_u8
+#elif USHRT_MAX == UINT16_MAX
+#define ax_trait_short ax_trait_i16
+#define ax_trait_ushort ax_trait_u16
+#elif USHRT_MAX == UINT32_MAX
+#define ax_trait_short ax_trait_i32
+#define ax_trait_ushort ax_trait_u32
+#else
+#error "failed to match the size of short int"
+#endif
+
+#if UINT_MAX == UINT16_MAX
+#define ax_trait_int ax_trait_i16
+#define ax_trait_uint ax_trait_u16
+#elif UINT_MAX == UINT32_MAX
+#define ax_trait_int ax_trait_i32
+#define ax_trait_uint ax_trait_u32
+#elif UINT_MAX == INT64_MAX
+#define ax_trait_int ax_trait_i64
+#define ax_trait_uint ax_trait_u64
+#else
+#error "failed to match the size of int"
+#endif
+
+#if ULONG_MAX == UINT32_MAX
+#define ax_trait_long ax_trait_i32
+#define ax_trait_ulong ax_trait_u32
+#elif ULONG_MAX == UINT64_MAX
+#define ax_trait_long ax_trait_i64
+#define ax_trait_ulong ax_trait_u64
+#else
+#error "failed to match the size of long int"
+#endif
+
+#if ULLONG_MAX == UINT32_MAX
+#define ax_trait_llong ax_trait_i32
+#define ax_trait_ullong ax_trait_u32
+#elif ULLONG_MAX == UINT64_MAX
+#define ax_trait_llong ax_trait_i64
+#define ax_trait_ullong ax_trait_u64
+#else
+#error "failed to match the size of long long int"
+#endif
+
+extern const ax_trait ax_trait_void;
+extern const ax_trait ax_trait_i8;
+extern const ax_trait ax_trait_i16;
+extern const ax_trait ax_trait_i32;
+extern const ax_trait ax_trait_i64;
+extern const ax_trait ax_trait_u8;
+extern const ax_trait ax_trait_u16;
+extern const ax_trait ax_trait_u32;
+extern const ax_trait ax_trait_u64;
+extern const ax_trait ax_trait_size;
+extern const ax_trait ax_trait_float;
+extern const ax_trait ax_trait_double;
+extern const ax_trait ax_trait_ptr;
+extern const ax_trait ax_trait_str;
+extern const ax_trait ax_trait_wcs;
+extern const ax_trait ax_trait_diff;
+
 #define ax_trait_in(_tr, _ptr) ((_tr)->link ? &(_ptr) : *&(_ptr))
 
 #define ax_trait_out(_tr, _ptr) (((_tr)->link && (_ptr)) ? *(void **)(_ptr) : (void *)(_ptr))
@@ -126,13 +137,13 @@ struct ax_trait_st
 inline static bool ax_trait_equal(const ax_trait *tr, const void *p1, const void *p2)
 {
 	__ax_require(tr->equal);
-	return tr->equal(p1, p2, tr->size);
+	return tr->equal(p1, p2);
 }
 
 inline static size_t ax_trait_hash(const ax_trait *tr, const void *p)
 {
 	__ax_require(tr->hash);
-	return tr->hash(p, tr->size);
+	return tr->hash(p);
 }
 
 inline static void ax_trait_free(const ax_trait *tr, void *p)
@@ -146,13 +157,13 @@ inline static void ax_trait_free(const ax_trait *tr, void *p)
 inline static bool ax_trait_less(const ax_trait *tr, const void *p1, const void *p2)
 {
 	__ax_require(tr->less);
-	return tr->less(p1, p2, tr->size);
+	return tr->less(p1, p2);
 }
 
 inline static ax_fail ax_trait_copy(const ax_trait *tr, void* dst, const void* src)
 {
 	__ax_require(tr->copy);
-	return tr->copy(dst, src, tr->size);
+	return tr->copy(dst, src);
 }
 
 inline static ax_fail ax_trait_init(const ax_trait *tr, void* p, va_list *ap)
@@ -167,27 +178,7 @@ inline static ax_fail ax_trait_copy_or_init(const ax_trait *tr, void* dst, const
 		: ax_trait_init(tr, dst, ap);
 }
 
-ax_dump *ax_trait_dump(const ax_trait *tr, const void* p, size_t size);
-
-bool ax_trait_mem_equal(const void* p1, const void* p2, size_t size);
-
-bool ax_trait_mem_less(const void* p1, const void* p2, size_t size);
-
-size_t  ax_trait_mem_hash(const void* p, size_t size);
-
-ax_fail ax_trait_mem_copy(void* dst, const void* src, size_t size);
-
-void  ax_trait_mem_free(void* p);
-
-ax_dump *ax_trait_mem_dump(const void* p, size_t size);
-
-size_t ax_trait_size(int type);
-
-int ax_trait_fixed_type(int type);
-
-const ax_trait *ax_trait_get(int type);
-
-//int ax_trait_stoi(const char *s);
+ax_dump *ax_trait_dump(const ax_trait *tr, const void* p);
 
 #undef __ax_require
 

@@ -55,7 +55,7 @@ static void split(ax_runner *r)
 {
 	ax_string_r str_r = ax_new0(string);
 	ax_str_append(str_r.str, ":111:222::");
-	ax_seq_r ret = { .seq = ax_str_split(str_r.str, ':') };
+	ax_seq_r ret =  ax_str_split(str_r.str, ':');
 
 	int i = 0;
 	ax_box_cforeach(ret.box, const char*, p) {

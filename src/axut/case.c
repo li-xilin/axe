@@ -26,9 +26,9 @@
 #include <string.h>
 
 static void case_free(void *p);
-static bool case_less(const void *p1, const void *p2, size_t size);
-static bool case_equal(const void *p1, const void *p2, size_t size);
-static ax_fail case_copy(void* dst, const void* src, size_t size);
+static bool case_less(const void *p1, const void *p2);
+static bool case_equal(const void *p1, const void *p2);
+static ax_fail case_copy(void* dst, const void* src);
 
 const ax_trait axut_case_tr =
 {
@@ -48,7 +48,7 @@ static void case_free(void *p)
 	free(tc->log);
 }
 
-static bool case_less(const void *p1, const void *p2, size_t size)
+static bool case_less(const void *p1, const void *p2)
 {
 
 	const axut_case *tc1 = p1;
@@ -56,7 +56,7 @@ static bool case_less(const void *p1, const void *p2, size_t size)
 	return tc1->priority < tc2->priority;
 }
 
-static bool case_equal(const void *p1, const void *p2, size_t size)
+static bool case_equal(const void *p1, const void *p2)
 {
 
 	const axut_case *tc1 = p1;
@@ -64,7 +64,7 @@ static bool case_equal(const void *p1, const void *p2, size_t size)
 	return tc1->priority == tc2->priority;
 }
 
-static ax_fail case_copy(void* dst, const void* src, size_t size)
+static ax_fail case_copy(void* dst, const void* src)
 {
 	const axut_case *src_tc = src;
 	axut_case *dst_tc = dst;

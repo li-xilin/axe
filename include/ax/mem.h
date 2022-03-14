@@ -34,6 +34,37 @@ do { \
 	*b = tmp; \
 } while(0)
 
+inline static uint32_t ax_hash_murmur32(const void *key, size_t size)
+{
+	uint32_t h = 3323198485ul;
+	for (size_t i = 0; i < size; i++) {
+		h ^= ((ax_byte *)key)[i];
+		h *= 0x5bd1e995;
+		h ^= h >> 15;
+	}
+	return h;
+}
+
+inline static uint64_t ax_hash_murmur64 (const void *key, size_t size)
+{
+	uint64_t h = 525201411107845655ull;
+	for (size_t i = 0; i < size; i++) {
+		h ^= ((ax_byte *)key)[i];
+		h *= 0x5bd1e9955bd1e995;
+		h ^= h >> 47;
+	}
+	return h;
+}
+
+inline static size_t ax_hash_djb(const void *p, size_t size)
+{
+	size_t h = 5381;
+	for (size_t i = 0; i < size; i++) {
+		h = (h ^ (h << 5)) ^ ((ax_byte *)p)[i];
+	}
+	return h;
+}
+
 inline static void ax_memswp(void *p1, void *p2, size_t size)
 {
 	ax_byte tmp[0x1000];

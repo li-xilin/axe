@@ -206,7 +206,7 @@ void ax_partition(ax_iter *first, const ax_iter *last, const ax_pred *pred)
 
 static void less_then(bool *out, void *in1, void *in2, const ax_trait *tr)
 {
-	*out = tr->less(in1, in2, tr->size);
+	*out = ax_trait_less(tr, in1, in2);
 }
 
 static void quick_sort(const ax_iter *first, const ax_iter *last)
@@ -388,7 +388,7 @@ bool ax_equal_to_arr(const ax_iter *first, const ax_iter *last, void *arr, size_
 	size_t pos = 0;
 	ax_iter cur = *first;
 	while (!ax_iter_equal(&cur, last) && pos < size) {
-		if (!tr->equal(ax_iter_get(&cur), (ax_byte*)arr + pos, tr->size))
+		if (!ax_trait_equal(tr, ax_iter_get(&cur), (ax_byte*)arr + pos))
 			return false;
 		ax_iter_next(&cur);
 		pos += tr->size;

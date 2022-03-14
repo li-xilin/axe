@@ -28,6 +28,16 @@
 
 #include <errno.h>
 
+void iter_free(void *p)
+{
+}
+
+ax_fail iter_copy(void *dst, const void *src)
+{
+	*(ax_iter *)dst = *(const ax_iter *)src;
+	return false;
+}
+
 ax_fail ax_trie_enum(const ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx)
 {
 	ax_fail retval = false;
@@ -35,8 +45,8 @@ ax_fail ax_trie_enum(const ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx)
 	
 	ax_trait iter_tr = {
 		.size = sizeof(ax_iter),
-		.copy = ax_trait_mem_copy,
-		.free = ax_trait_mem_free
+		.copy = iter_copy,
+		.free = iter_free
 	};
 
 	ax_list_r list_r = { NULL };
@@ -122,11 +132,11 @@ static bool trie_dump_cb(const ax_trie *trie, const ax_seq *key, const void *val
 	ax_dump *key_dmp = ax_dump_block(ax_class_name(3, seq), size);
 	size_t i = 0;
 	ax_box_cforeach(ax_cr(seq, key).box, const void *, word) {
-		ax_dump_bind(key_dmp, i, ax_trait_dump(ktr, ax_trait_in(ktr, word), ktr->size));
+		ax_dump_bind(key_dmp, i, ax_trait_dump(ktr, ax_trait_in(ktr, word)));
 		i++;
 	}
 	ax_dump_bind(args->trie_dmp, args->cnt, ax_dump_pair(key_dmp,
-				ax_trait_dump(vtr, ax_trait_in(vtr, val), vtr->size)));
+				ax_trait_dump(vtr, ax_trait_in(vtr, val))));
 	args->cnt++;;
 	return false;
 }

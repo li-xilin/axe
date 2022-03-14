@@ -112,8 +112,7 @@ static ax_dump *any_dump(const ax_any *any)
 		return ax_dump_block(ax_one_name(self.one), 0);
 
 	ax_dump *dmp = ax_dump_block(ax_one_name(self.one), 1);
-	ax_dump *top = self.tube->env.elem_tr->dump(ax_heap_top(&self.pque->heap),
-			self.tube->env.elem_tr->size);
+	ax_dump *top = ax_trait_dump(self.tube->env.elem_tr, ax_heap_top(&self.pque->heap));
 	ax_dump_pair(ax_dump_symbol("TOP"), top);
 	return dmp;
 }
@@ -136,7 +135,7 @@ static const char *one_name(const ax_one *one)
 static bool less_then(const void *a, const void *b, void *ctx)
 {
 	const ax_trait *etr = (const void *)ctx;
-	return etr->less(a, b, etr->size);
+	return ax_trait_less(etr, a, b);
 }
 
 

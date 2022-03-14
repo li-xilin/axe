@@ -68,7 +68,6 @@ void one_free(ax_one *one)
 	ax_box_foreach(self.runner->suites.box, axut_suite **, ptr) {
 		axut_suite_destroy(*ptr);
 	}
-	ax_one_free(self.one);
 	free(self.one);
 }
 

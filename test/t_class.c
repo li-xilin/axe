@@ -36,34 +36,34 @@ static void new(ax_runner *r)
 {
 	ax_list_r obj1 = ax_new(list, ax_t(i8));
 	axut_assert(r, obj1.one != NULL);
-	axut_assert(r, obj1.seq->env.box.elem_tr == ax_trait_get(AX_ST_I8));
+	axut_assert(r, obj1.seq->env.box.elem_tr == ax_t(i8));
 
 	ax_vector_r obj2 = ax_new(vector, ax_t(u8));
 	axut_assert(r, obj2.one != NULL);
-	axut_assert(r, obj2.seq->env.box.elem_tr == ax_trait_get(AX_ST_U8));
+	axut_assert(r, obj2.seq->env.box.elem_tr == ax_t(u8));
 
 	ax_avl_r obj3 = ax_new(avl, ax_t(str), ax_t(i32));
 	axut_assert(r, obj3.one != NULL);
-	axut_assert(r, obj3.map->env.key_tr == ax_trait_get(AX_ST_S));
-	axut_assert(r, obj3.map->env.box.elem_tr == ax_trait_get(AX_ST_I32));
+	axut_assert(r, obj3.map->env.key_tr == ax_t(str));
+	axut_assert(r, obj3.map->env.box.elem_tr == ax_t(i32));
 
 	ax_hmap_r obj4 = ax_new(hmap, ax_t(size), ax_t(u64));
 	axut_assert(r, obj4.one != NULL);
-	axut_assert(r, obj4.map->env.key_tr == ax_trait_get(AX_ST_Z));
-	axut_assert(r, obj4.map->env.box.elem_tr == ax_trait_get(AX_ST_U64));
+	axut_assert(r, obj4.map->env.key_tr == ax_t(size));
+	axut_assert(r, obj4.map->env.box.elem_tr == ax_t(u64));
 
 	ax_stack_r obj5 = ax_new(stack, ax_t(ptr));
 	axut_assert(r, obj5.one != NULL);
-	axut_assert(r, obj5.tube->env.elem_tr == ax_trait_get(AX_ST_PTR));
+	axut_assert(r, obj5.tube->env.elem_tr == ax_t(ptr));
 
 	ax_queue_r obj6 = ax_new(queue, ax_t(double));
 	axut_assert(r, obj6.one != NULL);
-	axut_assert(r, obj6.tube->env.elem_tr == ax_trait_get(AX_ST_LF));
+	axut_assert(r, obj6.tube->env.elem_tr == ax_t(double));
 	
 	ax_btrie_r obj7 = ax_new(btrie, ax_t(float), ax_t(wcs));
 	axut_assert(r, obj7.one != NULL);
-	axut_assert(r, obj7.trie->env.key_tr == ax_trait_get(AX_ST_F));
-	axut_assert(r, obj7.trie->env.box.elem_tr == ax_trait_get(AX_ST_WS));
+	axut_assert(r, obj7.trie->env.key_tr == ax_t(float));
+	axut_assert(r, obj7.trie->env.box.elem_tr == ax_t(wcs));
 
 	ax_one_free(obj1.one);
 	ax_one_free(obj2.one);

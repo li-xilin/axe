@@ -149,7 +149,7 @@ static ax_fail rehash(ax_hmap *hmap, size_t nbucket)
 			const ax_trait *ktr = hmap->map.env.key_tr;
 
 			struct bucket_st *new_bucket = new_tab
-				+ ktr->hash(currnode->kvbuffer, ktr->size)
+				+ ax_trait_hash(ktr, currnode->kvbuffer)
 				% nbucket;
 
 			if (!new_bucket->node_list) {

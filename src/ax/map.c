@@ -53,8 +53,8 @@ ax_dump *ax_map_dump(const ax_map *map)
 	ax_map_cforeach(self.map, const void *, k, const void *, v) {
 
 		ax_dump *pair_dmp = ax_dump_pair(
-				ax_trait_dump(ktr, ax_trait_in(ktr, k), ktr->size),
-				ax_trait_dump(etr, ax_trait_in(etr, v), etr->size)
+				ax_trait_dump(ktr, ax_trait_in(ktr, k)),
+				ax_trait_dump(etr, ax_trait_in(etr, v))
 				);
 
 		ax_dump_bind(block_dmp, i, pair_dmp);

@@ -27,9 +27,9 @@ typedef void (*ax_unary_f)(void *out, const void *in, void *arg);
 
 typedef void (*ax_binary_f)(void *out, const void *in1, const void *in2, void *arg);
 
-typedef struct ax_operset_st ax_operset;
+typedef struct ax_oper_st ax_oper;
 
-struct ax_operset_st
+struct ax_oper_st
 {
     ax_binary_f add;
     ax_binary_f sub;
@@ -56,6 +56,18 @@ struct ax_operset_st
     ax_unary_f hash;
 };
 
-const ax_operset *ax_oper_for(int type);
+extern const ax_oper ax_oper_int8_t;
+extern const ax_oper ax_oper_int16_t;
+extern const ax_oper ax_oper_int32_t;
+extern const ax_oper ax_oper_int64_t;
+extern const ax_oper ax_oper_uint8_t;
+extern const ax_oper ax_oper_uint16_t;
+extern const ax_oper ax_oper_uint32_t;
+extern const ax_oper ax_oper_uint64_t;
+extern const ax_oper ax_oper_size_t;
+extern const ax_oper ax_oper_float;
+extern const ax_oper ax_oper_double;
+
+#define ax_op(type) ax_oper_##type
 
 #endif

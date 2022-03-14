@@ -656,7 +656,7 @@ static ax_fail trie_rekey(ax_trie *trie, const ax_seq *key_from, const ax_seq *k
 static const void *trie_it_word(const ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
+	//CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
 
 	return ax_avl_tr.itkey(it);
 }
@@ -664,7 +664,7 @@ static const void *trie_it_word(const ax_citer *it)
 static ax_iter trie_it_begin(const ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
+	//CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
 
 	struct node_st *node = ax_avl_tr.box.iter.get(it);
 	ax_iter ret = ax_box_begin(node->submap_r.box);
@@ -675,7 +675,7 @@ static ax_iter trie_it_begin(const ax_citer *it)
 static ax_iter trie_it_end(const ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
+	//CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
 
 	struct node_st *node = ax_avl_tr.box.iter.get(it);
 	ax_iter ret = ax_box_end(node->submap_r.box);
@@ -686,7 +686,7 @@ static ax_iter trie_it_end(const ax_citer *it)
 static bool  trie_it_parent(const ax_citer *it, ax_iter *parent)
 {
 	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
+	//CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
 	UNSUPPORTED();
 
 	return false;
@@ -695,16 +695,26 @@ static bool  trie_it_parent(const ax_citer *it, ax_iter *parent)
 static bool trie_it_valued(const ax_citer *it)
 {
 	CHECK_PARAM_NULL(it);
-	CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
+	//CHECK_PARAM_VALIDITY(it, ax_one_is(it->owner, one_name(NULL)));
 
 	struct node_st *node = ax_avl_tr.box.iter.get(it);
 	return !!node->val;
 }
 
+static void node_free(void *p)
+{
+}
+
+static ax_fail node_copy(void *dst, const void *src)
+{
+	*(struct node_st *)dst = *(const struct node_st *)src;
+	return false;
+}
+
 static const ax_trait node_tr = { 
 	.size  = sizeof(struct node_st),
-	.free  = ax_trait_mem_free,
-	.copy  = ax_trait_mem_copy,
+	.free  = node_free,
+	.copy  = node_copy,
 };
 
 const ax_trie_trait ax_btrie_tr =
@@ -771,7 +781,7 @@ ax_trie *__ax_btrie_construct(const ax_trait *key_tr, const ax_trait *val_tr)
 		goto fail;
 	}
 
-	root = ax_new(avl, ax_t(nil), &node_tr).map;
+	root = ax_new(avl, ax_t(void), &node_tr).map;
 	if (!root) {
 		goto fail;
 	}
