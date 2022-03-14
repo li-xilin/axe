@@ -20,8 +20,8 @@
  * THE SOFTWARE.
  */
 
-#include "axut.h"
-
+#include "axut/runner.h"
+#include "axut/suite.h"
 #include "ax/avl.h"
 #include "ax/iter.h"
 

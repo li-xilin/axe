@@ -22,10 +22,11 @@
 
 #include "ax/box.h"
 #include "ax/map.h"
+#include "ax/hmap.h"
+#include "ax/hmap.h"
 #include "axut/runner.h"
-#include <axut.h>
-#include <ax/hmap.h>
-#include <ax/hmap.h>
+#include "axut/suite.h"
+
 #include <assert.h>
 #include <setjmp.h>
 #include <stdlib.h>

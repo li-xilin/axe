@@ -21,7 +21,8 @@
  */
 
 #include "ax/stack.h"
-#include "axut.h"
+#include "axut/runner.h"
+#include "axut/suite.h"
 #include <assert.h>
 #include <setjmp.h>
 #include <stdlib.h>

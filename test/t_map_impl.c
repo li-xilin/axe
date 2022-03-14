@@ -19,15 +19,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <ax/def.h>
+#include "ax/def.h"
 #include "ax/map.h"
-#include "axut.h"
-
 #include "ax/avl.h"
 #include "ax/hmap.h"
 #include "ax/rb.h"
 #include "ax/iter.h"
 #include "axut/suite.h"
+#include "axut/runner.h"
 
 #include <assert.h>
 #include <setjmp.h>

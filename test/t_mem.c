@@ -23,7 +23,8 @@
 #include "assist.h"
 
 #include "ax/mem.h"
-#include "axut.h"
+#include "axut/runner.h"
+#include "axut/suite.h"
 
 #include <stdlib.h>
 

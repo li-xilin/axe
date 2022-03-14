@@ -28,7 +28,8 @@
 #include "ax/list.h"
 #include "ax/pred.h"
 #include "ax/oper.h"
-#include "axut.h"
+#include "axut/runner.h"
+#include "axut/suite.h"
 #include <assert.h>
 #include <setjmp.h>
 #include <stdlib.h>

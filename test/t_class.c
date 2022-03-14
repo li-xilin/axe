@@ -29,8 +29,8 @@
 #include "ax/stack.h"
 #include "ax/queue.h"
 #include "ax/btrie.h"
-
-#include "axut.h"
+#include "axut/runner.h"
+#include "axut/suite.h"
 
 static void new(ax_runner *r)
 {

@@ -21,11 +21,12 @@
  */
 
 #include "assist.h"
-
 #include "ax/iter.h"
 #include "ax/vector.h"
 #include "ax/algo.h"
-#include "axut.h"
+#include "axut/suite.h"
+#include "axut/runner.h"
+
 #include <assert.h>
 #include <setjmp.h>
 #include <stdlib.h>

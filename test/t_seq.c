@@ -26,7 +26,8 @@
 #include "ax/list.h"
 #include "ax/algo.h"
 
-#include "axut.h"
+#include "axut/runner.h"
+#include "axut/suite.h"
 
 #include <assert.h>
 #include <stdlib.h>

@@ -25,8 +25,8 @@
 #include "ax/iter.h"
 #include "ax/array.h"
 #include "ax/algo.h"
-
-#include "axut.h"
+#include "axut/runner.h"
+#include "axut/suite.h"
 
 #include <assert.h>
 #include <setjmp.h>

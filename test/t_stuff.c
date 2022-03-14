@@ -23,7 +23,8 @@
 #include "assist.h"
 #include "ax/class.h"
 #include "ax/trait.h"
-#include "axut.h"
+#include "axut/runner.h"
+#include "axut/suite.h"
 #include <stdio.h>
 
 axut_suite *suite_for_stuff()
