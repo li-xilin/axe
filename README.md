@@ -4,7 +4,9 @@
 
 ---
 
-AXE是 一个面向C语言的工具函数库，包含了通用容器和算法，可以很大程度简化C程序的开发.
+AXE is the light-weight and low-level library. It provides data structure handling and object system for C.
+
+AXE是一个轻量级的低级程序库，它为C语言提供了数据结构处理能力和对象系统.
 
 ## COMPILE AND INSTALL
 
