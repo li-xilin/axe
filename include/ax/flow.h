@@ -24,6 +24,7 @@
 #define AX_FLOW_H
 
 #include "def.h"
+#include "trick.h"
 #include <stddef.h>
 #include <stdint.h>
 
