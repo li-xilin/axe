@@ -23,8 +23,6 @@
 #ifndef AX_SEQ_H
 #define AX_SEQ_H
 #include "box.h"
-#include "def.h"
-#include "class.h"
 
 #ifndef AX_SEQ_DEFINED
 #define AX_SEQ_DEFINED

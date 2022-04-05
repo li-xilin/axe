@@ -22,8 +22,7 @@
 
 #ifndef AX_STRING_H
 #define AX_STRING_H
-#include "class.h"
-#include "str.h"
+#include "type/str.h"
 #include "debug.h"
 
 #ifndef AX_STRING_DEFINED

@@ -23,8 +23,7 @@
 #ifndef AX_PTRA_H
 #define AX_PTRA_H
 
-#include "class.h"
-#include "one.h"
+#include "type/one.h"
 #include "trait.h"
 
 #ifndef AX_PTRA_DEFINED

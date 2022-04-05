@@ -22,8 +22,7 @@
 
 #ifndef AX_BOX_H
 #define AX_BOX_H
-#include "class.h"
-#include "iter.h"
+#include "../iter.h"
 #include "any.h"
 
 #define _ax_box_iterate(_box, _it, _cond) \

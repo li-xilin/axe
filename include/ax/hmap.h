@@ -22,8 +22,7 @@
 
 #ifndef AX_HMAP_H
 #define AX_HMAP_H
-#include "class.h"
-#include "map.h"
+#include "type/map.h"
 
 #ifndef AX_HMAP_DEFINED
 #define AX_HMAP_DEFINED
@@ -31,7 +30,6 @@ typedef struct ax_hmap_st ax_hmap;
 #endif
 
 #define ax_baseof_hmap map
-
 ax_concrete(4, hmap);
 
 extern const ax_map_trait ax_hmap_tr;

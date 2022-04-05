@@ -23,8 +23,6 @@
 #ifndef AX_MAP_H
 #define AX_MAP_H
 #include "box.h"
-#include "def.h"
-#include "trait.h"
 #include <stdarg.h>
 
 #define ax_map_foreach(_map, _key_type, _key, _val_type, _val)            \

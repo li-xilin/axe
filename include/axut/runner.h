@@ -26,7 +26,7 @@
 #include "case.h"
 
 #include "../ax/def.h"
-#include "../ax/str.h"
+#include "../ax/type/str.h"
 
 #ifndef AX_RUNNER_DEFINED
 #define AX_RUNNER_DEFINED

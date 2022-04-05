@@ -22,10 +22,10 @@
 
 #ifndef AX_ONE_H
 #define AX_ONE_H
-#include "def.h"
-#include "debug.h"
-#include "class.h"
-#include "flow.h"
+#include "../def.h"
+#include "../debug.h"
+#include "../class.h"
+#include "../flow.h"
 
 #define ax_require(_one, _op) ( \
 		ax_assert(_one, "NULL object is specified for ax_require"), \

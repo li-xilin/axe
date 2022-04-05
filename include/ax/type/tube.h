@@ -23,8 +23,6 @@
 #ifndef AX_TUBE_H
 #define AX_TUBE_H
 #include "box.h"
-#include "class.h"
-#include "def.h"
 
 #ifndef AX_TUBE_DEFINED
 #define AX_TUBE_DEFINED

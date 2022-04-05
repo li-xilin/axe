@@ -22,9 +22,7 @@
 
 #ifndef AX_STACK_H
 #define AX_STACK_H
-#include "class.h"
-#include "seq.h"
-#include "tube.h"
+#include "type/tube.h"
 
 #ifndef AX_STACK_DEFINED
 #define AX_STACK_DEFINED

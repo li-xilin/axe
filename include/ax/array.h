@@ -23,7 +23,7 @@
 #ifndef AX_ARRAY_H
 #define AX_ARRAY_H
 #include "class.h"
-#include "seq.h"
+#include "type/seq.h"
 #include <limits.h>
 
 #ifndef AX_ARRAY_DEFINED

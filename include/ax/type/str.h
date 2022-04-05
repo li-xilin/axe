@@ -22,8 +22,6 @@
 
 #ifndef AX_STR_H
 #define AX_STR_H
-#include "class.h"
-#include "debug.h"
 #include "seq.h"
 #include <stdarg.h>
 

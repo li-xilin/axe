@@ -22,10 +22,7 @@
 
 #ifndef AX_RB_H
 #define AX_RB_H
-#include "class.h"
-#include "map.h"
-
-#define AX_RB_NAME AX_MAP_NAME ".rb"
+#include "type/map.h"
 
 #ifndef AX_RB_DEFINED
 #define AX_RB_DEFINED

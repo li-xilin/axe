@@ -24,8 +24,8 @@
 #define AXUT_SUITE_H
 
 #include "case.h"
-#include "../ax/str.h"
-#include "../ax/box.h"
+#include "../ax/type/str.h"
+#include "../ax/type/box.h"
 
 #define AXUT_NAME_MAX 128
 #define AXUT_LOG_MAX 128

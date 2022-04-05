@@ -22,10 +22,7 @@
 
 #ifndef AX_VECTOR_H
 #define AX_VECTOR_H
-#include "class.h"
-#include "seq.h"
-
-#define AX_VECTOR_NAME AX_SEQ_NAME ".vector"
+#include "type/seq.h"
 
 #ifndef AX_VECTOR_DEFINED
 #define AX_VECTOR_DEFINED

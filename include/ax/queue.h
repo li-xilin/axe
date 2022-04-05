@@ -22,18 +22,14 @@
 
 #ifndef AX_QUEUE_H
 #define AX_QUEUE_H
-#include "class.h"
-#include "seq.h"
-#include "tube.h"
+#include "type/tube.h"
 
 #ifndef AX_QUEUE_DEFINED
 #define AX_QUEUE_DEFINED
 typedef struct ax_queue_st ax_queue;
 #endif
 
-
 #define ax_baseof_queue tube
-
 ax_concrete(3, queue);
 
 ax_tube *__ax_queue_construct(const ax_trait *elem_tr);

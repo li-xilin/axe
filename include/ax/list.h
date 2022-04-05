@@ -22,8 +22,7 @@
 
 #ifndef AX_LIST_H
 #define AX_LIST_H
-#include "class.h"
-#include "seq.h"
+#include "type/seq.h"
 
 #define AX_LIST_NAME AX_SEQ_NAME ".list"
 

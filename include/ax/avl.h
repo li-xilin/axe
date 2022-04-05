@@ -22,10 +22,7 @@
 
 #ifndef AX_AVL_H
 #define AX_AVL_H
-#include "class.h"
-#include "map.h"
-
-#define AX_AVL_NAME AX_MAP_NAME ".avl"
+#include "type/map.h"
 
 #ifndef AX_AVL_DEFINED
 #define AX_AVL_DEFINED

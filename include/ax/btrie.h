@@ -22,10 +22,7 @@
 
 #ifndef AX_BTRIE_H
 #define AX_BTRIE_H
-#include "class.h"
-#include "trie.h"
-
-#define AX_BTRIE_NAME AX_TRIE_NAME ".btrie"
+#include "type/trie.h"
 
 #ifndef AX_BTRIE_DEFINED
 #define AX_BTRIE_DEFINED
@@ -33,7 +30,6 @@ typedef struct ax_btrie_st ax_btrie;
 #endif
 
 #define ax_baseof_btrie trie
-
 ax_concrete(4, btrie);
 
 extern const ax_trie_trait ax_btrie_tr;

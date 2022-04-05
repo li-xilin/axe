@@ -22,10 +22,7 @@
 
 #ifndef AX_TRIE_H
 #define AX_TRIE_H
-#include "box.h"
-#include "class.h"
 #include "seq.h"
-#include "def.h"
 
 #ifndef AX_DUMP_DEFINED
 #define AX_DUMP_DEFINED

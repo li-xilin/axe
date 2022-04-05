@@ -22,13 +22,7 @@
 
 #ifndef AX_BUFF_H
 #define AX_BUFF_H
-
-#include "class.h"
-#include "debug.h"
-#include "any.h"
-#include "def.h"
-
-#define AX_BUFF_NAME AX_ANY_NAME ".buff"
+#include "type/any.h"
 
 #ifndef AX_POOL_DEFINED
 #define AX_POOL_DEFINED
@@ -39,7 +33,6 @@ typedef struct ax_pool_st ax_pool;
 #define AX_BUFF_DEFINED
 typedef struct ax_buff_st ax_buff;
 #endif
-
 
 #define ax_baseof_buff any
 ax_concrete(2, buff);

@@ -22,11 +22,7 @@
 
 #ifndef AX_PQUE_H
 #define AX_PQUE_H
-#include "class.h"
-#include "seq.h"
-#include "tube.h"
-
-#define AX_PQUE_NAME AX_TUBE_NAME ".pque"
+#include "type/tube.h"
 
 #ifndef AX_PQUE_DEFINED
 #define AX_PQUE_DEFINED
