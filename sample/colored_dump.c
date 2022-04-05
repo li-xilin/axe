@@ -217,7 +217,7 @@ ax_fail location_init(void *p, va_list *ap)
 	return 0;
 }
 
-ax_dump *location_dump(const void *p, size_t size)
+ax_dump *location_dump(const void *p)
 {
 	const struct location *loc = p;
 	ax_dump *dmp = ax_dump_block("location", 2);
