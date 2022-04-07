@@ -20,9 +20,6 @@
  * THE SOFTWARE.
  */
 
-#include "ax/box.h"
-#include "ax/map.h"
-#include "ax/hmap.h"
 #include "ax/hmap.h"
 #include "axut/runner.h"
 #include "axut/suite.h"

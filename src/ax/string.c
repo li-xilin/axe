@@ -20,22 +20,20 @@
  * THE SOFTWARE.
  */
 
-#include <ax/string.h>
-#include <ax/vector.h>
-#include <ax/buff.h>
-#include <ax/str.h>
-#include <ax/iter.h>
-#include <ax/mem.h>
-#include <ax/log.h>
-#include <ax/dump.h>
-#include <ax/trait.h>
+#include "ax/string.h"
+#include "ax/vector.h"
+#include "ax/buff.h"
+#include "ax/iter.h"
+#include "ax/mem.h"
+#include "ax/log.h"
+#include "ax/dump.h"
+#include "ax/trait.h"
+#include "check.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "ax/class.h"
-#include "check.h"
 
 #define MIN_SIZE 16
 

@@ -20,7 +20,6 @@
  * THE SOFTWARE.
  */
 #include "ax/def.h"
-#include "ax/map.h"
 #include "ax/avl.h"
 #include "ax/hmap.h"
 #include "ax/rb.h"

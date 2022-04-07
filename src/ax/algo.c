@@ -20,19 +20,18 @@
  * THE SOFTWARE.
  */
 
-#include <ax/algo.h>
-#include <ax/vector.h>
-#include <ax/pred.h>
-#include <ax/oper.h>
-#include <ax/one.h>
-#include <ax/mem.h>
-#include <ax/trait.h>
+#include "ax/algo.h"
+#include "ax/type/one.h"
+#include "ax/vector.h"
+#include "ax/pred.h"
+#include "ax/oper.h"
+#include "ax/mem.h"
+#include "ax/trait.h"
+#include "check.h"
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "check.h"
 
 #define ASSERT_ITER_TYPE(_it, _type) ax_assert(ax_one_is(_it->owner, _type), "'%s' is not an iterator of '%s'", #_it, #_type);
 

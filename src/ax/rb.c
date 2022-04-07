@@ -20,16 +20,12 @@
  * THE SOFTWARE.
  */
 
-#include "ax/class.h"
+#include "ax/rb.h"
+#include "ax/iter.h"
+#include "ax/mem.h"
+#include "ax/trait.h"
+#include "ax/arch.h"
 #include "check.h"
-
-#include <ax/rb.h>
-#include <ax/map.h>
-#include <ax/iter.h>
-#include <ax/debug.h>
-#include <ax/mem.h>
-#include <ax/trait.h>
-#include <ax/arch.h>
 
 #include <string.h>
 #include <stdlib.h>

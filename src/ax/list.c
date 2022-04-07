@@ -20,18 +20,15 @@
  * THE SOFTWARE.
  */
 
-#include <ax/list.h>
-#include <ax/def.h>
-#include <ax/any.h>
-#include <ax/iter.h>
-#include <ax/debug.h>
-#include <ax/trait.h>
-#include <ax/class.h>
+#include "ax/list.h"
+#include "ax/iter.h"
+#include "ax/trait.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include "check.h"
+#include <check.h>
 
 #undef free
 

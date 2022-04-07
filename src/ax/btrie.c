@@ -20,24 +20,21 @@
  * THE SOFTWARE.
  */
 
-#include <ax/btrie.h>
-#include <ax/avl.h>
-#include <ax/list.h>
-#include <ax/def.h>
-#include <ax/any.h>
-#include <ax/iter.h>
-#include <ax/debug.h>
-#include <ax/trait.h>
-#include <ax/dump.h>
-#include <ax/class.h>
+#include "ax/btrie.h"
+#include "ax/avl.h"
+#include "ax/list.h"
+#include "ax/def.h"
+#include "ax/iter.h"
+#include "ax/debug.h"
+#include "ax/trait.h"
+#include "ax/dump.h"
+#include "check.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <assert.h>
-
-#include "check.h"
 
 #undef free
 

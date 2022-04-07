@@ -20,9 +20,8 @@
  * THE SOFTWARE.
  */
 
-#include <ax/dump.h>
-#include <ax/mem.h>
-
+#include "ax/dump.h"
+#include "ax/mem.h"
 #include "check.h"
 
 #include <stdio.h>

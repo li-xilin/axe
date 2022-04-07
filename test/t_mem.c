@@ -21,7 +21,6 @@
  */
 
 #include "assist.h"
-
 #include "ax/mem.h"
 #include "axut/runner.h"
 #include "axut/suite.h"

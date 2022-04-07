@@ -21,9 +21,6 @@
  */
 
 #include "ax/pque.h"
-#include "ax/class.h"
-#include "ax/tube.h"
-#include "ax/any.h"
 #include "ax/mem.h"
 #include "ax/dump.h"
 #include "ax/static/heap.h"

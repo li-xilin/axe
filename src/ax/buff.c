@@ -20,16 +20,15 @@
  * THE SOFTWARE.
  */
 
-#include <ax/buff.h>
-#include <ax/any.h>
-#include <ax/def.h>
+#include "ax/buff.h"
+#include "ax/type/any.h"
+#include "check.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
 #include <assert.h>
 
-#include "check.h"
 #define DEFAULT_MAX ((~(size_t)0) >> 1)
 
 struct ax_buff_st

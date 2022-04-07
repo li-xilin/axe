@@ -20,23 +20,19 @@
  * THE SOFTWARE.
  */
 
-#include <ax/vector.h>
-#include <ax/def.h>
-#include <ax/any.h>
-#include <ax/iter.h>
-#include <ax/debug.h>
-#include <ax/trait.h>
-#include <ax/mem.h>
-#include <ax/buff.h>
+#include "ax/vector.h"
+#include "ax/def.h"
+#include "ax/iter.h"
+#include "ax/trait.h"
+#include "ax/mem.h"
+#include "ax/buff.h"
+#include "check.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 
-#include "ax/class.h"
-#include "ax/one.h"
-#include "check.h"
 
 #undef free
 

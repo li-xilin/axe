@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include <ax/map.h>
-#include <ax/iter.h>
-#include <ax/dump.h>
-#include <ax/trait.h>
+#include "ax/type/map.h"
+#include "ax/iter.h"
+#include "ax/dump.h"
+#include "ax/trait.h"
 
 const void *ax_map_key(ax_map *map, const void *key)
 {

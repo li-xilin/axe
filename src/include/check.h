@@ -22,7 +22,7 @@
 
 #ifndef AX_CHECK_H
 #define AX_CHECK_H
-#include <ax/debug.h>
+#include "ax/debug.h"
 
 #define CHECK_PARAM_NULL(_param) ax_assert((_param), "parameter `%s' is NULL", #_param)
 

@@ -1,5 +1,5 @@
-#include "ax/class.h"
-#include <ax/any.h>
+#include <ax/class.h>
+#include <ax/type/any.h>
 #include <ax/dump.h>
 #include <stdlib.h>
 #include <string.h>

@@ -20,9 +20,9 @@
  * THE SOFTWARE.
  */
 
-#include <ax/oper.h>
-#include <ax/trait.h>
-#include <ax/def.h>
+#include "ax/oper.h"
+#include "ax/trait.h"
+#include "ax/def.h"
 
 #define ptr_add(_type, _in1, _in2, _out) (*(_type*)_out = *(_type*)_in1 + *(_type*)_in2)
 #define ptr_sub(_type, _in1, _in2, _out) (*(_type*)_out = *(_type*)_in1 - *(_type*)_in2)

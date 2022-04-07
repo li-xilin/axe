@@ -23,7 +23,7 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 #include <ax/algo.h>
-#include <ax/seq.h>
+#include <ax/type/seq.h>
 
 static bool seq_equal_array(ax_seq *seq, void *arr, size_t mem_size)
 {

@@ -21,16 +21,12 @@
  */
 
 #include "axut/runner.h"
-#include "ax/class.h"
-#include "ax/one.h"
-#include "ax/trait.h"
 #include "axut/suite.h"
-
-#include <ax/string.h>
-#include <ax/vector.h>
-#include <ax/mem.h>
-#include <ax/avl.h>
-#include <ax/seq.h>
+#include "ax/string.h"
+#include "ax/trait.h"
+#include "ax/vector.h"
+#include "ax/mem.h"
+#include "ax/avl.h"
 
 #include <setjmp.h>
 #include <stdlib.h>

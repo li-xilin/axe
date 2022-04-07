@@ -25,6 +25,7 @@
 #include "ax/trait.h"
 #include "axut/runner.h"
 #include "axut/suite.h"
+
 #include <stdio.h>
 
 axut_suite *suite_for_stuff()

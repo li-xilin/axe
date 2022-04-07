@@ -20,12 +20,12 @@
  * THE SOFTWARE.
  */
 
-#include <ax/array.h>
-#include <ax/def.h>
-#include <ax/iter.h>
-#include <ax/debug.h>
-#include <ax/mem.h>
-#include <ax/trait.h>
+#include "ax/array.h"
+#include "ax/def.h"
+#include "ax/iter.h"
+#include "ax/debug.h"
+#include "ax/mem.h"
+#include "ax/trait.h"
 
 #include <string.h>
 #include <stdlib.h>

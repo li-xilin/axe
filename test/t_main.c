@@ -21,6 +21,7 @@
  */
 
 #include "axut/runner.h"
+
 #include <stdio.h>
 
 extern axut_suite *suite_for_hmap();

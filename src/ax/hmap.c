@@ -20,21 +20,18 @@
  * THE SOFTWARE.
  */
 
-#include <ax/hmap.h>
-#include <ax/map.h>
-#include <ax/iter.h>
-#include <ax/debug.h>
-#include <ax/log.h>
-#include <ax/trait.h>
+#include "ax/hmap.h"
+#include "ax/iter.h"
+#include "ax/debug.h"
+#include "ax/log.h"
+#include "ax/trait.h"
+#include "check.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include <errno.h>
-
-#include "ax/class.h"
-#include "check.h"
 
 #define DEFAULT_THRESHOLD 8
 

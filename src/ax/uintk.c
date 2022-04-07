@@ -2,8 +2,9 @@
  * https://github.com/kokke/tiny-bignum-c
  * */
 
-#include <ax/uintk.h>
-#include <ax/def.h>
+#include "ax/uintk.h"
+#include "ax/def.h"
+
 #include <stdio.h>
 
 #include "check.h"

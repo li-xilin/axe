@@ -23,15 +23,12 @@
 #define NAME
 #define TYPE ax_byte *
 #include "ring.h"
-#include "ax/deq.h"
 
-#include <ax/mem.h>
-#include <ax/def.h>
-#include <ax/any.h>
-#include <ax/iter.h>
-#include <ax/debug.h>
-#include <ax/trait.h>
-#include <ax/class.h>
+#include "ax/deq.h"
+#include "ax/mem.h"
+#include "ax/def.h"
+#include "ax/iter.h"
+#include "ax/trait.h"
 #include "check.h"
 
 #include <string.h>

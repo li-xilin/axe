@@ -20,10 +20,11 @@
  * THE SOFTWARE.
  */
 
-#include <ax/seq.h>
-#include <ax/dump.h>
-#include <ax/trait.h>
+#include "ax/type/seq.h"
+#include "ax/dump.h"
+#include "ax/trait.h"
 #include "check.h"
+
 #include <errno.h>
 
 size_t ax_seq_array(ax_seq *seq, void *elems[], size_t len)

@@ -20,9 +20,9 @@
  * THE SOFTWARE.
  */
 
-#include <ax/mem.h>
-#include <ax/iter.h>
-#include <ax/box.h>
+#include "ax/mem.h"
+#include "ax/iter.h"
+#include "ax/type/box.h"
 #include "check.h"
 
 

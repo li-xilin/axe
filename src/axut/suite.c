@@ -23,11 +23,9 @@
 #include "axut/suite.h"
 #include "axut/case.h"
 
-#include <ax/one.h>
-#include <ax/vector.h>
-#include <ax/algo.h>
-#include <ax/seq.h>
-#include <ax/mem.h>
+#include "ax/vector.h"
+#include "ax/algo.h"
+#include "ax/mem.h"
 
 #include <stdarg.h>
 #include <stdlib.h>

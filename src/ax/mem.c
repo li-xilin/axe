@@ -20,8 +20,8 @@
  * THE SOFTWARE.
  */
 
-#include <ax/def.h>
-#include <ax/mem.h>
+#include "ax/def.h"
+#include "ax/mem.h"
 
 #include <stdlib.h>
 #include <string.h>

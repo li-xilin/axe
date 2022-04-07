@@ -20,19 +20,16 @@
  * THE SOFTWARE.
  */
 
-#include <ax/stack.h>
-#include <ax/vector.h>
-#include <ax/tube.h>
-#include <ax/any.h>
-#include <ax/mem.h>
-#include <ax/dump.h>
+#include "ax/stack.h"
+#include "ax/vector.h"
+#include "ax/mem.h"
+#include "ax/dump.h"
+#include "check.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-
-#include "check.h"
 
 #undef free
 

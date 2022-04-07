@@ -21,7 +21,6 @@
  */
 
 #include "assist.h"
-
 #include "ax/algo.h"
 #include "ax/iter.h"
 #include "ax/vector.h"
@@ -30,6 +29,7 @@
 #include "ax/oper.h"
 #include "axut/runner.h"
 #include "axut/suite.h"
+
 #include <assert.h>
 #include <setjmp.h>
 #include <stdlib.h>

@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-#include <ax/log.h>
+#include "ax/log.h"
 
 #include <stdarg.h>
 #include <stdio.h>

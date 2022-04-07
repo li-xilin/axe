@@ -20,11 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include "ax/any.h"
-#include <ax/trait.h>
-#include <ax/debug.h>
-#include <ax/dump.h>
-#include <ax/def.h>
+#include "ax/type/any.h"
+#include "ax/trait.h"
+#include "ax/dump.h"
+#include "ax/def.h"
 
 #include <stdio.h>
 #include <stdlib.h>

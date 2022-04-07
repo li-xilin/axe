@@ -22,7 +22,7 @@
 
 #ifndef AX_DEQ_H
 #define AX_DEQ_H
-#include "seq.h"
+#include "type/seq.h"
 
 #ifndef AX_DEQ_DEFINED
 #define AX_DEQ_DEFINED

@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-#include <ax/one.h>
+#include "ax/type/one.h"
 #include "check.h"
 
 bool ax_one_is (const ax_one *one, const char *type)

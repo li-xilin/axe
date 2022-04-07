@@ -22,9 +22,9 @@
 
 #include "ax/iter.h"
 #include "ax/string.h"
-#include "ax/seq.h"
 #include "axut/runner.h"
 #include "axut/suite.h"
+
 #include <assert.h>
 #include <setjmp.h>
 #include <stdlib.h>

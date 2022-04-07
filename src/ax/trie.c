@@ -20,11 +20,11 @@
  * THE SOFTWARE.
  */
 
-#include "ax/seq.h"
-#include <ax/trie.h>
-#include <ax/list.h>
-#include <ax/dump.h>
-#include <ax/trait.h>
+#include "ax/type/seq.h"
+#include "ax/type/trie.h"
+#include "ax/list.h"
+#include "ax/dump.h"
+#include "ax/trait.h"
 
 #include <errno.h>
 
