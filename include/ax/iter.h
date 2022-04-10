@@ -78,14 +78,19 @@ struct ax_citer_st __AX_ITER_STRUCT_BLOCK(const);
 
 inline static ax_citer *ax_iter_c(ax_iter *it)
 {
-	register void *p = it;
-	return p;
+	void *p = it;
+	return (ax_citer *)p;
 }
 
 inline static const ax_citer *ax_iter_cc(const ax_iter *it)
 {
-	register const void *p = it;
-	return p;
+	const void *p = it;
+	return (ax_citer *)p;
+}
+
+inline static ax_citer ax_iter_citer(ax_iter it)
+{
+	return *ax_iter_c(ax_p(ax_iter, it));
 }
 
 inline static bool ax_citer_norm (const ax_citer *it)

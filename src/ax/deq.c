@@ -728,7 +728,7 @@ ax_seq* __ax_deq_construct(const ax_trait *elem_tr)
 
 
 	ax_byte *block = NULL;
-	ax_deq_r self = ax_null;
+	ax_deq_r self = ax_rnull;
 
 	self.deq = malloc(sizeof(ax_deq));
 	if (!self.deq)

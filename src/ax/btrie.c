@@ -99,7 +99,7 @@ static const ax_trait node_tr;
 
 inline static ax_btrie *iter_get_self(const ax_iter *it)
 {
-	return (ax_btrie *)(ax_one_envp(it->owner)->scope.macro);
+	return (ax_btrie *)(ax_class_env((ax_one *)it->owner).scope.macro);
 }
 
 static void citer_prev(ax_citer *it)
@@ -120,12 +120,12 @@ static ax_box *citer_box(const ax_citer *it)
 
 inline static void node_set_parent(struct node_st *node, const void *parent)
 {
-	ax_one_envp(node->submap_r.one)->scope.micro = (uintptr_t)parent;
+	ax_class_env(node->submap_r.one).scope.micro = (uintptr_t)parent;
 }
 
 inline static void *node_get_parent(const struct node_st *node)
 {
-	return (void *)ax_one_envp(node->submap_r.one)->scope.micro;
+	return (void *)ax_class_env(node->submap_r.one).scope.micro;
 }
 
 static void *citer_get(const ax_citer *it)

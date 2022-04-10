@@ -74,76 +74,66 @@ ax_abstract(3, map);
 
 inline static void *ax_map_put(ax_map *map, const void *key, const void *val)
 {
-	ax_require(map, map->tr->put);
-	return ax_trait_out(map->env.box.elem_tr, map->tr->put(map, ax_trait_in(map->env.key_tr, key),
-			ax_trait_in(map->env.box.elem_tr, val), NULL));
+	return ax_trait_out(map->env.box.elem_tr, ax_obj_do(map, put, ax_trait_in(map->env.key_tr, key),
+		ax_trait_in(map->env.box.elem_tr, val), NULL));
 }
 
 inline static void *ax_map_iput(ax_map *map, const void *key, ...)
 {
-	ax_require(map, map->tr->put);
-
 	va_list ap;
 	va_start(ap, key);
-	void *val = map->tr->put(map, ax_trait_in(map->env.key_tr, key), NULL, &ap);
+	void *val = ax_obj_do(map, put, ax_trait_in(map->env.key_tr, key), NULL, &ap);
 	va_end(ap);
 	return ax_trait_out(map->env.box.elem_tr, val);
 }
 
 inline static ax_fail ax_map_erase(ax_map *map, const void *key)
 {
-	ax_require(map, map->tr->erase);
-	return map->tr->erase(map, key);
+	return ax_obj_do(map, erase, key);
 }
 
 inline static void *ax_map_get(ax_map *map, const void *key)
 {
-	ax_require(map, map->tr->get);
 	return ax_trait_out(map->env.box.elem_tr,
-			map->tr->get(map, ax_trait_in(map->env.key_tr, key)));
+			ax_obj_do(map, get, ax_trait_in(map->env.key_tr, key)));
 }
 
 inline static ax_iter ax_map_at(ax_map *map, const void *key)
 {
-	ax_require(map, map->tr->at);
-	return map->tr->at(map, ax_trait_in(map->env.key_tr, key));
+	return ax_obj_do(map, at, ax_trait_in(map->env.key_tr, key));
 }
 
 inline static ax_citer ax_map_cat(const ax_map *map, const void *key)
 {
-	ax_require(map, map->tr->at);
-	ax_iter it = map->tr->at(map, ax_trait_in(map->env.key_tr, key));
-	void *p = &it;
-	return *(ax_citer *)p;
+	return *ax_iter_c(ax_p(ax_iter, ax_obj_do(map, at, ax_trait_in(map->env.key_tr, key))));
 }
 
 inline static void *ax_map_cget(const ax_map *map, const void *key)
 {
-	ax_require(map, map->tr->get);
-	return map->tr->get(map, ax_trait_in(map->env.key_tr, key));
+	return ax_obj_do(map, get, ax_trait_in(map->env.key_tr, key));
 }
 
 inline static bool ax_map_exist(const ax_map *map, const void *key)
 {
-	ax_require(map, map->tr->exist);
-	return map->tr->exist(map, ax_trait_in(map->env.key_tr, key));
+	return ax_obj_do(map, exist, ax_trait_in(map->env.key_tr, key));
 }
 
 inline static void *ax_map_chkey(ax_map *map, const void *key, const void *new_key)
 {
-	ax_require(map, map->tr->chkey);
-	return map->tr->chkey(map, ax_trait_in(map->env.key_tr, key),
+	return ax_obj_do(map, chkey, ax_trait_in(map->env.key_tr, key),
 			ax_trait_in(map->env.key_tr, new_key));
 }
 
 inline static const void *ax_map_citer_key(const ax_citer *it)
 {
-	return ax_trait_out(it->etr, ((const ax_map *)it->owner)->tr->itkey(it));
+	ax_obj_require((const ax_map *)it->owner, itkey);
+	return ax_trait_out(it->etr, ax_class_trait((const ax_map *)it->owner).itkey(it));
 }
 
 inline static void *ax_map_iter_key(const ax_iter *it)
 {
-	return ax_trait_out(it->etr, ((const ax_map *)it->owner)->tr->itkey(ax_iter_cc(it)));
+	ax_obj_require((const ax_map *)it->owner, itkey);
+	return (void *)ax_trait_out(it->etr, ax_class_trait((const ax_map *)it->owner).itkey(ax_iter_cc(it)));
 }
 
 const void *ax_map_key(ax_map *map, const void *key);

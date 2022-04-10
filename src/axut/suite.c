@@ -54,7 +54,7 @@ axut_suite *axut_suite_create(const char *name)
 {
 	CHECK_PARAM_NULL(name);
 	axut_suite *suite = NULL;
-	ax_vector_r cases = ax_null;
+	ax_vector_r cases = ax_rnull;
 	char *name_copy = NULL;
 	
 	suite = malloc(sizeof(axut_suite));

@@ -260,9 +260,9 @@ const ax_one_trait ax_runner_tr = {
 ax_class_constructor(runner, axut_output_f output_cb)
 {
 	ax_runner *runner = NULL;
-	ax_avl_r smap = ax_null;
-	ax_vector_r suites = ax_null;
-	ax_string_r output = ax_null;
+	ax_avl_r smap = ax_rnull;
+	ax_vector_r suites = ax_rnull;
+	ax_string_r output = ax_rnull;
 
 	runner = malloc(sizeof(ax_runner));
 	if (!runner)

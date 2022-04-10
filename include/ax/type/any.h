@@ -48,14 +48,12 @@ ax_abstract(1, any);
 
 inline static ax_any *ax_any_copy(const ax_any* any)
 {
-	ax_require(any, any->tr->copy);
-	return any->tr->copy(any);
+	return ax_obj_do0(any, copy);
 }
 
 inline static ax_dump *ax_any_dump(const ax_any* any)
 {
-	ax_require(any, any->tr->dump);
-	return any->tr->dump(any);
+	return ax_obj_do0(any, dump);
 }
 
 ax_fail __ax_any_print(const ax_any *any, const char *file, int line);

@@ -48,42 +48,36 @@ ax_abstract(2, tube);
 
 inline static ax_fail ax_tube_push(ax_tube *tube, const void *val)
 {
-	ax_require(tube, tube->tr->push);
-	return tube->tr->push(tube, val, NULL);
+	return ax_obj_do(tube, push, val, NULL);
 }
 
 inline static ax_fail ax_tube_ipush(ax_tube *tube, ...)
 {
-	ax_require(tube, tube->tr->push);
 	va_list ap;
 	va_start(ap, tube);
-	ax_fail fail = tube->tr->push(tube, NULL, &ap);
+	ax_fail fail = ax_obj_do(tube, push, NULL, &ap);
 	va_end(ap);
 	return fail;
 }
 
 inline static void ax_tube_pop(ax_tube *tube)
 {
-	ax_require(tube, tube->tr->pop);
-	tube->tr->pop(tube);
+	ax_obj_do0(tube, pop);
 }
 
 static inline const void *ax_tube_prime(ax_tube *tube)
 {
-	ax_require(tube, tube->tr->prime);
-	return tube->tr->prime(tube);
+	return ax_obj_do0(tube, prime);
 }
 
 static inline const void *ax_tube_cprime(const ax_tube *tube)
 {
-	ax_require(tube, tube->tr->prime);
-	return tube->tr->prime(tube);
+	return ax_obj_do0(tube, prime);
 }
 
 static inline size_t ax_tube_size(const ax_tube *tube)
 {
-	ax_require(tube, tube->tr->size);
-	return tube->tr->size(tube);
+	return ax_obj_do0(tube, size);
 }
 
 #endif

@@ -61,136 +61,113 @@ ax_abstract(3, trie);
 
 inline static void *ax_trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 {
-	ax_require(trie, trie->tr->put);
-	return trie->tr->put(trie, key, val, NULL);
+	return ax_obj_do(trie, put, key, val, NULL);
 }
 
 inline static void *ax_trie_iput(ax_trie *trie, const ax_seq *key, ...)
 {
 	va_list ap;
 	va_start(ap, key);
-	void *ret = trie->tr->put(trie, key, NULL, &ap);
+	void *ret = ax_obj_do(trie, put, key, NULL, &ap);
 	va_end(ap);
 	return ret;
 }
 
 inline static bool ax_trie_erase(ax_trie *trie, const ax_seq *key)
 {
-	ax_require(trie, trie->tr->erase);
-	return trie->tr->erase(trie, key);
+	return ax_obj_do(trie, erase, key);
 }
 
 inline static bool ax_trie_prune(ax_trie *trie, const ax_seq *key)
 {
-	ax_require(trie, trie->tr->prune);
-	return trie->tr->prune(trie, key);
+	return ax_obj_do(trie, prune, key);
 }
 
 inline static void *ax_trie_get(ax_trie *trie, const ax_seq *key)
 {
-	ax_require(trie, trie->tr->get);
-	return trie->tr->get(trie, key);
+	return ax_obj_do(trie, get, key);
 }
 
 inline static ax_iter ax_trie_at(ax_trie *trie, const ax_seq *key)
 {
-	ax_require(trie, trie->tr->at);
-	return trie->tr->at(trie, key);
+	return ax_obj_do(trie, at, key);
 }
 
 inline static ax_citer ax_trie_cat(const ax_trie *trie, const ax_seq *key)
 {
-	ax_require(trie, trie->tr->at);
-	ax_iter it = trie->tr->at(trie, key);
+	ax_iter it = ax_obj_do(trie, at, key);
 	void *p = &it;
 	return *(ax_citer *)p;
 }
 
 inline static void *ax_trie_cget(const ax_trie *trie, const ax_seq *key)
 {
-	ax_require(trie, trie->tr->get);
-	return trie->tr->get(trie, key);
+	return ax_obj_do(trie, get, key);
 }
 
 inline static bool ax_trie_exist(const ax_trie *trie, const ax_seq *key, bool *valued)
 {
-	ax_require(trie, trie->tr->exist);
-	return trie->tr->exist(trie, key, valued);
+	return ax_obj_do(trie, exist, key, valued);
 }
 
 inline static const void *ax_trie_iter_word(const ax_iter *it)
 {
-	ax_trie_cr self_r = { .box = ax_iter_box(it) };
-	return self_r.trie->tr->it_word(ax_iter_cc(it));
+	return ax_class_trait((ax_trie *)ax_iter_box(it)).it_word(ax_iter_cc(it));
 }
 
 inline static const void *ax_trie_citer_word(const ax_citer *it)
 {
-	ax_trie_cr self_r = { .box = ax_citer_box(it) };
-	return self_r.trie->tr->it_word(it);
+	return ax_class_trait((ax_trie *)ax_citer_box(it)).it_word(it);
 }
 
 inline static ax_iter ax_trie_iter_begin(const ax_iter *it)
 {
-	ax_trie_cr self_r = { .box = ax_iter_box(it) };
-	return self_r.trie->tr->it_begin(ax_iter_cc(it));
+	return ax_class_trait((ax_trie *)ax_iter_box(it)).it_begin(ax_iter_cc(it));
 }
 
 inline static ax_iter ax_trie_citer_begin(const ax_citer *it)
 {
-	ax_trie_cr self_r = { .box = ax_citer_box(it) };
-	return self_r.trie->tr->it_begin(it);
+	return ax_class_trait((ax_trie *)ax_citer_box(it)).it_begin(it);
 }
 
 inline static ax_citer ax_trie_citer_cbegin(const ax_citer *it)
 {
-	ax_trie_cr self_r = { .box = ax_citer_box(it) };
-	ax_iter tmp = self_r.trie->tr->it_begin(it);
-	return *ax_iter_c(&tmp);
+	return ax_iter_citer(ax_class_trait((ax_trie *)ax_citer_box(it)).it_begin(it));
 }
 
 inline static ax_iter ax_trie_iter_end(const ax_iter *it)
 {
-	ax_trie_cr self_r = { .box = ax_iter_box(it) };
-	return self_r.trie->tr->it_end(ax_iter_cc(it));
+	return ax_class_trait((ax_trie *)ax_iter_box(it)).it_end(ax_iter_cc(it));
 }
 
 inline static ax_iter ax_trie_citer_end(const ax_citer *it)
 {
-	ax_trie_cr self_r = { .box = ax_citer_box(it) };
-	return self_r.trie->tr->it_end(it);
+	return ax_class_trait((ax_trie *)ax_citer_box(it)).it_end(it);
 }
 
 inline static ax_citer ax_trie_citer_cend(const ax_citer *it)
 {
-	ax_trie_cr self_r = { .box = ax_citer_box(it) };
-	ax_iter tmp = self_r.trie->tr->it_end(it);
-	return *ax_iter_c(&tmp);
+	return ax_iter_citer(ax_class_trait((ax_trie *)ax_citer_box(it)).it_end(it));
 }
 
-inline static ax_fail ax_trie_rekey(ax_trie *trie,
-		const ax_seq *key_from, const ax_seq *key_to)
+inline static ax_fail ax_trie_rekey(ax_trie *trie, const ax_seq *key_from, const ax_seq *key_to)
 {
-	ax_require(trie, trie->tr->rekey);
-	return trie->tr->rekey(trie, key_from, key_to);
+	return ax_obj_do(trie, rekey, key_from, key_to);
 }
 
 inline static bool ax_trie_iter_valued(const ax_iter *it)
 {
-	ax_trie_cr self_r = { .box = ax_iter_box(it) };
-	return self_r.trie->tr->it_valued(ax_iter_cc(it));
+	return ax_class_trait((ax_trie *)ax_iter_box(it)).it_valued(ax_iter_cc(it));
 }
 
 inline static bool ax_trie_citer_valued(const ax_citer *it)
 {
-	ax_trie_cr self_r = { .box = ax_citer_box(it) };
-	return self_r.trie->tr->it_valued(it);
+	return ax_class_trait((ax_trie *)ax_citer_box(it)).it_valued(it);
 }
 
 inline static const ax_trait *ax_trie_key_tr(const ax_trie *trie)
 {
-	ax_trie_cr self_r = { .trie = trie };
-	return self_r.trie->env.key_tr;
+	return ax_class_env(trie).key_tr;
 }
 
 typedef bool (*ax_trie_enum_cb_f)(const ax_trie *trie, const ax_seq *key, const void *val, void *ctx);

@@ -48,8 +48,7 @@ ax_begin_env(str) ax_end;
 ax_abstract(4, str);
 
 inline static ax_fail ax_str_append(ax_str* str, const char *s) {
-	ax_require(str, str->tr->append);
-	return str->tr->append(str, s);
+	return ax_obj_do(str, append, s);
 }
 
 inline static size_t ax_str_length(const ax_str* str)
@@ -59,39 +58,34 @@ inline static size_t ax_str_length(const ax_str* str)
 
 inline static ax_fail ax_str_insert(ax_str* str, size_t start, const char *s)
 {
-	ax_require(str, str->tr->insert);
-	return str->tr->insert(str, start, s);
+	return ax_obj_do(str, insert, start, s);
 }
 
 inline static char *ax_str_strz(ax_str* str)
 {
-	ax_require(str, str->tr->strz);
-	return str->tr->strz(str);
+	return ax_obj_do0(str, strz);
 }
 
 inline static int ax_str_comp(const ax_str* str, const char* s)
 {
-	ax_require(str, str->tr->comp);
-	return str->tr->comp(str, s);
+	return ax_obj_do(str, comp, s);
 }
 
 inline static ax_str *ax_str_substr(const ax_str* str, size_t start, size_t len)
 {
-	ax_require(str, str->tr->substr);
-	return str->tr->substr(str, start, len);
+	return ax_obj_do(str, substr, start, len);
 }
 
 inline static ax_seq_r ax_str_split(const ax_str* str, const char ch)
 {
-	ax_require(str, str->tr->split);
-	return ax_r(seq, str->tr->split(str, ch));
+	return ax_r(seq, ax_obj_do(str, split, ch));
 }
 
 inline static ax_fail ax_str_sprintf(ax_str* str, const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
-	ax_fail fail = str->tr->sprintf(str, fmt, args);
+	ax_fail fail = ax_obj_do(str, sprintf, fmt, args);
 	va_end(args);
 	return fail;
 }

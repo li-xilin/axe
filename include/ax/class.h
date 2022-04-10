@@ -24,6 +24,7 @@
 #define AX_CLASS_H
 
 #include "trick.h"
+#include "debug.h"
 
 #define __AX_CLASS_ENTRY_STRUCT(name) struct AX_CATENATE(ax_, name, _st)
 #define __AX_CLASS_TRAIT_STRUCT(name) struct AX_CATENATE(ax_, name, _trait_st)
@@ -102,10 +103,21 @@
 	__AX_CLASS_ROLE(n, name); \
 	__AX_CLASS_ABSTRACT(name)
 
+#define ax_class_trait(obj) (*((obj)->tr))
+#define ax_class_env(obj) ((obj)->env)
+#define ax_class_do0(obj, func) ax_class_trait(obj).func(obj)
+#define ax_class_do(obj, func, ...) ax_class_trait(obj).func(obj, __VA_ARGS__)
+
 #define ax_concrete(n, name) \
 	__AX_CLASS_ROLE(n, name)
 
 #define ax_r(type, ptr) ((ax_##type##_r){ .type = ptr })
 #define ax_cr(type, ptr) ((ax_##type##_cr){ .type = ptr })
+#define ax_r_trait(src, dst, ptr) ax_class_trait(ax_r(src, ptr).dst)
+#define ax_cr_trait(src, dst, ptr) ax_class_trait(ax_cr(src, ptr).dst)
+#define ax_r_env(src, dst, ptr) ax_class_env(ax_r(src, ptr).dst)
+#define ax_cr_env(src, dst, ptr) ax_class_env(ax_cr(src, ptr).dst)
+
+#define ax_rnull { NULL }
 
 #endif

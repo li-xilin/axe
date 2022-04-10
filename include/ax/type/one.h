@@ -27,14 +27,27 @@
 #include "../class.h"
 #include "../flow.h"
 
-#define ax_require(_one, _op) ( \
-		ax_assert(_one, "NULL object is specified for ax_require"), \
-		ax_assert((_op), \
-			"operation for %s is required, but not implemented", \
-			((ax_one *)(_one))->tr->name) \
+#define ax_obj_require(_obj, _op) \
+( \
+	ax_assert((_obj), "NULL object is specified"), \
+	ax_assert( \
+		ax_class_trait(_obj)._op, \
+		"operation for %s is required, but not implemented", \
+		ax_class_trait((ax_one *)(_obj)).name((ax_one *)(_obj)) \
+	)  \
 )
 
-#define ax_null { .one = NULL }
+#define ax_obj_do(_obj, _op, ...) \
+( \
+	ax_obj_require(_obj, _op), \
+	ax_class_do(_obj, _op, __VA_ARGS__) \
+)
+
+#define ax_obj_do0(_obj, _op) \
+( \
+	ax_obj_require(_obj, _op), \
+	ax_class_do0(_obj, _op) \
+)
 
 #ifndef AX_ONE_DEFINED
 #define AX_ONE_DEFINED
@@ -68,21 +81,15 @@ ax_abstract(0, one);
 
 inline static const char *ax_one_name(const ax_one *one)
 {
-	ax_require(one, one->tr->name);
-	return one->tr->name(one);
+	return ax_obj_do0(one, name);
+
 }
 
 inline static void ax_one_free(ax_one *one)
 {
 	if (!one) 
 		return;
-	ax_require(one, one->tr->free);
-	one->tr->free(one);
-}
-
-inline static ax_one_env *ax_one_envp(const ax_one *one)
-{
-	return (ax_one_env *)((char*)one + sizeof (ax_one_trait *));
+	ax_obj_do0(one, free);
 }
 
 bool ax_one_is(const ax_one *one, const char *type);

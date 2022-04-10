@@ -89,80 +89,65 @@ ax_abstract(2, box);
 
 static inline size_t ax_box_size(const ax_box* box)
 {
-	ax_require(box, box->tr->size);
-	return box->tr->size(box);
+	return ax_obj_do0(box, size);
 }
 
 static inline size_t ax_box_maxsize(const ax_box* box)
 {
-	ax_require(box, box->tr->maxsize);
-	return box->tr->maxsize(box);
+	return ax_obj_do0(box, maxsize);
 }
 
 static inline ax_iter ax_box_begin(ax_box* box)
 {
-	ax_require(box, box->tr->begin);
-	return box->tr->begin(box);
+	return ax_obj_do0(box, begin);
 }
 
 static inline ax_iter ax_box_end(ax_box* box)
 {
-	ax_require(box, box->tr->end);
-	return box->tr->end(box);
+	return ax_obj_do0(box, end);
 }
 
 static inline ax_iter ax_box_rbegin(ax_box* box)
 {
-	ax_require(box, box->tr->rbegin);
-	return box->tr->rbegin(box);
+	return ax_obj_do0(box, rbegin);
 }
 
 static inline ax_iter ax_box_rend(ax_box* box)
 {
-	ax_require(box, box->tr->rend);
-	return box->tr->rend(box);
+	return ax_obj_do0(box, rend);
 }
 
 static inline ax_citer ax_box_cbegin(const ax_box* box)
 {
-	ax_require(box, box->tr->begin);
-	ax_iter iter = ax_box_begin((ax_box *)box);
-	return *ax_iter_c(&iter);
+	return *ax_iter_c(ax_p(ax_iter, ax_box_begin((ax_box *)box)));
 }
 
 static inline ax_citer ax_box_cend(const ax_box* box)
 {
-	ax_require(box, box->tr->end);
-	ax_iter iter = ax_box_end((ax_box *)box);
-	return *ax_iter_c(&iter);
+	return *ax_iter_c(ax_p(ax_iter, ax_box_end((ax_box *)box)));
 }
 
 static inline ax_citer ax_box_crbegin(const ax_box* box)
 {
-	ax_require(box, box->tr->rbegin);
-	ax_iter iter = box->tr->rbegin((ax_box *)box);
-	return *ax_iter_c(&iter);
+	return *ax_iter_c(ax_p(ax_iter, ax_box_rbegin((ax_box *)box)));
 }
 
 static inline ax_citer ax_box_crend(const ax_box* box)
 {
-	ax_require(box, box->tr->rend);
-	ax_iter iter = box->tr->rend((ax_box *)box);
-	return *ax_iter_c(&iter);
+	return *ax_iter_c(ax_p(ax_iter, ax_box_rend((ax_box *)box)));
 }
 
 static inline void ax_box_clear(ax_box* box)
 {
-	ax_require(box, box->tr->clear);
-	box->tr->clear(box);
+	ax_obj_do0(box, clear);
 }
 
 static inline bool ax_box_iter_ended(ax_box* box, ax_iter *it)
 {
 	if (it->tr->norm)
-		ax_require(box, box->tr->end);
+		ax_obj_require(box, end);
 	else
-		ax_require(box, box->tr->rend);
+		ax_obj_require(box, rend);
 
 	return ax_iter_equal(it, it->tr->norm
 			? ax_ptrof(ax_iter, ax_box_end(box))
