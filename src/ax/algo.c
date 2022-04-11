@@ -27,13 +27,26 @@
 #include "ax/oper.h"
 #include "ax/mem.h"
 #include "ax/trait.h"
+#include "ax/class.h"
 #include "check.h"
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#define ASSERT_ITER_TYPE(_it, _type) ax_assert(ax_one_is(_it->owner, _type), "'%s' is not an iterator of '%s'", #_it, #_type);
+#define ASSERT_ITER_TYPE(_it, _type) \
+	ax_assert(((_it)->tr->type & (_type)) == (_type), \
+		"expect iterator compatible with %s, but actually %s", \
+		ax_iter_type_str(_type), \
+		ax_iter_type_str((_it)->tr->type) \
+	)
+
+#define ASSERT_OBJ_TYPE(_obj, _type) \
+	ax_assert(ax_one_is(_obj, _type), \
+		"expect container compatible with %s, but actually %s", \
+		_type, \
+		ax_one_name((const ax_one *)_obj) \
+	)
 
 void ax_transform(const ax_citer *first1, const ax_citer *last1, const ax_iter *first2, const ax_pred *upred)
 {
@@ -184,8 +197,7 @@ void ax_partition(ax_iter *first, const ax_iter *last, const ax_pred *pred)
 {
 	CHECK_PARAM_NULL(pred);
 	CHECK_ITER_COMPARABLE(first, last);
-	ax_assert((first->tr->type & AX_IT_FORW) == AX_IT_FORW,
-			"iterator type is not supported");
+	ASSERT_ITER_TYPE(first, AX_IT_FORW);
 
 	ax_find_if_not(ax_iter_c(first), ax_iter_cc(last), pred);
 
@@ -236,7 +248,7 @@ static void quick_sort(const ax_iter *first, const ax_iter *last)
 ax_fail ax_quick_sort(const ax_iter *first, const ax_iter *last)
 {
 	CHECK_ITER_COMPARABLE(first, last);
-	ax_assert(ax_iter_is(first, AX_IT_BID), "unsupported iterator type");
+	ASSERT_ITER_TYPE(first, AX_IT_BID);
 
 	quick_sort(first, last);
 	return false;
@@ -246,6 +258,8 @@ void ax_merge(const ax_citer *first1, const ax_citer *last1, const ax_citer *fir
 {
 	CHECK_ITER_COMPARABLE(first1, last1);
 	CHECK_ITER_COMPARABLE(first2, last2);
+	ASSERT_ITER_TYPE(first1, AX_IT_FORW);
+	ASSERT_ITER_TYPE(first2, AX_IT_FORW);
 
 	const ax_trait *etr = first1->etr;
 	ax_citer cur1 = *first1, cur2 = *first2;
@@ -334,8 +348,11 @@ void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
 
 ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 {
+	CHECK_PARAM_NULL(first);
+	CHECK_PARAM_NULL(last);
 	CHECK_ITER_COMPARABLE(first, last);
-	ax_assert(ax_iter_is(first, AX_IT_FORW), "unsupported iterator type");
+	ASSERT_ITER_TYPE(first, AX_IT_FORW);
+	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, seq));
 
 	size_t size = 0;
 	ax_iter cur = *first;
@@ -398,8 +415,8 @@ bool ax_equal_to_arr(const ax_iter *first, const ax_iter *last, void *arr, size_
 void ax_binary_search(ax_citer *first, const ax_citer *last, const void* p)
 {
 	CHECK_ITER_COMPARABLE(first, last);
-	ax_assert(ax_one_is(first->owner, "one.any.box.seq"), "unsupported container type");
-	ax_assert(ax_citer_is(first, AX_IT_RAND), "unsupported citerator type");
+	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, seq));
+	ASSERT_ITER_TYPE(first, AX_IT_RAND);
 
 	void *orignal_last_citer_point = last->point;
 	const ax_trait *etr = first->etr;
@@ -429,8 +446,9 @@ void ax_binary_search(ax_citer *first, const ax_citer *last, const void* p)
 void ax_binary_search_if_not(ax_citer *first, const ax_citer *last, const ax_pred *upred)
 {
 	CHECK_ITER_COMPARABLE(first, last);
-	ax_assert(ax_one_is(first->owner, "one.any.box.seq"), "unsupported container type");
-	ax_assert(ax_citer_is(first, AX_IT_RAND), "unsupported citerator type");
+	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, seq));
+	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, seq));
+	ASSERT_ITER_TYPE(first, AX_IT_RAND);
 
 	ax_citer left = *first, right = *last, middle = { .owner = first->owner, .tr = first->tr, .etr = first->etr };
 	while (!ax_citer_equal(&left, &right)) {
@@ -453,8 +471,8 @@ void ax_binary_search_if_not(ax_citer *first, const ax_citer *last, const ax_pre
 ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 {
 	CHECK_ITER_COMPARABLE(first, last);
-	ax_assert(ax_one_is(first->owner, "one.any.box.seq"), "unsupported container type");
-	ax_assert(ax_iter_is(first, AX_IT_FORW), "unsupported iterator type");
+	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, seq));
+	ASSERT_ITER_TYPE(first, AX_IT_FORW);
 
 	ax_pred pred;
 	const ax_trait *etr = first->etr;
@@ -499,6 +517,8 @@ void ax_find_first_unsorted(ax_citer *first, const ax_citer *last, const ax_pred
 {
 	CHECK_PARAM_NULL(bpred);
 	CHECK_ITER_COMPARABLE(first, last);
+	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, seq));
+	ASSERT_ITER_TYPE(first, AX_IT_FORW);
 
 	if (ax_citer_equal(first, last)) {
 		first->point = last->point;
