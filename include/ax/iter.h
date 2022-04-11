@@ -265,4 +265,6 @@ inline static void ax_iter_swap(const ax_iter *it1, const ax_iter *it2)
 			it2->tr->get(ax_iter_cc(it2)), it1->etr->size);
 }
 
+const char *ax_iter_type_str(int type);
+
 #endif

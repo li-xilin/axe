@@ -24,5 +24,21 @@
 #include "ax/iter.h"
 #include "ax/type/box.h"
 #include "check.h"
+#define AX_IT_IN   ((1 << 0))
+#define AX_IT_FORW ((1 << 1) | AX_IT_IN)
+#define AX_IT_BID  ((1 << 2) | AX_IT_IN | AX_IT_FORW)
+#define AX_IT_RAND ((1 << 3) | AX_IT_IN | AX_IT_FORW | AX_IT_BID)
+#define AX_IT_OUT  ((1 << 4))
 
 
+const char *ax_iter_type_str(int type)
+{
+	switch(type) {
+		case AX_IT_IN: return "AX_IT_IN"; break;
+		case AX_IT_FORW: return "AX_IT_FORW"; break;
+		case AX_IT_BID: return "AX_IT_BID"; break;
+		case AX_IT_RAND: return "AX_IT_RAND"; break;
+		case AX_IT_OUT: return "AX_IT_OUT"; break;
+		default: return "<unknown type>";
+	}
+}

@@ -255,7 +255,7 @@ static int qsort_compare_cb(const void* p1, const void* p2)
 
 static void sort_time(ax_runner *r) {
 	const size_t length = 0xFFFF;
-	//const size_t length = 0x3FFFFF;
+	// const size_t length = 0x3FFFFF;
 	ax_iter first, last;
 	clock_t time_before;
 	srand(20);
