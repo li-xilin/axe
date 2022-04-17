@@ -26,11 +26,20 @@ all debug clean:
 	$(MAKE) -C src/axut $@
 
 install:
-	install -m 755 -d $(DESTDIR)/lib $(DESTDIR)/include $(DESTDIR)/include/ax $(DESTDIR)/include/axut $(MANDIR)/man3
+	install -m 755 -d \
+		$(DESTDIR)/lib \
+		$(DESTDIR)/include \
+		$(DESTDIR)/include/ax \
+		$(DESTDIR)/include/ax/type \
+		$(DESTDIR)/include/ax/static \
+		$(DESTDIR)/include/axut \
+		$(MANDIR)/man3
 	install -m 644 lib/libax.a lib/libaxut.a $(DESTDIR)/lib
 	install -m 644 include/ax/*.h $(DESTDIR)/include/ax
+	install -m 644 include/ax/type/*.h $(DESTDIR)/include/ax/type
+	install -m 644 include/ax/static/*.h $(DESTDIR)/include/ax/type/static
 	install -m 644 include/axut/*.h $(DESTDIR)/include/axut
-	install -m 644 man/man3/*.3 $(MANDIR)/man3
+	install -m 644 man/man3/* $(MANDIR)/man3
 
 uninstall:
 	$(RM) -r $(DESTDIR)/include/ax $(DESTDIR)/include/axut
