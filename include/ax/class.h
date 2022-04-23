@@ -79,12 +79,14 @@
 #define __AX_CLASS_ROLE(n, name) \
 	typedef union \
 	{ \
+		const void *__ptr; \
 		AX_PAVE_TO(n, __AX_CLASS_ROLE_ITEM, const, name) \
 		__AX_CLASS_DECLARE_VAR(const,  name) \
 	} AX_CATENATE(ax_, name, _cr); \
 	\
 	typedef union \
 	{ \
+		void *__ptr; \
 		AX_PAVE_TO(n, __AX_CLASS_ROLE_ITEM, , name) \
 		__AX_CLASS_DECLARE_VAR(, name) \
 	} AX_CATENATE(ax_, name, _r)
@@ -119,5 +121,6 @@
 #define ax_cr_env(src, dst, ptr) ax_class_env(ax_cr(src, ptr).dst)
 
 #define ax_rnull { NULL }
+#define ax_r_isnull(r) (!(r).__ptr)
 
 #endif
