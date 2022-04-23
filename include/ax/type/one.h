@@ -55,10 +55,13 @@ typedef struct ax_one_st ax_one;
 #endif
 
 #define ax_scope(...) \
-	for (ax_one *__ax_auto_vars[] = { (ax_one *)1, __VA_ARGS__ }; \
-			__ax_auto_vars[0]; \
-			ax_one_multi_free(__ax_auto_vars + 1, ax_nelems(__ax_auto_vars) - 1), \
-				__ax_auto_vars[0] = NULL)
+	for (ax_one *__ax_scope_vars[] = { (ax_one *)1, __VA_ARGS__ }; \
+			__ax_scope_vars[0]; \
+			ax_one_multi_free(__ax_scope_vars + 1, ax_nelems(__ax_scope_vars) - 1), \
+				__ax_scope_vars[0] = 0) \
+		for (int __ax_scope_cont = 1; __ax_scope_cont; __ax_scope_cont = 0) /* clean memory even if break is called */
+
+
 
 #define ax_baseof_one
 
