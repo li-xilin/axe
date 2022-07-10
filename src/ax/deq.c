@@ -55,7 +55,7 @@
 
 #undef free
 
-ax_begin_data(deq)
+ax_concrete_begin(deq)
 	struct ring_st map;
 	uint16_t front, rear;
 ax_end;

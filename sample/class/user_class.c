@@ -10,10 +10,10 @@
 
 typedef struct ax_sharp_st ax_sharp;
 
-ax_begin_env(sharp)
+ax_abstract_env_begin(sharp)
 ax_end;
 
-ax_begin_trait(sharp)
+ax_abstract_begin(sharp)
 	float (*area)(const struct ax_sharp_st *sharp);
 	float (*side_length)(const struct ax_sharp_st *sharp);
 ax_end;
@@ -34,7 +34,7 @@ inline static float ax_sharp_side_length(const struct ax_sharp_st *sharp)
 
 #define ax_baseof_circle sharp
 
-ax_begin_data(circle)
+ax_concrete_begin(circle)
 	float radius;
 ax_end;
 

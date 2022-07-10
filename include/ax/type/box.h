@@ -66,7 +66,7 @@ typedef size_t  (*ax_box_size_f)  (const ax_box* box);
 typedef ax_iter (*ax_box_iter_f)  (      ax_box* box);
 typedef void    (*ax_box_clear_f) (      ax_box* box);
 
-ax_begin_trait(box)
+ax_abstract_begin(box)
 	const ax_iter_trait iter;
 	const ax_iter_trait riter;
 
@@ -81,7 +81,7 @@ ax_begin_trait(box)
 	const ax_box_clear_f clear;
 ax_end;
 
-ax_begin_env(box)
+ax_abstract_env_begin(box)
 	const ax_trait *const elem_tr;
 ax_end;
 

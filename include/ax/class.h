@@ -48,26 +48,29 @@
 #define ax_class_constructor(name, ...) \
 	__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) *AX_CATENATE(__ax_, name, _construct, AX_NARG(__VA_ARGS__))(__VA_ARGS__)
 
-#define ax_begin_root_trait(name) \
+#define ax_abstract_root_begin(name) \
 	typedef __AX_CLASS_TRAIT_STRUCT(name)  AX_CATENATE(ax_, name, _trait); \
 	__AX_CLASS_TRAIT_STRUCT(name) {\
 
-#define ax_begin_trait(name) \
-	ax_begin_root_trait(name) \
+#define ax_abstract_begin(name) \
+	ax_abstract_root_begin(name) \
 		const __AX_CLASS_TRAIT_STRUCT(ax_base_of(1, name)) ax_base_of(1, name);
 
-#define ax_begin_root_env(name) \
+#define ax_abstract_root_env_begin(name) \
 	typedef __AX_CLASS_ENV_STRUCT(name) AX_CATENATE(ax_, name, _env); \
 	__AX_CLASS_ENV_STRUCT(name) {
 
-#define ax_begin_env(name) \
-	ax_begin_root_env(name) \
+#define ax_abstract_env_begin(name) \
+	ax_abstract_root_env_begin(name) \
 		__AX_CLASS_ENV_STRUCT(ax_base_of(1, name)) ax_base_of(1, name);
 
-#define ax_begin_data(name) \
+#define ax_concrete_begin(name) \
 	__AX_CLASS_ENTRY_STRUCT(name) { \
 		__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) ax_base_of(1, name);
 
+#ifdef ax_end
+#undef ax_end
+#endif
 #define ax_end }
 
 #define __ax_base_of(n, name) __AX_PREFIX_TO_##n(ax_baseof_, name)

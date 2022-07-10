@@ -36,7 +36,7 @@ typedef struct ax_trie_st ax_trie;
 
 #define ax_baseof_trie box
 
-ax_begin_trait(trie)
+ax_abstract_begin(trie)
 	const ax_iter_trait iter_root;
 	void       *(*put)      (ax_trie *trie, const ax_seq *key, const void *val, va_list *ap);
 	void       *(*get)      (const ax_trie *trie, const ax_seq *key);
@@ -53,7 +53,7 @@ ax_begin_trait(trie)
 	void        (*it_clean) (const ax_iter *it);
 ax_end;
 
-ax_begin_env(trie)
+ax_abstract_env_begin(trie)
 	const ax_trait *key_tr;
 ax_end;
 

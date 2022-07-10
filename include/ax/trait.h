@@ -39,9 +39,12 @@ typedef struct ax_trait_st ax_trait;
 typedef struct ax_dump_st ax_dump;
 #endif
 
-#define __ax_require(_fun) ax_assert(_fun, "NULL pointer of %s", _fun)
+#ifdef ax_end
+#undef ax_end
+#endif
+#define ax_end }
 
-#define ax_t(_name) (&ax_trait_##_name)
+#define __ax_require(_fun) ax_assert(_fun, "NULL pointer of %s", _fun)
 
 typedef void    (*ax_trait_free_f)(void* p);
 typedef bool    (*ax_trait_compare_f) (const void* p1, const void* p2);
@@ -63,6 +66,7 @@ struct ax_trait_st
 	bool               link;
 };
 
+#define ax_t(_name) (&ax_trait_##_name)
 
 #define ax_trait_char ax_trait_i8
 #define ax_trait_uchar ax_trait_u8
@@ -129,6 +133,44 @@ extern const ax_trait ax_trait_ptr;
 extern const ax_trait ax_trait_str;
 extern const ax_trait ax_trait_wcs;
 extern const ax_trait ax_trait_diff;
+
+#define ax_type(_name) ax_trait_type_##_name
+
+typedef void      ax_type(void);
+typedef int8_t    ax_type(i8);
+typedef int16_t   ax_type(i16);
+typedef int32_t   ax_type(int32);
+typedef int64_t   ax_type(int64);
+typedef uint8_t   ax_type(u8);
+typedef uint16_t  ax_type(u16);
+typedef uint32_t  ax_type(u32);
+typedef uint64_t  ax_type(u64);
+typedef size_t    ax_type(size);
+typedef float     ax_type(float);
+typedef double    ax_type(double);
+typedef void*     ax_type(ptr);
+typedef char*     ax_type(str);
+typedef wchar_t*  ax_type(wcs);
+typedef ptrdiff_t ax_type(diff);
+
+#define ax_trait_declare(_name, _type) \
+	const struct ax_trait_st ax_t(_name); \
+	typedef _type ax_type(_name)
+
+	
+#define ax_trait_begin(_name) \
+	const struct ax_trait_st ax_t(_name) = { \
+		.size = sizeof(ax_type(_name)),
+
+#define ax_trait_set_equal(_func) .equal = &_func
+#define ax_trait_set_less(_func) .less = &_func
+#define ax_trait_set_hash(_func) .hash = &_func
+#define ax_trait_set_free(_func) .free = &_func
+#define ax_trait_set_copy(_func) .copy = &_func
+#define ax_trait_set_init(_func) .init = &_func
+#define ax_trait_set_dump(_func) .dump = &_func
+#define ax_trait_set_link(_bool) .link = _bool
+
 
 #define ax_trait_in(_tr, _ptr) ((_tr)->link ? &(_ptr) : *&(_ptr))
 

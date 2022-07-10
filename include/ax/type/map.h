@@ -56,7 +56,7 @@ typedef ax_map *ax_map_init_f(const ax_trait* tr1, const ax_trait* tr2);
 
 #define ax_baseof_map box
 
-ax_begin_trait(map)
+ax_abstract_begin(map)
 	void *(*put) (ax_map *map, const void *key, const void *val, va_list *ap);
 	void *(*get) (const ax_map *map, const void *key);
 	ax_iter (*at) (const ax_map *map, const void *key);
@@ -66,7 +66,7 @@ ax_begin_trait(map)
 	const void *(*itkey)(const ax_citer *it);
 ax_end;
 
-ax_begin_env(map)
+ax_abstract_env_begin(map)
 	const ax_trait *key_tr;
 ax_end;
 

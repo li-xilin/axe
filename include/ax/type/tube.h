@@ -33,14 +33,14 @@ typedef ax_tube *(ax_tube_construct_f)(const ax_trait *elem_tr);
 
 #define ax_baseof_tube any
 
-ax_begin_trait(tube)
+ax_abstract_begin(tube)
 	ax_fail (*push)   (ax_tube *tube, const void *val, va_list *ap);
 	void    (*pop)    (ax_tube *tube);
 	const void *(*prime)  (const ax_tube *tube);
 	size_t  (*size)   (const ax_tube *tube);
 ax_end;
 
-ax_begin_env(tube)
+ax_abstract_env_begin(tube)
 	const ax_trait *const elem_tr;
 ax_end;
 

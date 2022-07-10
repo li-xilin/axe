@@ -61,5 +61,7 @@ typedef uint_fast32_t ax_fast_uint;
 #define ax_nelems(_a) (ax_assert((void *)_a == (void *)&_a, "_a pass to ax_nelems is not array"), \
 		(sizeof(_a) / sizeof(_a[0])))
 
+#define ax_spair(_name, _value) ._name = (_value)
+
 #endif
 

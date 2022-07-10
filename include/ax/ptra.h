@@ -32,12 +32,12 @@ typedef struct ax_ptra_st ax_ptra;
 #endif
 
 #define ax_baseof_ptra one
-ax_begin_trait(ptra)
+ax_abstract_begin(ptra)
 	void *(*get)(ax_ptra* ptra);
 	void *(*reset)(ax_ptra* ptra, void *ptr);
 ax_end;
 
-ax_begin_data(ptra)
+ax_concrete_begin(ptra)
 	const ax_trait *const tr;
 	void *ptr;
 	size_t nref;

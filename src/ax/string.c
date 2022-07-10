@@ -37,7 +37,7 @@
 
 #define MIN_SIZE 16
 
-ax_begin_data(string)
+ax_concrete_begin(string)
 	ax_buff_r buff_r;
 ax_end;
 

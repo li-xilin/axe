@@ -36,10 +36,10 @@ typedef struct ax_any_st ax_any;
 
 #define ax_baseof_any one
 
-ax_begin_env(any)
+ax_abstract_env_begin(any)
 ax_end;
 
-ax_begin_trait(any)
+ax_abstract_begin(any)
 	ax_any *(*copy)(const ax_any* any);
 	ax_dump *(*dump)(const ax_any* any);
 ax_end;

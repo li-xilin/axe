@@ -41,10 +41,10 @@ typedef ax_seq *(ax_seq_construct_f)(const ax_trait *tr);
 
 #define ax_baseof_seq box
 
-ax_begin_env(seq)
+ax_abstract_env_begin(seq)
 ax_end;
 
-ax_begin_trait(seq)
+ax_abstract_begin(seq)
 	const ax_seq_push_f   push;
 	const ax_seq_pop_f    pop;
 	const ax_seq_push_f   pushf;
