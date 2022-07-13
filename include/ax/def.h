@@ -48,7 +48,7 @@ typedef uint_fast32_t ax_fast_uint;
 #define ax_cast(_t, _v) (*(_t [1]) { _v })
 
 #define ax_align(_size, _align) \
-	((ax_cast(size_t, _size) + n - 1) / ax_cast(size_t, _align) * (_align))
+	((ax_cast(size_t, _size) + _align - 1) / ax_cast(size_t, _align) * (_align))
 
 #define __ax_stringy(_x) #_x
 #define ax_stringy(_x) __ax_stringy(_x)
