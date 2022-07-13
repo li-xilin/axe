@@ -48,17 +48,16 @@ ax_dump* stuff_trait_dump(const struct stuff *stuff, size_t size)
 	return dump;
 }
 
-ax_trait stuff_tr = {
-	.copy = (ax_trait_copy_f) stuff_trait_copy,
-	.init = (ax_trait_init_f) stuff_trait_init,
-	.free = (ax_trait_free_f) stuff_trait_free,
-	.dump = (ax_trait_dump_f) stuff_trait_dump,
-	.size = sizeof(struct stuff),
-};
+
+ax_trait_declare(stuff, struct stuff,
+	COPY((ax_trait_copy_f) stuff_trait_copy),
+	INIT((ax_trait_init_f) stuff_trait_init),
+	FREE((ax_trait_free_f) stuff_trait_free),
+	DUMP((ax_trait_dump_f) stuff_trait_dump));
 
 int main()
 {
-	ax_vector_r stuffs = ax_new(vector, &stuff_tr);
+	ax_vector_r stuffs = ax_new(vector, ax_t(stuff));
 
 	ax_seq_ipush(stuffs.seq, 1, "Zhang San", "15200000001");
 	ax_seq_ipush(stuffs.seq, 2, "Li Si", "15200000002");

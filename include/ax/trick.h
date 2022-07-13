@@ -127,4 +127,22 @@
 #define __AX_CATENATE_1(a1) a1
 #define AX_CATENATE(...) AX_OVERLOAD(__AX_CATENATE_, __VA_ARGS__)
 
+#define __AX_MTOOL_TRANSFORM_3( macro, i, x)      macro(n, x)
+#define __AX_MTOOL_TRANSFORM_4( macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_3 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_5( macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_4 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_6( macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_5 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_7( macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_6 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_8( macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_7 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_9( macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_8 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_10(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_9 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_11(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_10(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_12(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_11(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_13(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_12(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_14(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_13(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_15(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_14(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_16(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_15(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_17(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_16(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_MTOOL_TRANSFORM_18(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_17(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define AX_MTOOL_TRANSFORM(macro, ...) AX_OVERLOAD(__AX_MTOOL_TRANSFORM_, macro, 0, __VA_ARGS__)
+
 #endif

@@ -66,7 +66,10 @@ struct ax_trait_st
 	bool               link;
 };
 
-#define ax_t(_name) (&ax_trait_##_name)
+
+#define __AX_TRAIT_STRUCT_NAME(_name) ax_trait_##_name
+
+#define ax_t(_name) (&__AX_TRAIT_STRUCT_NAME(_name))
 
 #define ax_trait_char ax_trait_i8
 #define ax_trait_uchar ax_trait_u8
@@ -153,24 +156,21 @@ typedef char*     ax_type(str);
 typedef wchar_t*  ax_type(wcs);
 typedef ptrdiff_t ax_type(diff);
 
-#define ax_trait_declare(_name, _type) \
-	const struct ax_trait_st ax_t(_name); \
+#define __AX_TRAIT_SET_EQUAL(_func) .equal = _func
+#define __AX_TRAIT_SET_LESS(_func) .less = _func
+#define __AX_TRAIT_SET_HASH(_func) .hash = _func
+#define __AX_TRAIT_SET_FREE(_func) .free = _func
+#define __AX_TRAIT_SET_COPY(_func) .copy = _func
+#define __AX_TRAIT_SET_INIT(_func) .init = _func
+#define __AX_TRAIT_SET_DUMP(_func) .dump = _func
+#define __AX_TRAIT_SET_LINK(_bool) .link = _bool
+
+#define __AX_TRAIT_SET(i, x) __AX_TRAIT_SET_##x,
+
+#define ax_trait_declare(_name, _type, ...) \
+	const struct ax_trait_st __AX_TRAIT_STRUCT_NAME(_name) = \
+	{ .size = sizeof(_type), AX_MTOOL_TRANSFORM(__AX_TRAIT_SET, __VA_ARGS__) }; \
 	typedef _type ax_type(_name)
-
-	
-#define ax_trait_begin(_name) \
-	const struct ax_trait_st ax_t(_name) = { \
-		.size = sizeof(ax_type(_name)),
-
-#define ax_trait_set_equal(_func) .equal = &_func
-#define ax_trait_set_less(_func) .less = &_func
-#define ax_trait_set_hash(_func) .hash = &_func
-#define ax_trait_set_free(_func) .free = &_func
-#define ax_trait_set_copy(_func) .copy = &_func
-#define ax_trait_set_init(_func) .init = &_func
-#define ax_trait_set_dump(_func) .dump = &_func
-#define ax_trait_set_link(_bool) .link = _bool
-
 
 #define ax_trait_in(_tr, _ptr) ((_tr)->link ? &(_ptr) : *&(_ptr))
 
