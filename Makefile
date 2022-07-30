@@ -23,7 +23,7 @@ MANDIR = $(DESTDIR)/share/man
 
 all debug clean:
 	$(MAKE) -C src/ax $@
-	$(MAKE) -C src/axut $@
+	$(MAKE) -C src/ut $@
 
 install:
 	install -m 755 -d \
@@ -32,18 +32,18 @@ install:
 		$(DESTDIR)/include/ax \
 		$(DESTDIR)/include/ax/type \
 		$(DESTDIR)/include/ax/static \
-		$(DESTDIR)/include/axut \
+		$(DESTDIR)/include/ut \
 		$(MANDIR)/man3
-	install -m 644 lib/libax.a lib/libaxut.a $(DESTDIR)/lib
+	install -m 644 lib/libax.a lib/libut.a $(DESTDIR)/lib
 	install -m 644 include/ax/*.h $(DESTDIR)/include/ax
 	install -m 644 include/ax/type/*.h $(DESTDIR)/include/ax/type
 	install -m 644 include/ax/static/*.h $(DESTDIR)/include/ax/type/static
-	install -m 644 include/axut/*.h $(DESTDIR)/include/axut
+	install -m 644 include/ut/*.h $(DESTDIR)/include/ut
 	install -m 644 man/man3/* $(MANDIR)/man3
 
 uninstall:
-	$(RM) -r $(DESTDIR)/include/ax $(DESTDIR)/include/axut
-	$(RM) $(DESTDIR)/include/ax.h $(DESTDIR)/include/axut.h $(DESTDIR)/lib/libax.a $(DESTDIR)/lib/libaxut.a
+	$(RM) -r $(DESTDIR)/include/ax $(DESTDIR)/include/ut
+	$(RM) $(DESTDIR)/include/ax.h $(DESTDIR)/include/ut.h $(DESTDIR)/lib/libax.a $(DESTDIR)/lib/libut.a
 	$(RM) $(MANDIR)/share/man/man3/ax_*.3
 
 .PHONY: all debug clean install uninstall

@@ -29,9 +29,8 @@
 typedef struct ax_pque_st ax_pque;
 #endif
 
-#define ax_baseof_pque tube
-ax_concrete(3, pque);
-
-ax_class_constructor(pque, const ax_trait *tr);
+#define ax_baseof_ax_pque ax_tube
+ax_concrete(3, ax_pque);
+ax_class_constructor(ax_pque, const ax_trait *tr);
 
 #endif

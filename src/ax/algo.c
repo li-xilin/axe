@@ -313,7 +313,7 @@ void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
 	merge_sort(mid, rmid, ext);
 	merge_sort(rmid, right, ext);
 
-	ax_iter end = ax_box_end(ax_r(seq, ext->main).box);
+	ax_iter end = ax_box_end(ax_r(ax_seq, ext->main).ax_box);
 	ax_iter main_first = { .owner = end.owner, .tr = end.tr, .etr = end.etr };
 	ax_iter main_mid  = { .owner = end.owner, .tr = end.tr, .etr = end.etr };
 	ax_iter main_last = { .owner = end.owner, .tr = end.tr, .etr = end.etr };
@@ -352,7 +352,7 @@ ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 	CHECK_PARAM_NULL(last);
 	CHECK_ITER_COMPARABLE(first, last);
 	ASSERT_ITER_TYPE(first, AX_IT_FORW);
-	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, seq));
+	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, ax_seq));
 
 	size_t size = 0;
 	ax_iter cur = *first;
@@ -373,23 +373,23 @@ ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 	}
 	imap[pos] = cur.point;
 
-	ax_vector_r aux = ax_new(vector, first->etr);
-	if (!aux.one) {
+	ax_vector_r aux = ax_new(ax_vector, first->etr);
+	if (ax_r_isnull(aux)) {
 		free(imap);
 		return true;
 	}
-	ax_seq_trunc(aux.seq, size);
+	ax_seq_trunc(aux.ax_seq, size);
 
 	struct merge_sort_context_st ext = {
 		.imap = imap,
 		.main = first->owner,
-		.aux = aux.one,
+		.aux = aux.ax_one,
 	};
 
 	merge_sort(0, size, &ext);
 
 	free(imap);
-	ax_one_free(aux.one);
+	ax_one_free(aux.ax_one);
 	
 	return false;
 }
@@ -415,7 +415,7 @@ bool ax_equal_to_arr(const ax_iter *first, const ax_iter *last, void *arr, size_
 void ax_binary_search(ax_citer *first, const ax_citer *last, const void* p)
 {
 	CHECK_ITER_COMPARABLE(first, last);
-	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, seq));
+	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, ax_seq));
 	ASSERT_ITER_TYPE(first, AX_IT_RAND);
 
 	void *orignal_last_citer_point = last->point;
@@ -446,8 +446,8 @@ void ax_binary_search(ax_citer *first, const ax_citer *last, const void* p)
 void ax_binary_search_if_not(ax_citer *first, const ax_citer *last, const ax_pred *upred)
 {
 	CHECK_ITER_COMPARABLE(first, last);
-	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, seq));
-	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, seq));
+	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, ax_seq));
+	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, ax_seq));
 	ASSERT_ITER_TYPE(first, AX_IT_RAND);
 
 	ax_citer left = *first, right = *last, middle = { .owner = first->owner, .tr = first->tr, .etr = first->etr };
@@ -471,7 +471,7 @@ void ax_binary_search_if_not(ax_citer *first, const ax_citer *last, const ax_pre
 ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 {
 	CHECK_ITER_COMPARABLE(first, last);
-	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, seq));
+	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, ax_seq));
 	ASSERT_ITER_TYPE(first, AX_IT_FORW);
 
 	ax_pred pred;
@@ -517,7 +517,7 @@ void ax_find_first_unsorted(ax_citer *first, const ax_citer *last, const ax_pred
 {
 	CHECK_PARAM_NULL(bpred);
 	CHECK_ITER_COMPARABLE(first, last);
-	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, seq));
+	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, ax_seq));
 	ASSERT_ITER_TYPE(first, AX_IT_FORW);
 
 	if (ax_citer_equal(first, last)) {

@@ -20,56 +20,56 @@
  * THE SOFTWARE.
  */
 
-#include "axut/runner.h"
+#include "ut/runner.h"
 
 #include <stdio.h>
 
-extern axut_suite *suite_for_hmap();
-extern axut_suite *suite_for_vector();
-extern axut_suite *suite_for_string();
-extern axut_suite *suite_for_algo();
-extern axut_suite *suite_for_vail();
-extern axut_suite *suite_for_avl();
-extern axut_suite *suite_for_list();
-extern axut_suite *suite_for_pred();
-extern axut_suite *suite_for_uintk();
-extern axut_suite *suite_for_btrie();
-extern axut_suite *suite_for_seq();
-extern axut_suite *suite_for_stack();
-extern axut_suite *suite_for_queue();
-extern axut_suite *suite_for_arr();
-extern axut_suite *suite_for_mem();
-extern axut_suite *suite_for_class();
-extern axut_suite *suite_for_stuff();
-extern void suite_for_maps(ax_runner *r);
+extern ut_suite *suite_for_hmap();
+extern ut_suite *suite_for_vector();
+extern ut_suite *suite_for_string();
+extern ut_suite *suite_for_algo();
+extern ut_suite *suite_for_vail();
+extern ut_suite *suite_for_avl();
+extern ut_suite *suite_for_list();
+extern ut_suite *suite_for_pred();
+extern ut_suite *suite_for_uintk();
+extern ut_suite *suite_for_btrie();
+extern ut_suite *suite_for_seq();
+extern ut_suite *suite_for_stack();
+extern ut_suite *suite_for_queue();
+extern ut_suite *suite_for_arr();
+extern ut_suite *suite_for_mem();
+extern ut_suite *suite_for_class();
+extern ut_suite *suite_for_stuff();
+extern void suite_for_maps(ut_runner *r);
 
 int main()
 {
-	ax_runner *r = ax_new(runner, NULL).runner;
+	ut_runner *r = ax_new(ut_runner, NULL).ut_runner;
 
-	axut_runner_add(r, suite_for_seq());
-	axut_runner_add(r, suite_for_hmap());
-	axut_runner_add(r, suite_for_vector());
-	axut_runner_add(r, suite_for_string());
-	axut_runner_add(r, suite_for_algo());
-	axut_runner_add(r, suite_for_avl());
-	axut_runner_add(r, suite_for_list());
-	axut_runner_add(r, suite_for_pred());
-	axut_runner_add(r, suite_for_uintk());
-	axut_runner_add(r, suite_for_btrie());
-	axut_runner_add(r, suite_for_stack());
-	axut_runner_add(r, suite_for_queue());
-	axut_runner_add(r, suite_for_arr());
-	axut_runner_add(r, suite_for_mem());
-	axut_runner_add(r, suite_for_class());
-	axut_runner_add(r, suite_for_stuff());
+	ut_runner_add(r, suite_for_seq());
+	ut_runner_add(r, suite_for_hmap());
+	ut_runner_add(r, suite_for_vector());
+	ut_runner_add(r, suite_for_string());
+	ut_runner_add(r, suite_for_algo());
+	ut_runner_add(r, suite_for_avl());
+	ut_runner_add(r, suite_for_list());
+	ut_runner_add(r, suite_for_pred());
+	ut_runner_add(r, suite_for_uintk());
+	ut_runner_add(r, suite_for_btrie());
+	ut_runner_add(r, suite_for_stack());
+	ut_runner_add(r, suite_for_queue());
+	ut_runner_add(r, suite_for_arr());
+	ut_runner_add(r, suite_for_mem());
+	ut_runner_add(r, suite_for_class());
+	ut_runner_add(r, suite_for_stuff());
 
 	suite_for_maps(r);
 
-	axut_runner_run(r);
-	fputs(axut_runner_result(r), stdout);
+	ut_runner_run(r);
+	fputs(ut_runner_result(r), stdout);
 
-	ax_one_free(ax_r(runner, r).one);
+	ax_one_free(ax_r(ut_runner, r).ax_one);
 	return 0;
 }
 

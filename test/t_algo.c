@@ -27,8 +27,8 @@
 #include "ax/list.h"
 #include "ax/pred.h"
 #include "ax/oper.h"
-#include "axut/runner.h"
-#include "axut/suite.h"
+#include "ut/runner.h"
+#include "ut/suite.h"
 
 #include <assert.h>
 #include <setjmp.h>
@@ -37,19 +37,19 @@
 #include <string.h>
 #include <time.h>
 
-static void all_any_none_of(ax_runner *r)
+static void all_any_none_of(ut_runner *r)
 {
-	ax_vector_r vec = ax_new(vector, ax_t(int));
+	ax_vector_r vec = ax_new(ax_vector, ax_t(int));
 
-	for (int i = 0; i < 18; i++) { ax_seq_push(vec.seq, &i); }
-	ax_iter first = ax_box_begin(vec.box), last = ax_box_end(vec.box);
+	for (int i = 0; i < 18; i++) { ax_seq_push(vec.ax_seq, &i); }
+	ax_iter first = ax_box_begin(vec.ax_box), last = ax_box_end(vec.ax_box);
 	int one = 1;
 	ax_pred pred = ax_pred_binary_make(ax_op(int32_t).add, NULL, &one, NULL);
 	ax_transform(ax_iter_c(&first), ax_iter_c(&last), &first, &pred);
 
 	int i = 0;
-	ax_box_cforeach(vec.box, const int *, p) {
-		axut_assert(r, *p == i + 1);
+	ax_box_cforeach(vec.ax_box, const int *, p) {
+		ut_assert(r, *p == i + 1);
 		i++;
 	}
 
@@ -58,24 +58,24 @@ static void all_any_none_of(ax_runner *r)
 	pred = ax_pred_binary_make(ax_op(int32_t).lt, NULL, &twenty, NULL);
 
 	ret = ax_all_of(ax_iter_c(&first), ax_iter_c(&last), &pred);
-	axut_assert(r, ret == true);
+	ut_assert(r, ret == true);
 
 	ret = ax_any_of(ax_iter_c(&first), ax_iter_c(&last), &pred);
-	axut_assert(r, ret == true);
+	ut_assert(r, ret == true);
 
 	ret = ax_none_of(ax_iter_c(&first), ax_iter_c(&last), &pred);
-	axut_assert(r, ret == false);
+	ut_assert(r, ret == false);
 
-	ax_one_free(vec.one);
+	ax_one_free(vec.ax_one);
 }
 
-static void partation(ax_runner *r)
+static void partation(ut_runner *r)
 {
-	ax_vector_r vec = ax_new(vector, ax_t(int));
-	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 8, 2, 4, 9, 5, 3, 6, 7));
+	ax_vector_r vec = ax_new(ax_vector, ax_t(int));
+	ax_seq_push_arraya(vec.ax_seq, ax_arraya(int, 1, 8, 2, 4, 9, 5, 3, 6, 7));
 
-	ax_iter first = ax_box_begin(vec.box);
-	ax_iter last = ax_box_end(vec.box);
+	ax_iter first = ax_box_begin(vec.ax_box);
+	ax_iter last = ax_box_end(vec.ax_box);
 	int pivot = 5;
 	ax_pred pred = ax_pred_binary_make(ax_op(int32_t).lt, NULL, &pivot, NULL);
 	
@@ -84,111 +84,111 @@ static void partation(ax_runner *r)
 
 	while(!ax_iter_equal(&first, &middle)) {
 		int *val = ax_iter_get(&first);
-		axut_assert(r, *val < pivot);
+		ut_assert(r, *val < pivot);
 		ax_iter_next(&first);
 	}
 
 	while(!ax_iter_equal(&middle, &last)) {
 		int *val = ax_iter_get(&middle);
-		axut_assert(r, *val >= pivot);
+		ut_assert(r, *val >= pivot);
 		ax_iter_next(&middle);
 	}
 
-	ax_one_free(vec.one);
+	ax_one_free(vec.ax_one);
 }
 
-static void quick_sort(ax_runner *r)
+static void quick_sort(ut_runner *r)
 {
-	ax_vector_r vec = ax_new(vector, ax_t(int));
-	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 8, 2, 4, 9, 5, 3, 6, 7, 0));
+	ax_vector_r vec = ax_new(ax_vector, ax_t(int));
+	ax_seq_push_arraya(vec.ax_seq, ax_arraya(int, 1, 8, 2, 4, 9, 5, 3, 6, 7, 0));
 
-	ax_iter first = ax_box_begin(vec.box);
-	ax_iter last = ax_box_end(vec.box);
+	ax_iter first = ax_box_begin(vec.ax_box);
+	ax_iter last = ax_box_end(vec.ax_box);
 	ax_quick_sort(&first, &last);
 	
 	int i = 0;
-	ax_box_cforeach(vec.box, const int *, v) {
-		axut_assert(r, *v == i);
+	ax_box_cforeach(vec.ax_box, const int *, v) {
+		ut_assert(r, *v == i);
 		i++;
 	}
 
-	ax_one_free(vec.one);
+	ax_one_free(vec.ax_one);
 }
 
-static void merge(ax_runner *r)
+static void merge(ut_runner *r)
 {
-	ax_vector_r vec1 = ax_new(vector, ax_t(int));
-	ax_seq_push_arraya(vec1.seq, ax_arraya(int, 1, 3, 5));
+	ax_vector_r vec1 = ax_new(ax_vector, ax_t(int));
+	ax_seq_push_arraya(vec1.ax_seq, ax_arraya(int, 1, 3, 5));
 
-	ax_vector_r vec2 = ax_new(vector, ax_t(int));
-	ax_seq_push_arraya(vec2.seq, ax_arraya(int, 2, 2, 6));
+	ax_vector_r vec2 = ax_new(ax_vector, ax_t(int));
+	ax_seq_push_arraya(vec2.ax_seq, ax_arraya(int, 2, 2, 6));
 
-	ax_vector_r vec3 = ax_new(vector, ax_t(int));
-	ax_seq_trunc(vec3.seq, 6);
+	ax_vector_r vec3 = ax_new(ax_vector, ax_t(int));
+	ax_seq_trunc(vec3.ax_seq, 6);
 
-	ax_iter first1 = ax_box_begin(vec1.box);
-	ax_iter last1 = ax_box_end(vec1.box);
-	ax_iter first2 = ax_box_begin(vec2.box);
-	ax_iter last2 = ax_box_end(vec2.box);
-	ax_iter dest = ax_box_begin(vec3.box);
+	ax_iter first1 = ax_box_begin(vec1.ax_box);
+	ax_iter last1 = ax_box_end(vec1.ax_box);
+	ax_iter first2 = ax_box_begin(vec2.ax_box);
+	ax_iter last2 = ax_box_end(vec2.ax_box);
+	ax_iter dest = ax_box_begin(vec3.ax_box);
 	ax_merge(ax_iter_c(&first1), ax_iter_c(&last1), ax_iter_c(&first2), ax_iter_c(&last2), &dest);
 
 	int table1[] = {1, 2, 2, 3, 5, 6};
-	axut_assert(r, seq_equal_array(vec3.seq, table1, sizeof table1));
+	ut_assert(r, seq_equal_array(vec3.ax_seq, table1, sizeof table1));
 
-	ax_one_free(vec1.one);
-	ax_one_free(vec2.one);
-	ax_one_free(vec3.one);
+	ax_one_free(vec1.ax_one);
+	ax_one_free(vec2.ax_one);
+	ax_one_free(vec3.ax_one);
 }
 
-static void merge_sort(ax_runner *r)
+static void merge_sort(ut_runner *r)
 {
 
-	ax_vector_r vec = ax_new(vector, ax_t(int));
-	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 8, 2, 4, 9, 5, 3, 6, 7, 0));
+	ax_vector_r vec = ax_new(ax_vector, ax_t(int));
+	ax_seq_push_arraya(vec.ax_seq, ax_arraya(int, 1, 8, 2, 4, 9, 5, 3, 6, 7, 0));
 
-	ax_iter first = ax_box_begin(vec.box);
-	ax_iter last = ax_box_end(vec.box);
+	ax_iter first = ax_box_begin(vec.ax_box);
+	ax_iter last = ax_box_end(vec.ax_box);
 	ax_merge_sort(&first, &last);
 	
 	int table1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-	axut_assert(r, seq_equal_array(vec.seq, table1, sizeof table1));
+	ut_assert(r, seq_equal_array(vec.ax_seq, table1, sizeof table1));
 
-	ax_one_free(vec.one);
+	ax_one_free(vec.ax_one);
 }
 
-static void binary_search(ax_runner *r)
+static void binary_search(ut_runner *r)
 {
-	ax_vector_r vec = ax_new(vector, ax_t(int));
-	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 2, 3, 4));
+	ax_vector_r vec = ax_new(ax_vector, ax_t(int));
+	ax_seq_push_arraya(vec.ax_seq, ax_arraya(int, 1, 2, 3, 4));
 
-	ax_iter first = ax_box_begin(vec.box);
-	ax_iter last = ax_box_end(vec.box);
+	ax_iter first = ax_box_begin(vec.ax_box);
+	ax_iter last = ax_box_end(vec.ax_box);
 
 	int num;
 	ax_iter res;
 	for (num = 1; num <= 4; num++) {
 		res = first;
 		ax_binary_search(ax_iter_c(&res), ax_iter_c(&last), &num);
-		axut_assert(r, !ax_iter_equal(&res, &last));
-		axut_assert(r, *(int*)ax_iter_get(&res) == num);
+		ut_assert(r, !ax_iter_equal(&res, &last));
+		ut_assert(r, *(int*)ax_iter_get(&res) == num);
 	}
 
 	num = 0;
 	res = first;
 	ax_binary_search(ax_iter_c(&res), ax_iter_c(&last), &num);
-	axut_assert(r, ax_iter_equal(&res, &last));
+	ut_assert(r, ax_iter_equal(&res, &last));
 
-	ax_one_free(vec.one);
+	ax_one_free(vec.ax_one);
 }
 
-static void binary_search_if_not(ax_runner *r)
+static void binary_search_if_not(ut_runner *r)
 {
-	ax_vector_r vec = ax_new(vector, ax_t(int));
-	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 3, 5, 7));
+	ax_vector_r vec = ax_new(ax_vector, ax_t(int));
+	ax_seq_push_arraya(vec.ax_seq, ax_arraya(int, 1, 3, 5, 7));
 
-	ax_citer first = ax_box_cbegin(vec.box);
-	ax_citer last = ax_box_cend(vec.box);
+	ax_citer first = ax_box_cbegin(vec.ax_box);
+	ax_citer last = ax_box_cend(vec.ax_box);
 
 	int num;
 	ax_citer res;
@@ -197,40 +197,40 @@ static void binary_search_if_not(ax_runner *r)
 		ax_pred pred = ax_pred_binary_make(ax_op(int32_t).le, NULL, &num, NULL);
 		res = first;
 		ax_binary_search_if_not(&res, &last, &pred);
-		axut_assert(r, !ax_citer_equal(&res, &last));
-		axut_assert(r, *(int *)ax_citer_get(&res) == num+1);
+		ut_assert(r, !ax_citer_equal(&res, &last));
+		ut_assert(r, *(int *)ax_citer_get(&res) == num+1);
 	}
 
 	num = 7;
 	ax_pred pred = ax_pred_binary_make(ax_op(int32_t).le, NULL, &num, NULL);
 	res = first;
 	ax_binary_search_if_not(&res, &last, &pred);
-	axut_assert(r, ax_citer_equal(&res, &last));
+	ut_assert(r, ax_citer_equal(&res, &last));
 
 	num = 0;
 	pred = ax_pred_binary_make(ax_op(int32_t).le, NULL, &num, NULL);
 	res = first;
 	ax_binary_search_if_not(&first, &last, &pred);
-	axut_assert(r, !ax_citer_equal(&res, &last));
-	axut_assert(r, *(int *)ax_citer_get(&res) == 1);
+	ut_assert(r, !ax_citer_equal(&res, &last));
+	ut_assert(r, *(int *)ax_citer_get(&res) == 1);
 
-	ax_one_free(vec.one);
+	ax_one_free(vec.ax_one);
 }
 
 
-static void insertion_sort(ax_runner *r)
+static void insertion_sort(ut_runner *r)
 {
-	ax_vector_r vec = ax_new(vector, ax_t(int));
-	ax_seq_push_arraya(vec.seq, ax_arraya(int, 1, 8, 2, 4, 9, 5, 3, 6, 7, 0));
+	ax_vector_r vec = ax_new(ax_vector, ax_t(int));
+	ax_seq_push_arraya(vec.ax_seq, ax_arraya(int, 1, 8, 2, 4, 9, 5, 3, 6, 7, 0));
 
-	ax_iter first = ax_box_begin(vec.box);
-	ax_iter last = ax_box_end(vec.box);
+	ax_iter first = ax_box_begin(vec.ax_box);
+	ax_iter last = ax_box_end(vec.ax_box);
 	ax_insertion_sort(&first, &last);
 	
 	int table1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-	axut_assert(r, seq_equal_array(vec.seq, table1, sizeof table1));
+	ut_assert(r, seq_equal_array(vec.ax_seq, table1, sizeof table1));
 
-	ax_one_free(vec.one);
+	ax_one_free(vec.ax_one);
 }
 
 static int qsort_compare_cb(const void* p1, const void* p2)
@@ -253,88 +253,88 @@ static int qsort_compare_cb(const void* p1, const void* p2)
  * 0x3FFFFF 2.26, 2.27
  */
 
-static void sort_time(ax_runner *r) {
+static void sort_time(ut_runner *r) {
 	const size_t length = 0xFFFF;
 	// const size_t length = 0x3FFFFF;
 	ax_iter first, last;
 	clock_t time_before;
 	srand(20);
 	
-	ax_vector_r vec1 = ax_new(vector, ax_t(int)),
-		    vec2 = ax_new(vector, ax_t(int)),
-		    vec3 = ax_new(vector, ax_t(int)),
-		    vec4 = ax_new(vector, ax_t(int));
+	ax_vector_r vec1 = ax_new(ax_vector, ax_t(int)),
+		    vec2 = ax_new(ax_vector, ax_t(int)),
+		    vec3 = ax_new(ax_vector, ax_t(int)),
+		    vec4 = ax_new(ax_vector, ax_t(int));
 
 	
 	//printf("Sorting 0x%lX numbers\n", length);
 	for (int i = 0; i < length; i++) {
 		int n = rand() % 0xFFFFFF;
-		ax_seq_push(vec1.seq, &n);
-		ax_seq_push(vec2.seq, &n);
-		ax_seq_push(vec3.seq, &n);
-		ax_seq_push(vec4.seq, &n);
+		ax_seq_push(vec1.ax_seq, &n);
+		ax_seq_push(vec2.ax_seq, &n);
+		ax_seq_push(vec3.ax_seq, &n);
+		ax_seq_push(vec4.ax_seq, &n);
 	}
 
 	ax_pred pred = ax_pred_binary_make(ax_op(int32_t).le, NULL, NULL, NULL);
 	{
-		first = ax_box_begin(vec1.box);
-		last = ax_box_end(vec1.box);
+		first = ax_box_begin(vec1.ax_box);
+		last = ax_box_end(vec1.ax_box);
 
 		time_before = clock();
 		ax_quick_sort(&first, &last);
 		printf("ax_quick_sort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
-		axut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
+		ut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
 	}
 
 	{
-		first = ax_box_begin(vec2.box);
-		last = ax_box_end(vec2.box);
+		first = ax_box_begin(vec2.ax_box);
+		last = ax_box_end(vec2.ax_box);
 
 		time_before = clock();
 		ax_merge_sort(&first, &last);
 		printf("ax_merge_sort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
-		axut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
+		ut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
 	}
 
 	/*
 	{
-		first = ax_box_begin(vec3.box);
-		last = ax_box_end(vec3.box);
+		first = ax_box_begin(vec3.ax_box);
+		last = ax_box_end(vec3.ax_box);
 
 		time_before = clock();
 		ax_insertion_sort(&first, &last);
 		printf("ax_insertion_sort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
-		axut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
+		ut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
 	}
 	*/
 
 	{
 		time_before = clock();
-		qsort(ax_vector_buffer(vec4.vector), ax_box_size(vec4.box), vec4.box->env.elem_tr->size, qsort_compare_cb);
+		qsort(ax_vector_buffer(vec4.ax_vector), ax_box_size(vec4.ax_box), vec4.ax_box->env.elem_tr->size, qsort_compare_cb);
 		printf("qsort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
-		axut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
+		ut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
 	}
 
 	
-	ax_one_free(vec1.one);
-	ax_one_free(vec2.one);
-	ax_one_free(vec3.one);
-	ax_one_free(vec4.one);
+	ax_one_free(vec1.ax_one);
+	ax_one_free(vec2.ax_one);
+	ax_one_free(vec3.ax_one);
+	ax_one_free(vec4.ax_one);
 }
 
-axut_suite *suite_for_algo()
+ut_suite *suite_for_algo()
 {
-	axut_suite* suite = axut_suite_create("algo");
+	ut_suite* suite = ut_suite_create("algo");
 
-	axut_suite_add(suite, all_any_none_of, 0);
-	axut_suite_add(suite, partation, 0);
-	axut_suite_add(suite, quick_sort, 0);
-	axut_suite_add(suite, merge, 0);
-	axut_suite_add(suite, merge_sort, 0);
-	axut_suite_add(suite, sort_time, 0);
-	axut_suite_add(suite, binary_search, 0);
-	axut_suite_add(suite, binary_search_if_not, 0);
-	axut_suite_add(suite, insertion_sort, 0);
+	ut_suite_add(suite, all_any_none_of, 0);
+	ut_suite_add(suite, partation, 0);
+	ut_suite_add(suite, quick_sort, 0);
+	ut_suite_add(suite, merge, 0);
+	ut_suite_add(suite, merge_sort, 0);
+	ut_suite_add(suite, sort_time, 0);
+	ut_suite_add(suite, binary_search, 0);
+	ut_suite_add(suite, binary_search_if_not, 0);
+	ut_suite_add(suite, insertion_sort, 0);
 
 	return suite;
 }

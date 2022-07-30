@@ -31,19 +31,19 @@
 typedef struct ax_ptra_st ax_ptra;
 #endif
 
-#define ax_baseof_ptra one
-ax_abstract_begin(ptra)
+#define ax_baseof_ax_ptra ax_one
+ax_abstract_begin(ax_ptra)
 	void *(*get)(ax_ptra* ptra);
 	void *(*reset)(ax_ptra* ptra, void *ptr);
 ax_end;
 
-ax_concrete_begin(ptra)
+ax_concrete_begin(ax_ptra)
 	const ax_trait *const tr;
 	void *ptr;
 	size_t nref;
 ax_end;
 
-ax_concrete(1, ptra);
+ax_concrete(1, ax_ptra);
 
 inline static void *ax_ptra_get(ax_ptra* ptra)
 {

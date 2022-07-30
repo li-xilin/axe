@@ -31,14 +31,14 @@
 typedef struct ax_array_st ax_array;
 #endif
 
-#define ax_baseof_array seq
+#define ax_baseof_ax_array ax_seq
 
-ax_concrete_begin(array)
+ax_concrete_begin(ax_array)
 	size_t size;
 	void *array;
 ax_end;
 
-ax_concrete(4, array);
+ax_concrete(4, ax_array);
 
 extern const ax_seq_trait ax_array_tr;
 
@@ -53,14 +53,14 @@ inline static void ax_array_reset(ax_array *array, char *ptr, size_t size)
 	ax_assert_not_null(array);
 	ax_assert_not_null(ptr);
 	array->array = ptr;
-	int elem_size = array->seq.env.box.elem_tr->size;
+	int elem_size = array->ax_seq.env.ax_box.elem_tr->size;
 	array->size = elem_size ? size / elem_size : SIZE_MAX;
 }
 
 #define __ax_array_construct3(_etr, _ptr, _size) \
 	((struct ax_seq_st *)(struct ax_array_st[1]) { \
-		 	[0].seq.env.box.elem_tr = (_etr), \
-			[0].seq.tr = &ax_array_tr, \
+		 	[0].ax_seq.env.ax_box.elem_tr = (_etr), \
+			[0].ax_seq.tr = &ax_array_tr, \
 			[0].size = (_etr)->size ? (_size) / (_etr)->size : SIZE_MAX, \
 			[0].array = (_ptr), \
 		})

@@ -21,8 +21,8 @@
  */
 
 #include "ax/queue.h"
-#include "axut/runner.h"
-#include "axut/suite.h"
+#include "ut/runner.h"
+#include "ut/suite.h"
 
 #include <assert.h>
 #include <setjmp.h>
@@ -30,43 +30,43 @@
 #include <stdio.h>
 #include <string.h>
 
-static void create(ax_runner *r)
+static void create(ut_runner *r)
 {
-	ax_queue_r queue = ax_new(queue, ax_t(int));
-	axut_assert_uint_equal(r, 0, ax_tube_size(queue.tube));
-	ax_one_free(queue.one);
+	ax_queue_r queue = ax_new(ax_queue, ax_t(int));
+	ut_assert_uint_equal(r, 0, ax_tube_size(queue.ax_tube));
+	ax_one_free(queue.ax_one);
 }
 
-static void operate(ax_runner *r)
+static void operate(ut_runner *r)
 {
 
-	ax_queue_r queue = ax_new(queue, ax_t(int));
+	ax_queue_r queue = ax_new(ax_queue, ax_t(int));
 	int value;
 
 	value = 1;
-	ax_tube_push(queue.tube, &value);
-	axut_assert_int_equal(r, 1, *(int *)ax_tube_prime(queue.tube));
-	axut_assert_uint_equal(r, 1, ax_tube_size(queue.tube));
+	ax_tube_push(queue.ax_tube, &value);
+	ut_assert_int_equal(r, 1, *(int *)ax_tube_prime(queue.ax_tube));
+	ut_assert_uint_equal(r, 1, ax_tube_size(queue.ax_tube));
 
 	value = 2;
-	ax_tube_push(queue.tube, &value);
-	axut_assert_int_equal(r, 1, *(int *)ax_tube_prime(queue.tube));
-	axut_assert_uint_equal(r, 2, ax_tube_size(queue.tube));
+	ax_tube_push(queue.ax_tube, &value);
+	ut_assert_int_equal(r, 1, *(int *)ax_tube_prime(queue.ax_tube));
+	ut_assert_uint_equal(r, 2, ax_tube_size(queue.ax_tube));
 
-	ax_tube_pop(queue.tube);
-	axut_assert_int_equal(r, 2, *(int *)ax_tube_prime(queue.tube));
-	axut_assert_uint_equal(r, 1, ax_tube_size(queue.tube));
+	ax_tube_pop(queue.ax_tube);
+	ut_assert_int_equal(r, 2, *(int *)ax_tube_prime(queue.ax_tube));
+	ut_assert_uint_equal(r, 1, ax_tube_size(queue.ax_tube));
 
-	ax_tube_pop(queue.tube);
-	axut_assert_uint_equal(r, 0, ax_tube_size(queue.tube));
-	ax_one_free(queue.one);
+	ax_tube_pop(queue.ax_tube);
+	ut_assert_uint_equal(r, 0, ax_tube_size(queue.ax_tube));
+	ax_one_free(queue.ax_one);
 }
 
-axut_suite *suite_for_queue()
+ut_suite *suite_for_queue()
 {
-	axut_suite *suite = axut_suite_create("queue");
+	ut_suite *suite = ut_suite_create("queue");
 
-	axut_suite_add(suite, create, 0);
-	axut_suite_add(suite, operate, 1);
+	ut_suite_add(suite, create, 0);
+	ut_suite_add(suite, operate, 1);
 	return suite;
 }

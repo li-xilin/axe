@@ -34,17 +34,17 @@ typedef struct ax_dump_st ax_dump;
 typedef struct ax_any_st ax_any;
 #endif
 
-#define ax_baseof_any one
+#define ax_baseof_ax_any ax_one
 
-ax_abstract_env_begin(any)
+ax_abstract_env_begin(ax_any)
 ax_end;
 
-ax_abstract_begin(any)
+ax_abstract_begin(ax_any)
 	ax_any *(*copy)(const ax_any* any);
 	ax_dump *(*dump)(const ax_any* any);
 ax_end;
 
-ax_abstract(1, any);
+ax_abstract(1, ax_any);
 
 inline static ax_any *ax_any_copy(const ax_any* any)
 {

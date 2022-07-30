@@ -29,17 +29,14 @@
 typedef struct ax_vector_st ax_vector;
 #endif
 
-#define AX_CLASS_BASE_vector seq
-#define AX_CLASS_ROLE_vector(_l) _l AX_CLASS_PTR(vector); AX_CLASS_ROLE_seq(_l)
-
-#define ax_baseof_vector seq
-ax_concrete(4, vector);
+#define ax_baseof_ax_vector ax_seq
+ax_concrete(4, ax_vector);
 
 extern const ax_seq_trait ax_vector_tr;
 
 ax_seq*__ax_vector_construct(const ax_trait* elem_tr);
 
-inline static ax_class_constructor(vector, const ax_trait* trait)
+inline static ax_class_constructor(ax_vector, const ax_trait* trait)
 {
 	return __ax_vector_construct(trait);
 }

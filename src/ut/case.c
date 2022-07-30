@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-#include "axut/case.h"
+#include "ut/case.h"
 #include <ax/mem.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,19 +30,19 @@ static bool case_less(const void *p1, const void *p2);
 static bool case_equal(const void *p1, const void *p2);
 static ax_fail case_copy(void* dst, const void* src);
 
-const ax_trait axut_case_tr =
+const ax_trait ut_case_tr =
 {
 	.copy = case_copy,
 	.less = case_less,
 	.equal = case_equal,
 	.free = case_free,
-	.size = sizeof(axut_case),
+	.size = sizeof(ut_case),
 	.link = false
 };
 
 static void case_free(void *p)
 {
-	axut_case *tc = p;
+	ut_case *tc = p;
 	free(tc->name);
 	free(tc->file);
 	free(tc->log);
@@ -51,23 +51,23 @@ static void case_free(void *p)
 static bool case_less(const void *p1, const void *p2)
 {
 
-	const axut_case *tc1 = p1;
-	const axut_case *tc2 = p2;
+	const ut_case *tc1 = p1;
+	const ut_case *tc2 = p2;
 	return tc1->priority < tc2->priority;
 }
 
 static bool case_equal(const void *p1, const void *p2)
 {
 
-	const axut_case *tc1 = p1;
-	const axut_case *tc2 = p2;
+	const ut_case *tc1 = p1;
+	const ut_case *tc2 = p2;
 	return tc1->priority == tc2->priority;
 }
 
 static ax_fail case_copy(void* dst, const void* src)
 {
-	const axut_case *src_tc = src;
-	axut_case *dst_tc = dst;
+	const ut_case *src_tc = src;
+	ut_case *dst_tc = dst;
 	memcpy(dst_tc, src_tc, sizeof *dst_tc);
 	dst_tc->name = dst_tc->log = dst_tc->file = NULL;
 	dst_tc->name = ax_strdup(src_tc->name);

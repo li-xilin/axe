@@ -23,13 +23,13 @@
 #include "assist.h"
 #include "ax/class.h"
 #include "ax/trait.h"
-#include "axut/runner.h"
-#include "axut/suite.h"
+#include "ut/runner.h"
+#include "ut/suite.h"
 
 #include <stdio.h>
 
-axut_suite *suite_for_stuff()
+ut_suite *suite_for_stuff()
 {
-	axut_suite* suite = axut_suite_create("stuff");
+	ut_suite* suite = ut_suite_create("stuff");
 	return suite;
 }

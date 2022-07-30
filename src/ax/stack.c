@@ -35,11 +35,9 @@
 
 #define MIN_SIZE
 
-struct ax_stack_st
-{
-	ax_tube tube;
+ax_concrete_begin(ax_stack)
 	ax_vector_r vector;
-};
+ax_end;
 
 static ax_fail  tube_push(ax_tube *tube, const void *val, va_list *ap);
 static void     tube_pop(ax_tube *tube);
@@ -52,8 +50,8 @@ static const char *one_name(const ax_one *one);
 
 const ax_tube_trait ax_stack_tr =
 {
-	.any = {
-		.one = {
+	.ax_any = {
+		.ax_one = {
 			.name = one_name,
 			.free = one_free,
 		},
@@ -70,32 +68,32 @@ static ax_fail tube_push(ax_tube *tube, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(tube);
 
-	ax_stack_cr self_r = { .tube = tube };
-	return ax_vector_tr.push(self_r.stack->vector.seq, val, ap);
+	ax_stack_cr self = AX_R_INIT(ax_tube, tube);
+	return ax_vector_tr.push(self.ax_stack->vector.ax_seq, val, ap);
 }
 
 static void tube_pop(ax_tube *tube)
 {
 	CHECK_PARAM_NULL(tube);
 
-	ax_stack_cr self_r = { .tube = tube };
-	ax_vector_tr.pop(self_r.stack->vector.seq);
+	ax_stack_cr self = AX_R_INIT(ax_tube, tube);
+	ax_vector_tr.pop(self.ax_stack->vector.ax_seq);
 }
 
 static size_t tube_size(const ax_tube *tube)
 {
 	CHECK_PARAM_NULL(tube);
 
-	ax_stack_cr self_r = { .tube = tube };
-	return ax_vector_tr.box.size(self_r.stack->vector.box);
+	ax_stack_cr self = AX_R_INIT(ax_tube, tube);
+	return ax_vector_tr.ax_box.size(self.ax_stack->vector.ax_box);
 }
 
 static const void *tube_prime(const ax_tube *tube)
 {
 	CHECK_PARAM_NULL(tube);
 
-	ax_stack_cr self_r = { .tube = tube };
-	return ax_vector_tr.last(self_r.stack->vector.seq);
+	ax_stack_cr self = AX_R_INIT(ax_tube, tube);
+	return ax_vector_tr.last(self.ax_stack->vector.ax_seq);
 }
 
 static ax_any *any_copy(const ax_any *any)
@@ -105,9 +103,9 @@ static ax_any *any_copy(const ax_any *any)
 
 static ax_dump *any_dump(const ax_any *any)
 {
-	ax_stack_cr self = { .any = any };
-	ax_dump *dmp = ax_any_dump(self.stack->vector.any);
-	ax_dump_set_name(dmp, ax_one_name(self.one));
+	ax_stack_cr self = AX_R_INIT(ax_any, any);
+	ax_dump *dmp = ax_any_dump(self.ax_stack->vector.ax_any);
+	ax_dump_set_name(dmp, ax_one_name(self.ax_one));
 	return dmp;
 }
 
@@ -116,14 +114,14 @@ static void one_free(ax_one *one)
 	if (!one)
 		return;
 
-	ax_stack_r self_r = { .one = one };
-	ax_vector_tr.box.any.one.free(self_r.stack->vector.one);
+	ax_stack_r self = AX_R_INIT(ax_one, one);
+	ax_vector_tr.ax_box.ax_any.ax_one.free(self.ax_stack->vector.ax_one);
 	free(one);
 }
 
 static const char *one_name(const ax_one *one)
 {
-	return ax_class_name(3, stack);
+	return ax_class_name(3, ax_stack);
 }
 
 ax_tube *__ax_stack_construct(const ax_trait *elem_tr)
@@ -141,17 +139,17 @@ ax_tube *__ax_stack_construct(const ax_trait *elem_tr)
 	}
 
 	ax_stack stack_init = {
-		.tube = {
+		.ax_tube = {
 			.tr = &ax_stack_tr,
 			.env.elem_tr = elem_tr,
 		},
-		.vector.seq = vector,
+		.vector.ax_seq = vector,
 	};
 
 	memcpy(self, &stack_init, sizeof stack_init);
 	return self;
 fail:
-	ax_one_free(ax_r(seq, vector).one);
+	ax_one_free(ax_r(ax_seq, vector).ax_one);
 	free(self);
 	return NULL;
 }

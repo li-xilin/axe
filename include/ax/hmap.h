@@ -29,8 +29,8 @@
 typedef struct ax_hmap_st ax_hmap;
 #endif
 
-#define ax_baseof_hmap map
-ax_concrete(4, hmap);
+#define ax_baseof_ax_hmap ax_map
+ax_concrete(4, ax_hmap);
 
 extern const ax_map_trait ax_hmap_tr;
 
@@ -39,7 +39,7 @@ ax_map *__ax_hmap_construct(
 		const ax_trait* val_tr
 );
 
-inline static ax_class_constructor(hmap, const ax_trait* key_tr, const ax_trait* val_tr)
+inline static ax_class_constructor(ax_hmap, const ax_trait* key_tr, const ax_trait* val_tr)
 {
 	return __ax_hmap_construct(key_tr, val_tr);
 }

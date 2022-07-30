@@ -26,8 +26,8 @@
 #include "ax/list.h"
 #include "ax/algo.h"
 
-#include "axut/runner.h"
-#include "axut/suite.h"
+#include "ut/runner.h"
+#include "ut/suite.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -35,20 +35,20 @@
 #include <string.h>
 
 
-static void push_arraya(ax_runner *r)
+static void push_arraya(ut_runner *r)
 {
-	ax_list_r list_r = ax_new(list, ax_t(int));
-	ax_seq_push_arraya(list_r.seq, ax_arraya(int, 1, 2, 3, 4, 5));
+	ax_list_r list = ax_new(ax_list, ax_t(int));
+	ax_seq_push_arraya(list.ax_seq, ax_arraya(int, 1, 2, 3, 4, 5));
 	int arr[] = { 1, 2 ,3 ,4, 5 };
-	seq_equal_array(list_r.seq, arr, sizeof(arr));
-	ax_one_free(list_r.one);
+	seq_equal_array(list.ax_seq, arr, sizeof(arr));
+	ax_one_free(list.ax_one);
 }
 
 
-axut_suite *suite_for_seq()
+ut_suite *suite_for_seq()
 {
-	axut_suite* suite = axut_suite_create("seq");
+	ut_suite* suite = ut_suite_create("seq");
 
-	axut_suite_add(suite, push_arraya, 0);
+	ut_suite_add(suite, push_arraya, 0);
 	return suite;
 }

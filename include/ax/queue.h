@@ -29,12 +29,12 @@
 typedef struct ax_queue_st ax_queue;
 #endif
 
-#define ax_baseof_queue tube
-ax_concrete(3, queue);
+#define ax_baseof_ax_queue ax_tube
+ax_concrete(3, ax_queue);
 
 ax_tube *__ax_queue_construct(const ax_trait *elem_tr);
 
-inline static ax_class_constructor(queue, const ax_trait *tr)
+inline static ax_class_constructor(ax_queue, const ax_trait *tr)
 {
 	return __ax_queue_construct(tr);
 }

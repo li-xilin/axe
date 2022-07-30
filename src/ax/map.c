@@ -27,9 +27,9 @@
 
 const void *ax_map_key(ax_map *map, const void *key)
 {
-	ax_map_r mapr = { .map = map };
-	ax_iter find = ax_map_at(mapr.map, ax_trait_in(map->env.key_tr, key)),
-		end = ax_box_end(mapr.box);
+	ax_map_r self = AX_R_INIT(ax_map, map);
+	ax_iter find = ax_map_at(self.ax_map, ax_trait_in(ax_class_env(map).key_tr, key)),
+		end = ax_box_end(self.ax_box);
 	if (ax_iter_equal(&find, &end))
 		return NULL;
 	return ax_map_iter_key(&find);
@@ -37,20 +37,20 @@ const void *ax_map_key(ax_map *map, const void *key)
 
 ax_dump *ax_map_dump(const ax_map *map)
 {
-	ax_map_cr self = ax_cr(map, map);
-	size_t size = ax_box_size(self.box);
+	ax_map_cr self = ax_cr(ax_map, map);
+	size_t size = ax_box_size(self.ax_box);
 	ax_dump *block_dmp = NULL;
 
-	block_dmp = ax_dump_block(ax_one_name(self.one), size);
+	block_dmp = ax_dump_block(ax_one_name(self.ax_one), size);
 	if (!block_dmp)
 		return NULL;
 
 	const ax_trait
-		*etr = self.box->env.elem_tr,
-		*ktr = map->env.key_tr;
+		*etr = ax_class_env(self.ax_box).elem_tr,
+		*ktr = ax_class_env(self.ax_map).key_tr;
 
 	size_t i = 0;
-	ax_map_cforeach(self.map, const void *, k, const void *, v) {
+	ax_map_cforeach(self.ax_map, const void *, k, const void *, v) {
 
 		ax_dump *pair_dmp = ax_dump_pair(
 				ax_trait_dump(ktr, ax_trait_in(ktr, k)),

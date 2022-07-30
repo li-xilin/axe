@@ -21,7 +21,7 @@
 ROOT = ../..
 include $(ROOT)/src/config.mak
 
-TARGET = $(LIB)/libaxut.a
+TARGET = $(LIB)/libut.a
 
 OBJS = suite.o runner.o case.o
 

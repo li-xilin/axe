@@ -31,20 +31,20 @@ typedef struct ax_tube_st ax_tube;
 
 typedef ax_tube *(ax_tube_construct_f)(const ax_trait *elem_tr);
 
-#define ax_baseof_tube any
+#define ax_baseof_ax_tube ax_any
 
-ax_abstract_begin(tube)
+ax_abstract_begin(ax_tube)
 	ax_fail (*push)   (ax_tube *tube, const void *val, va_list *ap);
 	void    (*pop)    (ax_tube *tube);
 	const void *(*prime)  (const ax_tube *tube);
 	size_t  (*size)   (const ax_tube *tube);
 ax_end;
 
-ax_abstract_env_begin(tube)
+ax_abstract_env_begin(ax_tube)
 	const ax_trait *const elem_tr;
 ax_end;
 
-ax_abstract(2, tube);
+ax_abstract(2, ax_tube);
 
 inline static ax_fail ax_tube_push(ax_tube *tube, const void *val)
 {

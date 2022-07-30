@@ -395,9 +395,8 @@ int write_file_cb(const char *buf, size_t len, void *ctx)
 int indent_check_cb(const char *buf, size_t len, void *ctx)
 {
 	struct search_args *args = ctx;
-	for (size_t i = 0; i < len; i++) {
+	for (size_t i = 0; i < len; i++)
 		ax_assert(buf[i] != '\n' && buf[i] != '\0', "");
-	}
 	return args->out_cb(buf, len, args->ctx);
 }
 

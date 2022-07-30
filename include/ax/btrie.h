@@ -29,14 +29,14 @@
 typedef struct ax_btrie_st ax_btrie;
 #endif
 
-#define ax_baseof_btrie trie
-ax_concrete(4, btrie);
+#define ax_baseof_ax_btrie ax_trie
+ax_concrete(4, ax_btrie);
 
 extern const ax_trie_trait ax_btrie_tr;
 
 ax_trie *__ax_btrie_construct(const ax_trait* key_tr, const ax_trait* val_tr);
 
-inline static ax_class_constructor(btrie, const ax_trait* key_tr, const ax_trait* val_tr)
+inline static ax_class_constructor(ax_btrie, const ax_trait* key_tr, const ax_trait* val_tr)
 {
 	return __ax_btrie_construct(key_tr, val_tr);
 }

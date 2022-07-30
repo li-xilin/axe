@@ -22,8 +22,8 @@
 
 #include "ax/iter.h"
 #include "ax/string.h"
-#include "axut/runner.h"
-#include "axut/suite.h"
+#include "ut/runner.h"
+#include "ut/suite.h"
 
 #include <assert.h>
 #include <setjmp.h>
@@ -31,56 +31,56 @@
 #include <stdio.h>
 #include <string.h>
 
-static void create(ax_runner *r)
+static void create(ut_runner *r)
 {
-	ax_string_r str_r = ax_new0(string);
-	axut_assert(r, str_r.any != NULL);
-	axut_assert(r, ax_box_size(str_r.box) == 0);
-	axut_assert(r, ax_str_length(str_r.str) == 0);
-	ax_one_free(str_r.one);
+	ax_string_r str_r = ax_new0(ax_string);
+	ut_assert(r, str_r.ax_any != NULL);
+	ut_assert(r, ax_box_size(str_r.ax_box) == 0);
+	ut_assert(r, ax_str_length(str_r.ax_str) == 0);
+	ax_one_free(str_r.ax_one);
 }
 
-static void append(ax_runner *r)
+static void append(ut_runner *r)
 {
-	ax_string_r str_r = ax_new0(string);
-	ax_str_append(str_r.str, "hello");
-	ax_str_append(str_r.str, " world");
-	axut_assert(r, strcmp(ax_str_strz(str_r.str), "hello world") == 0);
-	axut_assert(r, ax_str_length(str_r.str) == sizeof "hello world" - 1);
-	ax_str_insert(str_r.str, 6, "my ");
-	axut_assert(r, strcmp(ax_str_strz(str_r.str), "hello my world") == 0);
-	ax_one_free(str_r.one);
+	ax_string_r str_r = ax_new0(ax_string);
+	ax_str_append(str_r.ax_str, "hello");
+	ax_str_append(str_r.ax_str, " world");
+	ut_assert(r, strcmp(ax_str_strz(str_r.ax_str), "hello world") == 0);
+	ut_assert(r, ax_str_length(str_r.ax_str) == sizeof "hello world" - 1);
+	ax_str_insert(str_r.ax_str, 6, "my ");
+	ut_assert(r, strcmp(ax_str_strz(str_r.ax_str), "hello my world") == 0);
+	ax_one_free(str_r.ax_one);
 }
 
-static void split(ax_runner *r)
+static void split(ut_runner *r)
 {
-	ax_string_r str_r = ax_new0(string);
-	ax_str_append(str_r.str, ":111:222::");
-	ax_seq_r ret =  ax_str_split(str_r.str, ':');
+	ax_string_r str_r = ax_new0(ax_string);
+	ax_str_append(str_r.ax_str, ":111:222::");
+	ax_seq_r ret =  ax_str_split(str_r.ax_str, ':');
 
 	int i = 0;
-	ax_box_cforeach(ret.box, const char*, p) {
+	ax_box_cforeach(ret.ax_box, const char*, p) {
 		switch(i) {
-			case 0: axut_assert_str_equal(r, "", p); break;
-			case 1: axut_assert_str_equal(r, "111", p); break;
-			case 2: axut_assert_str_equal(r, "222", p); break;
-			case 3: axut_assert_str_equal(r, "", p); break;
-			case 4: axut_assert_str_equal(r, "", p); break;
+			case 0: ut_assert_str_equal(r, "", p); break;
+			case 1: ut_assert_str_equal(r, "111", p); break;
+			case 2: ut_assert_str_equal(r, "222", p); break;
+			case 3: ut_assert_str_equal(r, "", p); break;
+			case 4: ut_assert_str_equal(r, "", p); break;
 		}
 		i++;
 	}
 	
-	ax_one_free(str_r.one);
-	ax_one_free(ret.one);
+	ax_one_free(str_r.ax_one);
+	ax_one_free(ret.ax_one);
 }
 
-axut_suite *suite_for_string()
+ut_suite *suite_for_string()
 {
-	axut_suite* suite = axut_suite_create("string");
+	ut_suite* suite = ut_suite_create("string");
 
-	axut_suite_add(suite, create, 0);
-	axut_suite_add(suite, append, 0);
-	axut_suite_add(suite, split, 0);
+	ut_suite_add(suite, create, 0);
+	ut_suite_add(suite, append, 0);
+	ut_suite_add(suite, split, 0);
 
 	return suite;
 }

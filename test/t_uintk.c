@@ -21,8 +21,8 @@
  */
 
 #include "ax/uintk.h"
-#include "axut/runner.h"
-#include "axut/suite.h"
+#include "ut/runner.h"
+#include "ut/suite.h"
 
 #include <assert.h>
 #include <setjmp.h>
@@ -49,7 +49,7 @@ void factorial(ax_uintk* n, ax_uintk* res)
 
 
 
-static void test_factorial(ax_runner *r)
+static void test_factorial(ut_runner *r)
 {
 	char resbuf[512];
 	char expect[] =
@@ -61,15 +61,15 @@ static void test_factorial(ax_runner *r)
 	ax_uintk_from_int(&num, 100);
 	factorial(&num, &res);
 	ax_uintk_to_string(&res, resbuf, sizeof resbuf);
-	axut_assert(r, strcmp(expect, resbuf) == 0);
+	ut_assert(r, strcmp(expect, resbuf) == 0);
 
 
 }
-axut_suite *suite_for_uintk()
+ut_suite *suite_for_uintk()
 {
-	axut_suite* suite = axut_suite_create("uintk");
+	ut_suite* suite = ut_suite_create("uintk");
 
-	axut_suite_add(suite, test_factorial, 0);
+	ut_suite_add(suite, test_factorial, 0);
 
 	return suite;
 }

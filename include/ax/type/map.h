@@ -29,7 +29,7 @@
 	for ( int _foreach_cont = 1; _foreach_cont; )                     \
 	for (_key_type _key; _foreach_cont; _foreach_cont = 0)            \
 	for (_val_type _val; _foreach_cont--; _foreach_cont = 0)          \
-	_ax_box_iterate(ax_r(map, _map).box, _key##_cur, !_foreach_cont)  \
+	_ax_box_iterate(ax_r(ax_map, _map).ax_box, _key##_cur, !_foreach_cont)  \
 	for (_key = ax_map_iter_key(&_key##_cur),                         \
 			_val = ax_iter_get(&_key##_cur),                  \
 			_foreach_cont = 1;                                \
@@ -40,7 +40,7 @@
 	for ( int _foreach_cont = 1; _foreach_cont; )                     \
 	for (_key_type _key; _foreach_cont; _foreach_cont = 0)            \
 	for (_val_type _val; _foreach_cont--; _foreach_cont = 0)          \
-	_ax_box_citerate(ax_cr(map, _map).box, _key##_cur, !_foreach_cont)\
+	_ax_box_citerate(ax_cr(ax_map, _map).ax_box, _key##_cur, !_foreach_cont)\
 	for (_key = ax_map_citer_key(&_key##_cur),                        \
 			_val = ax_citer_get(&_key##_cur),                 \
 			_foreach_cont = 1;                                \
@@ -54,9 +54,9 @@ typedef struct ax_map_st ax_map;
 
 typedef ax_map *ax_map_init_f(const ax_trait* tr1, const ax_trait* tr2);
 
-#define ax_baseof_map box
+#define ax_baseof_ax_map ax_box
 
-ax_abstract_begin(map)
+ax_abstract_begin(ax_map)
 	void *(*put) (ax_map *map, const void *key, const void *val, va_list *ap);
 	void *(*get) (const ax_map *map, const void *key);
 	ax_iter (*at) (const ax_map *map, const void *key);
@@ -66,16 +66,16 @@ ax_abstract_begin(map)
 	const void *(*itkey)(const ax_citer *it);
 ax_end;
 
-ax_abstract_env_begin(map)
+ax_abstract_env_begin(ax_map)
 	const ax_trait *key_tr;
 ax_end;
 
-ax_abstract(3, map);
+ax_abstract(3, ax_map);
 
 inline static void *ax_map_put(ax_map *map, const void *key, const void *val)
 {
-	return ax_trait_out(map->env.box.elem_tr, ax_obj_do(map, put, ax_trait_in(map->env.key_tr, key),
-		ax_trait_in(map->env.box.elem_tr, val), NULL));
+	return ax_trait_out(map->env.ax_box.elem_tr, ax_obj_do(map, put, ax_trait_in(map->env.key_tr, key),
+		ax_trait_in(map->env.ax_box.elem_tr, val), NULL));
 }
 
 inline static void *ax_map_iput(ax_map *map, const void *key, ...)
@@ -84,7 +84,7 @@ inline static void *ax_map_iput(ax_map *map, const void *key, ...)
 	va_start(ap, key);
 	void *val = ax_obj_do(map, put, ax_trait_in(map->env.key_tr, key), NULL, &ap);
 	va_end(ap);
-	return ax_trait_out(map->env.box.elem_tr, val);
+	return ax_trait_out(map->env.ax_box.elem_tr, val);
 }
 
 inline static ax_fail ax_map_erase(ax_map *map, const void *key)
@@ -94,7 +94,7 @@ inline static ax_fail ax_map_erase(ax_map *map, const void *key)
 
 inline static void *ax_map_get(ax_map *map, const void *key)
 {
-	return ax_trait_out(map->env.box.elem_tr,
+	return ax_trait_out(map->env.ax_box.elem_tr,
 			ax_obj_do(map, get, ax_trait_in(map->env.key_tr, key)));
 }
 

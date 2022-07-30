@@ -63,24 +63,24 @@ typedef struct ax_one_st ax_one;
 
 
 
-#define ax_baseof_one
+#define ax_baseof_ax_one
 
 typedef void (*ax_one_free_f) (ax_one *one);
 typedef const char *(*ax_one_name_f) (const ax_one *one);
 
-ax_abstract_root_begin(one)
+ax_abstract_root_begin(ax_one)
 	const ax_one_name_f name;
 	const ax_one_free_f free;
 ax_end;
 
-ax_abstract_root_env_begin(one)
+ax_abstract_root_env_begin(ax_one)
 	struct {
 		ax_one *macro;
 		uintptr_t micro;
 	} scope;
 ax_end;
 
-ax_abstract(0, one);
+ax_abstract(0, ax_one);
 
 inline static const char *ax_one_name(const ax_one *one)
 {

@@ -56,7 +56,7 @@ static void one_free(ax_one *one)
 
 static const char *one_name(const ax_one *one)
 {
-	return ax_class_name(4, buff);
+	return ax_class_name(4, ax_buff);
 }
 
 static ax_any *any_copy(const ax_any *any)
@@ -69,22 +69,21 @@ static ax_any *any_copy(const ax_any *any)
 	void *buffer = NULL;
 
 	dst_buff = malloc(sizeof(ax_buff));
-	if (!dst_buff) {
+	if (!dst_buff)
 		goto fail;
-	}
 	buffer = malloc(src_buff->used);
-	if (!buffer) {
+	if (!buffer)
 		goto fail;
-	}
+
 	memcpy(dst_buff, src_buff, sizeof(ax_buff));
 
 	memcpy(buffer, src_buff->buf, src_buff->used);
 	dst_buff->real = src_buff->used;
 	dst_buff->buf = buffer;
 
-	dst_buff->any.env.one.scope.macro = NULL;
-	dst_buff->any.env.one.scope.micro= 0;
-	return ax_r(buff, dst_buff).any;
+	dst_buff->any.env.ax_one.scope.macro = NULL;
+	dst_buff->any.env.ax_one.scope.micro= 0;
+	return ax_r(ax_buff, dst_buff).ax_any;
 fail:
 	free(buffer);
 	free(dst_buff);
@@ -110,7 +109,7 @@ static size_t mem_resize(const ax_buff *buff, size_t require)
 
 const ax_any_trait ax_buff_tr =
 {
-	.one = {
+	.ax_one = {
 		.name = one_name,
 		.free = one_free,
 	},
@@ -135,7 +134,7 @@ ax_any *__ax_buff_construct()
 		.buf = NULL
 	};
 	memcpy(buff, &buff_init, sizeof buff_init);
-	return ax_r(buff, buff).any;
+	return ax_r(ax_buff, buff).ax_any;
 fail:
 	free(buff);
 	return NULL;

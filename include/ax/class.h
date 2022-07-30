@@ -26,12 +26,12 @@
 #include "trick.h"
 #include "debug.h"
 
-#define __AX_CLASS_ENTRY_STRUCT(name) struct AX_CATENATE(ax_, name, _st)
-#define __AX_CLASS_TRAIT_STRUCT(name) struct AX_CATENATE(ax_, name, _trait_st)
-#define __AX_CLASS_ENV_STRUCT(name) struct AX_CATENATE(ax_, name, _env_st)
+#define __AX_CLASS_ENTRY_STRUCT(name) struct AX_CATENATE(name, _st)
+#define __AX_CLASS_TRAIT_STRUCT(name) struct AX_CATENATE(name, _trait_st)
+#define __AX_CLASS_ENV_STRUCT(name) struct AX_CATENATE(name, _env_st)
 
 #define ax_class_new_n(_n, name, ...) \
-	(ax_##name##_r) { .ax_base_of(1, name) = __AX_CATENATE_4(__ax_, name, _construct, _n)(__VA_ARGS__) }
+	(name##_r) { .ax_base_of(1, name) = __AX_CATENATE_4(__, name, _construct, _n)(__VA_ARGS__) }
 
 #define ax_new0(name) \
 	ax_class_new_n(0, name, )
@@ -40,16 +40,16 @@
 	ax_class_new_n(AX_NARG(__VA_ARGS__), name, __VA_ARGS__)
 
 #define __AX_CLASS_EXTERN_TRAIT(name) \
-	extern const __AX_CLASS_TRAIT_STRUCT(ax_base_of(1, name)) AX_CATENATE(ax_, name, _tr)
+	extern const __AX_CLASS_TRAIT_STRUCT(ax_base_of(1, name)) AX_CATENATE(name, _tr)
 
 #define ax_class_constructor0(name) \
-	__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) *AX_CATENATE(__ax_, name, _construct0)()
+	__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) *AX_CATENATE(__, name, _construct0)()
 
 #define ax_class_constructor(name, ...) \
-	__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) *AX_CATENATE(__ax_, name, _construct, AX_NARG(__VA_ARGS__))(__VA_ARGS__)
+	__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) *AX_CATENATE(__, name, _construct, AX_NARG(__VA_ARGS__))(__VA_ARGS__)
 
 #define ax_abstract_root_begin(name) \
-	typedef __AX_CLASS_TRAIT_STRUCT(name)  AX_CATENATE(ax_, name, _trait); \
+	typedef __AX_CLASS_TRAIT_STRUCT(name)  AX_CATENATE(name, _trait); \
 	__AX_CLASS_TRAIT_STRUCT(name) {\
 
 #define ax_abstract_begin(name) \
@@ -57,7 +57,7 @@
 		const __AX_CLASS_TRAIT_STRUCT(ax_base_of(1, name)) ax_base_of(1, name);
 
 #define ax_abstract_root_env_begin(name) \
-	typedef __AX_CLASS_ENV_STRUCT(name) AX_CATENATE(ax_, name, _env); \
+	typedef __AX_CLASS_ENV_STRUCT(name) AX_CATENATE(name, _env); \
 	__AX_CLASS_ENV_STRUCT(name) {
 
 #define ax_abstract_env_begin(name) \
@@ -76,7 +76,7 @@
 #define __ax_base_of(n, name) __AX_PREFIX_TO_##n(ax_baseof_, name)
 #define ax_base_of(n, name) __ax_base_of(n, name)
 
-#define __AX_CLASS_DECLARE_VAR(const, name) const struct AX_CATENATE(ax_, name, _st) *name; 
+#define __AX_CLASS_DECLARE_VAR(const, name) const struct AX_CATENATE(name, _st) *name; 
 #define __AX_CLASS_ROLE_ITEM(n, const, name) __AX_CLASS_DECLARE_VAR(const, ax_base_of(n, name))
 
 #define __AX_CLASS_ROLE(n, name) \
@@ -85,14 +85,14 @@
 		const void *__ptr; \
 		AX_PAVE_TO(n, __AX_CLASS_ROLE_ITEM, const, name) \
 		__AX_CLASS_DECLARE_VAR(const,  name) \
-	} AX_CATENATE(ax_, name, _cr); \
+	} AX_CATENATE(name, _cr); \
 	\
 	typedef union \
 	{ \
 		void *__ptr; \
 		AX_PAVE_TO(n, __AX_CLASS_ROLE_ITEM, , name) \
 		__AX_CLASS_DECLARE_VAR(, name) \
-	} AX_CATENATE(ax_, name, _r)
+	} AX_CATENATE(name, _r)
 
 #define __AX_CLASS_ABSTRACT(name) \
 	__AX_CLASS_ENTRY_STRUCT(name) \
@@ -116,14 +116,17 @@
 #define ax_concrete(n, name) \
 	__AX_CLASS_ROLE(n, name)
 
-#define ax_r(type, ptr) ((ax_##type##_r){ .type = ptr })
-#define ax_cr(type, ptr) ((ax_##type##_cr){ .type = ptr })
+#define ax_r(type, ptr) ((type##_r){ .type = ptr })
+#define ax_cr(type, ptr) ((type##_cr){ .type = ptr })
+/*
 #define ax_r_trait(src, dst, ptr) ax_class_trait(ax_r(src, ptr).dst)
 #define ax_cr_trait(src, dst, ptr) ax_class_trait(ax_cr(src, ptr).dst)
 #define ax_r_env(src, dst, ptr) ax_class_env(ax_r(src, ptr).dst)
 #define ax_cr_env(src, dst, ptr) ax_class_env(ax_cr(src, ptr).dst)
+*/
 
-#define ax_rnull { NULL }
 #define ax_r_isnull(r) (!(r).__ptr)
+#define AX_R_NULL { .__ptr = NULL }
+#define AX_R_INIT(type, p) { .type = p }
 
 #endif

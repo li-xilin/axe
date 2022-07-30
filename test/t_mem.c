@@ -22,75 +22,75 @@
 
 #include "assist.h"
 #include "ax/mem.h"
-#include "axut/runner.h"
-#include "axut/suite.h"
+#include "ut/runner.h"
+#include "ut/suite.h"
 
 #include <stdlib.h>
 
-static void strsplit(ax_runner *r)
+static void strsplit(ut_runner *r)
 {
 	char str[] = "a|bb|ccc|dddd||e|";
 	char *next = str, *p;
 	p = ax_strsplit(&next, '|');
-	axut_assert_str_equal(r, "a", p);
+	ut_assert_str_equal(r, "a", p);
 	p = ax_strsplit(&next, '|');
-	axut_assert_str_equal(r, "bb", p);
+	ut_assert_str_equal(r, "bb", p);
 	p = ax_strsplit(&next, '|');
-	axut_assert_str_equal(r, "ccc", p);
+	ut_assert_str_equal(r, "ccc", p);
 	p = ax_strsplit(&next, '|');
-	axut_assert_str_equal(r, "dddd", p);
+	ut_assert_str_equal(r, "dddd", p);
 	p = ax_strsplit(&next, '|');
-	axut_assert_str_equal(r, "", p);
+	ut_assert_str_equal(r, "", p);
 	p = ax_strsplit(&next, '|');
-	axut_assert_str_equal(r, "e", p);
+	ut_assert_str_equal(r, "e", p);
 	p = ax_strsplit(&next, '|');
-	axut_assert_str_equal(r, "", p);
+	ut_assert_str_equal(r, "", p);
 	p = ax_strsplit(&next, '|');
-	axut_assert(r, p == NULL);
+	ut_assert(r, p == NULL);
 }
 
-static void strrepl(ax_runner *r)
+static void strrepl(ut_runner *r)
 {
 	char *res = NULL;
 
 	res = ax_strrepl("a", "a", "");
-	axut_assert_str_equal(r, "", res);
+	ut_assert_str_equal(r, "", res);
 	free(res);
 
 	res = ax_strrepl("a", "b", "");
-	axut_assert_str_equal(r, "a", res);
+	ut_assert_str_equal(r, "a", res);
 	free(res);
 
 	res = ax_strrepl("", "a", "");
-	axut_assert_str_equal(r, "", res);
+	ut_assert_str_equal(r, "", res);
 	free(res);
 
 	res = ax_strrepl("a", "ab", "");
-	axut_assert_str_equal(r, "a", res);
+	ut_assert_str_equal(r, "a", res);
 	free(res);
 
 	res = ax_strrepl("a", "a", "b");
-	axut_assert_str_equal(r, "b", res);
+	ut_assert_str_equal(r, "b", res);
 	free(res);
 
 	res = ax_strrepl("a", "a", "ab");
-	axut_assert_str_equal(r, "ab", res);
+	ut_assert_str_equal(r, "ab", res);
 	free(res);
 
 	res = ax_strrepl("ab", "b", "c");
-	axut_assert_str_equal(r, "ac", res);
+	ut_assert_str_equal(r, "ac", res);
 	free(res);
 
 	res = ax_strrepl("aabccCeefgg", "cc", "CC");
-	axut_assert_str_equal(r, "aabCCCeefgg", res);
+	ut_assert_str_equal(r, "aabCCCeefgg", res);
 	free(res);
 
 }
 
-axut_suite *suite_for_mem()
+ut_suite *suite_for_mem()
 {
-	axut_suite* suite = axut_suite_create("mem");
-	axut_suite_add(suite, strsplit, 0);
-	axut_suite_add(suite, strrepl, 0);
+	ut_suite* suite = ut_suite_create("mem");
+	ut_suite_add(suite, strsplit, 0);
+	ut_suite_add(suite, strrepl, 0);
 	return suite;
 }

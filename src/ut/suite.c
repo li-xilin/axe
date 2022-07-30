@@ -20,8 +20,8 @@
  * THE SOFTWARE.
  */
 
-#include "axut/suite.h"
-#include "axut/case.h"
+#include "ut/suite.h"
+#include "ut/case.h"
 
 #include "ax/vector.h"
 #include "ax/algo.h"
@@ -34,35 +34,35 @@
 
 #include "check.h"
 
-struct axut_suite_st
+struct ut_suite_st
 {
 	char *name;
 	void *arg;
 	ax_vector_r tctab;
 };
 
-void axut_suite_destroy(axut_suite *s)
+void ut_suite_destroy(ut_suite *s)
 {
 	if (!s)
 		return;
-	ax_one_free(s->tctab.one);
+	ax_one_free(s->tctab.ax_one);
 	free(s->name);
 	free(s);
 }
 
-axut_suite *axut_suite_create(const char *name)
+ut_suite *ut_suite_create(const char *name)
 {
 	CHECK_PARAM_NULL(name);
-	axut_suite *suite = NULL;
-	ax_vector_r cases = ax_rnull;
+	ut_suite *suite = NULL;
+	ax_vector_r cases = AX_R_NULL;
 	char *name_copy = NULL;
 	
-	suite = malloc(sizeof(axut_suite));
+	suite = malloc(sizeof(ut_suite));
 	if (!suite)
 		return NULL;
 
-	cases = ax_new(vector, &axut_case_tr);
-	if (!cases.one) {
+	cases = ax_new(ax_vector, &ut_case_tr);
+	if (ax_r_isnull(cases)) {
 		return NULL;
 	}
 
@@ -70,7 +70,7 @@ axut_suite *axut_suite_create(const char *name)
 	if (!name_copy)
 		goto fail;
 
-	axut_suite suite_init = {
+	ut_suite suite_init = {
 		.tctab = cases,
 		.name = name_copy
 	};
@@ -78,45 +78,45 @@ axut_suite *axut_suite_create(const char *name)
 	return suite;
 fail:
 	free(suite);
-	ax_one_free(cases.one);
+	ax_one_free(cases.ax_one);
 	free(name_copy);
 	return NULL;
 }
 
-void axut_suite_set_arg(axut_suite *s, void *arg)
+void ut_suite_set_arg(ut_suite *s, void *arg)
 {
 	s->arg = arg;
 }
 
-void *axut_suite_arg(const axut_suite *s)
+void *ut_suite_arg(const ut_suite *s)
 {
 	return s->arg;
 }
 
-ax_fail axut_suite_add_case(axut_suite *suite, const char *name, axut_case_proc_f proc, int priority)
+ax_fail ut_suite_add_case(ut_suite *suite, const char *name, ut_case_proc_f proc, int priority)
 {
-	axut_case case_init  = {
+	ut_case case_init  = {
 		.name = (char*)name,
 		.log = NULL,
 		.proc = proc,
 		.priority = priority,
-		.state = AXUT_CS_READY
+		.state = UT_CS_READY
 	};
-	ax_fail fail = ax_seq_push(suite->tctab.seq, &case_init);
+	ax_fail fail = ax_seq_push(suite->tctab.ax_seq, &case_init);
 	if (fail)
 		return fail;
-	ax_iter first = ax_box_begin(suite->tctab.box);
-	ax_iter last = ax_box_end(suite->tctab.box);
+	ax_iter first = ax_box_begin(suite->tctab.ax_box);
+	ax_iter last = ax_box_end(suite->tctab.ax_box);
 	ax_insertion_sort(&first, &last);
 	return false;
 }
 
-const ax_seq *axut_suite_all_case(const axut_suite *suite)
+const ax_seq *ut_suite_all_case(const ut_suite *suite)
 {
-	return suite->tctab.seq;
+	return suite->tctab.ax_seq;
 }
 
-const char *axut_suite_name(const axut_suite *suite)
+const char *ut_suite_name(const ut_suite *suite)
 {
 	return suite->name;
 }

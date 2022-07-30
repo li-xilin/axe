@@ -37,8 +37,8 @@
 
 #define MIN_SIZE 16
 
-ax_concrete_begin(string)
-	ax_buff_r buff_r;
+ax_concrete_begin(ax_string)
+	ax_buff_r buff;
 ax_end;
 
 static void    citer_move(ax_citer *it, long i);
@@ -94,21 +94,21 @@ bool iter_if_have_value(const ax_citer *it);
 
 bool iter_if_valid(const ax_citer *it)
 {
-	const ax_string *self = it->owner;
-	const ax_buff *buff = self->buff_r.buff;
-	const ax_byte *ptr = ax_buff_cptr(buff);
+	ax_string_cr self = AX_R_INIT(ax_one, it->owner);
+	ax_buff_r buff = self.ax_string->buff;
+	const ax_byte *ptr = ax_buff_cptr(buff.ax_buff);
 	return ax_citer_norm(it)
 		? (ax_byte *)it->point >= ptr && (ax_byte *)it->point <= ptr
-				+ ax_buff_size(buff, NULL) - sizeof(char)
+				+ ax_buff_size(buff.ax_buff, NULL) - sizeof(char)
 		: (ax_byte *)it->point >= ptr - sizeof(char)
-				&& (ax_byte *)it->point <= ptr + ax_buff_size(buff, NULL) - 2 * sizeof(char);
+				&& (ax_byte *)it->point <= ptr + ax_buff_size(buff.ax_buff, NULL) - 2 * sizeof(char);
 
 }
 
 bool iter_if_have_value(const ax_citer *it)
 {
-	const ax_string *self = it->owner;
-	const ax_buff *buff = self->buff_r.buff;
+	ax_string_cr self = AX_R_INIT(ax_one, it->owner);
+	const ax_buff *buff = self.ax_string->buff.ax_buff;
 	const ax_byte *ptr = ax_buff_cptr(buff);
 	return (ax_byte *)it->point >= ptr
 		&& (ax_byte *)it->point <= ptr + ax_buff_size(buff, NULL) - 2 * sizeof(char);
@@ -233,8 +233,8 @@ static void iter_erase(ax_iter *it)
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
 
-	ax_string *self = it->owner;
-	ax_buff *buff = self->buff_r.buff;
+	ax_string_r self = AX_R_INIT(ax_one, it->owner);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
 
 	size_t size = ax_buff_size(buff, NULL);
 	size_t nchar = size / sizeof(char);
@@ -253,22 +253,22 @@ static void one_free(ax_one* one)
 	if (!one)
 		return;
 
-	ax_string *self = (ax_string *) one;
-	ax_one_free(self->buff_r.one);
+	ax_string_r self = AX_R_INIT(ax_one, one);
+	ax_one_free(self.ax_string->buff.ax_one);
 	free(one);
 }
 
 static const char *one_name(const ax_one *one)
 {
-	return ax_class_name(5, string);
+	return ax_class_name(5, ax_string);
 }
 
 static ax_dump *any_dump(const ax_any* any)
 {
-	ax_str_cr self = { .any = any };
+	ax_str_cr self = AX_R_INIT(ax_any, any);
 	ax_dump *block = NULL, *strdmp = NULL;
-	block = ax_dump_block(ax_one_name(self.one), 1);
-	strdmp = ax_dump_str(ax_str_cstrz(self.str));
+	block = ax_dump_block(ax_one_name(self.ax_one), 1);
+	strdmp = ax_dump_str(ax_str_cstrz(self.ax_str));
 	ax_dump_bind(block, 0, strdmp);
 	return block;
 }
@@ -277,28 +277,26 @@ static ax_any* any_copy(const ax_any* any)
 {
 	CHECK_PARAM_NULL(any);
 
-	ax_string_r self_r = { .any = (ax_any*)any };
+	ax_string_cr self = AX_R_INIT(ax_any, any);
 
-	ax_buff_r new_buf_r = { NULL };
-	ax_string_r new_str_r = { NULL };
+	ax_buff_r new_buf = { NULL };
+	ax_string_r new_str = { NULL };
 
-	new_str_r.string = malloc((sizeof(ax_string)));
-	if (!new_str_r.string) {
+	new_str.ax_string = malloc((sizeof(ax_string)));
+	if (!new_str.ax_string) {
 		goto fail;
 	}
 
-	new_buf_r.any = ax_any_copy(self_r.string->buff_r.any);
-	if (!new_buf_r.any)
+	new_buf.ax_any = ax_any_copy(self.ax_string->buff.ax_any);
+	if (!new_buf.ax_any)
 		goto fail;
 
-	memcpy(new_str_r.string, self_r.string, sizeof(ax_string));
+	memcpy(new_str.ax_string, self.ax_string, sizeof(ax_string));
 
-	new_str_r.string->str.env.seq.box.any.one.scope.macro = NULL;
-	new_str_r.string->str.env.seq.box.any.one.scope.micro = 0;
-	return new_str_r.any;
+	return new_str.ax_any;
 fail:
-	ax_one_free(new_buf_r.one);
-	ax_one_free(new_str_r.one);
+	ax_one_free(new_buf.ax_one);
+	ax_one_free(new_str.ax_one);
 	return NULL;
 }
 
@@ -306,8 +304,8 @@ static size_t box_size(const ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_cr self_r = { .box = box };
-	size_t bsize = ax_buff_size(self_r.string->buff_r.buff, NULL);
+	ax_string_cr self = AX_R_INIT(ax_box, box);
+	size_t bsize = ax_buff_size(self.ax_string->buff.ax_buff, NULL);
 	return bsize / sizeof(char) - 1;
 }
 
@@ -315,8 +313,8 @@ static size_t box_maxsize(const ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_cr self_r = { .box = box };
-	size_t maxsize = ax_buff_max(self_r.string->buff_r.buff);
+	ax_string_cr self = AX_R_INIT(ax_box, box);
+	size_t maxsize = ax_buff_max(self.ax_string->buff.ax_buff);
 	return maxsize / sizeof(char) - 1;
 }
 
@@ -324,27 +322,28 @@ static ax_iter box_begin(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_r self_r = { .box = box };
+	ax_string_r self = AX_R_INIT(ax_box, box);
 	return (ax_iter) {
 		.owner = box,
-		.point = (ax_byte *)ax_buff_ptr(self_r.string->buff_r.buff),
-		.tr = &ax_string_tr.seq.box.iter,
-		.etr = box->env.elem_tr,
+		.point = (ax_byte *)ax_buff_ptr(self.ax_string->buff.ax_buff),
+		.tr = &ax_string_tr.ax_seq.ax_box.iter,
+		.etr = ax_class_env(box).elem_tr,
 	};
 }
+
 
 static ax_iter box_end(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_r self_r = { .box = box };
-	ax_buff *buff = self_r.string->buff_r.buff;
+	ax_string_r self = AX_R_INIT(ax_box, box);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
 	return (ax_iter) {
 		.owner = box,
 		.point = (ax_byte *)ax_buff_ptr(buff)
 			+ ax_buff_size(buff, NULL) - sizeof(char),
-		.tr = &ax_string_tr.seq.box.iter,
-		.etr = box->env.elem_tr,
+		.tr = &ax_string_tr.ax_seq.ax_box.iter,
+		.etr = ax_class_env(box).elem_tr,
 	};
 }
 
@@ -352,14 +351,14 @@ static ax_iter box_rbegin(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_r self_r = { .box = box };
-	ax_buff *buff = self_r.string->buff_r.buff;
+	ax_string_r self = AX_R_INIT(ax_box, box);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
 	return (ax_iter) {
 		.owner = box,
 		.point = (ax_byte *)ax_buff_ptr(buff)
 			+ ax_buff_size(buff, NULL) - 2 * sizeof(char),
-		.tr = &ax_string_tr.seq.box.riter,
-		.etr = box->env.elem_tr,
+		.tr = &ax_string_tr.ax_seq.ax_box.riter,
+		.etr = ax_class_env(box).elem_tr,
 	};
 }
 
@@ -367,12 +366,12 @@ static ax_iter box_rend(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_r self_r = { .box = box };
+	ax_string_r self = AX_R_INIT(ax_box, box);
 	return (ax_iter) {
 		.owner = box,
-		.point = (ax_byte *)ax_buff_ptr(self_r.string->buff_r.buff) - sizeof(char),
-		.tr = &ax_string_tr.seq.box.riter,
-		.etr = box->env.elem_tr,
+		.point = (ax_byte *)ax_buff_ptr(self.ax_string->buff.ax_buff) - sizeof(char),
+		.tr = &ax_string_tr.ax_seq.ax_box.riter,
+		.etr = ax_class_env(box).elem_tr,
 	};
 }
 
@@ -380,8 +379,8 @@ static void box_clear(ax_box* box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_string_r self_r = { .box = (ax_box *)box };
-	ax_buff *buff = self_r.string->buff_r.buff;
+	ax_string_r self = AX_R_INIT(ax_box, box);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
 
 	(void)ax_buff_resize(buff, sizeof(char)); // Always success
 
@@ -394,8 +393,8 @@ static ax_fail str_append(ax_str* str, const char *s)
 	CHECK_PARAM_NULL(str);
 	CHECK_PARAM_NULL(s);
 
-	ax_string_r self_r = { .str = str };
-	ax_buff *buff = self_r.string->buff_r.buff;
+	ax_string_r self = AX_R_INIT(ax_str, str);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
 
 	size_t append_len = strlen(s) * sizeof(char);
 	size_t old_size = ax_buff_size(buff, NULL);
@@ -415,10 +414,10 @@ fail:
 static ax_fail str_insert(ax_str* str, size_t start, const char *s)
 {
 	CHECK_PARAM_NULL(str);
-	CHECK_PARAM_VALIDITY(start, start < ax_box_size(ax_r(str, str).box));
+	CHECK_PARAM_VALIDITY(start, start < ax_box_size(ax_r(ax_str, str).ax_box));
 	
-	ax_string_r self_r = { .str = str };
-	ax_buff *buff = self_r.string->buff_r.buff;
+	ax_string_r self = AX_R_INIT(ax_str, str);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
 
 	size_t insert_len = strlen(s);
 	size_t old_bsize = ax_buff_size(buff, NULL);
@@ -434,8 +433,8 @@ static char *str_strz(ax_str* str)
 {
 	CHECK_PARAM_NULL(str);
 
-	ax_string_r self_r = { .str = str };
-	ax_buff *buff = self_r.string->buff_r.buff;
+	ax_string_r self = AX_R_INIT(ax_str, str);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
 	return ax_buff_ptr(buff);
 }
 
@@ -444,8 +443,8 @@ static int str_comp(const ax_str* str, const char* s)
 	CHECK_PARAM_NULL(str);
 	CHECK_PARAM_NULL(s);
 
-	ax_string_cr self_r = { .str = str };
-	ax_buff *buff = self_r.string->buff_r.buff;
+	ax_string_cr self = AX_R_INIT(ax_str, str);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
 	char *ptr = (char*) ax_buff_ptr(buff);
 	return strcmp(ptr, s);
 }
@@ -456,24 +455,24 @@ static ax_str *str_substr (const ax_str* str, size_t start, size_t len)
 	CHECK_PARAM_VALIDITY(start, start < ax_str_length(str));
 	CHECK_PARAM_VALIDITY(len, start + len < ax_str_length(str));
 
-	ax_string_cr self_r = { .str = str };
-	ax_buff *buff = self_r.string->buff_r.buff;
+	ax_string_cr self = AX_R_INIT(ax_str, str);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
 
-	ax_string_r ret_r = { NULL };
-	ret_r.str = __ax_string_construct();
-	if (!ret_r.one) {
+	ax_string_r ret = { NULL };
+	ret.ax_str = __ax_string_construct();
+	if (!ret.ax_one) {
 		goto fail;
 	}
 
 	char* buffer = ax_buff_ptr(buff);
 	char back = buffer[start + len];
 	buffer[start + len] = '\0';
-	if (ax_str_append(ret_r.str, buffer + start))
+	if (ax_str_append(ret.ax_str, buffer + start))
 		goto fail;
 	buffer[start + len] = back;
-	return ret_r.str;
+	return ret.ax_str;
 fail:
-	ax_one_free(ret_r.one);
+	ax_one_free(ret.ax_one);
 	return NULL;
 }
 
@@ -481,32 +480,32 @@ static ax_seq *str_split (const ax_str* str, const char ch)
 {
 	CHECK_PARAM_NULL(str);
 
-	ax_string_cr self_r = { .str = str };
-	ax_buff *buff = self_r.string->buff_r.buff;
+	ax_string_cr self = AX_R_INIT(ax_str, str);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
 
 	char *buffer = ax_buff_ptr(buff);
 	char *cur = buffer, *head = buffer;
 
-	ax_vector_r ret = ax_new(vector, ax_t(str));
-	if (ret.one == NULL)
+	ax_vector_r ret = ax_new(ax_vector, ax_t(str));
+	if (ret.ax_one == NULL)
 		goto fail;
 
 	while (*cur) {
 		if (*cur == ch) {
 			char backup = *cur;
 			*cur = '\0';
-			if(ax_seq_push(ret.seq, head))
+			if(ax_seq_push(ret.ax_seq, head))
 				goto fail;
 			*cur = backup;
 			head = cur + 1;
 		}
 		cur++;
 	}
-	if(ax_seq_push(ret.seq, head))
+	if(ax_seq_push(ret.ax_seq, head))
 		goto fail;
-	return ret.seq;
+	return ret.ax_seq;
 fail:
-	ax_one_free(ret.one);
+	ax_one_free(ret.ax_one);
        return NULL;
 }
 
@@ -533,18 +532,18 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, it->owner == seq && iter_if_valid(ax_iter_c(it)));
 
-	ax_string *self = (ax_string *) seq;
-	ax_buff *buff = self->buff_r.buff;
+	ax_string_r self = AX_R_INIT(ax_seq, seq);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
 
 	char *ptr = ax_buff_ptr(buff);
-	size_t old_size = ax_buff_size(self->buff_r.buff, NULL);
+	size_t old_size = ax_buff_size(buff, NULL);
 
 	long offset = (char *)it->point - ptr; //backup offset before realloc
 
-	if (ax_buff_adapt(self->buff_r.buff, old_size + sizeof(char)))
+	if (ax_buff_adapt(buff, old_size + sizeof(char)))
 		return true;
 
-	ptr = ax_buff_ptr(self->buff_r.buff);
+	ptr = ax_buff_ptr(buff);
 	it->point = ptr + offset; //restore offset
 
 	size_t nchar = old_size / sizeof(char);
@@ -563,18 +562,19 @@ static ax_fail seq_push(ax_seq *seq, const void *val, va_list *ap)
 	CHECK_PARAM_NULL(seq);
 	CHECK_PARAM_NULL(val);
 
+	ax_string_r self = AX_R_INIT(ax_seq, seq);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
+
 	if (!val || *(char *)val == '\0')
 		return false;
 
-	ax_string *self = (ax_string *) seq;
-
-	size_t size = ax_buff_size(self->buff_r.buff, NULL);
+	size_t size = ax_buff_size(buff, NULL);
 
 	size += sizeof(char);
-	if (ax_buff_adapt(self->buff_r.buff, size))
+	if (ax_buff_adapt(buff, size))
 		return true;
 
-	char *ptr = ax_buff_ptr(self->buff_r.buff);
+	char *ptr = ax_buff_ptr(buff);
 
 	size_t nchar = size / sizeof(char);
 
@@ -588,16 +588,18 @@ static ax_fail seq_pop(ax_seq *seq)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_string *self = (ax_string *) seq;
-	size_t size = ax_buff_size(self->buff_r.buff, NULL);
-	char *ptr = ax_buff_ptr(self->buff_r.buff);
+	ax_string_r self = AX_R_INIT(ax_seq, seq);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
+
+	size_t size = ax_buff_size(buff, NULL);
+	char *ptr = ax_buff_ptr(buff);
 
 	if (size == sizeof('\0')) {
 		return false;
 	}
 
 	size -= sizeof(char);
-	if (ax_buff_adapt(self->buff_r.buff, size))
+	if (ax_buff_adapt(buff, size))
 		return true;
 	size_t nchar = size / sizeof(char);
 	ptr[nchar - 1] = '\0';
@@ -609,9 +611,10 @@ static void seq_invert(ax_seq *seq)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_string *self = (ax_string *) seq;
-	size_t size = ax_buff_size(self->buff_r.buff, NULL);
-	char *ptr = ax_buff_ptr(self->buff_r.buff);
+	ax_string_r self = AX_R_INIT(ax_seq, seq);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
+	size_t size = ax_buff_size(buff, NULL);
+	char *ptr = ax_buff_ptr(buff);
 
 	if (size == sizeof('\0'))
 		return;
@@ -627,12 +630,12 @@ static void seq_invert(ax_seq *seq)
 static ax_fail seq_trunc(ax_seq *seq, size_t size)
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(size, size <= ax_box_maxsize(ax_r(seq, seq).box));
+	CHECK_PARAM_VALIDITY(size, size <= ax_box_maxsize(ax_r(ax_seq, seq).ax_box));
 
-	ax_string_r self_r = { .seq = seq };
-	ax_buff *buff = self_r.string->buff_r.buff;
+	ax_string_r self = AX_R_INIT(ax_seq, seq);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
 
-	size_t old_size = ax_str_length(self_r.str);
+	size_t old_size = ax_str_length(self.ax_str);
 
 	if (size == old_size) 
 		return false;
@@ -652,18 +655,18 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 static ax_iter seq_at(const ax_seq *seq, size_t index)
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(ax_cr(seq, seq).box));
+	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(ax_cr(ax_seq, seq).ax_box));
 
-	ax_string_cr self_r = { .seq = seq };
-	ax_buff *buff = self_r.string->buff_r.buff;
+	ax_string_cr self = AX_R_INIT(ax_seq, seq);
+	ax_buff *buff = self.ax_string->buff.ax_buff;
 
 	char *ptr = ax_buff_ptr(buff);
 
 	ax_iter it = {
-		.owner = (void *)self_r.one,
+		.owner = (void *)self.ax_one,
 		.point =  ptr + index,
-		.tr = &ax_string_tr.seq.box.iter,
-		.etr = seq->env.box.elem_tr,
+		.tr = &ax_string_tr.ax_seq.ax_box.iter,
+		.etr = ax_class_env(self.ax_box).elem_tr,
 	};
 
 	CHECK_PARAM_VALIDITY(index, iter_if_have_value(ax_iter_c(&it)));
@@ -672,10 +675,10 @@ static ax_iter seq_at(const ax_seq *seq, size_t index)
 
 const ax_str_trait ax_string_tr =
 {
-	.seq = {
-		.box = {
-			.any = {
-				.one = {
+	.ax_seq = {
+		.ax_box = {
+			.ax_any = {
+				.ax_one = {
 					.name = one_name,
 					.free = one_free,
 				},
@@ -733,34 +736,34 @@ const ax_str_trait ax_string_tr =
 
 ax_str *__ax_string_construct()
 {
-	ax_string *self = NULL;
-	ax_buff_r buff_r = { NULL };
+	ax_string_r self = AX_R_NULL;
+	ax_buff_r buff = AX_R_NULL;
 
-	self = malloc(sizeof(ax_string));
-	if (self == NULL)
+	self.ax_string = malloc(sizeof(ax_string));
+	if (ax_r_isnull(self))
 		goto fail;
 
-	buff_r.any = __ax_buff_construct();
-	if (!buff_r.any)
+	buff = ax_new0(ax_buff);
+	if (ax_r_isnull(buff))
 		goto fail;
 
 	ax_string string_init = {
-		.str = {
+		.ax_str = {
 			.tr = &ax_string_tr,
-			.env.seq.box.elem_tr = ax_t(char)
+			.env.ax_seq.ax_box.elem_tr = ax_t(char)
 		},
-		.buff_r = buff_r,
+		.buff = buff,
 	};
 	char zero = '\0';
-	ax_buff_reserve(buff_r.buff, MIN_SIZE * sizeof(char));
-	ax_buff_resize(buff_r.buff, sizeof(char));
-	char *ptr = ax_buff_ptr(buff_r.buff);
+	ax_buff_reserve(buff.ax_buff, MIN_SIZE * sizeof(char));
+	ax_buff_resize(buff.ax_buff, sizeof(char));
+	char *ptr = ax_buff_ptr(buff.ax_buff);
 	ptr[0] = zero;
 
-	memcpy(self, &string_init, sizeof string_init);
-	return ax_r(string, self).str;
+	memcpy(self.ax_string, &string_init, sizeof string_init);
+	return self.ax_str;
 fail:
-	ax_one_free(buff_r.one);
+	ax_one_free(buff.ax_one);
 	return NULL;
 }
 

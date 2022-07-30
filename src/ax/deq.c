@@ -55,7 +55,7 @@
 
 #undef free
 
-ax_concrete_begin(deq)
+ax_concrete_begin(ax_deq)
 	struct ring_st map;
 	uint16_t front, rear;
 ax_end;
@@ -124,12 +124,12 @@ inline static struct position back_end_position(ax_deq *deq)
 
 inline static ax_byte *position_ptr(const ax_deq *deq, const struct position *pos)
 {
-	return *ring_at(&deq->map, pos->midx) + pos->boff * ax_cr(deq, deq).box->env.elem_tr->size;
+	return *ring_at(&deq->map, pos->midx) + pos->boff * ax_class_env(ax_cr(ax_deq, deq).ax_box).elem_tr->size;
 }
 
 inline static ptrdiff_t move_position(const ax_deq *deq, struct position *pos, ptrdiff_t step)
 {
-	size_t size = box_size(ax_cr(deq, deq).box);
+	size_t size = box_size(ax_cr(ax_deq, deq).ax_box);
 	ptrdiff_t amount = pos->midx * BLOCK_SIZE + pos->boff + step;
 	ptrdiff_t extend = 0;
 
@@ -259,8 +259,8 @@ static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 {
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr && it->point);
 
-	ax_seq_cr self = { .one = it->owner };
-	const ax_trait *etr = self.box->env.elem_tr;
+	ax_seq_cr self = AX_R_INIT(ax_one, it->owner);
+	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
 	ax_byte tmp[etr->size];
 	if (ax_trait_copy_or_init(it->etr, tmp, val, ap))
 		return true;
@@ -275,33 +275,33 @@ static void iter_erase(ax_iter *it)
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
 
-	ax_deq_r self = { .seq = it->owner };
+	ax_deq_r self = AX_R_INIT(ax_one, it->owner);
 	struct position pos = get_position_by_iter(ax_iter_c(it));
 
 	struct position next_pos = pos;
-	move_position(self.deq, &next_pos, 1);
+	move_position(self.ax_deq, &next_pos, 1);
 
 	struct position ret_pos = pos;
 
-	struct position end = back_end_position(self.deq);
-	void *val = position_ptr(self.deq, &pos);
-	const ax_trait *etr = self.box->env.elem_tr;
+	struct position end = back_end_position(self.ax_deq);
+	void *val = position_ptr(self.ax_deq, &pos);
+	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
 	ax_trait_free(etr, val);
 	while (!POS_EQUAL(next_pos, end)) {
-		void *next_val = position_ptr(self.deq, &next_pos);
+		void *next_val = position_ptr(self.ax_deq, &next_pos);
 		memcpy(val, next_val, etr->size);
 		val = next_val;
 		pos = next_pos;
-		move_position(self.deq, &next_pos, 1);
+		move_position(self.ax_deq, &next_pos, 1);
 	}
 	if (next_pos.midx != pos.midx)
-		ring_pop_back(&self.deq->map);
+		ring_pop_back(&self.ax_deq->map);
 
 	struct position new_rear = end;
-	move_position(self.deq, &new_rear, -1);
+	move_position(self.ax_deq, &new_rear, -1);
 	if (new_rear.midx != pos.midx)
-		ring_pop_back(&self.deq->map);
-	self.deq->rear = new_rear.boff;
+		ring_pop_back(&self.ax_deq->map);
+	self.ax_deq->rear = new_rear.boff;
 
 	iter_set_pos(ax_iter_c(it), &ret_pos);
 }
@@ -310,22 +310,22 @@ static void one_free(ax_one *one)
 {
 	if (!one)
 		return;
-	ax_deq_r self = { .one = one };
-	for (size_t i = 0; i < ring_size(&self.deq->map); i++)
-		free(*ring_at(&self.deq->map, i));
-	ring_free(&self.deq->map);
+	ax_deq_r self = AX_R_INIT(ax_one, one);
+	for (size_t i = 0; i < ring_size(&self.ax_deq->map); i++)
+		free(*ring_at(&self.ax_deq->map, i));
+	ring_free(&self.ax_deq->map);
 	free(one);
 }
 
 static const char *one_name(const ax_one *one)
 {
-	return ax_class_name(4, deq);
+	return ax_class_name(4, ax_deq);
 }
 
 static ax_dump *any_dump(const ax_any *any)
 {
-	ax_seq_cr self = { .any = any };
-	return ax_seq_dump(self.seq);
+	ax_seq_cr self = AX_R_INIT(ax_any, any);
+	return ax_seq_dump(self.ax_seq);
 }
 
 static ax_any *any_copy(const ax_any *any)
@@ -340,10 +340,10 @@ static size_t box_size(const ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_deq_cr self = { .box = box };
-	return ring_size(&self.deq->map) * BLOCK_SIZE
-		- (self.deq->front + 1)
-		- (BLOCK_SIZE - self.deq->rear);
+	ax_deq_cr self = AX_R_INIT(ax_box, box);
+	return ring_size(&self.ax_deq->map) * BLOCK_SIZE
+		- (self.ax_deq->front + 1)
+		- (BLOCK_SIZE - self.ax_deq->rear);
 }
 
 static size_t box_maxsize(const ax_box *box)
@@ -355,14 +355,14 @@ static ax_iter box_begin(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_deq_r self = { .box = box };
-	struct position pos = { 0, self.deq->front, };
-	next_position(self.deq, &pos);
+	ax_deq_r self = AX_R_INIT(ax_box, box);
+	struct position pos = { 0, self.ax_deq->front, };
+	next_position(self.ax_deq, &pos);
 	return (ax_iter) {
 		.owner = box,
-		.point = position_ptr(self.deq, &pos),
-		.extra = ring_offset(&self.deq->map, pos.midx),
-		.tr = &ax_deq_tr.box.iter,
+		.point = position_ptr(self.ax_deq, &pos),
+		.extra = ring_offset(&self.ax_deq->map, pos.midx),
+		.tr = &ax_deq_tr.ax_box.iter,
 		.etr = box->env.elem_tr,
 	};
 }
@@ -371,13 +371,13 @@ static ax_iter box_end(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_deq_r self = { .box = box };
-	struct position pos = { ring_size(&self.deq->map) - 1, self.deq->rear, };
+	ax_deq_r self = AX_R_INIT(ax_box, box);
+	struct position pos = { ring_size(&self.ax_deq->map) - 1, self.ax_deq->rear, };
 	return (ax_iter) {
 		.owner = box,
-		.point = position_ptr(self.deq, &pos),
-		.extra = ring_offset(&self.deq->map, pos.midx),
-		.tr = &ax_deq_tr.box.iter,
+		.point = position_ptr(self.ax_deq, &pos),
+		.extra = ring_offset(&self.ax_deq->map, pos.midx),
+		.tr = &ax_deq_tr.ax_box.iter,
 		.etr = box->env.elem_tr,
 	};
 	
@@ -387,14 +387,14 @@ static ax_iter box_rbegin(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_deq_r self = { .box = box };
-	struct position pos = back_end_position(self.deq);
-	move_position(self.deq, &pos, -1);
+	ax_deq_r self = AX_R_INIT(ax_box, box);
+	struct position pos = back_end_position(self.ax_deq);
+	move_position(self.ax_deq, &pos, -1);
 	return (ax_iter) {
 		.owner = box,
-		.point = position_ptr(self.deq, &pos),
-		.extra = ring_offset(&self.deq->map, pos.midx),
-		.tr = &ax_deq_tr.box.riter,
+		.point = position_ptr(self.ax_deq, &pos),
+		.extra = ring_offset(&self.ax_deq->map, pos.midx),
+		.tr = &ax_deq_tr.ax_box.riter,
 		.etr = box->env.elem_tr,
 	};
 }
@@ -403,13 +403,13 @@ static ax_iter box_rend(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_deq_r self = { .box = box };
-	struct position pos = front_end_position(self.deq);
+	ax_deq_r self = AX_R_INIT(ax_box, box);
+	struct position pos = front_end_position(self.ax_deq);
 	return (ax_iter) {
 		.owner = box,
-		.point = position_ptr(self.deq, &pos),
-		.extra = ring_offset(&self.deq->map, pos.midx),
-		.tr = &ax_deq_tr.box.riter,
+		.point = position_ptr(self.ax_deq, &pos),
+		.extra = ring_offset(&self.ax_deq->map, pos.midx),
+		.tr = &ax_deq_tr.ax_box.riter,
 		.etr = box->env.elem_tr,
 	};
 }
@@ -418,24 +418,24 @@ static void box_clear(ax_box *box)
 {
 	CHECK_PARAM_NULL(box);
 
-	ax_deq_r self = { .box = box };
-	size_t map_size = ring_size(&self.deq->map);
+	ax_deq_r self = AX_R_INIT(ax_box, box);
+	size_t map_size = ring_size(&self.ax_deq->map);
 
-	struct position pos = { 0, self.deq->front, };
-	next_position(self.deq, &pos);
-	while (pos.midx != map_size - 1 && pos.boff != self.deq->rear) {
-		ax_trait_free(box->env.elem_tr, position_ptr(self.deq, &pos));
-		next_position(self.deq, &pos);
+	struct position pos = { 0, self.ax_deq->front, };
+	next_position(self.ax_deq, &pos);
+	while (pos.midx != map_size - 1 && pos.boff != self.ax_deq->rear) {
+		ax_trait_free(box->env.elem_tr, position_ptr(self.ax_deq, &pos));
+		next_position(self.ax_deq, &pos);
 	}
 
-	ax_byte *block = *ring_at(&self.deq->map, 0);
+	ax_byte *block = *ring_at(&self.ax_deq->map, 0);
 	for (size_t i = 1; i < map_size - 1; i++)
-		free(*ring_at(&self.deq->map, i));
-	ring_clear(&self.deq->map);
+		free(*ring_at(&self.ax_deq->map, i));
+	ring_clear(&self.ax_deq->map);
 
-	ring_push_back(&self.deq->map, &block);
+	ring_push_back(&self.ax_deq->map, &block);
 
-	RESET_FRONT_AND_REAR(self.deq);
+	RESET_FRONT_AND_REAR(self.ax_deq);
 }
 
 static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap)
@@ -444,52 +444,52 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 	CHECK_PARAM_NULL(it);
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr);
 
-	ax_deq_r self = { .seq = seq };
-	struct position pos = { ring_size(&self.deq->map) - 1, self.deq->rear, };
+	ax_deq_r self = AX_R_INIT(ax_seq, seq);
+	struct position pos = { ring_size(&self.ax_deq->map) - 1, self.ax_deq->rear, };
 
 	struct position new_rear_pos = pos;
-	move_position(self.deq, &new_rear_pos, 1);
+	move_position(self.ax_deq, &new_rear_pos, 1);
 
 	bool block_added = false;
-	if (!have_follow_pos(self.deq, &pos)) {
-		ax_byte *block = malloc(BLOCK_SIZE * self.box->env.elem_tr->size);
+	if (!have_follow_pos(self.ax_deq, &pos)) {
+		ax_byte *block = malloc(BLOCK_SIZE * self.ax_box->env.elem_tr->size);
 		if (!block)
 			return true;
-		if (ring_push_back(&self.deq->map, &block)) {
+		if (ring_push_back(&self.ax_deq->map, &block)) {
 			free(block);
 			return true;
 		}
 		block_added = true;
 	}
 
-	const ax_trait *etr = self.box->env.elem_tr;
+	const ax_trait *etr = self.ax_box->env.elem_tr;
 	ax_byte tmp[etr->size];
 	if (ax_trait_copy_or_init(etr, tmp, val, ap)) {
 		if (block_added) {
-			free(*ring_back(&self.deq->map));
-			ring_pop_back(&self.deq->map);
+			free(*ring_back(&self.ax_deq->map));
+			ring_pop_back(&self.ax_deq->map);
 		}
 		return true;
 	}
 
-	const ax_byte *block = *ring_at_offset(&self.deq->map, it->extra);
+	const ax_byte *block = *ring_at_offset(&self.ax_deq->map, it->extra);
 	ax_byte *current = it->point;
 	struct position target_pos = {
-		ring_offset_to_index(&self.deq->map, it->extra),
+		ring_offset_to_index(&self.ax_deq->map, it->extra),
 		(current - block) / it->etr->size,
 	};
 
 	while (!POS_EQUAL(pos, target_pos)) {
 		struct position pos1 = pos;
-		move_position(self.deq, &pos, -1);
-		void *src = position_ptr(self.deq, &pos),
-			 *dst = position_ptr(self.deq, &pos1);
+		move_position(self.ax_deq, &pos, -1);
+		void *src = position_ptr(self.ax_deq, &pos),
+			 *dst = position_ptr(self.ax_deq, &pos1);
 		memcpy(dst, src, it->etr->size);
 	}
-	memcpy(position_ptr(self.deq, &target_pos), tmp, etr->size);
-	self.deq->rear = new_rear_pos.boff;
+	memcpy(position_ptr(self.ax_deq, &target_pos), tmp, etr->size);
+	self.ax_deq->rear = new_rear_pos.boff;
 
-	move_position(self.deq, &target_pos, 1);
+	move_position(self.ax_deq, &target_pos, 1);
 	iter_set_pos(ax_iter_c(it), &target_pos);
 	return false;
 }
@@ -498,29 +498,29 @@ static ax_fail seq_push(ax_seq *seq, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_deq_r self = { .seq = seq };
-	struct position pos = { ring_size(&self.deq->map) - 1, self.deq->rear };
+	ax_deq_r self = AX_R_INIT(ax_seq, seq);
+	struct position pos = { ring_size(&self.ax_deq->map) - 1, self.ax_deq->rear };
 	bool block_added = false;
-	if (!have_follow_pos(self.deq, &pos)) {
-		ax_byte *block = malloc(BLOCK_SIZE * self.box->env.elem_tr->size);
+	if (!have_follow_pos(self.ax_deq, &pos)) {
+		ax_byte *block = malloc(BLOCK_SIZE * self.ax_box->env.elem_tr->size);
 		if (!block)
 			return true;
-		if (ring_push_back(&self.deq->map, &block)) {
+		if (ring_push_back(&self.ax_deq->map, &block)) {
 			free(block);
 			return true;
 		}
 		block_added = true;
 	}
-	if (ax_trait_copy_or_init(self.box->env.elem_tr,
-				position_ptr(self.deq, &pos), val, ap)) {
+	if (ax_trait_copy_or_init(self.ax_box->env.elem_tr,
+				position_ptr(self.ax_deq, &pos), val, ap)) {
 		if (block_added) {
-			free(*ring_back(&self.deq->map));
-			ring_pop_back(&self.deq->map);
+			free(*ring_back(&self.ax_deq->map));
+			ring_pop_back(&self.ax_deq->map);
 		}
 		return true;
 	}
-	move_position(self.deq, &pos, 1);
-	self.deq->rear = pos.boff;
+	move_position(self.ax_deq, &pos, 1);
+	self.ax_deq->rear = pos.boff;
 	return false;
 }
 
@@ -528,12 +528,12 @@ static ax_fail seq_pop(ax_seq *seq)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_deq_r self = { .seq = seq };
-	struct position pos = { ring_size(&self.deq->map) - 1, self.deq->rear, };
-	if (prev_position(self.deq, &pos)) 
-		ring_pop_back(&self.deq->map);
-	ax_trait_free(self.box->env.elem_tr, position_ptr(self.deq, &pos));
-	self.deq->rear = pos.boff;
+	ax_deq_r self = AX_R_INIT(ax_seq, seq);
+	struct position pos = { ring_size(&self.ax_deq->map) - 1, self.ax_deq->rear, };
+	if (prev_position(self.ax_deq, &pos)) 
+		ring_pop_back(&self.ax_deq->map);
+	ax_trait_free(self.ax_box->env.elem_tr, position_ptr(self.ax_deq, &pos));
+	self.ax_deq->rear = pos.boff;
 	return false;
 }
 
@@ -541,28 +541,28 @@ static ax_fail seq_pushf(ax_seq *seq, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_deq_r self = { .seq = seq };
-	struct position pos = { 0,  self.deq->front, };
+	ax_deq_r self = AX_R_INIT(ax_seq, seq);
+	struct position pos = { 0,  self.ax_deq->front, };
 	bool block_added = false;
-	if (!have_previous_pos(self.deq, &pos)) {
-		ax_byte *block = malloc(BLOCK_SIZE * self.box->env.elem_tr->size);
+	if (!have_previous_pos(self.ax_deq, &pos)) {
+		ax_byte *block = malloc(BLOCK_SIZE * self.ax_box->env.elem_tr->size);
 		if (!block)
 			return true;
-		if (ring_push_front(&self.deq->map, &block)) {
+		if (ring_push_front(&self.ax_deq->map, &block)) {
 			free(block);
 			return true;
 		}
 		pos.midx++;
 		block_added = true;
 	}
-	if (ax_trait_copy_or_init(self.box->env.elem_tr,
-				position_ptr(self.deq, &pos), val, ap)) {
+	if (ax_trait_copy_or_init(self.ax_box->env.elem_tr,
+				position_ptr(self.ax_deq, &pos), val, ap)) {
 		if (block_added)
-			ring_pop_front(&self.deq->map);
+			ring_pop_front(&self.ax_deq->map);
 		return true;
 	}
-	move_position(self.deq, &pos, -1);
-	self.deq->front = pos.boff;
+	move_position(self.ax_deq, &pos, -1);
+	self.ax_deq->front = pos.boff;
 	return false;
 }
 
@@ -570,14 +570,14 @@ static ax_fail seq_popf(ax_seq *seq)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_deq_r self = { .seq = seq };
-	struct position pos = { 0, self.deq->front, };
-	if (next_position(self.deq, &pos)) {
-		ring_pop_front(&self.deq->map);
+	ax_deq_r self = AX_R_INIT(ax_seq, seq);
+	struct position pos = { 0, self.ax_deq->front, };
+	if (next_position(self.ax_deq, &pos)) {
+		ring_pop_front(&self.ax_deq->map);
 		pos.midx = 0;
 	}
-	ax_trait_free(self.box->env.elem_tr, position_ptr(self.deq, &pos));
-	self.deq->front = pos.boff;
+	ax_trait_free(self.ax_box->env.elem_tr, position_ptr(self.ax_deq, &pos));
+	self.ax_deq->front = pos.boff;
 	return false;
 }
 
@@ -585,30 +585,30 @@ static void seq_invert(ax_seq *seq)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_deq_r self = { .seq = seq };
+	ax_deq_r self = AX_R_INIT(ax_seq, seq);
 
-	size_t map_size = ring_size(&self.deq->map);
+	size_t map_size = ring_size(&self.ax_deq->map);
 
-	struct position pos1 = { 0, self.deq->front, },
-					pos2 = { map_size - 1, self.deq->rear, };
+	struct position pos1 = { 0, self.ax_deq->front, },
+					pos2 = { map_size - 1, self.ax_deq->rear, };
 
-	next_position(self.deq, &pos1);
-	prev_position(self.deq, &pos2);
+	next_position(self.ax_deq, &pos1);
+	prev_position(self.ax_deq, &pos2);
 
-	size_t size = box_size(self.box);
+	size_t size = box_size(self.ax_box);
 
 	for (size_t i = 0; i < size / 2; i++) {
-		ax_memswp(position_ptr(self.deq, &pos1), position_ptr(self.deq, &pos2),
-				self.box->env.elem_tr->size);
-		next_position(self.deq, &pos1);
-		prev_position(self.deq, &pos2);
+		ax_memswp(position_ptr(self.ax_deq, &pos1), position_ptr(self.ax_deq, &pos2),
+				self.ax_box->env.elem_tr->size);
+		next_position(self.ax_deq, &pos1);
+		prev_position(self.ax_deq, &pos2);
 	}
 }
 
 static ax_fail seq_trunc(ax_seq *seq, size_t size)
 {
 	CHECK_PARAM_NULL(seq);
-	CHECK_PARAM_VALIDITY(size, size <= box_maxsize(ax_r(seq, seq).box));
+	CHECK_PARAM_VALIDITY(size, size <= box_maxsize(ax_r(ax_seq, seq).ax_box));
 	return false;
 }
 
@@ -616,13 +616,13 @@ static ax_iter seq_at(const ax_seq *seq, size_t idx)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_deq_cr self = { .seq = seq };
-	size_t amount = self.deq->front + idx + 1;
+	ax_deq_cr self = AX_R_INIT(ax_seq, seq);
+	size_t amount = self.ax_deq->front + idx + 1;
 	struct position pos = { amount / BLOCK_SIZE, amount % BLOCK_SIZE, };
 	ax_iter it = {
 		.owner = (void *)seq,
-		.tr = &ax_deq_tr.box.iter,
-		.etr = self.box->env.elem_tr,
+		.tr = &ax_deq_tr.ax_box.iter,
+		.etr = self.ax_box->env.elem_tr,
 	};
 	iter_set_pos((ax_citer *)&it, &pos);
 	return it;
@@ -632,27 +632,27 @@ static void *seq_last(const ax_seq *seq)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_deq_cr self = { .seq = seq };
-	struct position pos = { ring_size(&self.deq->map) - 1, self.deq->rear, };
-	move_position(self.deq, &pos, -1);
-	return position_ptr(self.deq, &pos);
+	ax_deq_cr self = AX_R_INIT(ax_seq, seq);
+	struct position pos = { ring_size(&self.ax_deq->map) - 1, self.ax_deq->rear, };
+	move_position(self.ax_deq, &pos, -1);
+	return position_ptr(self.ax_deq, &pos);
 }
 
 static void *seq_first(const ax_seq *seq)
 {
 	CHECK_PARAM_NULL(seq);
 
-	ax_deq_cr self = { .seq = seq };
-	struct position pos = { 0, self.deq->front, };
-	move_position(self.deq, &pos, 1);
-	return position_ptr(self.deq, &pos);
+	ax_deq_cr self = { .ax_seq = seq };
+	struct position pos = { 0, self.ax_deq->front, };
+	move_position(self.ax_deq, &pos, 1);
+	return position_ptr(self.ax_deq, &pos);
 }
 
 const ax_seq_trait ax_deq_tr =
 {
-	.box = {
-		.any = {
-			.one = {
+	.ax_box = {
+		.ax_any = {
+			.ax_one = {
 				.name = one_name,
 				.free = one_free,
 			},
@@ -717,9 +717,9 @@ ax_seq* __ax_deq_construct(const ax_trait *elem_tr)
 
 	
 	ax_deq deq = {
-		.seq = {
+		.ax_seq = {
 			.tr = &ax_deq_tr,
-			.env.box.elem_tr = elem_tr,
+			.env.ax_box.elem_tr = elem_tr,
 		},
 	};
 	RESET_FRONT_AND_REAR(&deq);
@@ -728,10 +728,9 @@ ax_seq* __ax_deq_construct(const ax_trait *elem_tr)
 
 
 	ax_byte *block = NULL;
-	ax_deq_r self = ax_rnull;
-
-	self.deq = malloc(sizeof(ax_deq));
-	if (!self.deq)
+	ax_deq_r self = AX_R_NULL;
+	self.ax_deq = malloc(sizeof(ax_deq));
+	if (ax_r_isnull(self))
 		goto fail;
 
 	block = malloc(BLOCK_SIZE * elem_tr->size);
@@ -741,10 +740,10 @@ ax_seq* __ax_deq_construct(const ax_trait *elem_tr)
 	if (ring_push_back(&deq.map, &block))
 		goto fail;
 
-	memcpy(self.deq, &deq, sizeof deq);
-	return self.seq;
+	memcpy(self.ax_deq, &deq, sizeof deq);
+	return self.ax_seq;
 fail:
-	free(self.deq);
+	free(self.ax_deq);
 	free(block);
 	ring_free(&deq.map);
 	return NULL;

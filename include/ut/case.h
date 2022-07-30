@@ -20,49 +20,35 @@
  * THE SOFTWARE.
  */
 
-#ifndef AXUT_SUITE_H
-#define AXUT_SUITE_H
+#ifndef UT_CASE_H
+#define UT_CASE_H
 
-#include "case.h"
-#include "../ax/type/str.h"
-#include "../ax/type/box.h"
+#include "../ax/trait.h"
 
-#define AXUT_NAME_MAX 128
-#define AXUT_LOG_MAX 128
-
-#ifndef AX_RUNNER_DEFINED
-#define AX_RUNNER_DEFINED
-typedef struct ax_runner_st ax_runner;
+#ifndef UT_CASE_DEFINED
+#define UT_CASE_DEFINED
+typedef struct ut_case_st ut_case;
 #endif
 
-#ifndef AXUT_SUITE_DEFINED
-#define AXUT_SUITE_DEFINED
-typedef struct axut_suite_st axut_suite;
+#ifndef UT_RUNNER_DEFINED
+#define UT_RUNNER_DEFINED
+typedef struct ut_runner_st ut_runner;
 #endif
 
-typedef enum axut_case_state_en
+typedef void (*ut_case_proc_f)(ut_runner *runner);
+
+struct ut_case_st
 {
-	AXUT_CS_READY = 0,
-	AXUT_CS_PASS,
-	AXUT_CS_FAIL,
-	AXUT_CS_TERM,
-} axut_case_state;
+	ut_case_proc_f proc;
+	char *name;
+	char *log;
+	char *file;
+	unsigned int line;
+	int state;
+	const int priority;
+};
 
-axut_suite *axut_suite_create(const char* name);
-
-void axut_suite_destroy(axut_suite *s);
-
-void axut_suite_set_arg(axut_suite *s, void *arg);
-
-void *axut_suite_arg(const axut_suite *s);
-
-ax_fail axut_suite_add_case(axut_suite *s, const char *name, axut_case_proc_f proc, int priority);
-
-const ax_seq *axut_suite_all_case(const axut_suite *suite);
-
-const char *axut_suite_name(const axut_suite *suite);
-
-#define axut_suite_add(suite, proc, priority) axut_suite_add_case((suite), #proc, (proc), (priority))
+extern const ax_trait ut_case_tr;
 
 #endif
 

@@ -30,9 +30,9 @@
 typedef struct ax_str_st ax_str;
 #endif
 
-#define ax_baseof_str seq
+#define ax_baseof_ax_str ax_seq
 
-ax_abstract_begin(str)
+ax_abstract_begin(ax_str)
 	ax_fail  (*append) (      ax_str *str, const char *s);
 	size_t   (*length) (const ax_str *str);
 	ax_fail  (*insert) (      ax_str *str, size_t start, const char *s);
@@ -43,9 +43,9 @@ ax_abstract_begin(str)
 	ax_fail  (*sprintf)(      ax_str *str, const char *fmt, va_list args); 
 ax_end;
 
-ax_abstract_env_begin(str) ax_end;
+ax_abstract_env_begin(ax_str) ax_end;
 
-ax_abstract(4, str);
+ax_abstract(4, ax_str);
 
 inline static ax_fail ax_str_append(ax_str* str, const char *s) {
 	return ax_obj_do(str, append, s);
@@ -53,7 +53,7 @@ inline static ax_fail ax_str_append(ax_str* str, const char *s) {
 
 inline static size_t ax_str_length(const ax_str* str)
 {
-	return ax_box_size(ax_cr(str, str).box);
+	return ax_box_size(ax_cr(ax_str, str).ax_box);
 }
 
 inline static ax_fail ax_str_insert(ax_str* str, size_t start, const char *s)
@@ -78,7 +78,7 @@ inline static ax_str *ax_str_substr(const ax_str* str, size_t start, size_t len)
 
 inline static ax_seq_r ax_str_split(const ax_str* str, const char ch)
 {
-	return ax_r(seq, ax_obj_do(str, split, ch));
+	return ax_r(ax_seq, ax_obj_do(str, split, ch));
 }
 
 inline static ax_fail ax_str_sprintf(ax_str* str, const char* fmt, ...)

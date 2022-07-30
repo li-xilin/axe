@@ -34,14 +34,14 @@ typedef struct ax_pool_st ax_pool;
 typedef struct ax_buff_st ax_buff;
 #endif
 
-#define ax_baseof_buff any
-ax_concrete(2, buff);
+#define ax_baseof_ax_buff ax_any
+ax_concrete(2, ax_buff);
 
 extern const ax_any_trait ax_buff_tr;
 
 ax_any *__ax_buff_construct();
 
-inline static ax_class_constructor0(buff) {
+inline static ax_class_constructor0(ax_buff) {
 	return __ax_buff_construct();
 }
 

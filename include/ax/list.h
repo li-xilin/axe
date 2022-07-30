@@ -24,22 +24,20 @@
 #define AX_LIST_H
 #include "type/seq.h"
 
-#define AX_LIST_NAME AX_SEQ_NAME ".list"
-
 #ifndef AX_LIST_DEFINED
 #define AX_LIST_DEFINED
 typedef struct ax_list_st ax_list;
 #endif
 
-#define ax_baseof_list seq
+#define ax_baseof_ax_list ax_seq
 
-ax_concrete(4, list);
+ax_concrete(4, ax_list);
 
 extern const ax_seq_trait ax_list_tr;
 
 ax_seq *__ax_list_construct(const ax_trait *elem_tr);
 
-inline static ax_class_constructor(list, const ax_trait* trait)
+inline static ax_class_constructor(ax_list, const ax_trait* trait)
 {
 	return __ax_list_construct(trait);
 }

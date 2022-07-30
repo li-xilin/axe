@@ -31,9 +31,10 @@ size_t ax_seq_array(ax_seq *seq, void *elems[], size_t len)
 {
 	CHECK_PARAM_NULL(seq);
 	CHECK_PARAM_NULL(elems);
-	
-	ax_iter pos = ax_box_rbegin(ax_r(seq, seq).box),
-		end = ax_box_rend(ax_r(seq, seq).box);
+
+	ax_seq_r self = AX_R_INIT(ax_seq, seq);
+	ax_iter pos = ax_box_rbegin(self.ax_box),
+		end = ax_box_rend(self.ax_box);
 
 	size_t i;
 	for (i = 0; i < len && !ax_iter_equal(&pos, &end); i++) {
@@ -45,12 +46,14 @@ size_t ax_seq_array(ax_seq *seq, void *elems[], size_t len)
 
 ax_dump *ax_seq_dump(const ax_seq *seq)
 {
-	ax_seq_cr self = ax_cr(seq, seq);
-	size_t size = ax_box_size(self.box);
-	ax_dump *block_dmp = ax_dump_block(ax_one_name(self.one), size);
-	const ax_trait *etr = self.box->env.elem_tr;
+	CHECK_PARAM_NULL(seq);
+
+	ax_seq_cr self = AX_R_INIT(ax_seq, seq);
+	size_t size = ax_box_size(self.ax_box);
+	ax_dump *block_dmp = ax_dump_block(ax_one_name(self.ax_one), size);
+	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
 	size_t i = 0;
-	ax_box_cforeach(self.box, const void *, p) {
+	ax_box_cforeach(self.ax_box, const void *, p) {
 		ax_dump_bind(block_dmp, i, ax_trait_dump(etr, ax_trait_in(etr, p)));
 		i++;
 	}
@@ -59,8 +62,12 @@ ax_dump *ax_seq_dump(const ax_seq *seq)
 
 ax_fail ax_seq_push_arraya(ax_seq *seq, const void *arrp)
 {
+	CHECK_PARAM_NULL(seq);
+	CHECK_PARAM_NULL(arrp);
+
+	ax_seq_cr self = AX_R_INIT(ax_seq, seq);
 	size_t size = ax_arraya_size(arrp);
-	int esize = seq->env.box.elem_tr->size;
+	int esize = ax_class_env(self.ax_box).elem_tr->size;
 	ax_assert(size % esize == 0,
 			"different size of elements with seq and arraya");
 	const ax_byte *p = arrp;
