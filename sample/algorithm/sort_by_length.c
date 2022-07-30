@@ -28,17 +28,17 @@ int main()
 
 	/* alloc an ax_arr instance and initialize it with specified array 
 	   ax_arr need not be freed */
-	ax_array_r arr = ax_new(array, &str_tr, strs, sizeof(strs));
+	ax_array_r arr = ax_new(ax_array, &str_tr, strs, sizeof(strs));
 	
 	/* sort the sequence in ascending order*/
-	ax_quick_sort(ax_ptrof(ax_iter, ax_box_begin(arr.box)), 
-			ax_ptrof(ax_iter, ax_box_end(arr.box)));
+	ax_quick_sort(ax_ptrof(ax_iter, ax_box_begin(arr.ax_box)), 
+			ax_ptrof(ax_iter, ax_box_end(arr.ax_box)));
 
 	/* reverse the sequence */
-	ax_seq_invert(arr.seq);
+	ax_seq_invert(arr.ax_seq);
 
 	/* output the result */
-	ax_box_foreach(arr.box, char *, s)
+	ax_box_foreach(arr.ax_box, char *, s)
 		printf("%s\n", s);
 
 	return 0;

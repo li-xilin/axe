@@ -230,25 +230,22 @@ void location_free(void *p)
 	
 }
 
-ax_trait location_tr = {
-	.init = location_init,
-	.dump = location_dump,
-	.free = location_free,
-	.size = sizeof(struct location),
-};
+ax_trait_declare(location, struct location,
+	INIT(location_init),
+	DUMP(location_dump),
+	FREE(location_free)
+);
 
 int main()
 {
-	ax_rb_r rb = ax_new(rb, ax_t(str), &location_tr);
-	ax_map_iput(rb.map, "Beijing", 116.405289, 39.904987);
-	ax_map_iput(rb.map, "Tianjin", 117.190186, 39.125595);
-	ax_map_iput(rb.map, "Suihua", 126.992928, 46.637394);
-	ax_map_iput(rb.map, "Dalian", 121.618622, 38.914589);
-	ax_map_iput(rb.map, "Xianyabng", 108.705116, 34.333439);
-	ax_map_iput(rb.map, "Shanghai", 121.472641, 31.231707);
-
-	ax_dump *dmp = ax_map_dump(rb.map);
-
+	ax_rb_r rb = ax_new(ax_rb, ax_t(str), ax_t(location));
+	ax_map_iput(rb.ax_map, "Beijing", 116.405289, 39.904987);
+	ax_map_iput(rb.ax_map, "Tianjin", 117.190186, 39.125595);
+	ax_map_iput(rb.ax_map, "Suihua", 126.992928, 46.637394);
+	ax_map_iput(rb.ax_map, "Dalian", 121.618622, 38.914589);
+	ax_map_iput(rb.ax_map, "Xianyabng", 108.705116, 34.333439);
+	ax_map_iput(rb.ax_map, "Shanghai", 121.472641, 31.231707);
+	ax_dump *dmp = ax_map_dump(rb.ax_map);
 	ax_dump_fput(dmp, &colored_format, stdout);
 	return 0;
 }

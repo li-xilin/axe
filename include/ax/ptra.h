@@ -75,14 +75,14 @@ static const ax_one_trait ax_ptra_tr =
 
 #define __ax_ptra_construct2(_tr, _ptr) \
 	((struct ax_one_st *)(struct ax_ptra_st[1]) { \
-			[0].one.tr = &ax_ptra_tr, \
+			[0].ax_one.tr = &ax_ptra_tr, \
 		 	[0].tr = (_tr), \
 			[0].nref = 1, \
 			[0].ptr = _ptr, \
 			})
 
 #define ax_onelize_2(_p, _f) \
-	ax_class_new_n(2, ptra, ax_p(const ax_trait, { .free = _f }), _p).one
+	ax_class_new_n(2, ax_ptra, ax_p(const ax_trait, { .free = _f }), _p).ax_one
 
 #define ax_onelize_1(_p) \
 	ax_onelize_2(_p, free)

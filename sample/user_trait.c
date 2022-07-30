@@ -57,16 +57,16 @@ ax_trait_declare(stuff, struct stuff,
 
 int main()
 {
-	ax_vector_r stuffs = ax_new(vector, ax_t(stuff));
+	ax_vector_r stuffs = ax_new(ax_vector, ax_t(stuff));
 
-	ax_seq_ipush(stuffs.seq, 1, "Zhang San", "15200000001");
-	ax_seq_ipush(stuffs.seq, 2, "Li Si", "15200000002");
-	ax_seq_ipush(stuffs.seq, 3, "Wang Wu", "15200000003");
+	ax_seq_ipush(stuffs.ax_seq, 1, "Zhang San", "15200000001");
+	ax_seq_ipush(stuffs.ax_seq, 2, "Li Si", "15200000002");
+	ax_seq_ipush(stuffs.ax_seq, 3, "Wang Wu", "15200000003");
 
 	struct stuff zhaoliu = { .id = 4, .name = "Zhao Liu", .phone = "15200000004", };
-	ax_seq_push(stuffs.seq, &zhaoliu);
+	ax_seq_push(stuffs.ax_seq, &zhaoliu);
 
-	ax_any_so(stuffs.any);
+	ax_any_so(stuffs.ax_any);
 
 	return 0;
 }
