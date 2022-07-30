@@ -474,7 +474,7 @@ static void *trie_put(ax_trie *trie, const ax_seq *key, const void *val, va_list
 {
 	CHECK_PARAM_NULL(trie);
 	CHECK_PARAM_NULL(key);
-	ax_assert(trie->env.key_tr == key->env.ax_box.elem_tr, "invalid element trait for the key");
+	ax_assert(ax_class_env(trie).key_tr == ax_class_env((ax_box *)key).elem_tr, "invalid element trait for the key");
 
 	ax_btrie_r self_r = { .ax_trie = trie };
 

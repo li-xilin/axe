@@ -109,7 +109,7 @@ static ax_dump *any_dump(const ax_any *any)
 		return ax_dump_block(ax_one_name(self.ax_one), 0);
 
 	ax_dump *dmp = ax_dump_block(ax_one_name(self.ax_one), 1);
-	ax_dump *top = ax_trait_dump(self.ax_tube->env.elem_tr, ax_heap_top(&self.ax_pque->heap));
+	ax_dump *top = ax_trait_dump(ax_class_env(self.ax_tube).elem_tr, ax_heap_top(&self.ax_pque->heap));
 	ax_dump_pair(ax_dump_symbol("TOP"), top);
 	return dmp;
 }

@@ -80,7 +80,7 @@ static void *node_change_value(ax_map *map, struct node_st *node, const void *va
 inline static void *node_val(const ax_map *map, struct node_st *node)
 {
 	assert(node);
-	return node->kvbuffer + map->env.key_tr->size;
+	return node->kvbuffer + ax_class_env(map).key_tr->size;
 }
 
 inline static void *node_key(struct node_st *node)
@@ -148,7 +148,7 @@ static struct node_st *higher_node(const ax_map *map, struct node_st *node)
 static struct node_st *find_node(const ax_map *map, struct node_st *node, const void *key)
 {
 	if (node == NULL) return NULL;
-	const ax_trait *ktr = map->env.key_tr;
+	const ax_trait *ktr = ax_class_env(map).key_tr;
 	if (ax_trait_less(ktr, key, node->kvbuffer))
 		return find_node(map, node->left, key);
 	else if (ax_trait_less(ktr, node->kvbuffer, key))
@@ -213,7 +213,7 @@ static struct node_st *make_node(ax_map *map, struct node_st *parent, const void
 {
 	ax_avl_r self = { map };
 	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
-	struct node_st *node = malloc(sizeof(struct node_st) + map->env.key_tr->size + etr->size);
+	struct node_st *node = malloc(sizeof(struct node_st) + ax_class_env(map).key_tr->size + etr->size);
 	if (node == NULL)
 		goto failed;
 
@@ -221,7 +221,7 @@ static struct node_st *make_node(ax_map *map, struct node_st *parent, const void
 	node->height = 1;
 	node->left = NULL;
 	node->right = NULL;
-	const ax_trait *ktr = map->env.key_tr;
+	const ax_trait *ktr = ax_class_env(map).key_tr;
 	if(ax_trait_copy(ktr, node->kvbuffer, key))
 		goto failed;
 	if (ax_trait_copy_or_init(etr, node_val(map, node), value, ap))
@@ -586,7 +586,7 @@ static const void *map_it_key(const ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
 	CHECK_ITER_TYPE(it, one_name(NULL));
 	const ax_map *map = it->owner;
-	return ax_trait_out(map->env.key_tr, node_key(it->point));
+	return ax_trait_out(ax_class_env(map).key_tr, node_key(it->point));
 }
 
 static void one_free(ax_one* one)
@@ -662,7 +662,7 @@ static ax_iter box_begin(ax_box* box)
 		.owner = box,
 		.point = node,
 		.tr = &ax_avl_tr.ax_box.iter,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 	return it;
 }
@@ -706,7 +706,7 @@ static ax_iter box_rend(ax_box* box)
 		.owner = box,
 		.tr = &ax_avl_tr.ax_box.riter,
 		.point = NULL,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 	return it;
 }

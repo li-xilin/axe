@@ -270,7 +270,7 @@ static struct bucket_st *unlink_bucket(struct bucket_st *head, struct bucket_st 
 static struct node_st **find_node(const ax_map *map, struct bucket_st *bucket, const void *key)
 {
 	struct node_st **pp_node;
-	const ax_trait *ktr = map->env.key_tr;
+	const ax_trait *ktr = ax_class_env(map).key_tr;
 	for (pp_node = &bucket->node_list; *pp_node; pp_node = &((*pp_node)->next))
 		if (ax_trait_equal(ktr, (*pp_node)->kvbuffer, key))
 			return pp_node;
@@ -281,7 +281,7 @@ static void free_node(ax_map *map, struct node_st **pp_node)
 {
 	assert(pp_node);
 	DEFINE_KVTR(map);
-	ax_byte *value_ptr = (*pp_node)->kvbuffer + map->env.key_tr->size;
+	ax_byte *value_ptr = (*pp_node)->kvbuffer + ax_class_env(map).key_tr->size;
 	ax_trait_free(ktr, (*pp_node)->kvbuffer);
 	ax_trait_free(vtr, value_ptr);
 	struct node_st *node_to_free = *pp_node;
@@ -360,7 +360,7 @@ static void iter_erase(ax_iter *it)
 
 inline static void *node_val(const ax_map* map, struct node_st *node)
 {
-	return node->kvbuffer + map->env.key_tr->size;
+	return node->kvbuffer + ax_class_env(map).key_tr->size;
 }
 
 inline static void *node_key(struct node_st *node)
@@ -527,7 +527,7 @@ static const void *map_it_key(const ax_citer *it)
 	CHECK_ITER_TYPE(it, one_name(NULL));
 	struct node_st *node = it->point;
 	const ax_map *map = it->owner;
-	return ax_trait_out(map->env.key_tr, node_key(node));
+	return ax_trait_out(ax_class_env(map).key_tr, node_key(node));
 }
 
 static void one_free(ax_one *one)
@@ -599,7 +599,7 @@ static ax_iter box_begin(ax_box *box)
 		.point = self.ax_hmap->bucket_list
 			? self.ax_hmap->bucket_list->node_list
 			: NULL,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 	return it;
 }
@@ -612,7 +612,7 @@ static ax_iter box_end(ax_box *box)
 		.owner = box,
 		.tr = &ax_hmap_tr.ax_box.iter,
 		.point = NULL,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 	return it;
 }

@@ -612,7 +612,7 @@ static void rb_tree_remove(struct ax_rb_st *tree, struct node_st *node)
 inline static void *node_val(const ax_map *map, struct node_st *node)
 {
 	assert(node);
-	return node->kvbuffer + map->env.key_tr->size;
+	return node->kvbuffer + ax_class_env(map).key_tr->size;
 }
 
 inline static void *node_key(struct node_st *node)
@@ -828,7 +828,7 @@ static void *map_put(ax_map* map, const void *key, const void *val, va_list *ap)
 	const ax_trait *ktr = ax_class_env(self.ax_map).key_tr,
 	      *vtr = ax_class_env(self.ax_box).elem_tr;
 
-	struct node_st *node = malloc(sizeof(struct node_st) + map->env.key_tr->size + vtr->size);
+	struct node_st *node = malloc(sizeof(struct node_st) + ax_class_env(map).key_tr->size + vtr->size);
 	if (node == NULL)
 		return NULL;
 	node->left = node->right = node->parent = NULL;
@@ -906,7 +906,7 @@ static ax_iter map_at(const ax_map* map, const void *key)
 		.owner = (void *)map,
 			.point = node,
 			.tr = &ax_rb_tr.ax_box.iter,
-			.etr = map->env.ax_box.elem_tr,
+			.etr = ax_class_env(self.ax_box).elem_tr,
 	};
 }
 
@@ -923,7 +923,7 @@ static const void *map_it_key(const ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
 	CHECK_ITER_TYPE(it, one_name(NULL));
 	const ax_map *map = it->owner;
-	return ax_trait_out(map->env.key_tr, node_key(it->point));
+	return ax_trait_out(ax_class_env(map).key_tr, node_key(it->point));
 }
 
 static void one_free(ax_one* one)
@@ -995,7 +995,7 @@ static ax_iter box_begin(ax_box* box)
 		.owner = box,
 		.point = node,
 		.tr = &ax_rb_tr.ax_box.iter,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 	return it;
 }
@@ -1039,7 +1039,7 @@ static ax_iter box_rend(ax_box* box)
 		.owner = box,
 		.tr = &ax_rb_tr.ax_box.riter,
 		.point = NULL,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 	return it;
 }

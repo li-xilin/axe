@@ -363,7 +363,7 @@ static ax_iter box_begin(ax_box *box)
 		.point = position_ptr(self.ax_deq, &pos),
 		.extra = ring_offset(&self.ax_deq->map, pos.midx),
 		.tr = &ax_deq_tr.ax_box.iter,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 }
 
@@ -378,7 +378,7 @@ static ax_iter box_end(ax_box *box)
 		.point = position_ptr(self.ax_deq, &pos),
 		.extra = ring_offset(&self.ax_deq->map, pos.midx),
 		.tr = &ax_deq_tr.ax_box.iter,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 	
 }
@@ -395,7 +395,7 @@ static ax_iter box_rbegin(ax_box *box)
 		.point = position_ptr(self.ax_deq, &pos),
 		.extra = ring_offset(&self.ax_deq->map, pos.midx),
 		.tr = &ax_deq_tr.ax_box.riter,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 }
 
@@ -410,7 +410,7 @@ static ax_iter box_rend(ax_box *box)
 		.point = position_ptr(self.ax_deq, &pos),
 		.extra = ring_offset(&self.ax_deq->map, pos.midx),
 		.tr = &ax_deq_tr.ax_box.riter,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 }
 
@@ -424,7 +424,7 @@ static void box_clear(ax_box *box)
 	struct position pos = { 0, self.ax_deq->front, };
 	next_position(self.ax_deq, &pos);
 	while (pos.midx != map_size - 1 && pos.boff != self.ax_deq->rear) {
-		ax_trait_free(box->env.elem_tr, position_ptr(self.ax_deq, &pos));
+		ax_trait_free(ax_class_env(box).elem_tr, position_ptr(self.ax_deq, &pos));
 		next_position(self.ax_deq, &pos);
 	}
 
@@ -452,7 +452,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 
 	bool block_added = false;
 	if (!have_follow_pos(self.ax_deq, &pos)) {
-		ax_byte *block = malloc(BLOCK_SIZE * self.ax_box->env.elem_tr->size);
+		ax_byte *block = malloc(BLOCK_SIZE * ax_class_env(self.ax_box).elem_tr->size);
 		if (!block)
 			return true;
 		if (ring_push_back(&self.ax_deq->map, &block)) {
@@ -462,7 +462,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 		block_added = true;
 	}
 
-	const ax_trait *etr = self.ax_box->env.elem_tr;
+	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
 	ax_byte tmp[etr->size];
 	if (ax_trait_copy_or_init(etr, tmp, val, ap)) {
 		if (block_added) {
@@ -502,7 +502,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val, va_list *ap)
 	struct position pos = { ring_size(&self.ax_deq->map) - 1, self.ax_deq->rear };
 	bool block_added = false;
 	if (!have_follow_pos(self.ax_deq, &pos)) {
-		ax_byte *block = malloc(BLOCK_SIZE * self.ax_box->env.elem_tr->size);
+		ax_byte *block = malloc(BLOCK_SIZE * ax_class_env(self.ax_box).elem_tr->size);
 		if (!block)
 			return true;
 		if (ring_push_back(&self.ax_deq->map, &block)) {
@@ -511,7 +511,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val, va_list *ap)
 		}
 		block_added = true;
 	}
-	if (ax_trait_copy_or_init(self.ax_box->env.elem_tr,
+	if (ax_trait_copy_or_init(ax_class_env(self.ax_box).elem_tr,
 				position_ptr(self.ax_deq, &pos), val, ap)) {
 		if (block_added) {
 			free(*ring_back(&self.ax_deq->map));
@@ -532,7 +532,7 @@ static ax_fail seq_pop(ax_seq *seq)
 	struct position pos = { ring_size(&self.ax_deq->map) - 1, self.ax_deq->rear, };
 	if (prev_position(self.ax_deq, &pos)) 
 		ring_pop_back(&self.ax_deq->map);
-	ax_trait_free(self.ax_box->env.elem_tr, position_ptr(self.ax_deq, &pos));
+	ax_trait_free(ax_class_env(self.ax_box).elem_tr, position_ptr(self.ax_deq, &pos));
 	self.ax_deq->rear = pos.boff;
 	return false;
 }
@@ -545,7 +545,7 @@ static ax_fail seq_pushf(ax_seq *seq, const void *val, va_list *ap)
 	struct position pos = { 0,  self.ax_deq->front, };
 	bool block_added = false;
 	if (!have_previous_pos(self.ax_deq, &pos)) {
-		ax_byte *block = malloc(BLOCK_SIZE * self.ax_box->env.elem_tr->size);
+		ax_byte *block = malloc(BLOCK_SIZE * ax_class_env(self.ax_box).elem_tr->size);
 		if (!block)
 			return true;
 		if (ring_push_front(&self.ax_deq->map, &block)) {
@@ -555,7 +555,7 @@ static ax_fail seq_pushf(ax_seq *seq, const void *val, va_list *ap)
 		pos.midx++;
 		block_added = true;
 	}
-	if (ax_trait_copy_or_init(self.ax_box->env.elem_tr,
+	if (ax_trait_copy_or_init(ax_class_env(self.ax_box).elem_tr,
 				position_ptr(self.ax_deq, &pos), val, ap)) {
 		if (block_added)
 			ring_pop_front(&self.ax_deq->map);
@@ -576,7 +576,7 @@ static ax_fail seq_popf(ax_seq *seq)
 		ring_pop_front(&self.ax_deq->map);
 		pos.midx = 0;
 	}
-	ax_trait_free(self.ax_box->env.elem_tr, position_ptr(self.ax_deq, &pos));
+	ax_trait_free(ax_class_env(self.ax_box).elem_tr, position_ptr(self.ax_deq, &pos));
 	self.ax_deq->front = pos.boff;
 	return false;
 }
@@ -599,7 +599,7 @@ static void seq_invert(ax_seq *seq)
 
 	for (size_t i = 0; i < size / 2; i++) {
 		ax_memswp(position_ptr(self.ax_deq, &pos1), position_ptr(self.ax_deq, &pos2),
-				self.ax_box->env.elem_tr->size);
+				ax_class_env(self.ax_box).elem_tr->size);
 		next_position(self.ax_deq, &pos1);
 		prev_position(self.ax_deq, &pos2);
 	}
@@ -622,7 +622,7 @@ static ax_iter seq_at(const ax_seq *seq, size_t idx)
 	ax_iter it = {
 		.owner = (void *)seq,
 		.tr = &ax_deq_tr.ax_box.iter,
-		.etr = self.ax_box->env.elem_tr,
+		.etr = ax_class_env(self.ax_box).elem_tr,
 	};
 	iter_set_pos((ax_citer *)&it, &pos);
 	return it;

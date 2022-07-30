@@ -285,8 +285,6 @@ static ax_any *any_copy(const ax_any *any)
 
 	new_vector->buff = new_buff;
 
-	// new_vector->seq.env.box.any.one.scope.macro = NULL;
-	// new_vector->seq.env.box.any.one.scope.micro = 0;
 	return ax_r(ax_vector, new_vector).ax_any;
 fail:
 	free(new_vector);
@@ -319,7 +317,7 @@ static ax_iter box_begin(ax_box *box)
 		.owner = (void*)box,
 		.point = ax_buff_ptr(self.ax_vector->buff),
 		.tr = &ax_vector_tr.ax_box.iter,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 	return it;
 }
@@ -334,7 +332,7 @@ static ax_iter box_end(ax_box *box)
 		.point = (ax_byte *)ax_buff_ptr(self.ax_vector->buff)
 			+ ax_buff_size(self.ax_vector->buff, NULL),
 		.tr = &ax_vector_tr.ax_box.iter,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 	return it;
 }
@@ -349,7 +347,7 @@ static ax_iter box_rbegin(ax_box *box)
 		.point = (ax_byte *)ax_buff_ptr(self.ax_vector->buff)
 			+ ax_buff_size(self.ax_vector->buff, NULL) - ax_class_env(self.ax_box).elem_tr->size,
 		.tr = &ax_vector_tr.ax_box.riter,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 	return it;
 }
@@ -363,7 +361,7 @@ static ax_iter box_rend(ax_box *box)
 		.owner = box,
 		.point = (ax_byte *)ax_buff_ptr(self.ax_vector->buff) - ax_class_env(box).elem_tr->size,
 		.tr = &ax_vector_tr.ax_box.riter,
-		.etr = box->env.elem_tr,
+		.etr = ax_class_env(box).elem_tr,
 	};
 	return it;
 }

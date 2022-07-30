@@ -69,7 +69,7 @@ void one_free(ax_one *one)
 
 const char *one_name(const ax_one *one)
 {
-	return ax_class_name(1, runner);
+	return ax_class_name(1, ut_runner);
 }
 
 static void default_output(const char *suite_name, ut_case *tc, ax_str *out)
