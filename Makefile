@@ -22,7 +22,8 @@ DESTDIR ?= /usr/local
 MANDIR = $(DESTDIR)/share/man
 
 all debug clean:
-	$(MAKE) -C src/ax $@
+	$(MAKE) -C src/core $@
+	$(MAKE) -C src/thread $@
 	$(MAKE) -C src/ut $@
 
 install:
@@ -32,18 +33,28 @@ install:
 		$(DESTDIR)/include/ax \
 		$(DESTDIR)/include/ax/type \
 		$(DESTDIR)/include/ax/static \
+		$(DESTDIR)/include/ax/detect \
+		$(DESTDIR)/include/ax/win32 \
+		$(DESTDIR)/include/ax/unix \
 		$(DESTDIR)/include/ut \
 		$(MANDIR)/man3
-	install -m 644 lib/libax.a lib/libut.a $(DESTDIR)/lib
+	install -m 644 lib/libaxe-core.so lib/libaxe-thread.so lib/libaxe-ut.a $(DESTDIR)/lib
 	install -m 644 include/ax/*.h $(DESTDIR)/include/ax
 	install -m 644 include/ax/type/*.h $(DESTDIR)/include/ax/type
 	install -m 644 include/ax/static/*.h $(DESTDIR)/include/ax/type/static
+	install -m 644 include/ax/detect/*.h $(DESTDIR)/include/ax/detect
+	install -m 644 include/ax/win32/*.h $(DESTDIR)/include/ax/win32
+	install -m 644 include/ax/unix/*.h $(DESTDIR)/include/ax/unix
 	install -m 644 include/ut/*.h $(DESTDIR)/include/ut
 	install -m 644 man/man3/* $(MANDIR)/man3
 
 uninstall:
 	$(RM) -r $(DESTDIR)/include/ax $(DESTDIR)/include/ut
-	$(RM) $(DESTDIR)/include/ax.h $(DESTDIR)/include/ut.h $(DESTDIR)/lib/libax.a $(DESTDIR)/lib/libut.a
+	$(RM) $(DESTDIR)/include/ax.h \
+		$(DESTDIR)/include/ut.h \
+		$(DESTDIR)/lib/libaxe-core.so \
+		$(DESTDIR)/lib/libaxe-thread.so \
+		$(DESTDIR)/lib/libaxe-ut.a
 	$(RM) $(MANDIR)/share/man/man3/ax_*.3
 
 .PHONY: all debug clean install uninstall

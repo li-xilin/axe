@@ -132,7 +132,7 @@ ax_dump *ax_dump_int(int64_t val)
 	if (!dmp)
 		return NOMEM_DMP;
 	dmp->type = DTYPE_SNUM;
-	((union value_u *)dmp->value)->snum = val;
+	*(int64_t *)dmp->value = val;
 	return dmp;
 }
 
@@ -142,7 +142,7 @@ ax_dump *ax_dump_uint(uint64_t val)
 	if (!dmp)
 		return NOMEM_DMP;
 	dmp->type = DTYPE_UNUM;
-	((union value_u *)dmp->value)->unum = val;
+	*(uint64_t *)dmp->value = val;
 	return dmp;
 }
 
@@ -152,7 +152,7 @@ ax_dump *ax_dump_float(double val)
 	if (!dmp)
 		return NOMEM_DMP;
 	dmp->type = DTYPE_FNUM;
-	((union value_u *)dmp->value)->fnum = val;
+	*(double *)dmp->value = val;
 	return dmp;
 }
 
@@ -162,7 +162,7 @@ ax_dump *ax_dump_ptr(const void *val)
 	if (!dmp)
 		return NOMEM_DMP;
 	dmp->type = DTYPE_PTR;
-	((union value_u *)dmp->value)->ptr = val;
+	*(const void **)dmp->value = val;
 	return dmp;
 
 }

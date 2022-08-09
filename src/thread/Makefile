@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Li hsilin <lihsilyn@gmail.com>
+# Copyright (c) 2022 Li hsilin <lihsilyn@gmail.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,13 @@
 ROOT = ../..
 include $(ROOT)/src/config.mak
 
-TARGET = $(LIB)/libaxe-core.so
+CFLAGS += -D_XOPEN_SOURCE=500
 
-OBJS = trait.o debug.o any.o vector.o mem.o one.o log.o algo.o oper.o seq.o \
-       iter.o list.o avl.o map.o u1024.o buff.o string.o btrie.o trie.o stack.o \
-       queue.o array.o hmap.o dump.o dumpfmt.o rb.o deq.o pque.o
+LDFLAGS +=  -L $(LIB)
+
+TARGET = $(LIB)/libaxe-thread.so
+
+OBJS = tpool.o
 
 all: CFLAGS += $(RLSFLAGS)
 all: $(TARGET)

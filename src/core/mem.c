@@ -236,6 +236,6 @@ void ax_membyhex(const char *text, void *out)
 	ax_assert(i % 2 == 0, "length of text is odd number");
 
 	for (i = 0; text[i] != '\0'; i += 2)
-		buf[i / 2] = (text[i] - (isdigit(text[i]) ? '0' : ('A' - 0xA))) * 0x10
-			+ (text[i + 1] - (isdigit(text[i + 1]) ? '0' : ('A' - 0xA)));
+		buf[i / 2] = (text[i] - (isdigit((int)text[i]) ? '0' : ('A' - 0xA))) * 0x10
+			+ (text[i + 1] - (isdigit((int)text[i + 1]) ? '0' : ('A' - 0xA)));
 }
