@@ -24,7 +24,7 @@ BIN = $(ROOT)/bin
 
 AR = ar
 RM = rm -f
-CC = x86_64-w64-mingw32-gcc
+CC = gcc
 CFLAGS = -Wall --pedantic -Werror -std=c99 -fPIC -I$(ROOT)/src/include -I$(INCLUDE)
 DBGFLAGS = -g -O0
 RLSFLAGS = -O2 -DNDEBUG

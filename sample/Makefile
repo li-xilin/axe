@@ -1,4 +1,4 @@
-LDFLAGS = -L../lib -lax -lm
+LDFLAGS = -L../lib -laxe-core -lm
  CFLAGS = -Wall -std=c99 -O2 -I../include -g -pedantic
    SRCS = $(wildcard *.c container/*.c algorithm/*.c class/*.c flow/*.c)
 TARGETS = $(SRCS:.c=.out)

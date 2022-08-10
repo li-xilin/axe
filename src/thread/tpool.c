@@ -4,6 +4,7 @@
 #include "ax/cond.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 struct ax_tpool_work_st
 {
