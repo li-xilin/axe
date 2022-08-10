@@ -23,9 +23,7 @@ include $(ROOT)/src/config.mak
 
 CFLAGS += -D_XOPEN_SOURCE=500
 
-LDFLAGS +=  -L $(LIB)
-
-TARGET = $(LIB)/libaxe-thread.so
+TARGET = $(LIB)/libaxthread.a
 
 OBJS = tpool.o
 
@@ -36,8 +34,7 @@ debug: CFLAGS += $(DBGFLAGS)
 debug: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) -shared -fPIC -o $@ $(OBJS)
-	# $(AR) -rcs $@ $(OBJS)
+	$(AR) -rcs $@ $(OBJS)
 clean:
 	$(RM) $(OBJS) $(TARGET)
 

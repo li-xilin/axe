@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Li hsilin <lihsilyn@gmail.com>
+# Copyright (c) 2020-2022 Li hsilin <lihsilyn@gmail.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ install:
 		$(DESTDIR)/include/ax/unix \
 		$(DESTDIR)/include/ut \
 		$(MANDIR)/man3
-	install -m 644 lib/libaxe-core.so lib/libaxe-thread.so lib/libaxe-ut.a $(DESTDIR)/lib
+	install -m 644 lib/libaxcore.a lib/libaxthread.a lib/libaxut.a $(DESTDIR)/lib
 	install -m 644 include/ax/*.h $(DESTDIR)/include/ax
 	install -m 644 include/ax/type/*.h $(DESTDIR)/include/ax/type
 	install -m 644 include/ax/static/*.h $(DESTDIR)/include/ax/type/static
@@ -52,9 +52,9 @@ uninstall:
 	$(RM) -r $(DESTDIR)/include/ax $(DESTDIR)/include/ut
 	$(RM) $(DESTDIR)/include/ax.h \
 		$(DESTDIR)/include/ut.h \
-		$(DESTDIR)/lib/libaxe-core.so \
-		$(DESTDIR)/lib/libaxe-thread.so \
-		$(DESTDIR)/lib/libaxe-ut.a
+		$(DESTDIR)/lib/libaxcore.a \
+		$(DESTDIR)/lib/libaxthread.a \
+		$(DESTDIR)/lib/libaxut.a
 	$(RM) $(MANDIR)/share/man/man3/ax_*.3
 
 .PHONY: all debug clean install uninstall

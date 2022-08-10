@@ -21,7 +21,7 @@
 ROOT = ../..
 include $(ROOT)/src/config.mak
 
-TARGET = $(LIB)/libaxe-core.so
+TARGET = $(LIB)/libaxcore.a
 
 OBJS = trait.o debug.o any.o vector.o mem.o one.o log.o algo.o oper.o seq.o \
        iter.o list.o avl.o map.o u1024.o buff.o string.o btrie.o trie.o stack.o \
@@ -34,8 +34,7 @@ debug: CFLAGS += $(DBGFLAGS)
 debug: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) -shared -fPIC -o $@ $(OBJS)
-	# $(AR) -rcs $@ $(OBJS)
+	$(AR) -rcs $@ $(OBJS)
 clean:
 	$(RM) $(OBJS) $(TARGET)
 

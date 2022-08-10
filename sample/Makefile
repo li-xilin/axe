@@ -5,7 +5,7 @@ TARGETS = $(SRCS:.c=.out)
 
 all: $(TARGETS)
 %.out:%.c
-	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS) -Wl,-rpath='../../lib'
 clean:
 	$(RM) $(TARGETS)
 
