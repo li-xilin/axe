@@ -24,7 +24,7 @@
 #include "ax/iter.h"
 #include "ax/mem.h"
 #include "ax/trait.h"
-#include "ax/detect/arch.h"
+#include "ax/detect.h"
 #include "check.h"
 
 #include <string.h>

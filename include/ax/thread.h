@@ -1,4 +1,4 @@
-#include "detect/sys.h"
+#include "detect.h"
 #if defined(AX_OS_UNIX)
 #include "unix/thread.h"
 #elif defined(AX_OS_WIN32)
