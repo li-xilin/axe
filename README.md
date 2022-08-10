@@ -33,53 +33,53 @@ $ sudo make install
 /* 定义一个一元算子函数 */
 void oper_rmodd(void *out, const void *in, void *args)
 {
-	const int *num = in;
-	int *ret = out;
-	if (*num % 2 == 1) /* 如果输入为基数，则输出为0 */
-		*ret = 0;
+        const int *num = in;
+        int *ret = out;
+        if (*num % 2 == 1) /* 如果输入为基数，则输出为0 */
+                *ret = 0;
 }
 
 int main(void)
 {
-	/* 定义一个双链表 */
-	ax_list_r l = ax_new(list, ax_t(int));
+        /* 定义一个双链表 */
+        ax_list_r l = ax_new(ax_list, ax_t(int));
 
-	int *count = malloc(sizeof *count);
+        int *count = malloc(sizeof *count);
 
-	/* 将双链表指针和堆变量加入范围块，当范围执行结束后，链表自动被释放，可放置多个指针 */
-	ax_scope(l.one, ax_onelize(count)) {
+        /* 将双链表指针和堆变量加入范围块，当范围执行结束后，链表自动被释放，可放置多个指针 */
+        ax_scope(l.ax_one, ax_onelize(count)) {
 
-		/* 对区间[1, 11)进行循环迭代 */
-		ax_forrange(1, 11)
-			/* 将区间每个元素逐个压入链表 */
-			ax_seq_push(l.seq, &_);
+                /* 对区间[1, 11)进行循环迭代 */
+                ax_forrange(1, 11)
+                        /* 将区间每个元素逐个压入链表 */
+                        ax_seq_push(l.ax_seq, &_);
 
-		/* 对双链表进行转储 */
-		ax_any_so(l.any);
-		// OUTPUT: string.c:12:one.any.box.seq.list {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+                /* 对双链表进行转储 */
+                ax_any_so(l.ax_any);
+                // OUTPUT: string.c:12:one.any.box.seq.list {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 
-		/* 创建一个一元谓词 */
-		ax_pred rmodd = ax_pred_unary_make(oper_rmodd, NULL, NULL);
-		/* 从头迭代器所在元素开始逐个执行谓词，将所有奇数元素设为0 */
-		ax_transform(
-				ax_p(ax_citer, ax_box_cbegin(l.box)),
-				ax_p(ax_citer, ax_box_cend(l.box)),
-				ax_p(ax_iter, ax_box_begin(l.box)),
-				&rmodd);
+                /* 创建一个一元谓词 */
+                ax_pred rmodd = ax_pred_unary_make(oper_rmodd, NULL, NULL);
+                /* 从头迭代器所在元素开始逐个执行谓词，将所有奇数元素设为0 */
+                ax_transform(
+                                ax_p(ax_citer, ax_box_cbegin(l.ax_box)),
+                                ax_p(ax_citer, ax_box_cend(l.ax_box)),
+                                ax_p(ax_iter, ax_box_begin(l.ax_box)),
+                                &rmodd);
 
-		/* 对双链表进行DUMP */
-		ax_any_so(l.any);
-		// OUTPUT: string.c:33:one.any.box.seq.list {0, 2, 0, 4, 0, 6, 0, 8, 0, 10}
+                /* 对双链表进行DUMP */
+                ax_any_so(l.ax_any);
+                // OUTPUT: string.c:33:one.any.box.seq.list {0, 2, 0, 4, 0, 6, 0, 8, 0, 10}
 
-		/* 按顺序枚举链表所有元素，求和 */
-		ax_box_foreach(l.box, int *, i)
-			*count += *i;
+                /* 按顺序枚举链表所有元素，求和 */
+                ax_box_foreach(l.ax_box, int *, i)
+                        *count += *i;
 
-		printf("Sum of elements = %d\n", *count);
-		// OUTPUT: Sum of elements = 30
-	}
+                printf("Sum of elements = %d\n", *count);
+                // OUTPUT: Sum of elements = 30
+        }
 
-	return 0;
+        return 0;
 }
 ```
 
