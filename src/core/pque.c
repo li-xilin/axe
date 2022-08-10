@@ -23,7 +23,7 @@
 #include "ax/pque.h"
 #include "ax/mem.h"
 #include "ax/dump.h"
-#include "ax/static/heap.h"
+#include "ax/heap.h"
 
 #include <string.h>
 #include <stdlib.h>

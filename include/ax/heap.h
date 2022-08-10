@@ -22,9 +22,9 @@
 
 #if defined(NAME) || (!defined(AX_TPL_HEAP_H) && !defined(NAME))
 
-#include "../mem.h"
-#include "../debug.h"
-#include "../trick.h"
+#include "mem.h"
+#include "debug.h"
+#include "trick.h"
 
 #define __AX_HEAP_PAGE_SIZE  4096
 
