@@ -1,11 +1,11 @@
-LDFLAGS = -L../lib -laxcore -lm
- CFLAGS = -Wall -std=c99 -O2 -I../include -g -pedantic
-   SRCS = $(wildcard *.c container/*.c algorithm/*.c class/*.c flow/*.c)
+LDFLAGS = -L../lib -laxcore -laxthread -lm -pthread
+ CFLAGS = -Wall -std=c99 -O2 -I../include -g -pedantic -D_XOPEN_SOURCE=500
+   SRCS = $(wildcard *.c)
 TARGETS = $(SRCS:.c=.out)
 
 all: $(TARGETS)
 %.out:%.c
-	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS) -Wl,-rpath='../../lib'
+	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 clean:
 	$(RM) $(TARGETS)
 
