@@ -85,8 +85,8 @@ int main(void)
 
 ## HEADERS DESCRIPTION
 
-| 名称          | 描述 |
-|---            |---   |
+| 名称           | 描述 |
+|---             |---   |
 | ax/type/one.h  | 根类型 |
 | ax/type/any.h  | 可序列化对象抽象 |
 | ax/type/box.h  | 可迭代容器抽象 |
@@ -95,12 +95,12 @@ int main(void)
 | ax/type/map.h  | 映射表抽象 |
 | ax/type/trie.h | 字典树抽象 |
 | ax/type/tube.h | 单进单出管道抽象 |
-| ax/def.h       | 基础类型定义 |
-| ax/flow.h      | 程序流程控制 |
-| ax/trick.h     | 低级辅助宏，用于宏定义 |
-| ax/narg.h      | 参数个数计算的辅助宏 |
-| ax/sys.h       | 操作系统探测宏 |
-| ax/arch.h      | 硬件架构探测宏 |
+| ax/def.h       | 基本声明 |
+| ax/flow.h      | 高级流程控制 |
+| ax/ring.h      | 模板化循环队列 |
+| ax/trick.h     | 魔法宏 |
+| ax/narg.h      | 参数测量宏 |
+| ax/detect.h    | 编译环境探测宏 |
 | ax/debug.h     | 断言 |
 | ax/arraya.h    | 自动数组 |
 | ax/oper.h      | 算子，包括C语言运算符的函数化包装 |
@@ -108,25 +108,32 @@ int main(void)
 | ax/log.h       | 日志打印 |
 | ax/pred.h      | 谓词和参数绑定 |
 | ax/trait.h     | 类型特性，对数据类型的描述 |
-| ax/iter.h      | 迭代器封装 |
+| ax/iter.h      | 迭代器 |
 | ax/algo.h      | 基于迭代器的算法 |
 | ax/mem.h       | 内存和串的操作 |
-| ax/uintk.h     | 1024位无符号整数操作 |
-| ax/arr.h       | 无内存分配的数组实现 |
-| ax/vector.h    | 向量表实现 |
-| ax/deq.h       | 双端队列实现 |
-| ax/list.h      | 双链表实现 |
-| ax/hmap.h      | 散列表实现 |
-| ax/avl.h       | 自平衡树实现 |
-| ax/rb.h        | 红黑树实现 |
-| ax/string.h    | 字符串实现 |
-| ax/btrie.h     | 平衡字典树实现 |
-| ax/queue.h     | 队列实现 |
-| ax/stack.h     | 栈实现 |
-| ax/pque.h      | 优先队列实现 |
-| axut/case.h    | 测试用例结构定义 |
-| axut/suite.h   | 测试用例集合 |
-| axut/runner.h  | 执行和统计测试用例 |
+| ax/u1024.h     | 1024位无符号整数 |
+| ax/array.h     | 静态数组容器 |
+| ax/vector.h    | 向量表容器 |
+| ax/deq.h       | 双端队列容器 |
+| ax/list.h      | 双链表容器 |
+| ax/hmap.h      | 散列表容器 |
+| ax/avl.h       | 自平衡树容器 |
+| ax/rb.h        | 红黑树容器 |
+| ax/string.h    | 字符串容器 |
+| ax/btrie.h     | 平衡字典树容器 |
+| ax/queue.h     | 队列 |
+| ax/stack.h     | 栈 |
+| ax/pque.h      | 优先队列 |
+| ax/thread.h    | 线程操作 |
+| ax/mutex.h     | 互斥量 |
+| ax/sem.h       | 信号量 |
+| ax/rwlock.h    | 读写锁 |
+| ax/cond.h      | 条件变量 |
+| ax/tss.h       | 线程本地存储 |
+| ax/tpool.h     | 线程池 |
+| ut/case.h      | 测试用例 |
+| ut/suite.h     | 测试用例集 |
+| ut/runner.h    | 测试用例执行容器 |
 
 ## LICENSE
 
