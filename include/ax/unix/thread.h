@@ -52,10 +52,12 @@ static inline int ax_thread_create(ax_thread_func_f *thread_func, void *arg, ax_
 	return - !!pthread_create(&thread->thread, NULL, thread_function, ta);
 }
 
-static inline void ax_thread_sleep(ax_thread *thread, unsigned int millise)
+static inline void ax_thread_sleep(unsigned int millise)
 {
-	ax_assert(millise < UINT_MAX / 1000, "millise is too big");
-	usleep(millise * 1000);
+	int sec = millise / 1000;
+	int msec = millise % 1000;
+	sleep(sec);
+	usleep(msec * 1000);
 }
 
 static inline void ax_thread_exit(uintptr_t retval)

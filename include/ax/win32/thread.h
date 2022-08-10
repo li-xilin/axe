@@ -69,7 +69,7 @@ static inline void ax_thread_exit(uintptr_t rval)
 	ExitThread(rval);
 }
 
-static inline void ax_thread_sleep(ax_thread *thread, unsigned int millise)
+static inline void ax_thread_sleep(unsigned int millise)
 {
 	ax_assert(millise < UINT_MAX / 1000, "millise is too big");
 	Sleep(millise);
