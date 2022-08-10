@@ -28,12 +28,7 @@ all debug clean:
 
 install:
 	install -m 755 -d \
-		$(DESTDIR)/lib \
-		$(DESTDIR)/include \
-		$(DESTDIR)/include/ax \
 		$(DESTDIR)/include/ax/type \
-		$(DESTDIR)/include/ax/static \
-		$(DESTDIR)/include/ax/detect \
 		$(DESTDIR)/include/ax/win32 \
 		$(DESTDIR)/include/ax/unix \
 		$(DESTDIR)/include/ut \
@@ -41,8 +36,6 @@ install:
 	install -m 644 lib/libaxcore.a lib/libaxthread.a lib/libaxut.a $(DESTDIR)/lib
 	install -m 644 include/ax/*.h $(DESTDIR)/include/ax
 	install -m 644 include/ax/type/*.h $(DESTDIR)/include/ax/type
-	install -m 644 include/ax/static/*.h $(DESTDIR)/include/ax/type/static
-	install -m 644 include/ax/detect/*.h $(DESTDIR)/include/ax/detect
 	install -m 644 include/ax/win32/*.h $(DESTDIR)/include/ax/win32
 	install -m 644 include/ax/unix/*.h $(DESTDIR)/include/ax/unix
 	install -m 644 include/ut/*.h $(DESTDIR)/include/ut
