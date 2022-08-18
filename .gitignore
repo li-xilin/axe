@@ -14,3 +14,4 @@ compile_commands.json
 test/t_all
 *~
 *.so
+src/event/config.h

@@ -19,7 +19,7 @@ inline static void ax_link_init(ax_link *list)
         list->next = list->prev = list;
 }
 
-inline static void ax_link_empty(ax_link *list){
+inline static void ax_link_init_empty(ax_link *list){
         list->next = list->prev = NULL;
 }
 
@@ -56,7 +56,7 @@ inline static void ax_link_del(ax_link *entry)
         entry->prev = entry->next = 0;
 }
 
-inline static int ax_link_empty(const ax_link *head)
+inline static int ax_link_is_empty(const ax_link *head)
 {
         return head->next == head;
 }

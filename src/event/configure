@@ -1,0 +1,130 @@
+#!/bin/bash
+
+CONFIG_HEADER=config.h
+
+rm -f $CONFIG_HEADER
+
+echo "#ifndef CONFIG_H_" > $CONFIG_HEADER
+echo -e "#define CONFIG_H_\n" >> $CONFIG_HEADER
+
+CARROT_TEST_FILE="test.c"
+CARROT_TEST_CFLAGS="-Wall -Werror -O0"
+CARROT_TEST_CC="gcc"
+
+echo -e "Checking for select... \c" 
+cat << END > $CARROT_TEST_FILE
+#ifdef WIN32
+#include<winsock.h>
+#else
+#include<sys/time.h>
+#include<sys/types.h>
+#include<unistd.h>
+#endif
+
+int main(){
+    select(0, NULL, NULL, NULL, NULL);
+    return 0;
+}
+END
+
+CARROT_TEST="$CARROT_TEST_CC $CARROT_TEST_CFLAGS \
+      -c $CARROT_TEST_FILE > /dev/null 2>&1"
+
+eval "$CARROT_TEST"
+
+if [ $? -eq 0 ]; then
+    echo "yes"
+    echo -e "#define HAVE_SELECT\n" >> $CONFIG_HEADER
+else
+    echo "no"
+fi
+
+echo -e "Checking for poll... \c" 
+cat << END > $CARROT_TEST_FILE
+#include<sys/time.h>
+#include<sys/types.h>
+#include<unistd.h>
+#include<sys/poll.h>
+
+int main(){
+    poll(NULL, 0, 0);
+    return 0;
+}
+END
+
+eval "$CARROT_TEST"
+
+if [ $? -eq 0 ]; then
+    echo "yes"
+    echo -e "#define HAVE_POLL\n" >> $CONFIG_HEADER
+else
+    echo "no"
+fi
+
+echo -e "Checking for epoll... \c" 
+cat << END > $CARROT_TEST_FILE
+#include<sys/time.h>
+#include<sys/types.h>
+#include<unistd.h>
+#include <sys/epoll.h>
+
+int main(){
+    epoll_wait(0, NULL, 0, -1);
+    return 0;
+}
+END
+
+eval "$CARROT_TEST"
+
+if [ $? -eq 0 ]; then
+    echo "yes"
+    echo -e "#define HAVE_EPOLL\n" >> $CONFIG_HEADER
+else
+    echo "no"
+fi
+
+echo -e "Checking for kqueue... \c" 
+cat << END > $CARROT_TEST_FILE
+#include <sys/types.h>
+#include <sys/event.h>
+#include <sys/time.h>
+
+int main(){
+    (void)kqueue();
+    return 0;
+}
+END
+
+eval "$CARROT_TEST"
+
+if [ $? -eq 0 ]; then
+    echo "yes"
+    echo -e "#define HAVE_KQUEUE\n" >> $CONFIG_HEADER
+else
+    echo "no"
+fi
+
+echo -e "Checking for /dev/poll... \c" 
+cat << END > $CARROT_TEST_FILE
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/devpoll.h>
+
+int main(){
+    (void)kqueue();
+    return 0;
+}
+END
+
+eval "$CARROT_TEST"
+
+if [ $? -eq 0 ]; then
+    echo "yes"
+    echo -e "#define HAVE_DEVPOLL\n" >> $CONFIG_HEADER
+else
+    echo "no"
+fi
+
+rm -rf $CARROT_TEST_FILE
+
+echo "#endif" >> $CONFIG_HEADER
