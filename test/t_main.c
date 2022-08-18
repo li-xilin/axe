@@ -32,7 +32,7 @@ extern ut_suite *suite_for_vail();
 extern ut_suite *suite_for_avl();
 extern ut_suite *suite_for_list();
 extern ut_suite *suite_for_pred();
-extern ut_suite *suite_for_uintk();
+extern ut_suite *suite_for_u1024();
 extern ut_suite *suite_for_btrie();
 extern ut_suite *suite_for_seq();
 extern ut_suite *suite_for_stack();
@@ -55,7 +55,7 @@ int main()
 	ut_runner_add(r, suite_for_avl());
 	ut_runner_add(r, suite_for_list());
 	ut_runner_add(r, suite_for_pred());
-	ut_runner_add(r, suite_for_uintk());
+	ut_runner_add(r, suite_for_u1024());
 	ut_runner_add(r, suite_for_btrie());
 	ut_runner_add(r, suite_for_stack());
 	ut_runner_add(r, suite_for_queue());
