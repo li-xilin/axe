@@ -1,26 +1,3 @@
-/*
-* Copyright (c) 2014 Xinjing Chow
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions
-* are met:
-* 1. Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-* 2. Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the distribution.
-* 3. The name of the author may not be used to endorse or promote products
-*    derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
-* IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-* OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-* IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
-* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-* NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-* DATA, OR PROFITS; OR BUSINESS INTERR
-*/
-/* kqueue polling policy */
 #include "polling.h"
 #include "ax/log.h"
 
@@ -41,12 +18,6 @@ struct kqueue_internal{
     struct kevent * events;
 };
 
-/*
-* Resize the events to given size.
-* Return: -1 on failure, 0 on success.
-* @pki: the internal data used by kqueue polling policy.
-* @size: the size that we should resize to.
-*/
 static int kqueue_resize(struct kqueue_internal * pki, int size)
 {
     struct kevent * pke;
@@ -66,11 +37,6 @@ static int kqueue_resize(struct kqueue_internal * pki, int size)
     return (0);
 }
 
-/*
-* Create and initialize the internal data used by kqueue polling policy.
-* Return value: newly created internal data on success, NULL on failure.
-* @r: the reactor which uses this policy.
-*/
 void * polling_init(ax_reactor * r)
 {
     struct kqueue_internal * ret;
@@ -104,10 +70,6 @@ void * polling_init(ax_reactor * r)
     return ret;
 }
 
-/* 
-* Frees up the internal data used by kqueue polling policy.
-* @pki: the internal data.
-*/
 static void kqueue_free(struct kqueue_internal * pki)
 {
     assert(pki != NULL);
@@ -127,10 +89,6 @@ static void kqueue_free(struct kqueue_internal * pki)
     free(pki);
 }
 
-/*
-* Clean up the policy internal data
-* @r: the reactor which uses this policy
-*/
 void polling_destroy(ax_reactor * r)
 {
     assert(r != NULL);
@@ -153,14 +111,6 @@ static inline short kqueue_setup_filter(short flags)
     return ret;
 }
 
-
-/*
-* Register the given file descriptor with this kqueue instance.
-* Return: 0 on success, -1 on failure.
-* @r: the reactor which uses this policy.
-* @fd: the file descriptor to listen.
-* @flags: the interested events.
-*/
 int polling_add(ax_reactor * r, ax_socket fd, short flags)
 {
     struct kqueue_internal * pki;
@@ -210,15 +160,6 @@ int polling_add(ax_reactor * r, ax_socket fd, short flags)
     return (0);
 }
 
-
-
-/*
-* Modify the interested events of a fd.
-* Return: 0 on success, -1 on failure.
-* @r: the reactor which uses this policy.
-* @fd: the file descriptor to listen.
-* @flags: the interested events.
-*/
 int polling_mod(ax_reactor * r, ax_socket fd, short flags)
 {
     struct kqueue_internal * pki;
@@ -259,13 +200,6 @@ int polling_mod(ax_reactor * r, ax_socket fd, short flags)
     return (0);
 }
 
-/*
-* Unregister the given file descriptor with this kqueue instance.
-* Return: -1 on failure, 0 on success.
-* @r: the reactor which uses this policy.
-* @fd: the file descriptor to remove.
-* @flags: the interested events.
-*/
 int polling_del(ax_reactor * r, ax_socket fd, short flags)
 {
     struct kqueue_internal * pki;
@@ -303,11 +237,6 @@ int polling_del(ax_reactor * r, ax_socket fd, short flags)
     return (0);
 }
 
-/*
-* Polling the file descriptor via kqueue and add active events to the pending_list of the reactor.
-* @r: the reactor which uses this policy.
-* @timeout: the time after which the select will return.
-*/
 int polling_poll(ax_reactor * r, struct timeval * timeout)
 {
     int res_flags , nreadys, i;
@@ -325,7 +254,7 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
         t.tv_sec = timeout->tv_sec;
         t.tv_nsec = timeout->tv_usec * 1000;
     }
-    ax_skutil_lock_unlock(r->lock);
+    ax_mutex_unlock(r->lock);
     nreadys = kevent(pki->kqueue_fd, NULL, 0,
                      pki->events, pki->nevents,
                      timeout ? &t : NULL);
@@ -356,7 +285,7 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
 
     return nreadys;
 }
-/* Dumps out the internal data of kqueue policy for debugging. */
+
 void polling_print(ax_reactor * r)
 {
     ax_perror("empty implementation of kqueue_print.");

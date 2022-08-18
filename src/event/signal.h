@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2014 Xinjing Chow
- *
- */
 #ifndef AX_EVENT_SIGNAL_H
 #define AX_EVENT_SIGNAL_H
 

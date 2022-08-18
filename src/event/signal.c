@@ -1,10 +1,6 @@
-/*
-* Copyright (c) 2014 Xinjing Chow
-*/
+#include "signal.h"
 
-#include "evsignal.h"
-
-#include "ax/event/skutil.h"
+#include "ax/event/util.h"
 #include "ax/event/event.h"
 #include "ax/event/reactor.h"
 

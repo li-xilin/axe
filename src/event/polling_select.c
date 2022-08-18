@@ -1,37 +1,14 @@
-/*
-* Copyright (c) 2014 Xinjing Chow
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions
-* are met:
-* 1. Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-* 2. Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the distribution.
-* 3. The name of the author may not be used to endorse or promote products
-*    derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
-* IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-* OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-* IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
-* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-* NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-* DATA, OR PROFITS; OR BUSINESS INTERR
-*/
-/* select polling policy */
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
 #include <assert.h>
 
-#include "ax/event/skutil.h"
+#include "ax/event/util.h"
 #include "ax/event/event.h"
 #include "event_ht.h"
 #include "polling.h"
 
-#ifdef WIN32
+#ifdef AX_OS_WIN32
 	#include <windows.h>
 	#include <Winsock2.h>
 #else
@@ -56,12 +33,6 @@ struct select_internal
 	fd_set *writeset_out;
 };
 
-/*
-* Resize the fd_sets to given size.
-* Return value: 0 on success, -1 on failure.
-* @psi: the internal data used by select.
-* @bytes: the desired size in byte.
-*/
 static int select_resize(struct select_internal * psi, int bytes)
 {
 	fd_set * preadset_in = NULL;
@@ -109,11 +80,6 @@ static int select_resize(struct select_internal * psi, int bytes)
 	return (0);
 }
 
-/*
-* Free up the internal data used by select.
-* Return value: 0 for success.
-* @psi: the internal data used by select.
-*/
 static int select_free(struct select_internal * psi)
 {
 	assert(psi != NULL);
@@ -162,13 +128,6 @@ void *polling_init(ax_reactor * r)
 	return ret;
 }
 
-/*
-* Add the given file descriptor to the listening fd_set.
-* Return value: 0 on success, -1 on failure.
-* @r: the reactor which uses this policy.
-* @fd: the file descriptor to listen.
-* @flags: the interested events.
-*/
 int polling_add(ax_reactor * r, ax_socket fd, short flags)
 {
 	struct select_internal * psi;
@@ -214,13 +173,6 @@ int polling_add(ax_reactor * r, ax_socket fd, short flags)
 	return (0);
 }
 
-/*
-* Modify the interested events of a fd.
-* Return value: 0 on success, -1 on failure.
-* @r: the reactor which uses this policy.
-* @fd: the file descriptor to listen.
-* @flags: the interested events.
-*/
 int polling_mod(ax_reactor * r, ax_socket fd, short flags)
 {
 	struct select_internal * psi;
@@ -260,13 +212,7 @@ int polling_mod(ax_reactor * r, ax_socket fd, short flags)
 	ax_perror("Modified the event with fd %d and flags %d", fd, flags);
 	return (0);
 }
-/*
-* Remove the given file descriptor from the listening fd_set.
-* Return value: -1 on failure, 0 on success.
-* @r: the reactor which uses this policy.
-* @fd: the file descriptor to remove.
-* @flags: the interested events.
-*/
+
 int polling_del(ax_reactor * r, ax_socket fd, short flags)
 {
 	struct select_internal * psi;
@@ -293,11 +239,6 @@ int polling_del(ax_reactor * r, ax_socket fd, short flags)
 	return (0);
 }
 
-/*
-* Polling the file descriptors via select and add active events to the pending_list of the reactor.
-* @r: the reactor which uses this policy.
-* @timeout: the time after which the select will return.
-*/
 int polling_poll(ax_reactor * r, struct timeval * timeout)
 {
 	int res_flags , nreadys, fd;
@@ -330,7 +271,7 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
 				if (e == NULL) {
 					ax_perror("the event with [fd %d] is not in the hashtable", fd);
 				}else{
-					reactor_add_to_pending(r, e, res_flags);
+					ax_reactor_add_to_pending(r, e, res_flags);
 				}
 			}
 		}
@@ -340,10 +281,6 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
 	return nreadys;
 }
 
-/*
-* Clean up the policy internal data
-* @r: the reactor which uses this policy
-*/
 void polling_destroy(ax_reactor * r)
 {
 	assert(r != NULL);
@@ -351,7 +288,6 @@ void polling_destroy(ax_reactor * r)
 	select_free(r->polling_data);
 }
 
-/* Dumps out the internal data of select policy for debugging. */
 void polling_print(ax_reactor * r)
 {
 	int i;

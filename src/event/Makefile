@@ -25,7 +25,7 @@ CFLAGS += -D_XOPEN_SOURCE=500
 
 TARGET = $(LIB)/libaxevent.a
 
-OBJS = event.o event_ht.o polling.o reactor.o signal.o skutil.o timer.o
+OBJS = event.o event_ht.o polling.o reactor.o signal.o util.o timer.o
 
 all: CFLAGS += $(RLSFLAGS)
 all: $(TARGET)

@@ -1,26 +1,3 @@
-/*
- * Copyright (c) 2014 Xinjing Chow
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERR
- */
-/* poll polling policy */
 #include <sys/errno.h>
 #include <poll.h>
 #include <assert.h>
@@ -31,7 +8,6 @@
 #include "ax/log.h"
 
 #include <stdio.h>
-
 
 #define POLL_INIT_EVENT_SIZE 32
 
@@ -61,12 +37,6 @@ struct poll_internal
 	struct pollfd *fds_in;
 };
 
-/*
- * Resize the fds to given size.
- * Return: -1 on failure, 0 on success.
- * @ppi: the internal data used by poll polling policy.
- * @size: the size that we should resize to.
- */
 static int poll_resize(struct poll_internal * ppi, int size)
 {
 	struct pollfd * pfds;
@@ -88,11 +58,6 @@ static int poll_resize(struct poll_internal * ppi, int size)
 	return (0);
 }
 
-/*
- * Create and initialize the internal data used by poll polling policy.
- * Return value: newly created internal data on success, NULL on failure.
- * @r: the reactor which uses this policy.
- */
 void * polling_init(ax_reactor * r)
 {
 	struct poll_internal * ret;
@@ -118,10 +83,6 @@ void * polling_init(ax_reactor * r)
 	return ret;
 }
 
-/* 
- * Frees up the internal data used by poll polling policy.
- * @pei: the internal data.
- */
 static void poll_free(struct poll_internal * ppi)
 {
 	assert(ppi != NULL);
@@ -142,10 +103,6 @@ static void poll_free(struct poll_internal * ppi)
 	free(ppi);
 }
 
-/*
- * Clean up the policy internal data
- * @r: the reactor which uses this policy
- */
 void polling_destroy(ax_reactor * r)
 {
 	assert(r != NULL);
@@ -167,15 +124,7 @@ static inline int poll_setup_mask(short flags)
 	}
 	return ret;
 }
-/*
- * Add the given fd to the fds of the internal data of poll polling policy.
- * If the fd in already in the fds, update the events according to the flags.
- * Resize the fds if nessesary.
- * Return: 0 on success, -1 on failure.
- * @r: the reactor which uses this policy.
- * @fd: the file descriptor to listen.
- * @flags: the interested events.
- */
+
 int polling_add(ax_reactor * r, ax_socket fd, short flags)
 {
 	struct poll_internal * ppi;
@@ -214,16 +163,6 @@ int polling_add(ax_reactor * r, ax_socket fd, short flags)
 	return (0);
 }
 
-
-
-/*
- * Modify the events according to the flags.
- * Resize the fds if nessesary.
- * Return: 0 on success, -1 on failure.
- * @r: the reactor which uses this policy.
- * @fd: the file descriptor to listen.
- * @flags: the interested events.
- */
 int polling_mod(ax_reactor * r, ax_socket fd, short flags)
 {
 	struct poll_internal * ppi;
@@ -259,13 +198,7 @@ static inline void poll_swap_pollfd(struct pollfd * lhs, struct pollfd * rhs)
 	*lhs = *rhs;
 	*rhs = t;
 }
-/*
- * Remove the given file descriptor from the listening pollfds.
- * Return value: -1 on failure, 0 on success.
- * @r: the reactor which uses this policy.
- * @fd: the file descriptor to remove.
- * @flags: the interested events.
- */
+
 int polling_del(ax_reactor * r, ax_socket fd, short flags)
 {
 	struct poll_internal * ppi;
@@ -296,11 +229,7 @@ int polling_del(ax_reactor * r, ax_socket fd, short flags)
 
 	return (-1);
 }
-/*
- * Polling the file descriptors via poll and add active events to the pending_list of the reactor.
- * @r: the reactor which uses this policy.
- * @timeout: the time after which the poll will return.
- */
+
 int polling_poll(ax_reactor * r, struct timeval * timeout)
 {
 	int res_flags , nreadys;
@@ -314,27 +243,20 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
 
 	assert(ppi != NULL);
 
-	// if(r->lock) {
-	if(true) { //TODO
-		/* 
-		 * We are in multithreaded enviroment,
-		 * do whatever we have to do.
-		 */
-		if(ppi->need_realoc) {
-			if((ppi->fds = realloc(ppi->fds, ppi->max_events * sizeof(struct pollfd))) == NULL) {
-				ax_perror("failed to realloc for ppi->fds");
-				exit(1);
-			}
-			ppi->need_realoc = 0;
+		
+	if(ppi->need_realoc) {
+		if((ppi->fds = realloc(ppi->fds, ppi->max_events * sizeof(struct pollfd))) == NULL) {
+			ax_perror("failed to realloc for ppi->fds");
+			exit(1);
 		}
-		if(ppi->need_rememcp) {
-			memcpy(ppi->fds, ppi->fds_in, ppi->max_events * sizeof(struct pollfd));
-			ppi->need_rememcp = 0;
-		}
-	}else{
-		/* No need to realloc and rememcpy since we are in single-threaeded environment. */
-		ppi->fds = ppi->fds_in;
+		ppi->need_realoc = 0;
 	}
+	if(ppi->need_rememcp) {
+		memcpy(ppi->fds, ppi->fds_in, ppi->max_events * sizeof(struct pollfd));
+		ppi->need_rememcp = 0;
+	}
+		/* No need to realloc and rememcpy since we are in single-threaeded environment. */
+		/* ppi->fds = ppi->fds_in; */
 
 	ax_mutex_unlock(&r->lock);
 	nreadys = poll(ppi->fds, 
@@ -365,7 +287,7 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
 				if(e == NULL) {
 					ax_perror("the event with [fd %d] is not in the hashtable", ppi->fds[i].fd);
 				}else{
-					reactor_add_to_pending(r, e, res_flags);
+					ax_reactor_add_to_pending(r, e, res_flags);
 				}
 			}
 		}
@@ -373,7 +295,6 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
 	return nreadys;
 }
 
-/* Dumps out the internal data of poll policy for debugging. */
 void polling_print(ax_reactor * r)
 {
 	int i;

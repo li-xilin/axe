@@ -1,14 +1,10 @@
-/*
- * Copyright (c) 2014 Xinjing Chow
- */
-
 #include "polling.h"
 #include "event_ht.h"
 #include "timer.h"
-#include "evsignal.h"
+#include "signal.h"
 #include "ax/event/reactor.h"
 #include "ax/event/event.h"
-#include "ax/event/skutil.h"
+#include "ax/event/util.h"
 
 #include "ax/log.h"
 #include "ax/link.h"
@@ -24,46 +20,20 @@
 #include <string.h>
 #include <assert.h>
 
-/*
- * Initialize the reactor.
- * @r: the reactor to be initialized.
- * @policy_name: the name of polling policy.
- * @in_mt: indicates whether this application is used in multithreaded environment.
- * @handle_sig: indicates whether the reactor handles signal events.
- * @handle_timer: indicates whether the reactor handles timer events.
- */
-static int reactor_init_(ax_reactor * r, int in_mt, int handle_sig, int handle_timer);
+static ax_event *reactor_dequeue_event(ax_reactor *r);
+static int reacotr_signal_init(ax_reactor *r);
+static int reactor_timer_init(ax_reactor *r);
 
 /*
- * Dequeue a event from event list.
- * Return: the dequeued event or null if the list is empty.
- * @r: the reactor.
- */
-static ax_event * reactor_dequeue_event(ax_reactor * r);
-
-/*
- * Initialize signal events handling mechanism.
- * Return: 0 on success, -1 on failure.
- * @r: the related reactor.
- */
-static int reacotr_signal_init(ax_reactor * r);
-
-/*
- * Initialize timer events handling mechanism.
- * Return: 0 on success, -1 on failure.
- * @r: the related reactor.
- */
-int reactor_timer_init(ax_reactor * r);
-
-/*
- * The signal event callback used to call corresponding signal event callbacks.
+ *The signal event callback used to call corresponding signal event callbacks.
  */
 static void reactor_signal_callback(ax_socket fd, short res_flags, void *arg);
 
-static void reactor_signal_callback(ax_socket fd, short res_flags, void *arg) {
-	ax_reactor * r;
-	ax_event * e;
-	struct signal_internal * psi;
+static void reactor_signal_callback(ax_socket fd, short res_flags, void *arg)
+{
+	ax_reactor *r;
+	ax_event *e;
+	struct signal_internal *psi;
 	int sig;
 
 	sig = 0;
@@ -80,8 +50,9 @@ static void reactor_signal_callback(ax_socket fd, short res_flags, void *arg) {
 	}
 }
 
-static void reactor_handle_timer(ax_reactor * r) {
-	ax_event * e;
+static void reactor_handle_timer(ax_reactor *r)
+{
+	ax_event *e;
 
 	assert(r != NULL);
 
@@ -105,21 +76,16 @@ static void reactor_handle_timer(ax_reactor * r) {
 		ax_mutex_lock(&r->lock);
 	}
 }
-/*
- * The default callback got called after reactor being waked up.
- */
-static void reactor_waked_up(ax_socket fd, short res_flags, void *arg) {
-	//ax_perror("woke up.");
+
+static void reactor_waked_up(ax_socket fd, short res_flags, void *arg)
+{
 	int n;
 	char buf[1024];
 	while ((n = read(fd, buf, sizeof(buf))) > 0);
 }
 
-/*
- * Wake up the polling thread.
- * @r: the reactor to wake up
- */
-static void reactor_wake_up(ax_reactor * r) {
+static void reactor_wake_up(ax_reactor *r)
+{
 	assert(r != NULL);
 
 	char octet = 0;
@@ -130,14 +96,16 @@ static void reactor_wake_up(ax_reactor * r) {
 	assert(n > 0);
 }
 
-void reactor_get_out(ax_reactor * r) {
+void ax_reactor_exit(ax_reactor *r)
+{
 	ax_mutex_lock(&r->lock);
 	r->out = 1;
 	reactor_wake_up(r);
 	ax_mutex_unlock(&r->lock);
 }
 
-static int reactor_init_(ax_reactor * r, int in_mt, int handle_sig, int handle_timer) {
+int ax_reactor_init(ax_reactor *r)
+{
 	assert(r != NULL);
 
 	memset(r, 0, sizeof(ax_reactor));
@@ -159,80 +127,37 @@ static int reactor_init_(ax_reactor * r, int in_mt, int handle_sig, int handle_t
 		exit(1);
 	}
 
-	if (in_mt) { //TODO
-		/* We only use lock in multithreaded environment to reduce overhead. */
-	}
-
 	/* If the lock is null, locking functions will be no-ops */
 	ax_mutex_init(&r->lock);
 	r->out = 0;
-	if (ax_skutil_create_pipe(r->pipe) == -1) {
+	if (ax_util_create_pipe(r->pipe) == -1) {
 		ax_perror("failed to create informing pipe.");
 		exit(1);
 	}
 	/* set the pipe to nonblocking mode */
-	if (ax_skutil_set_nonblocking(r->pipe[0]) < 0 || ax_skutil_set_nonblocking(r->pipe[1]) < 0) {
+	if (ax_util_set_nonblocking(r->pipe[0]) < 0 || ax_util_set_nonblocking(r->pipe[1]) < 0) {
 		ax_perror("failed to set the pipe to nonblocking mode.");
 		exit(1);
 	}
 
-	//set up the informer
-	event_set(&r->pe, r->pipe[0], E_READ, reactor_waked_up, NULL);
-	reactor_add_event(r, &r->pe);
+	ax_event_set(&r->pe, r->pipe[0], E_READ, reactor_waked_up, NULL);
+	ax_reactor_add(r, &r->pe);
 
-	if (handle_sig) {
-		//set up signal events handling
-		if (reacotr_signal_init(r) == -1) {
-			ax_perror("failed to initialize signal handling.");
-			reactor_destroy(r);
-		}
+	if (reacotr_signal_init(r) == -1) {
+		ax_perror("failed to initialize signal handling.");
+		ax_reactor_destroy(r);
 	}
-	if (handle_timer) {
-		//set up timer events handling
-		if (reactor_timer_init(r) == -1) {
-			ax_perror("failed to initialize signal handling.");
-			reactor_destroy(r);
-		}
+
+	if (reactor_timer_init(r) == -1) {
+		ax_perror("failed to initialize signal handling.");
+		ax_reactor_destroy(r);
 	}
 	return 0;
 }
 
-int reactor_init(ax_reactor * r) {
-	return reactor_init_(r, 0, 0, 0);
-}
-int reactor_init_with_mt(ax_reactor * r) {
-	return reactor_init_(r, 1, 0, 0);
-}
-int reactor_init_with_signal(ax_reactor * r) {
-	return reactor_init_(r, 0, 1, 0);
-}
-
-int reactor_init_with_timer(ax_reactor * r) {
-	return reactor_init_(r, 0, 0, 1);
-}
-
-int reactor_init_with_signal_timer(ax_reactor * r) {
-	return reactor_init_(r, 0, 1, 1);
-}
-
-int reactor_init_with_mt_signal(ax_reactor * r) {
-	return reactor_init_(r, 1, 1, 0);
-}
-
-int reactor_init_with_mt_timer(ax_reactor * r) {
-	return reactor_init_(r, 1, 0, 1);
-}
-
-int reactor_init_with_mt_signal_timer(ax_reactor * r) {
-	return reactor_init_(r, 1, 1, 1);
-}
-
-/*
- * Frees up event_list
- * @r: the reactor
- */
-static void reactor_free_events(ax_reactor * r) {
-	ax_event * e = NULL;
+static void reactor_free_events(ax_reactor *r)
+{
+	ax_event *e = NULL;
 
 	while ((e = reactor_dequeue_event(r))) {
 		if (polling_del(r, e->fd, e->ev_flags) == -1) {
@@ -248,15 +173,13 @@ static void reactor_free_events(ax_reactor * r) {
 	}
 }
 
-/*
- * Frees up event hash table
- * @r: the reactor
- */
-static void reactor_free_hash(ax_reactor * r) {
+static void reactor_free_hash(ax_reactor *r)
+{
 	event_ht_free(r->eht);
 }
 
-void reactor_clean_events(ax_reactor * r) {
+void ax_reactor_clear(ax_reactor *r)
+{
 	ax_mutex_lock(&r->lock);
 	reactor_free_events(r);
 	if (r->pti) {
@@ -264,13 +187,14 @@ void reactor_clean_events(ax_reactor * r) {
 	}
 	ax_mutex_unlock(&r->lock);
 	/* remove all events except this informing pipe */
-	event_set(&r->pe, r->pipe[0], E_READ, reactor_waked_up, NULL);
-	if (reactor_add_event(r, &r->pe) == -1) {
+	ax_event_set(&r->pe, r->pipe[0], E_READ, reactor_waked_up, NULL);
+	if (ax_reactor_add(r, &r->pe) == -1) {
 		ax_perror("failed to add informing pipe event back to reactor");
 	}
 }
 
-void reactor_destroy(ax_reactor * r) {
+void ax_reactor_destroy(ax_reactor *r)
+{
 	ax_mutex_lock(&r->lock);
 	ax_pdebug("free up event_list.");
 	//frees up event_list
@@ -285,13 +209,13 @@ void reactor_destroy(ax_reactor * r) {
 	polling_destroy(r);
 
 	//close the pipe
-	ax_skutil_close_fd(r->pipe[0]);
-	ax_skutil_close_fd(r->pipe[1]);
+	ax_util_close_fd(r->pipe[0]);
+	ax_util_close_fd(r->pipe[1]);
 
 	//close the signal event handling stuff
 	if (r->psi) {
-		ax_skutil_close_fd(r->sig_pipe[0]);
-		ax_skutil_close_fd(r->sig_pipe[1]);
+		ax_util_close_fd(r->sig_pipe[0]);
+		ax_util_close_fd(r->sig_pipe[1]);
 		signal_internal_restore_all(r);
 		free(r->psi);
 		free(r->sig_pe);
@@ -301,8 +225,8 @@ void reactor_destroy(ax_reactor * r) {
 
 	//close the timer event handling stuff
 	if (r->pti) {
-		ax_skutil_close_fd(r->sig_pipe[0]);
-		ax_skutil_close_fd(r->sig_pipe[1]);
+		ax_util_close_fd(r->sig_pipe[0]);
+		ax_util_close_fd(r->sig_pipe[1]);
 		timerheap_destroy(r);
 		free(r->pti);
 		r->pti = NULL;
@@ -314,39 +238,37 @@ void reactor_destroy(ax_reactor * r) {
 	free(r->eht);
 }
 
-static int reacotr_signal_init(ax_reactor * r) {
+static int reacotr_signal_init(ax_reactor *r)
+{
 	if ((r->psi = signal_internal_init(r)) == NULL) {
 		ax_perror("failed on signal_internal_init");
 		exit(1);
 	}
 
-	if (ax_skutil_create_pipe(r->sig_pipe) == -1) {
+	if (ax_util_create_pipe(r->sig_pipe) == -1) {
 		ax_perror("failed to create signal informing pipe.");
 		exit(1);
 	}
 
 	/* set the pipe to nonblocking mode */
-	if (ax_skutil_set_nonblocking(r->sig_pipe[0]) < 0 || ax_skutil_set_nonblocking(r->sig_pipe[1]) < 0) {
+	if (ax_util_set_nonblocking(r->sig_pipe[0]) < 0 || ax_util_set_nonblocking(r->sig_pipe[1]) < 0) {
 		ax_perror("failed to set the pipe to nonblocking mode.");
 		exit(1);
 	}
 
-	if ((r->sig_pe = event_new(r->sig_pipe[0], E_READ, reactor_signal_callback, r)) == NULL) {
+	if ((r->sig_pe = malloc(sizeof(ax_event))) == NULL) {
 		ax_perror("failed to create event for signal events handling");
 		exit(1);
 	}
+	ax_event_set(r->sig_pe, r->sig_pipe[0], E_READ, reactor_signal_callback, r);
 
-	reactor_add_event(r, r->sig_pe);
+	ax_reactor_add(r, r->sig_pe);
 
 	return (0);
 }
 
-/*
- * Initialize timer events handling mechanism.
- * Return: 0 on success, -1 on failure.
- * @r: the related reactor.
- */
-int reactor_timer_init(ax_reactor * r) {
+static int reactor_timer_init(ax_reactor *r)
+{
 	if ((r->pti = timerheap_internal_init(r)) == NULL) {
 		ax_perror("failed on timerheap_internal_init: %s", strerror(errno));
 		return (-1);
@@ -354,7 +276,8 @@ int reactor_timer_init(ax_reactor * r) {
 	return (0);
 }
 
-int reactor_add_event(ax_reactor * r, ax_event * e) {
+int ax_reactor_add(ax_reactor *r, ax_event *e)
+{
 	assert(r != NULL && e != NULL);
 
 	ax_mutex_lock(&r->lock);
@@ -383,13 +306,14 @@ int reactor_add_event(ax_reactor * r, ax_event * e) {
 			assert(r->pti->size == size + 1);
 			assert(e->timerheap_idx != E_OUT_OF_TIMERHEAP);
 		}
-	}else{
+	}
+	else {
 		/* Normal I/O event registration. */
 		if (e->event_link.prev || e->event_link.next) {
 			ax_mutex_unlock(&r->lock);
 			/*
-			 * This event is already in the reactor.
-			 * Assume every event only can be in one reactor.
+			 *This event is already in the reactor.
+			 *Assume every event only can be in one reactor.
 			 */
 			ax_perror("event already in the reactor");
 			return (-1);
@@ -417,7 +341,8 @@ int reactor_add_event(ax_reactor * r, ax_event * e) {
 	return (0);
 }
 
-int reactor_modify_events(ax_reactor * r, ax_event * e) {
+int ax_reactor_modify(ax_reactor *r, ax_event *e)
+{
 	assert(r != NULL && e != NULL);
 
 	ax_mutex_lock(&r->lock);
@@ -426,13 +351,11 @@ int reactor_modify_events(ax_reactor * r, ax_event * e) {
 		ax_perror("Modification of signal or timer event is not supported");
 		return (-1);
 	}else{
-		//ax_perror("Modifying the event [fd %d]", e->fd);
 		if (polling_mod(r, e->fd, e->ev_flags) == -1) {
 			ax_mutex_unlock(&r->lock);
 			ax_perror("failed to modify the event[%d] in the reactor.", e->fd);
 			return (-1);
 		}
-		//ax_perror("Modifying the event [fd %d]", e->fd);
 	}
 
 	e->rc = r;
@@ -446,15 +369,16 @@ int reactor_modify_events(ax_reactor * r, ax_event * e) {
 	return (0);
 }
 
-int reactor_add_to_pending(ax_reactor * r, ax_event * e, short res_flags) {
+int ax_reactor_add_to_pending(ax_reactor *r, ax_event *e, short res_flags)
+{
 	assert(r != NULL && e != NULL);
 
 	e->res_flags = res_flags;
 
 	if (e->pending_link.prev || e->pending_link.next) {
 		/*
-		 * This event is alrady in the pending list.
-		 * Assume every event only can be in one reactor.
+		 *This event is alrady in the pending list.
+		 *Assume every event only can be in one reactor.
 		 */
 		return (-1);
 	}
@@ -464,7 +388,8 @@ int reactor_add_to_pending(ax_reactor * r, ax_event * e, short res_flags) {
 	return (0);
 }
 
-int reactor_remove_event(ax_reactor * r, ax_event * e) {
+int ax_reactor_remove(ax_reactor *r, ax_event *e)
+{
 	assert(r != NULL && e != NULL);
 
 	ax_mutex_lock(&r->lock);
@@ -488,25 +413,24 @@ int reactor_remove_event(ax_reactor * r, ax_event * e) {
 			}
 			assert(e->timerheap_idx == E_OUT_OF_TIMERHEAP);
 		}
-	}else{
+	}
+	else {
 		/* Normal I/O event unregistration. */
 		if (e->event_link.prev == NULL || e->event_link.next == NULL) {
 			ax_mutex_unlock(&r->lock);
 			ax_perror("The event is not in the reactor.");
 			/*
-			 * This event is not in the reactor.
-			 * Assume every event only can be in one reactor.
+			 *This event is not in the reactor.
+			 *Assume every event only can be in one reactor.
 			 */
 			return (-1);
 		}
-		//ax_perror("Removing a event [fd %d]", e->fd);
 		if (polling_del(r, e->fd, e->ev_flags) == -1) {
 			ax_mutex_unlock(&r->lock);
 
 			ax_perror("failed to remove the event[%d] from the reactor.", e->fd);
 			return (-1);
 		}
-		//ax_perror("Removed a event [fd %d]", e->fd);
 
 		ax_link_del(&e->event_link);
 
@@ -526,14 +450,10 @@ int reactor_remove_event(ax_reactor * r, ax_event * e) {
 	return (0);
 }
 
-/*
- * Dequeue a event from pending list.
- * Return: the dequeued event or null if the list is empty.
- * @r: the reactor.
- */
-static ax_event * reactor_dequeue_pending(ax_reactor * r) {
-	ax_link * node;
-	ax_event * e;
+static ax_event *reactor_dequeue_pending(ax_reactor *r)
+{
+	ax_link *node;
+	ax_event *e;
 
 	assert(r);
 
@@ -547,9 +467,10 @@ static ax_event * reactor_dequeue_pending(ax_reactor * r) {
 	return e;
 }
 
-static ax_event * reactor_dequeue_event(ax_reactor * r) {
-	ax_link * node;
-	ax_event * e;
+static ax_event *reactor_dequeue_event(ax_reactor *r)
+{
+	ax_link *node;
+	ax_event *e;
 
 	assert(r != NULL);
 
@@ -562,16 +483,18 @@ static ax_event * reactor_dequeue_event(ax_reactor * r) {
 	return e;
 }
 
-int reactor_event_empty(ax_reactor * r) {
+bool ax_reactor_empty(ax_reactor *r)
+{
 	assert(r != NULL);
 
 	return ax_link_is_empty(&r->event_list);
 }
 
-void reactor_loop(ax_reactor * r, struct timeval * timeout, int flags) {
+void ax_reactor_loop(ax_reactor *r, struct timeval *timeout, int flags)
+{
 	int nreadys;
 	struct timeval *pt, t;
-	ax_event * e;
+	ax_event *e;
 
 	assert(r != NULL);
 
@@ -580,9 +503,9 @@ void reactor_loop(ax_reactor * r, struct timeval * timeout, int flags) {
 		//ax_perror("start polling with timeout [%d, %d]", timeout ? timeout->tv_sec : -1, timeout ? timeout->tv_usec : -1);
 
 		/*
-		 * On linux, the select syscall modifies timeout
-		 * to reflect the amount of time not slept.
-		 * We have to reset the timeout in order to be portable.
+		 *On linux, the select syscall modifies timeout
+		 *to reflect the amount of time not slept.
+		 *We have to reset the timeout in order to be portable.
 		 */
 		if (timeout == NULL) {
 			pt = NULL;
@@ -593,11 +516,11 @@ void reactor_loop(ax_reactor * r, struct timeval * timeout, int flags) {
 
 		if (r->pti) {
 			/* 
-			 * The timer event handling is supported,
-			 * have @pt point to the smallest timeval.
+			 *The timer event handling is supported,
+			 *have @pt point to the smallest timeval.
 			 */
 			struct timeval t;
-			struct timeval * timerv = timerheap_top_timeout(r, &t);
+			struct timeval *timerv = timerheap_top_timeout(r, &t);
 			if (timerv && (pt == NULL || (pt && timer_s(*timerv, *pt)))) {
 				t = *timerv;
 				pt = &t;
@@ -612,7 +535,7 @@ void reactor_loop(ax_reactor * r, struct timeval * timeout, int flags) {
 		if (nreadys) {
 			//iterate through pending events and call corresponding callbacks
 			while (!r->out && (e = reactor_dequeue_pending(r))) {
-				if (e->callback && event_in_reactor(e)) {
+				if (e->callback && ax_event_in_use(e)) {
 					ax_mutex_unlock(&r->lock);
 
 					e->callback(e->fd, e->res_flags, e->callback_arg);
@@ -626,7 +549,7 @@ void reactor_loop(ax_reactor * r, struct timeval * timeout, int flags) {
 		}
 		ax_mutex_unlock(&r->lock);
 	}
-	//ax_perror("told to stop the loop, stopped.");
 	//reset the flag for next loop
 	r->out = 0;
 }
+
