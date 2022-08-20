@@ -1,24 +1,24 @@
+
 CFLAGS = -Wall -std=c99 -O2 -I../include -g -pedantic -D_XOPEN_SOURCE=500
+LDFLAGS = -L../lib -lm
+SRCS = $(wildcard core/*.c thread/*.c event/*.c)
+TARGETS = $(SRCS:.c=.out)
 
-CORE_LDFLAGS = -L../lib -laxcore -laxthread -lm -pthread
-CORE_SRCS = $(wildcard core/*.c)
-CORE_TARGETS = $(CORE_SRCS:.c=.out)
+all: $(TARGETS)
 
+core/%.out: LDFLAGS += -laxcore
+core/%.out: core/%.c
+	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
-EVENT_LDFLAGS = -L../lib -laxthread -laxevent -laxcore  -lpthread 
-EVENT_SRCS = $(wildcard event/*.c)
-EVENT_TARGETS = $(EVENT_SRCS:.c=.out)
+event/%.out: LDFLAGS += -laxthread -laxevent -laxcore  -lpthread 
+event/%.out: event/%.c
+	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
-all: $(CORE_TARGETS) $(EVENT_TARGETS)
-
-%.out:%.c
-	$(CC) -o $@ $^ $(CORE_LDFLAGS) $(CFLAGS)
-
-event/%.out:event/%.c
-	$(CC) -o $@ $^ $(EVENT_LDFLAGS) $(CFLAGS)
+thread/%.out: LDFLAGS += -laxthread -laxcore  -lpthread 
+thread/%.out: thread/%.c
+	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
 clean:
-	$(RM) $(CORE_TARGETS) $(EVENT_TARGETS)
+	$(RM) $(TARGETS)
 
 .PHONY: clean all
-
