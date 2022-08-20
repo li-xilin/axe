@@ -25,6 +25,7 @@
 #include "def.h"
 #include "debug.h"
 #include <stdint.h>
+#include <string.h>
 #include <stddef.h>
 #include <stdarg.h>
 #include <limits.h>
@@ -207,7 +208,10 @@ inline static bool ax_trait_less(const ax_trait *tr, const void *p1, const void 
 inline static ax_fail ax_trait_copy(const ax_trait *tr, void* dst, const void* src)
 {
 	__ax_require(tr->copy);
-	return tr->copy(dst, src);
+	if (tr->copy)
+		return tr->copy(dst, src);
+	memcpy(dst, src, tr->size);
+	return false;
 }
 
 inline static ax_fail ax_trait_init(const ax_trait *tr, void* p, va_list *ap)
