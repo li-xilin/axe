@@ -193,6 +193,8 @@ inline static void ax_trait_free(const ax_trait *tr, void *p)
 	__ax_require(tr->free);
 	if (tr->link && !*(void **)p)
 		return;
+	if (!tr->free)
+		return;
 	tr->free(p);
 }
 
