@@ -1,15 +1,21 @@
-#ifndef AX_EVENT_SKUTIL_H
-#define	AX_EVENT_SKUTIL_H
+#ifndef AX_EVENT_UTIL_H
+#define	AX_EVENT_UTIL_H
 #include "../log.h"
 #include "../detect.h"
+#include "../trait.h"
 
 #ifdef AX_OS_WIN32
-#include "winsock.h"
-#define ax_socket intptr_t
+#include <ws2tcpip.h>
+#include <winsock.h>
+typedef uintptr_t ax_socket;
 #else
-#include "sys/time.h"
-#define ax_socket int
+#include <sys/time.h>
+typedef int ax_socket;
 #endif
+
+extern const ax_trait ax_trait_ax_socket;
+
+#include <stddef.h>
 
 struct timeval;
 
@@ -22,7 +28,7 @@ struct timeval;
 		}\
 	} while(0);
 
-int ax_util_create_pipe(ax_socket pipe[2]);
+int ax_util_socketpair(int family, int type, int protocol, ax_socket fd[2]);
 
 int ax_util_close_fd(ax_socket fd);
 

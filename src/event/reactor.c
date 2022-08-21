@@ -1,7 +1,11 @@
 #include "polling.h"
 #include "event_ht.h"
 #include "timer.h"
+
+#ifndef AX_OS_WIN32
 #include "signal.h"
+#endif
+
 #include "ax/event/reactor.h"
 #include "ax/event/event.h"
 #include "ax/event/util.h"
@@ -13,6 +17,7 @@
 #include <windows.h>
 #else
 #include <unistd.h>
+#include <sys/socket.h>
 #endif
 
 #include <stdlib.h>
@@ -21,34 +26,9 @@
 #include <assert.h>
 
 static ax_event *reactor_dequeue_event(ax_reactor *r);
-static int reacotr_signal_init(ax_reactor *r);
+
+
 static int reactor_timer_init(ax_reactor *r);
-
-/*
- *The signal event callback used to call corresponding signal event callbacks.
- */
-static void reactor_signal_callback(ax_socket fd, short res_flags, void *arg);
-
-static void reactor_signal_callback(ax_socket fd, short res_flags, void *arg)
-{
-	ax_reactor *r;
-	ax_event *e;
-	struct signal_internal *psi;
-	int sig;
-
-	sig = 0;
-	r = arg;
-	psi = r->psi;
-	assert(r != NULL && psi != NULL);
-
-	while (read(fd, &sig, 1) > 0) {
-		e = psi->sigevents[sig];
-
-		assert(e != NULL && e->callback != NULL);
-
-		e->callback(e->fd, E_SIGNAL, e->callback_arg);
-	}
-}
 
 static void reactor_handle_timer(ax_reactor *r)
 {
@@ -79,9 +59,11 @@ static void reactor_handle_timer(ax_reactor *r)
 
 static void reactor_waked_up(ax_socket fd, short res_flags, void *arg)
 {
-	int n;
+	// int n;
+	// char buf[1024];
+	// while ((n = read(fd, buf, sizeof(buf))) > 0);
 	char buf[1024];
-	while ((n = read(fd, buf, sizeof(buf))) > 0);
+	(void)recv(fd, buf, sizeof buf, 0);
 }
 
 static void reactor_wake_up(ax_reactor *r)
@@ -89,11 +71,7 @@ static void reactor_wake_up(ax_reactor *r)
 	assert(r != NULL);
 
 	char octet = 0;
-	int  n = 0;
-
-	n = write(r->pipe[1], &octet, sizeof(octet));
-	ax_unused(n);
-	assert(n > 0);
+	send(r->pipe[1], &octet, sizeof(octet), 0);
 }
 
 void ax_reactor_exit(ax_reactor *r)
@@ -130,7 +108,7 @@ int ax_reactor_init(ax_reactor *r)
 	/* If the lock is null, locking functions will be no-ops */
 	ax_mutex_init(&r->lock);
 	r->out = 0;
-	if (ax_util_create_pipe(r->pipe) == -1) {
+	if (ax_util_socketpair(AF_UNIX, SOCK_STREAM, 0, r->pipe) == -1) {
 		ax_perror("failed to create informing pipe.");
 		exit(1);
 	}
@@ -142,11 +120,6 @@ int ax_reactor_init(ax_reactor *r)
 
 	ax_event_set(&r->pe, r->pipe[0], E_READ, reactor_waked_up, NULL);
 	ax_reactor_add(r, &r->pe);
-
-	if (reacotr_signal_init(r) == -1) {
-		ax_perror("failed to initialize signal handling.");
-		ax_reactor_destroy(r);
-	}
 
 	if (reactor_timer_init(r) == -1) {
 		ax_perror("failed to initialize signal handling.");
@@ -216,7 +189,6 @@ void ax_reactor_destroy(ax_reactor *r)
 	if (r->psi) {
 		ax_util_close_fd(r->sig_pipe[0]);
 		ax_util_close_fd(r->sig_pipe[1]);
-		signal_internal_restore_all(r);
 		free(r->psi);
 		free(r->sig_pe);
 		r->psi = NULL;
@@ -236,35 +208,6 @@ void ax_reactor_destroy(ax_reactor *r)
 	ax_mutex_destroy(&r->lock);
 
 	free(r->eht);
-}
-
-static int reacotr_signal_init(ax_reactor *r)
-{
-	if ((r->psi = signal_internal_init(r)) == NULL) {
-		ax_perror("failed on signal_internal_init");
-		exit(1);
-	}
-
-	if (ax_util_create_pipe(r->sig_pipe) == -1) {
-		ax_perror("failed to create signal informing pipe.");
-		exit(1);
-	}
-
-	/* set the pipe to nonblocking mode */
-	if (ax_util_set_nonblocking(r->sig_pipe[0]) < 0 || ax_util_set_nonblocking(r->sig_pipe[1]) < 0) {
-		ax_perror("failed to set the pipe to nonblocking mode.");
-		exit(1);
-	}
-
-	if ((r->sig_pe = malloc(sizeof(ax_event))) == NULL) {
-		ax_perror("failed to create event for signal events handling");
-		exit(1);
-	}
-	ax_event_set(r->sig_pe, r->sig_pipe[0], E_READ, reactor_signal_callback, r);
-
-	ax_reactor_add(r, r->sig_pe);
-
-	return (0);
 }
 
 static int reactor_timer_init(ax_reactor *r)
@@ -288,13 +231,8 @@ int ax_reactor_add(ax_reactor *r, ax_event *e)
 			ax_mutex_unlock(&r->lock);
 			ax_perror("Inlivad flags[%d], E_SIGNAL and E_TIMEOUT are mutually exclusive.", e->ev_flags);
 			return (-1);
-		}else if (e->ev_flags & E_SIGNAL) {
-			if (signal_internal_register(r, (int)e->fd, e) == -1) {
-				ax_mutex_lock(&r->lock);
-				ax_perror("failed to register event for signal[%d]", (int)e->fd);
-				return (-1);
-			}
-		}else{//E_TIMEOUT
+		}
+		else if (e->ev_flags & E_TIMEOUT) {
 			int size = r->pti->size;
 			ax_unused(size);
 			assert(e->timerheap_idx == E_OUT_OF_TIMERHEAP);
@@ -399,13 +337,8 @@ int ax_reactor_remove(ax_reactor *r, ax_event *e)
 			ax_mutex_unlock(&r->lock);
 			ax_perror("Inlivad flags[%d], E_SIGNAL and E_TIMEOUT are mutually exclusive.", e->ev_flags);
 			return (-1);
-		}else if (e->ev_flags & E_SIGNAL) {
-			if (signal_internal_unregister(r, (int)e->fd) == -1) {
-				ax_mutex_unlock(&r->lock);
-				ax_perror("failed to unregister event for signal[%d]", (int)e->fd);
-				return (-1);
-			}
-		}else{//E_TIMEOUT
+		}
+		else if (e->ev_flags & E_TIMEOUT) {
 			if (e->timerheap_idx != E_OUT_OF_TIMERHEAP && timerheap_remove_event(r, e) == -1) {
 				ax_mutex_unlock(&r->lock);
 				ax_perror("failed to unregister time event");

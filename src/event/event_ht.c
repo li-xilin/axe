@@ -197,7 +197,7 @@ ax_event * event_ht_iterate(ax_event_ht * ht, unsigned key){
 	h = event_ht_hash(key) % ht->len;
 	ax_link_foreach(p, &ht->table[h]){
 		ax_event * entry = ax_link_entry(p, ax_event, hash_link);
-		printf("key:%d, fd:%d\n", key, entry->fd);
+		printf("key:%d, fd:%lld\n", key, (long long int)entry->fd);
 	}
 	return NULL;
 }
