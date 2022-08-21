@@ -1,8 +1,11 @@
 #include "ax/event/util.h"
 #include "ax/log.h"
 #include "ax/mem.h"
+#include "ax/detect.h"
 
 #ifdef AX_OS_WIN32
+#include <ws2tcpip.h>
+#include <winsock.h>
 #include <windows.h>
 #else
 #include <unistd.h>
@@ -39,48 +42,6 @@ int ax_util_close_fd(ax_socket fd) {
 #endif
 }
 
-/*
-int ax_util_pipe_read(ax_socket fd, void *buf, size_t size, size_t *real)
-{
-#ifdef AX_OS_WIN32
-	DWORD dwRealRead;
-	if (!ReadFile((HANDLE)fd, buf, size, &dwRealRead, NULL))
-		return -1;
-	*real = dwRealRead;
-#else
-	
-#endif
-	return 0;
-}
-
-int ax_util_pipe_write(ax_socket fd, void *data, size_t size, size_t *real)
-{
-#ifdef AX_OS_WIN32
-	DWORD dwRealWriten;
-	if (!WriteFile((HANDLE)fd, data, size, &dwRealWriten, NULL))
-		return -1;
-	*real = dwRealWriten;
-#else
-#endif
-	return 0;
-}
-*/
-
-int ax_util_timeofday(struct timeval * tv)
-{
-#ifdef AX_OS_WIN32
-	union {
-		long long ns100;
-		FILETIME ft;
-	} now;
-	GetSystemTimeAsFileTime (&now.ft);
-	tv->tv_usec = (long) ((now.ns100 / 10LL) % 1000000LL);
-	tv->tv_sec = (long) ((now.ns100 - 116444736000000000LL) / 10000000LL);
-	return (0);
-#else
-	return gettimeofday(tv, NULL);
-#endif
-}
 
 int ax_util_set_nonblocking(ax_socket fd)
 {
@@ -109,10 +70,7 @@ int ax_util_set_nonblocking(ax_socket fd)
 #endif
 }
 
-
-
-
-#ifdef _WIN32
+#ifdef AX_OS_WIN32
 
 static int socketpair_ersatz(int family, int type, int protocol, ax_socket fd[2])
 {
@@ -208,14 +166,6 @@ static int create_tmpfile(char tmpfile[MAX_PATH])
 	char long_path[MAX_PATH] = {0};
 	char prefix[4] = "axe";
 
-	/*
-	const char *base32set = "abcdefghijklmnopqrstuvwxyz012345";
-	prefix[0] = base32set[rand() % 32];
-	prefix[1] = base32set[rand() % 32];
-	prefix[2] = base32set[rand() % 32];
-	prefix[3] = '\0';
-	*/
-
 	GetTempPathA(MAX_PATH, short_path);
 	GetLongPathNameA(short_path, long_path, MAX_PATH);
 	if (!GetTempFileNameA(long_path, prefix, 0, tmpfile)) {
@@ -226,7 +176,7 @@ static int create_tmpfile(char tmpfile[MAX_PATH])
 }
 
 /* Test whether Unix domain socket works.
- * Return 1 if it works, otherwise 0 		*/
+ * Return 1 if it works, otherwise 0 */
 static int check_working_afunix()
 {
 	/* Windows 10 began to support Unix domain socket. Let's just try
@@ -365,10 +315,10 @@ static int socketpair_win32(int family, int type, int protocol, ax_socket fd[2])
 
 int ax_util_socketpair(int family, int type, int protocol, ax_socket fd[2])
 {
-#ifndef _WIN32
-	return socketpair(family, type, protocol, fd);
-#else
+#ifdef AX_OS_WIN32
 	return socketpair_win32(family, type, protocol, fd);
+#else
+	return socketpair(family, type, protocol, fd);
 #endif
 }
 

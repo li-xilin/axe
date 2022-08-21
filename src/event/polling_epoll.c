@@ -1,10 +1,12 @@
 #include "event_ht.h"
+#include "reactor_type.h"
 #include "ax/event/reactor.h"
 #include "ax/event/util.h"
+#include "ax/event/timeval.h"
 #include "ax/log.h"
 
-#include <sys/errno.h>
 #include <sys/epoll.h>
+#include <errno.h>
 #include <unistd.h>
 #include <assert.h>
 #include <memory.h>
@@ -103,16 +105,16 @@ void polling_destroy(ax_reactor * r) {
 static inline int epoll_setup_mask(short flags)
 {
 	int ret = 0;
-	if(flags & E_READ) {
+	if(flags & AX_EV_READ) {
 		ret |= EPOLLIN | EPOLLPRI;
 	}
-	if(flags & E_WRITE) {
+	if(flags & AX_EV_WRITE) {
 		ret |= EPOLLOUT;
 	}
-	if(flags & E_EDGE) {
+	if(flags & AX_EV_EDGE) {
 		ret |= EPOLLET;
 	}
-	if(flags & E_ONCE) {
+	if(flags & AX_EV_ONCE) {
 		ret |= EPOLLONESHOT;
 	}
 	return ret;
@@ -223,7 +225,6 @@ void polling_del(ax_reactor * r, ax_socket fd, short flags)
 {
 	struct epoll_internal * pei;
 	struct epoll_event e;
-	int ret;
 	assert(r != NULL);
 
 	pei = r->polling_data;
@@ -256,10 +257,10 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
 	for(i = 0; i < nreadys; ++i) {
 		res_flags = 0;
 		if(pei->events[i].events & (EPOLLIN | EPOLLPRI)) {
-			res_flags |= E_READ;
+			res_flags |= AX_EV_READ;
 		}
 		if(pei->events[i].events & EPOLLOUT) {
-			res_flags |= E_WRITE;
+			res_flags |= AX_EV_WRITE;
 		}
 		if(pei->events[i].events & EPOLLERR) {
 			ax_perror("got a EPOLLERR event: %s", strerror(errno));

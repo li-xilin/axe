@@ -23,14 +23,14 @@
 #define last_error() (int)errno
 #endif
 
-ax_reactor g_reactor;
+ax_reactor *g_reactor;
 
 void read_cb(ax_socket fd, short fl, void *arg)
 {
 	char buf[1024];
 	int len = recv(fd, buf, sizeof buf - 1, 0);
 	if (len == 0) {
-		ax_reactor_remove(&g_reactor, arg);
+		ax_reactor_remove(g_reactor, arg);
 		ax_util_close_fd(fd);
 		printf("client lost: %" PRIu64 "\n", (uint64_t)fd);
 	} else {
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
 #endif
 	uint16_t port = atoi(argv[1]);;
 
-	ax_reactor_init(&g_reactor);
+	g_reactor = ax_reactor_create();
 
 	int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (fd == -1) {
@@ -95,10 +95,12 @@ int main(int argc, char *argv[]) {
 	printf("listen to %hu\n", port);
 
 	ax_event read_ev;
-	ax_event_set(&read_ev, fd, AX_EV_READ, listen_cb, &g_reactor);
-	ax_reactor_add(&g_reactor, &read_ev);
+	ax_event_set(&read_ev, fd, AX_EV_READ, listen_cb, g_reactor);
+	ax_reactor_add(g_reactor, &read_ev);
 
-	ax_reactor_loop(&g_reactor, NULL, 0);
+	ax_reactor_loop(g_reactor, NULL, 0);
+
+	ax_reactor_destroy(g_reactor);
 
 	return 0;
 }

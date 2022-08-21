@@ -1,15 +1,16 @@
+#include "timer.h"
+#include "reactor_type.h"
+#include "ax/event/reactor.h"
+#include "ax/event/event.h"
+#include "ax/event/util.h"
+#include "ax/event/timeval.h"
+#include "ax/log.h"
+
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <memory.h>
 #include <assert.h>
-
-#include "timer.h"
-#include "ax/event/reactor.h"
-#include "ax/event/event.h"
-#include "ax/event/util.h"
-
-#include "ax/log.h"
 
 struct heap_entry
 {
@@ -82,8 +83,8 @@ static void init_heap_entry(struct heap_entry *phe, ax_event *e)
 	assert(phe != NULL);
 	assert(e != NULL);
 
-	ax_util_timeofday(&phe->expiration);
-	timer_add(phe->expiration, e->fd);
+	ax_timeval_timeofday(&phe->expiration);
+	ax_timeval_add_millise(phe->expiration, e->fd);
 	phe->e = e;
 }
 
@@ -106,8 +107,8 @@ int timerheap_top_expired(ax_reactor *r)
 		return (0);
 	}
 
-	ax_util_timeofday(&cur);
-	return timer_se(r->pti->heap[1].expiration, cur);
+	ax_timeval_timeofday(&cur);
+	return ax_timeval_le(r->pti->heap[1].expiration, cur);
 }
 
 struct timeval *timerheap_top_timeout(ax_reactor *r, struct timeval *timeout)
@@ -120,9 +121,9 @@ struct timeval *timerheap_top_timeout(ax_reactor *r, struct timeval *timeout)
 		return NULL;
 	}
 	*timeout = r->pti->heap[1].expiration;
-	ax_util_timeofday(&cur);
-	ax_util_timesub(timeout, &cur, timeout);
-	if (timer_to_ms(*timeout) < 0) {
+	ax_timeval_timeofday(&cur);
+	ax_timeval_sub(timeout, &cur, timeout);
+	if (ax_timeval_to_millise(*timeout) < 0) {
 		timeout->tv_sec = timeout->tv_usec = 0;	
 	}
 	return timeout;
@@ -176,7 +177,7 @@ static void timerheap_heapify_bottomup(struct timerheap_st *pti, int idx)
 
 	parent = idx >> 1;
 
-	while(parent && timer_ge(heap[parent].expiration, he.expiration)) {
+	while(parent && ax_timeval_ge(heap[parent].expiration, he.expiration)) {
 		heap[idx] = heap[parent];
 		heap[idx].e->timerheap_idx = idx;
 		idx = parent;
@@ -213,10 +214,10 @@ static void timerheap_heapify_topdown(struct timerheap_st *pti, int idx)
 		child = i << 1;
 
 		if (child + 1 <= size &&
-			 timer_g(heap[child].expiration, heap[child + 1].expiration))
+			 ax_timeval_g(heap[child].expiration, heap[child + 1].expiration))
 			++child;
 
-		if (timer_g(heap[child].expiration, he.expiration))
+		if (ax_timeval_g(heap[child].expiration, he.expiration))
 			break;
 		
 		heap[i] = heap[child];
@@ -280,11 +281,6 @@ void timerheap_remove_event(ax_reactor *r, ax_event *e)
 	e->timerheap_idx = E_OUT_OF_TIMERHEAP;
 }
 
-/*
-* Free up resources used by the timerhea.
-* Return: 0 on success, -1 on failure.
-* @pti: The related timerheap_st structure.
-*/
 static int timerheap_free(struct timerheap_st *pti)
 {
 	assert(pti);

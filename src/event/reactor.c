@@ -1,14 +1,12 @@
 #include "polling.h"
 #include "event_ht.h"
 #include "timer.h"
-
-#ifndef AX_OS_WIN32
-#include "signal.h"
-#endif
+#include "reactor_type.h"
 
 #include "ax/event/reactor.h"
 #include "ax/event/event.h"
 #include "ax/event/util.h"
+#include "ax/event/timeval.h"
 
 #include "ax/log.h"
 #include "ax/link.h"
@@ -27,7 +25,6 @@
 
 static ax_event *reactor_dequeue_event(ax_reactor *r);
 
-
 static void reactor_handle_timer(ax_reactor *r)
 {
 	while (timerheap_top_expired(r)) {
@@ -42,7 +39,7 @@ static void reactor_handle_timer(ax_reactor *r)
 		}
 
 		ax_mutex_unlock(&r->lock);
-		e->callback(e->fd, e->res_flags, e->callback_arg);
+		e->cb(e->fd, e->res_flags, e->arg);
 		ax_mutex_lock(&r->lock);
 	}
 }
@@ -69,9 +66,11 @@ void ax_reactor_exit(ax_reactor *r)
 	ax_mutex_unlock(&r->lock);
 }
 
-int ax_reactor_init(ax_reactor *r)
+ax_reactor *ax_reactor_create()
 {
-	assert(r);
+	ax_reactor *r = malloc(sizeof *r);
+	if (!r)
+		goto fail;
 
 	memset(r, 0, sizeof(ax_reactor));
 
@@ -109,31 +108,32 @@ int ax_reactor_init(ax_reactor *r)
 		goto fail;
 	}
 
-	return 0;
+	return r;
 fail:
-	ax_mutex_destroy(&r->lock);
+	if (r) {
+		ax_mutex_destroy(&r->lock);
 
-	if (r->eht) {
-		event_ht_free(r->eht);
-		free(r->eht);
+		if (r->eht) {
+			event_ht_free(r->eht);
+			free(r->eht);
+		}
+
+		if (r->polling_data)
+			polling_destroy(r);
+
+		if (r->io_pipe[0]) {
+			ax_util_close_fd(r->io_pipe[0]);
+			ax_util_close_fd(r->io_pipe[1]);
+		}
+
+		if (r->pti) {
+			timerheap_destroy(r);
+			free(r->pti);
+			r->pti = NULL;
+		}
 	}
 
-	if (r->polling_data) {
-		polling_destroy(r);
-	}
-
-	if (r->io_pipe[0]) {
-		ax_util_close_fd(r->io_pipe[0]);
-		ax_util_close_fd(r->io_pipe[1]);
-	}
-
-	if (r->pti) {
-		timerheap_destroy(r);
-		free(r->pti);
-		r->pti = NULL;
-	}
-
-	return -1;
+	return NULL;
 }
 
 static void reactor_free_events(ax_reactor *r)
@@ -145,7 +145,7 @@ static void reactor_free_events(ax_reactor *r)
 		ax_link_del(&e->event_link);
 		event_ht_delete(r->eht, e);
 		ax_link_del(&e->pending_link);
-		e->rc = NULL;
+		e->reactor = NULL;
 	}
 }
 
@@ -166,6 +166,9 @@ void ax_reactor_clear(ax_reactor *r)
 
 void ax_reactor_destroy(ax_reactor *r)
 {
+	if (!r)
+		return;
+
 	ax_mutex_lock(&r->lock);
 	reactor_free_events(r);
 
@@ -177,12 +180,12 @@ void ax_reactor_destroy(ax_reactor *r)
 	if (r->pti) {
 		timerheap_destroy(r);
 		free(r->pti);
-		r->pti = NULL;
 	}
 	ax_mutex_unlock(&r->lock);
 	ax_mutex_destroy(&r->lock);
-
 	free(r->eht);
+	free(r);
+	
 }
 
 int ax_reactor_add(ax_reactor *r, ax_event *e)
@@ -226,7 +229,7 @@ int ax_reactor_add(ax_reactor *r, ax_event *e)
 		event_ht_insert(r->eht, e, e->fd);
 	}
 
-	e->rc = r;
+	e->reactor = r;
 	e->ev_flags |= AX_EV_REACTING;
 
 	reactor_wake_up(r);
@@ -249,7 +252,7 @@ int ax_reactor_modify(ax_reactor *r, ax_event *e)
 		return -1;
 	}
 
-	e->rc = r;
+	e->reactor = r;
 	e->ev_flags |= AX_EV_REACTING;
 
 	reactor_wake_up(r);
@@ -287,7 +290,7 @@ int ax_reactor_remove(ax_reactor *r, ax_event *e)
 		ax_link_del(&e->pending_link);
 	}
 
-	e->rc = NULL;
+	e->reactor = NULL;
 	e->ev_flags &= ~AX_EV_REACTING;
 
 	reactor_wake_up(r);
@@ -337,24 +340,19 @@ bool ax_reactor_empty(ax_reactor *r)
 
 void ax_reactor_loop(ax_reactor *r, struct timeval *timeout, int flags)
 {
-	int nreadys;
-	struct timeval *pt, t;
-	ax_event *e;
-
 	assert(r != NULL);
+	struct timeval *pt, t;
 
 	while (!r->out) {
 		ax_mutex_lock(&r->lock);
-		//ax_perror("start polling with timeout [%d, %d]", timeout ? timeout->tv_sec : -1, timeout ? timeout->tv_usec : -1);
-
 		/*
-		 *On linux, the select syscall modifies timeout
-		 *to reflect the amount of time not slept.
-		 *We have to reset the timeout in order to be portable.
+		 * On linux, the select syscall modifies timeout
+		 * to reflect the amount of time not slept.
+		 * We have to reset the timeout in order to be portable.
 		 */
-		if (timeout == NULL) {
+		if (!timeout) {
 			pt = NULL;
-		}else{
+		} else {
 			t = *timeout;
 			pt = &t;
 		}
@@ -366,27 +364,23 @@ void ax_reactor_loop(ax_reactor *r, struct timeval *timeout, int flags)
 			 */
 			struct timeval t;
 			struct timeval *timerv = timerheap_top_timeout(r, &t);
-			if (timerv && (pt == NULL || (pt && timer_s(*timerv, *pt)))) {
+			if (timerv && (pt == NULL || (pt && ax_timeval_l(*timerv, *pt)))) {
 				t = *timerv;
 				pt = &t;
 			}
 		}
-		nreadys = polling_poll(r, pt);
-		//ax_perror("stopped polling, got %d readys", nreadys);
-		if (r->pti) {
-			/* handle timer events */
-			reactor_handle_timer(r);
-		}
+
+		int nreadys = polling_poll(r, pt);
+		reactor_handle_timer(r);
+
 		if (nreadys) {
 			//iterate through pending events and call corresponding callbacks
-			while (!r->out && (e = reactor_dequeue_pending(r))) {
-				if (e->callback && ax_event_in_use(e)) {
-					ax_mutex_unlock(&r->lock);
-
-					e->callback(e->fd, e->res_flags, e->callback_arg);
-
-					ax_mutex_lock(&r->lock);
-				}
+			ax_event *ev;
+			while (!r->out && (ev = reactor_dequeue_pending(r))) {
+				assert(ev->cb);
+				ax_mutex_unlock(&r->lock);
+				ev->cb(ev->fd, ev->res_flags, ev->arg);
+				ax_mutex_lock(&r->lock);
 			}
 			if (flags & REACTOR_ONCE) {
 				r->out = 1;

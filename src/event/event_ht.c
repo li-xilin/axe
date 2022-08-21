@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <assert.h>
 
 static const int event_ht_primes[] = {
 			53, 97, 193, 389, 769, 1543, 3079, 6151,
@@ -41,7 +42,7 @@ static int event_ht_expand(ax_event_ht * ht, int size){
 
 	if((new_table = malloc(new_len * sizeof(ax_link))) == NULL){
 		ax_perror("failed to malloc: %s", strerror(errno));
-		return (-1);
+		return -1;
 	}
 
 	for(i = 0; i < new_len; ++i){
@@ -73,7 +74,7 @@ static int event_ht_expand(ax_event_ht * ht, int size){
 	ht->len = new_len;
 	ht->load_limit = new_load_limit;
 
-	return (0);
+	return 0;
 }
 
 int event_ht_init(ax_event_ht * ht, double load_factor){
@@ -89,56 +90,41 @@ int event_ht_init(ax_event_ht * ht, double load_factor){
 	ht->table = malloc(ht->len * sizeof(ax_link));
 	if(ht->table == NULL){
 		ax_perror("memory shortage.");
-		return (-1);
+		return -1;
 	}
 	for(i = 0; i < ht->len; ++i){
 		ax_link_init(&ht->table[i]);
 	}
-	return (0);
+	return 0;
 }
 
 int event_ht_insert(ax_event_ht * ht, ax_event * new, unsigned key){
-	unsigned h;
 
-	if(new->hash_link.prev || new->hash_link.next){
-		/*
-		* This event is already in the hash table.
-		* Assume every event only can be in one reactor.
-		*/
-		return (-1);
-	}
+	assert(!new->hash_link.prev && !new->hash_link.next);
 
 	/* expand the hash table if nessesary */
 	if(ht->n_entries >= ht->load_limit)
 		event_ht_expand(ht, ht->n_entries + 1);
 
 	
-	h = event_ht_hash(key) % ht->len;
+	unsigned h = event_ht_hash(key) % ht->len;
 	ax_link_add_back(&new->hash_link, &ht->table[h]);
 	++(ht->n_entries);
-	return (0);
+	return 0;
 }
 
 int event_ht_insert_replace(ax_event_ht * ht, ax_event * new, unsigned key){
-	unsigned h;
-
-	if(new->hash_link.prev || new->hash_link.next){
-		/*
-		* This event is not in the hash table.
-		* Assume every event only can be in one reactor.
-		*/
-		return (0);
-	}
+	assert(!new->hash_link.prev && !new->hash_link.next);
 
 	/* expand the hash table if nessesary */
 	if(ht->n_entries >= ht->load_limit)
 		event_ht_expand(ht, ht->n_entries + 1);
 
 	/* rehash the key */
-	h = event_ht_hash(key) % ht->len;
+	unsigned h = event_ht_hash(key) % ht->len;
 	ax_link_add_back(&new->hash_link, &ht->table[h]);
 	++(ht->n_entries);
-	return (0);
+	return 0;
 }
 
 void event_ht_delete_by_key(ax_event_ht * ht, unsigned key){
@@ -159,16 +145,12 @@ void event_ht_delete_by_key(ax_event_ht * ht, unsigned key){
 int event_ht_delete(ax_event_ht * ht, ax_event * e){
 
 	if(e->hash_link.prev == NULL || e->hash_link.next == NULL){
-		/*
-		* This event is not in the hash table.
-		* Assume every event only can be in one reactor.
-		*/
-		return (-1);
+		return -1;
 	}
 
 	ax_link_del(&e->hash_link);
 	--(ht->n_entries);
-	return (0);
+	return 0;
 }
 
 ax_event * event_ht_retrieve(ax_event_ht * ht, unsigned key){

@@ -11,46 +11,9 @@
 typedef struct ax_reactor_st ax_reactor;
 #endif
 
-struct ax_event_ht_st;
-
-/* exits after having processed at least one active event */
-#define REACTOR_ONCE 0x01
-
-struct timerheap_st;
-
-struct ax_reactor_st {
-	/* events registered */
-	ax_link event_list;
-	/* active events waiting for being processed */
-	ax_link pending_list;
-	
-	/* policy specified data, usually the back pointer of the reactor. */
-	void *polling_data;
-
-	/* event hash table */
-	struct ax_event_ht_st *eht;
-
-	/* 
-	 *Lock to avoid race conditions.
-	 *if null we assume this reactor is in single-threaded environment.
-	 */
-	ax_mutex lock;
-
-	ax_socket io_pipe[2];
-	ax_event io_event;
-
-	struct timerheap_st *pti;
-	/* Unnamed pipe used to tell the reactor that a timer has expired. */
-	ax_socket timer_pipe[2];
-	ax_event *timer_event;
-
-	/* Indicates whether we should stop polling. */
-	int out;
-};
+ax_reactor *ax_reactor_create();
 
 void ax_reactor_exit(ax_reactor *r);
-
-int ax_reactor_init(ax_reactor *r);
 
 void ax_reactor_destroy(ax_reactor *r);
 

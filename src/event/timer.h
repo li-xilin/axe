@@ -14,14 +14,7 @@ typedef struct ax_reactor_st ax_reactor;
 typedef struct ax_event_st ax_event;
 #endif
 
-struct heap_entry; //TODO namespace
-
-/*
-struct heap_entry {
-	struct timeval expiration;
-	ax_event * e;
-};
-*/
+struct heap_entry;
 
 struct timerheap_st {
 	/* The number of entries in the heap */
@@ -31,63 +24,6 @@ struct timerheap_st {
 	/* The heap_entry array */
 	struct heap_entry * heap;
 };
-
-/*
-* Add v milliseconds to the timeval t
-*/
-#define timer_add(t, v)do{				\
-	(t).tv_sec += (v) / 1000;			\
-	(t).tv_usec += ((v) % 1000) * 1000;	\
-	if((t).tv_usec > 1000000){			\
-		(t).tv_usec -= 1000000;			\
-		(t).tv_sec++;					\
-	}									\
-}while(0);
-
-/*
-* Substract v milliseconds from the timeval t
-*/
-#define timer_sub(t, v)do{				\
-	(t).tv_sec -= (v) / 1000;			\
-	(t).tv_usec -= ((v) % 1000) * 1000;	\
-	if((t).tv_usec < 0){				\
-		(t).tv_usec += 1000000;			\
-		(t).tv_sec--;					\
-	}									\
-}while(0);
-
-/*
-* Convert the time in millisecond to timerval.
-*/
-#define timer_to_tv(tv, tm)do{			\
-	(tv).tv_sec = (tm) / 1000;			\
-	(tv).tv_usec = ((tm) % 1000) * 1000;	\
-}while(0);								
-/*
-* Convert the timerval to time in millisecond.
-*/
-#define timer_to_ms(t) ((t).tv_sec * 1000 + (t).tv_usec / 1000)
-
-/*
-* Tests whether @t1 is greater or equal to @t2.
-*/
-#define timer_ge(t1, t2) ((t1).tv_sec > (t2).tv_sec || ((t1).tv_sec == (t2).tv_sec && (t1).tv_usec >= (t2).tv_usec))
-
-/*
-* Tests whether @t1 is smaller or equal to @t2.
-*/
-#define timer_se(t1, t2) ((t1).tv_sec < (t2).tv_sec || ((t1).tv_sec == (t2).tv_sec && (t1).tv_usec <= (t2).tv_usec))
-
-/*
-* Tests whether @t1 is greater to @t2.
-*/
-#define timer_g(t1, t2) ((t1).tv_sec > (t2).tv_sec || ((t1).tv_sec == (t2).tv_sec && (t1).tv_usec > (t2).tv_usec))
-
-/*
-* Tests whether @t1 is smaller to @t2.
-*/
-#define timer_s(t1, t2)  ((t1).tv_sec < (t2).tv_sec || ((t1).tv_sec == (t2).tv_sec && (t1).tv_usec < (t2).tv_usec))
-
 
 #define TIMERHEAP_INIT_SIZE 32
 

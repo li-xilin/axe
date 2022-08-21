@@ -1,13 +1,14 @@
+#include "polling.h"
+#include "reactor_type.h"
+#include "event_ht.h"
+#include "ax/log.h"
+#include "ax/event/timeval.h"
+
 #include <sys/errno.h>
 #include <poll.h>
 #include <assert.h>
 #include <memory.h>
 #include <stdlib.h>
-
-#include "polling.h"
-#include "event_ht.h"
-#include "ax/log.h"
-
 #include <stdio.h>
 
 #define POLL_INIT_EVENT_SIZE 32
@@ -105,10 +106,10 @@ void polling_destroy(ax_reactor *r)
 static inline int poll_setup_mask(short flags)
 {
 	int ret = 0;
-	if(flags & E_READ) {
+	if(flags & AX_EV_READ) {
 		ret |= POLLIN | POLLPRI;
 	}
-	if(flags & E_WRITE) {
+	if(flags & AX_EV_WRITE) {
 		ret |= POLLOUT;
 	}
 	return ret;
@@ -232,10 +233,10 @@ int polling_poll(ax_reactor *r, struct timeval * timeout)
 		for(i = 0; i < ppi->n_events; ++i) {
 			res_flags = 0;
 			if(ppi->fds[i].revents & (POLLIN | POLLPRI)) {
-				res_flags |= E_READ;
+				res_flags |= AX_EV_READ;
 			}
 			if(ppi->fds[i].revents & POLLOUT) {
-				res_flags |= E_WRITE;
+				res_flags |= AX_EV_WRITE;
 			}
 			if(ppi->fds[i].revents & POLLNVAL) {
 				ax_perror("[fd %d] is invalid!", ppi->fds[i].fd);
