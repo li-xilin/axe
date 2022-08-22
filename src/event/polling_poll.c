@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "polling.h"
+#include "event_ht.h"
 #include "ax/log.h"
 
 #include <stdio.h>
@@ -281,7 +282,7 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
 			}
 
 			if(res_flags) {
-				e = event_ht_retrieve(&r->eht, ppi->fds[i].fd);
+				e = event_ht_retrieve(r->eht, ppi->fds[i].fd);
 
 				assert(e != NULL);
 				if(e == NULL) {
@@ -309,7 +310,7 @@ void polling_print(ax_reactor * r)
 	printf("fds:%p\n", (void *)ppi->fds);
 	printf("fds_in:%p\n", (void *)ppi->fds_in);
 	for(i = 0; i < ppi->n_events; ++i) {
-		printf("[fd %d]: ", ppi->fds[i].fd);
+		printf("[fd %d]: ", (int)ppi->fds[i].fd);
 		if(ppi->fds[i].revents & (POLLIN | POLLPRI)) {
 			printf("set for reading ");
 		}

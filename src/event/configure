@@ -125,6 +125,6 @@ else
     echo "no"
 fi
 
-rm -rf $CARROT_TEST_FILE
+rm -rf "$CARROT_TEST_FILE" "${CARROT_TEST_FILE%.c}.o"
 
 echo "#endif" >> $CONFIG_HEADER

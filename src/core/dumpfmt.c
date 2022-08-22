@@ -88,7 +88,8 @@ static int wstring(const wchar_t *value, size_t length, ax_dump_out_cb_f *out_cb
 	if ((ret = out_cb(buf, ret, ctx)))
 		return ret;
 	{
-		mbstate_t mbs = { 0 };
+		mbstate_t mbs;
+		memset(&mbs, 0, sizeof mbs);
 		const wchar_t *p = (void *)value;
 		size_t conv = 0;
 		buf[sizeof(buf) - 1] = '\0';

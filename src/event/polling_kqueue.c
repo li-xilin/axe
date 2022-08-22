@@ -1,13 +1,15 @@
 #include "polling.h"
+#include "event_ht.h"
+#include "ax/event/reactor.h"
 #include "ax/log.h"
 
-#include <sys/errno.h>
+#include <sys/types.h>
 #include <sys/event.h>
 #include <unistd.h>
 #include <assert.h>
 #include <memory.h>
 #include <stdlib.h>
-
+#include <errno.h>
 
 #define KQUEUE_INIT_EVENT_SIZE 32
 
@@ -254,7 +256,7 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
         t.tv_sec = timeout->tv_sec;
         t.tv_nsec = timeout->tv_usec * 1000;
     }
-    ax_mutex_unlock(r->lock);
+    ax_mutex_unlock(&r->lock);
     nreadys = kevent(pki->kqueue_fd, NULL, 0,
                      pki->events, pki->nevents,
                      timeout ? &t : NULL);
@@ -272,13 +274,13 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
             ax_perror("kevent's EV_ERROR flag is set: %s", strerror(errno));
         }
         if(res_flags) {
-            e = event_ht_retrieve(&r->eht, pki->events[i].ident);
+            e = event_ht_retrieve(r->eht, pki->events[i].ident);
                 
             assert(e != NULL);
             if(e == NULL) {
                 ax_perror("the event with [fd %d] is not in the hashtable", pki->events[i].ident);
             }else{
-                reactor_add_to_pending(r, e, res_flags);
+                ax_reactor_add_to_pending(r, e, res_flags);
             }
         }
     }

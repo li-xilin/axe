@@ -21,7 +21,9 @@
 ROOT = ../..
 include $(ROOT)/src/config.mak
 
-CFLAGS += -D_XOPEN_SOURCE=500
+ifneq ($(SYSTEM),Windows)
+CFLAGS += -D_XOPEN_SOURCE=600
+endif
 
 TARGET = $(LIB)/libaxevent.a
 

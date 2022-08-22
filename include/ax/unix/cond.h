@@ -4,6 +4,7 @@
 #include "mutex.h"
 #include <pthread.h>
 #include <stdint.h>
+#include <time.h>
 #include <assert.h>
 #include <errno.h>
 

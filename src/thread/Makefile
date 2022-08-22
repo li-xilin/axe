@@ -21,7 +21,7 @@
 ROOT = ../..
 include $(ROOT)/src/config.mak
 
-CFLAGS += -D_XOPEN_SOURCE=500
+CFLAGS += -D_XOPEN_SOURCE=600
 
 TARGET = $(LIB)/libaxthread.a
 

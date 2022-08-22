@@ -25,12 +25,14 @@ BIN = $(ROOT)/bin
 AR = ar
 RM = rm -f
 CC = gcc
-CFLAGS = -Wall --pedantic -Werror -std=c99 -I$(ROOT)/src/include -I$(INCLUDE)
+CFLAGS = -Wall --pedantic -Werror -std=c99 -I$(ROOT)/src/include -I$(INCLUDE) -fno-strict-aliasing
+# Needed for AIX
+CFLAGS += -Wno-unused-value
 DBGFLAGS = -g -O0
 RLSFLAGS = -O2 -DNDEBUG
 
 ifeq ($(OS),Windows_NT)
-    SYSTEM = Win32
+    SYSTEM = Windows
 else
     SYSTEM = $(shell uname -s)
 endif
