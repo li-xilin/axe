@@ -26,17 +26,17 @@ static int epoll_resize(struct epoll_internal * pei, int size)
 	assert(pei != NULL);
 	if(pei == NULL) {
 		ax_perror("pei is null!!");
-		return (-1);
+		return -1;
 	}
 
 	if((pee = realloc(pei->events, size * sizeof(struct epoll_event))) == NULL) {
 		ax_perror("failed to realloc for events, maybe run out of memory.");
-		return (-1);
+		return -1;
 	}
 
 	pei->events = pee;
 	pei->max_events = size;
-	return (0);
+	return 0;
 }
 
 void * polling_init(ax_reactor * r)
@@ -145,20 +145,20 @@ int polling_add(ax_reactor * r, ax_socket fd, short flags)
 	assert(r != NULL);
 	if(r == NULL) {
 		ax_perror("r is null!!");
-		return (-1);
+		return -1;
 	}
 
 	pei = r->polling_data;
 	if(pei == NULL) {
 		ax_perror("pei is null!!");
-		return (-1);
+		return -1;
 	}
 
 	if(pei->n_events >= pei->max_events) {
 		ax_perror("resize to %d", pei->max_events << 1);
 		if(epoll_resize(pei, pei->max_events << 1) == -1) {
 			ax_perror("failed on epoll_resize");
-			return (-1);
+			return -1;
 		}
 	}
 	e.data.fd = fd;
@@ -179,12 +179,12 @@ int polling_add(ax_reactor * r, ax_socket fd, short flags)
 		}else{
 			epoll_print_error(pei, fd);
 		}
-		return (-1);
+		return -1;
 	}
 	success:
 	//ax_perror("success on registering [fd %d] with this epoll instance", fd);
 	++pei->n_events;
-	return (0);
+	return 0;
 }
 
 int polling_mod(ax_reactor * r, ax_socket fd, short flags)
@@ -196,13 +196,13 @@ int polling_mod(ax_reactor * r, ax_socket fd, short flags)
 	assert(r != NULL);
 	if(r == NULL) {
 		ax_perror("r is null!!");
-		return (-1);
+		return -1;
 	}
 
 	pei = r->polling_data;
 	if(pei == NULL) {
 		ax_perror("pei is null!!");
-		return (-1);
+		return -1;
 	}
 
 	e.data.fd = fd;
@@ -213,42 +213,27 @@ int polling_mod(ax_reactor * r, ax_socket fd, short flags)
 	/* Error handling*/
 	if(ret) {
 		epoll_print_error(pei, fd);
-		return (-1);
+		return -1;
 	}
 
-	return (0);
+	return 0;
 }
 
-int polling_del(ax_reactor * r, ax_socket fd, short flags)
+void polling_del(ax_reactor * r, ax_socket fd, short flags)
 {
 	struct epoll_internal * pei;
 	struct epoll_event e;
 	int ret;
 	assert(r != NULL);
-	if(r == NULL) {
-		ax_perror("r is null!!");
-		return (-1);
-	}
 
 	pei = r->polling_data;
-	if(pei == NULL) {
-		ax_perror("pei is null!!");
-		return (-1);
-	}
 
 	e.data.fd = fd;
 	e.events = epoll_setup_mask(flags);
 	
-	ret = epoll_ctl(pei->epoll_fd, EPOLL_CTL_DEL, fd, &e);
+	(void)epoll_ctl(pei->epoll_fd, EPOLL_CTL_DEL, fd, &e);
 
-	if(ret) {
-		epoll_print_error(pei, fd);
-		return (-1);
-	}
-
-	//ax_perror("success on unregistering [fd %d] with this epoll instance", fd);
 	--pei->n_events;
-	return (0);
 }
 
 int polling_poll(ax_reactor * r, struct timeval * timeout)

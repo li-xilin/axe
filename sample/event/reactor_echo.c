@@ -48,7 +48,7 @@ void listen_cb(ax_socket fd, short fl, void *arg)
 	printf("client found: %" PRIu64 ", %s:%hu\n", (uint64_t)cli_fd, inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
 
 	ax_event *ev = malloc(sizeof *ev);
-	ax_event_set(ev, cli_fd, E_READ, read_cb, ev);
+	ax_event_set(ev, cli_fd, AX_EV_READ, read_cb, ev);
 
 	ax_reactor_add(arg, ev);
 }
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
 	printf("listen to %hu\n", port);
 
 	ax_event read_ev;
-	ax_event_set(&read_ev, fd, E_READ, listen_cb, &g_reactor);
+	ax_event_set(&read_ev, fd, AX_EV_READ, listen_cb, &g_reactor);
 	ax_reactor_add(&g_reactor, &read_ev);
 
 	ax_reactor_loop(&g_reactor, NULL, 0);

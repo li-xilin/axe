@@ -44,29 +44,25 @@ static int poll_resize(struct poll_internal * ppi, int size)
 	assert(ppi != NULL);
 	if(ppi == NULL) {
 		ax_perror("ppi is null!!");
-		return (-1);
+		return -1;
 	}
 
 	if((pfds = realloc(ppi->fds_in, size * sizeof(struct pollfd))) == NULL) {
 		ax_perror("failed to realloc for fds, maybe run out of memory.");
-		return (-1);
+		return -1;
 	}
 
 	ppi->fds_in = pfds;
 	ppi->max_events = size;
 	ppi->need_realoc = 1;
 	ppi->need_rememcp = 1;
-	return (0);
+	return 0;
 }
 
-void * polling_init(ax_reactor * r)
+void * polling_init(ax_reactor *r)
 {
 	struct poll_internal * ret;
 	assert(r != NULL);
-	if(r == NULL) {
-		ax_perror("r is null!!");
-		return NULL;
-	}
 
 	if((ret = malloc(sizeof(struct poll_internal))) == NULL) {
 		ax_perror("failed to malloc for poll_internal");
@@ -86,11 +82,7 @@ void * polling_init(ax_reactor * r)
 
 static void poll_free(struct poll_internal * ppi)
 {
-	assert(ppi != NULL);
-	if(ppi == NULL) {
-		ax_perror("ppi is null!!");
-		return;
-	}
+	assert(ppi);
 
 	if(ppi->fds) {
 		free(ppi->fds);
@@ -104,13 +96,9 @@ static void poll_free(struct poll_internal * ppi)
 	free(ppi);
 }
 
-void polling_destroy(ax_reactor * r)
+void polling_destroy(ax_reactor *r)
 {
 	assert(r != NULL);
-	if(r == NULL) {
-		ax_perror("r is null!!");
-		return;
-	}
 	poll_free(r->polling_data);
 }
 
@@ -126,34 +114,27 @@ static inline int poll_setup_mask(short flags)
 	return ret;
 }
 
-int polling_add(ax_reactor * r, ax_socket fd, short flags)
+int polling_add(ax_reactor *r, ax_socket fd, short flags)
 {
+	assert(r != NULL);
+
 	struct poll_internal * ppi;
 	int i;
-	assert(r != NULL);
-	if(r == NULL) {
-		ax_perror("r is null!!");
-		return (-1);
-	}
 
 	ppi = r->polling_data;
-	if(ppi == NULL) {
-		ax_perror("ppi is null!!");
-		return (-1);
-	}
 
 	for(i = 0; i < ppi->n_events; ++i) {
 		if(fd == ppi->fds_in[i].fd) {
 			/* Override the existing event */
 			ppi->fds_in[i].events = poll_setup_mask(flags);
-			return (0);
+			return 0;
 		}
 	}
 	if(ppi->n_events >= ppi->max_events) {
 		ax_perror("resize to %d", ppi->max_events << 1);
 		if(poll_resize(ppi, ppi->max_events << 1) == -1) {
 			ax_perror("failed on poll_resize");
-			return (-1);
+			return -1;
 		}
 	}
 	ppi->fds_in[i].fd = fd;
@@ -161,35 +142,35 @@ int polling_add(ax_reactor * r, ax_socket fd, short flags)
 	ppi->need_rememcp = 1;;
 	++ppi->n_events;
 
-	return (0);
+	return 0;
 }
 
-int polling_mod(ax_reactor * r, ax_socket fd, short flags)
+int polling_mod(ax_reactor *r, ax_socket fd, short flags)
 {
 	struct poll_internal * ppi;
 	int i;
 	assert(r != NULL);
 	if(r == NULL) {
 		ax_perror("r is null!!");
-		return (-1);
+		return -1;
 	}
 
 	ppi = r->polling_data;
 	if(ppi == NULL) {
 		ax_perror("ppi is null!!");
-		return (-1);
+		return -1;
 	}
 
 	for(i = 0; i < ppi->n_events; ++i) {
 		if(fd == ppi->fds_in[i].fd) {
 			/* Override the existing event */
 			ppi->fds_in[i].events = poll_setup_mask(flags);
-			return (0);
+			return 0;
 		}
 	}
 
 	ax_perror("fd[%d] is not in the poll fdset.", fd);
-	return (-1);
+	return -1;
 }
 
 static inline void poll_swap_pollfd(struct pollfd * lhs, struct pollfd * rhs)
@@ -200,51 +181,33 @@ static inline void poll_swap_pollfd(struct pollfd * lhs, struct pollfd * rhs)
 	*rhs = t;
 }
 
-int polling_del(ax_reactor * r, ax_socket fd, short flags)
+void polling_del(ax_reactor *r, ax_socket fd, short flags)
 {
-	struct poll_internal * ppi;
-	int i;
-
 	assert(r != NULL);
-	if(r == NULL) {
-		ax_perror("r is null!!");
-		return (-1);
-	}
-	ppi = r->polling_data;
 
-	assert(ppi != NULL);
-	if(ppi == NULL) {
-		ax_perror("policy internal data is needed but null provided.");
-		return (-1);
-	}
-	for(i = 0; i < ppi->n_events; ++i) {
+	struct poll_internal * ppi = r->polling_data;
+
+	for(int i = 0; i < ppi->n_events; ++i) {
 		if(ppi->fds_in[i].fd == fd) {
 			poll_swap_pollfd(&ppi->fds_in[i], &ppi->fds_in[ppi->n_events - 1]);
 			ppi->need_rememcp = 1;
-			--ppi->n_events;
-			return (0);
+			ppi->n_events --;
+			break;
 		}
 	}
-
-	ax_perror("the [fd %d] in not in the pollfds", fd);
-
-	return (-1);
 }
 
-int polling_poll(ax_reactor * r, struct timeval * timeout)
+int polling_poll(ax_reactor *r, struct timeval * timeout)
 {
-	int res_flags , nreadys;
+	assert(r);
+
+	int res_flags, nreadys;
 	struct poll_internal * ppi;
 	ax_event * e;
 	int i;
 
-	assert(r != NULL);
-
 	ppi = r->polling_data;
 
-	assert(ppi != NULL);
-
-		
 	if(ppi->need_realoc) {
 		if((ppi->fds = realloc(ppi->fds, ppi->max_events * sizeof(struct pollfd))) == NULL) {
 			ax_perror("failed to realloc for ppi->fds");
@@ -256,8 +219,8 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
 		memcpy(ppi->fds, ppi->fds_in, ppi->max_events * sizeof(struct pollfd));
 		ppi->need_rememcp = 0;
 	}
-		/* No need to realloc and rememcpy since we are in single-threaeded environment. */
-		/* ppi->fds = ppi->fds_in; */
+	/* No need to realloc and rememcpy since we are in single-threaeded environment. */
+	/* ppi->fds = ppi->fds_in; */
 
 	ax_mutex_unlock(&r->lock);
 	nreadys = poll(ppi->fds, 
@@ -283,23 +246,18 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
 
 			if(res_flags) {
 				e = event_ht_retrieve(r->eht, ppi->fds[i].fd);
-
 				assert(e != NULL);
-				if(e == NULL) {
-					ax_perror("the event with [fd %d] is not in the hashtable", ppi->fds[i].fd);
-				}else{
-					ax_reactor_add_to_pending(r, e, res_flags);
-				}
+				ax_reactor_add_to_pending(r, e, res_flags);
 			}
 		}
 	}
 	return nreadys;
 }
 
-void polling_print(ax_reactor * r)
+void polling_print(ax_reactor *r)
 {
 	int i;
-	struct poll_internal * ppi = r->polling_data;
+	struct poll_internal *ppi = r->polling_data;
 
 	assert(r != NULL);
 

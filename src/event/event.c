@@ -22,5 +22,5 @@ void ax_event_set(ax_event *e, ax_socket fd, short ev_flags, event_callback call
 bool ax_event_in_use(const ax_event *e){
 	assert(e != NULL);
 
-	return e->ev_flags & E_IN_REACTOR;
+	return e->ev_flags & AX_EV_REACTING;
 }

@@ -13,35 +13,32 @@
 
 #define KQUEUE_INIT_EVENT_SIZE 32
 
-struct kqueue_internal{
+struct kqueue_internal
+{
     int kqueue_fd;
     int nevents;
     int max_events;
-    struct kevent * events;
+    struct kevent *events;
 };
 
-static int kqueue_resize(struct kqueue_internal * pki, int size)
+static int kqueue_resize(struct kqueue_internal *pki, int size)
 {
-    struct kevent * pke;
+    struct kevent *pke;
     assert(pki != NULL);
-    if(pki == NULL) {
-        ax_perror("pki is null!!");
-        return (-1);
-    }
 
-    if((pke = realloc(pki->events, size * sizeof(struct kevent))) == NULL) {
+    if((pke = realloc(pki->events, size *sizeof(struct kevent))) == NULL) {
         ax_perror("failed to realloc for events, maybe run out of memory.");
-        return (-1);
+        return -1;
     }
 
     pki->events = pke;
     pki->max_events = size;
-    return (0);
+    return 0;
 }
 
-void * polling_init(ax_reactor * r)
+void *polling_init(ax_reactor *r)
 {
-    struct kqueue_internal * ret;
+    struct kqueue_internal *ret;
 
     assert(r);
     if(r == NULL) {
@@ -72,7 +69,7 @@ void * polling_init(ax_reactor * r)
     return ret;
 }
 
-static void kqueue_free(struct kqueue_internal * pki)
+static void kqueue_free(struct kqueue_internal *pki)
 {
     assert(pki != NULL);
     if(pki == NULL) {
@@ -91,7 +88,7 @@ static void kqueue_free(struct kqueue_internal * pki)
     free(pki);
 }
 
-void polling_destroy(ax_reactor * r)
+void polling_destroy(ax_reactor *r)
 {
     assert(r != NULL);
     if(r == NULL) {
@@ -113,9 +110,9 @@ static inline short kqueue_setup_filter(short flags)
     return ret;
 }
 
-int polling_add(ax_reactor * r, ax_socket fd, short flags)
+int polling_add(ax_reactor *r, ax_socket fd, short flags)
 {
-    struct kqueue_internal * pki;
+    struct kqueue_internal *pki;
     struct kevent e;
     int ret;
     uintptr_t ident;
@@ -125,23 +122,23 @@ int polling_add(ax_reactor * r, ax_socket fd, short flags)
     assert(r != NULL);
     if(r == NULL) {
         ax_perror("r is null!!");
-        return (-1);
+        return -1;
     } else if(flags & E_EDGE) {
         ax_perror("kqueue does not support edge-triggered mode.");
-        return (-1);
+        return -1;
     }
 
     pki = r->polling_data;
     if(pki == NULL) {
         ax_perror("pki is null!!");
-        return (-1);
+        return -1;
     }
 
     if(pki->nevents >= pki->max_events) {
         ax_perror("resize to %d", pki->max_events << 1);
         if(kqueue_resize(pki, pki->max_events << 1) == -1) {
             ax_perror("failed on kqueue_resize");
-            return (-1);
+            return -1;
         }
     }
     ident = fd;
@@ -155,16 +152,15 @@ int polling_add(ax_reactor * r, ax_socket fd, short flags)
     /* Error handling*/
     if(ret) {
         ax_perror("failed to add event to kqueue: %s", strerror(errno));
-        return (-1);
+        return -1;
     }
     //ax_perror("Registered fd %d for envets %d", fd, flags);
     ++pki->nevents;
-    return (0);
+    return 0;
 }
 
-int polling_mod(ax_reactor * r, ax_socket fd, short flags)
+int polling_mod(ax_reactor *r, ax_socket fd, short flags)
 {
-    struct kqueue_internal * pki;
     struct kevent e;
     int ret;
     uintptr_t ident;
@@ -172,19 +168,12 @@ int polling_mod(ax_reactor * r, ax_socket fd, short flags)
     ushort action;
 
     assert(r != NULL);
-    if(r == NULL) {
-        ax_perror("r is null!!");
-        return (-1);
-    } else if(flags & E_EDGE) {
+    if(flags & E_EDGE) {
         ax_perror("kqueue does not support edge-triggered mode.");
-        return (-1);
+        return -1;
     }
 
-    pki = r->polling_data;
-    if(pki == NULL) {
-        ax_perror("pki is null!!");
-        return (-1);
-    }
+    struct kqueue_internal *pki = r->polling_data;
 
     ident = fd;
     filter = kqueue_setup_filter(flags);
@@ -194,61 +183,39 @@ int polling_mod(ax_reactor * r, ax_socket fd, short flags)
 
     ret = kevent(pki->kqueue_fd, &e, 1, NULL, 0, NULL);
 
-    /* Error handling*/
     if(ret) {
         ax_perror("failed to modify the event: %s", strerror(errno));
-        return (-1);
+        return -1;
     }
-    return (0);
+    return 0;
 }
 
-int polling_del(ax_reactor * r, ax_socket fd, short flags)
+void polling_del(ax_reactor *r, ax_socket fd, short flags)
 {
-    struct kqueue_internal * pki;
-    struct kevent e;
-    int ret;
-    uintptr_t ident;
-    short filter;
-    ushort action;
-
     assert(r != NULL);
-    if(r == NULL) {
-        ax_perror("r is null!!");
-        return (-1);
-    }
 
-    pki = r->polling_data;
-    if(pki == NULL) {
-        ax_perror("pki is null!!");
-        return (-1);
-    }
+    struct kqueue_internal *pki = r->polling_data;
+    uintptr_t ident = fd;
+    short filter = kqueue_setup_filter(flags);
+    ushort action = EV_DELETE;
 
-    ident = fd;
-    filter = kqueue_setup_filter(flags);
-    action = EV_DELETE;
-    EV_SET(&e, ident, filter, action, 0, 0, NULL);
+    struct kevent kev;
+    EV_SET(&kev, ident, filter, action, 0, 0, NULL);
     
-    ret = kevent(pki->kqueue_fd, &e, 1, NULL, 0, NULL);
+    (void)kevent(pki->kqueue_fd, &kev, 1, NULL, 0, NULL);
 
-    if(ret) {
-        ax_perror("failed to delete event from kqueue: %s", strerror(errno));
-        return (-1);
-    }
-
-    --pki->nevents;
-    return (0);
+    pki->nevents --;
 }
 
-int polling_poll(ax_reactor * r, struct timeval * timeout)
+int polling_poll(ax_reactor *r, struct timeval *timeout)
 {
     int res_flags , nreadys, i;
-    struct kqueue_internal * pki;
-    ax_event * e;
+    ax_event *e;
     struct timespec t;
 
     assert(r != NULL);
 
-    pki = r->polling_data;
+    struct kqueue_internal *pki = r->polling_data;
     
     assert(pki != NULL);
 
@@ -261,7 +228,6 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
                      pki->events, pki->nevents,
                      timeout ? &t : NULL);
     ax_mutex_lock(&r->lock);
-    //ax_perror("kevent: %d events are ready", nreadys);
     for(i = 0; i < nreadys; ++i) {
         res_flags = 0;
         if(pki->events[i].filter == EVFILT_READ) {
@@ -288,7 +254,6 @@ int polling_poll(ax_reactor * r, struct timeval * timeout)
     return nreadys;
 }
 
-void polling_print(ax_reactor * r)
+void polling_print(ax_reactor *r)
 {
-    ax_perror("empty implementation of kqueue_print.");
 }

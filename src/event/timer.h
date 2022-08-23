@@ -23,7 +23,7 @@ struct heap_entry {
 };
 */
 
-struct timerheap_internal {
+struct timerheap_st {
 	/* The number of entries in the heap */
 	int size;
 	/* The capacity of the heap */
@@ -95,7 +95,7 @@ struct timerheap_internal {
 * Create and initialize a timerheap.
 * Return: a newly created timerheap_internal structure on success, NULL on failure.
 */
-struct timerheap_internal * timerheap_internal_init();
+struct timerheap_st * timerheap_init();
 
 /*
 * Tests whether the top entry is expired.
@@ -145,20 +145,20 @@ int timerheap_add_event(ax_reactor * r, ax_event * e);
 * @r: the reactor which handles the timer events.
 * @e: the timer event to remove.
 */
-int timerheap_remove_event(ax_reactor * r, ax_event * e);
+void timerheap_remove_event(ax_reactor * r, ax_event * e);
 
 /*
 * remove all timer events from the timerheap.
 * Return: 0 on success, -1 on failure.
 * @r: the reactor which handles the timer events.
 */
-int timerheap_clean_events(ax_reactor *r);
+void timerheap_clean_events(ax_reactor *r);
 
 /*
 * Free up the resources used by the timerheap and the timerheap_internal structure.
 * Return: 0 on success, -1 on failure.
 * @r: the reactor which handles the timer events.
 */
-int timerheap_destroy(ax_reactor * r);
+void timerheap_destroy(ax_reactor * r);
 
 #endif

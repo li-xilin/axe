@@ -4,13 +4,12 @@
 #include "util.h"
 #include "../link.h"
 
-#define E_READ  	0x1
-#define E_WRITE 	0x2
-#define E_SIGNAL	0x4 
-#define E_TIMEOUT	0x8 
-#define E_EDGE 		0x10/* edge triggered */
-#define E_ONCE		0x20/* one-time event */
-#define E_IN_REACTOR	0x40
+#define AX_EV_READ        (1 << 0)
+#define AX_EV_WRITE       (1 << 1)
+#define AX_EV_TIMEOUT     (1 << 2)
+#define AX_EV_EDGE        (1 << 3)
+#define AX_EV_ONCE        (1 << 4)
+#define AX_EV_REACTING    (1 << 5)
 
 /* 
 * The timer event's initial timerheap_idx value,

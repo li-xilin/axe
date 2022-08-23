@@ -22,22 +22,22 @@ struct heap_entry
 * Heapify the timerheap in a top-down way after
 * alteration of the heap with the @idxth entry being the top entry.
 * This function is used when deleting a entry from the heap.
-* @pti: The related timerheap_internal structure.
+* @pti: The related timerheap_st structure.
 * @idx: The top entry's index.
 */
-static void timerheap_heapify_topdown(struct timerheap_internal *pti, int idx);
+static void timerheap_heapify_topdown(struct timerheap_st *pti, int idx);
 
-struct timerheap_internal *timerheap_internal_init()
+struct timerheap_st *timerheap_init()
 {
-	struct timerheap_internal *ret;
+	struct timerheap_st *ret;
 	struct heap_entry *heap;
-	if((ret = malloc(sizeof(struct timerheap_internal))) == NULL) {
-		ax_perror("failed to malloc for timerheap_internal: %s", strerror(errno));
+	if ((ret = malloc(sizeof(struct timerheap_st))) == NULL) {
+		ax_perror("failed to malloc for timerheap_st: %s", strerror(errno));
 		return NULL;
 	}
-	memset(ret, 0, sizeof(struct timerheap_internal));
+	memset(ret, 0, sizeof(struct timerheap_st));
 	
-	if((heap = malloc(TIMERHEAP_INIT_SIZE *sizeof(struct heap_entry))) == NULL) {
+	if ((heap = malloc(TIMERHEAP_INIT_SIZE *sizeof(struct heap_entry))) == NULL) {
 		ax_perror("failed to malloc for heap_entry: %s", strerror(errno));
 		free(ret);
 		return NULL;
@@ -50,10 +50,8 @@ struct timerheap_internal *timerheap_internal_init()
 
 /*
 * Expand the timerheap to be big enough to hold @size entries.
-* Return: 0 on success, -1 on failure.
-* @pti: the timerheap_internal to expand.
 */
-static int timerheap_grow(struct timerheap_internal *pti, int size)
+static int timerheap_grow(struct timerheap_st *pti, int size)
 {
 	int new_cap;
 	struct heap_entry *new_heap;
@@ -66,7 +64,7 @@ static int timerheap_grow(struct timerheap_internal *pti, int size)
 		new_cap <<= 1;
 	}
 
-	if((new_heap = realloc(pti->heap, sizeof(struct heap_entry) *new_cap)) == NULL) {
+	if ((new_heap = realloc(pti->heap, sizeof(struct heap_entry) *new_cap)) == NULL) {
 		ax_perror("failed on realloc: %s", strerror(errno));
 		return (-1);
 	}
@@ -78,8 +76,6 @@ static int timerheap_grow(struct timerheap_internal *pti, int size)
 }
 /*
 * Initialize the heap entry with timer event.
-* Return: a newly created heap_entry on success, NULL on failure.
-* @e: the event to be bound to the the entry.
 */
 static void init_heap_entry(struct heap_entry *phe, ax_event *e)
 {
@@ -93,10 +89,8 @@ static void init_heap_entry(struct heap_entry *phe, ax_event *e)
 
 /*
 * Tests whether the heap is empty.
-* Return: 0 if the heap has entries, 1 if the heap is empty.
-* @pti: The related timerheap_internal structure.
 */
-static inline int timerheap_empty(struct timerheap_internal *pti)
+static inline int timerheap_empty(struct timerheap_st *pti)
 {
 	assert(pti != NULL);
 	return pti->size == 0;
@@ -108,7 +102,7 @@ int timerheap_top_expired(ax_reactor *r)
 
 	assert(r != NULL);
 	assert(r->pti != NULL);
-	if(timerheap_empty(r->pti)) {
+	if (timerheap_empty(r->pti)) {
 		return (0);
 	}
 
@@ -122,13 +116,13 @@ struct timeval *timerheap_top_timeout(ax_reactor *r, struct timeval *timeout)
 
 	assert(r != NULL);
 	assert(r->pti != NULL);
-	if(timerheap_empty(r->pti)) {
+	if (timerheap_empty(r->pti)) {
 		return NULL;
 	}
 	*timeout = r->pti->heap[1].expiration;
 	ax_util_timeofday(&cur);
 	ax_util_timesub(timeout, &cur, timeout);
-	if(timer_to_ms(*timeout) < 0) {
+	if (timer_to_ms(*timeout) < 0) {
 		timeout->tv_sec = timeout->tv_usec = 0;	
 	}
 	return timeout;
@@ -139,7 +133,7 @@ ax_event *timerheap_get_top(ax_reactor *r)
 	assert(r != NULL);
 	assert(r->pti != NULL);
 
-	if(timerheap_empty(r->pti)) {
+	if (timerheap_empty(r->pti)) {
 		return NULL;
 	}
 
@@ -148,23 +142,18 @@ ax_event *timerheap_get_top(ax_reactor *r)
 
 ax_event *timerheap_pop_top(ax_reactor *r)
 {
-	struct timerheap_internal *pti;
 	ax_event *pe;
 	assert(r != NULL);
 	assert(r->pti != NULL);
 
-	pti = r->pti;
+	struct timerheap_st *pti = r->pti;
 
-	if(timerheap_empty(pti)) {
+	if (timerheap_empty(pti))
 		return NULL;
-	}
 
 	pe = pti->heap[1].e;
+	timerheap_remove_event(r, pe);
 
-	if(timerheap_remove_event(r, pe) == -1) {
-		ax_perror("failed to remove timer.");
-		return NULL;
-	}
 	return pe;
 }
 
@@ -172,10 +161,8 @@ ax_event *timerheap_pop_top(ax_reactor *r)
 * Heapify the timerheap in a bottom-up way after 
 * alteration of the heap with the @idxth entry being the bottom entry.
 * This function is used when inserting a entry to the heap.
-* @pti: The related timerheap_internal structure.
-* @idx: The bottom entry's index.
 */
-static void timerheap_heapify_bottomup(struct timerheap_internal *pti, int idx)
+static void timerheap_heapify_bottomup(struct timerheap_st *pti, int idx)
 {
 	int parent;
 	struct heap_entry *heap;
@@ -209,7 +196,7 @@ inline void timerheap_reset_timer(ax_reactor *r, ax_event *e)
 	timerheap_heapify_topdown(r->pti, e->timerheap_idx);
 }
 
-static void timerheap_heapify_topdown(struct timerheap_internal *pti, int idx)
+static void timerheap_heapify_topdown(struct timerheap_st *pti, int idx)
 {
 	int child, i, size;
 	struct heap_entry *heap;
@@ -225,11 +212,11 @@ static void timerheap_heapify_topdown(struct timerheap_internal *pti, int idx)
 	for(i = idx; i<= (size >> 1); i = child) {
 		child = i << 1;
 
-		if(child + 1 <= size &&
+		if (child + 1 <= size &&
 			 timer_g(heap[child].expiration, heap[child + 1].expiration))
 			++child;
 
-		if(timer_g(heap[child].expiration, he.expiration))
+		if (timer_g(heap[child].expiration, he.expiration))
 			break;
 		
 		heap[i] = heap[child];
@@ -242,19 +229,19 @@ static void timerheap_heapify_topdown(struct timerheap_internal *pti, int idx)
 
 int timerheap_add_event(ax_reactor *r, ax_event *e)
 {
-	struct timerheap_internal *pti;
+	struct timerheap_st *pti;
 	assert(r != NULL);
 	assert(r->pti != NULL);
 	assert(e != NULL);
 
 	pti = r->pti;
 
-	if(e->timerheap_idx != E_OUT_OF_TIMERHEAP) {
+	if (e->timerheap_idx != E_OUT_OF_TIMERHEAP) {
 		ax_perror("The timer event is already in the heap.");
 		return (-1);
 	}
 	
-	if(pti->size + 1 >= pti->capacity && timerheap_grow(pti, pti->size + 1) == -1) {
+	if (pti->size + 1 >= pti->capacity && timerheap_grow(pti, pti->size + 1) == -1) {
 		ax_perror("failed on timerheap_grow: %s", strerror(errno));
 		return (-1);
 	}
@@ -268,20 +255,15 @@ int timerheap_add_event(ax_reactor *r, ax_event *e)
 	return (0);
 }
 
-int timerheap_remove_event(ax_reactor *r, ax_event *e)
+void timerheap_remove_event(ax_reactor *r, ax_event *e)
 {
-	struct timerheap_internal *pti;
-	struct heap_entry *heap;
 	assert(r != NULL);
 	assert(r->pti != NULL);
 	assert(e != NULL);
+	assert(e->timerheap_idx != E_OUT_OF_TIMERHEAP);
 
-	if(e->timerheap_idx == E_OUT_OF_TIMERHEAP) {
-		ax_perror("The timer event is not in the heap.");
-		return (-1);
-	}
-	pti = r->pti;
-	heap = pti->heap;
+	struct timerheap_st *pti = r->pti;
+	struct heap_entry *heap = pti->heap;
 	/* 
 	* Fills in the entry being removed with the
 	* rearest entry and heapify the heap.
@@ -293,21 +275,19 @@ int timerheap_remove_event(ax_reactor *r, ax_event *e)
 	* entry in the heap. In that case, we simply
 	* skip the heapification.
 	*/
-	if(e->timerheap_idx <= pti->size)
+	if (e->timerheap_idx <= pti->size)
 		timerheap_heapify_topdown(pti, e->timerheap_idx);
 	e->timerheap_idx = E_OUT_OF_TIMERHEAP;
-	return (0);
 }
 
 /*
 * Free up resources used by the timerhea.
 * Return: 0 on success, -1 on failure.
-* @pti: The related timerheap_internal structure.
+* @pti: The related timerheap_st structure.
 */
-static int timerheap_free(struct timerheap_internal *pti)
+static int timerheap_free(struct timerheap_st *pti)
 {
-	assert(pti != NULL);
-
+	assert(pti);
 	free(pti->heap);
 	pti->heap = NULL;
 	pti->size = pti->capacity = 0;
@@ -315,24 +295,19 @@ static int timerheap_free(struct timerheap_internal *pti)
 	return (0);
 }
 
-int timerheap_clean_events(ax_reactor *r)
+void timerheap_clean_events(ax_reactor *r)
 {
+	assert(r);
 	while(timerheap_pop_top(r));
-	return (0);
 }
 
-int timerheap_destroy(ax_reactor *r)
+void timerheap_destroy(ax_reactor *r)
 {
-	struct timerheap_internal *pti;
-	assert(r != NULL);
-	assert(r->pti != NULL);
+	assert(r);
 
-	pti = r->pti;
-
+	struct timerheap_st *pti = r->pti;
 	timerheap_free(pti);
 	free(pti);
 	r->pti = NULL;
-
-	return (0);
 }
 
