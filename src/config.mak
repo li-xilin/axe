@@ -27,7 +27,7 @@ RM = rm -f
 CC = gcc
 CFLAGS = -Wall --pedantic -Werror -std=c99 -I$(ROOT)/src/include -I$(INCLUDE) -fno-strict-aliasing
 # Needed for AIX
-CFLAGS += -Wno-unused-value
+CFLAGS += -D_ALL_SOURCE=1 -Wno-unused-value
 DBGFLAGS = -g -O0
 RLSFLAGS = -O2 -DNDEBUG
 
