@@ -2,7 +2,7 @@
 #define AX_EVENT_EVENT_H
 
 #include "socket.h"
-#include "../link.h"
+#include "link.h"
 
 #define AX_EV_READ        (1 << 0)
 #define AX_EV_WRITE       (1 << 1)

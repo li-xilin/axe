@@ -4,7 +4,6 @@
 #include "ax/detect.h"
 
 #ifdef AX_OS_WIN32
-#include <winsock.h>
 #include <sysinfoapi.h>
 #else
 #include <sys/time.h>

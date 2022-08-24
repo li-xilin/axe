@@ -1,6 +1,6 @@
 #include "ax/detect.h"
 
-#include "ax/event/reactor.h"
+#include "ax/reactor.h"
 
 #include <stdio.h>
 #include <stdlib.h>

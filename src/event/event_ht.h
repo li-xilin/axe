@@ -1,11 +1,7 @@
-/*
-* Copyright (c) 2014 Xinjing Chow
-*/
-
 #ifndef AX_EVENT_EVENT_HT_H
 #define AX_EVENT_EVENT_HT_H
 
-#include "ax/event/event.h"
+#include "ax/event.h"
 
 typedef struct ax_event_ht_st {
 	ax_link *table;

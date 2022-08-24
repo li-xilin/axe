@@ -1,8 +1,8 @@
 #ifndef AX_EVENT_UTIL_H
 #define	AX_EVENT_UTIL_H
-#include "../log.h"
-#include "../detect.h"
-#include "../trait.h"
+#include "log.h"
+#include "detect.h"
+#include "trait.h"
 #include <stddef.h>
 
 #ifdef AX_OS_WIN32

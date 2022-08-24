@@ -1,8 +1,8 @@
 #include "event_ht.h"
 #include "reactor_type.h"
-#include "ax/event/reactor.h"
-#include "ax/event/socket.h"
-#include "ax/event/timeval.h"
+#include "ax/reactor.h"
+#include "ax/socket.h"
+#include "ax/timeval.h"
 #include "ax/log.h"
 
 #include <sys/epoll.h>

@@ -11,7 +11,7 @@
 #include <arpa/inet.h>
 #endif
 
-#include "ax/event/reactor.h"
+#include "ax/reactor.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,7 +31,7 @@ void read_cb(ax_socket fd, short fl, void *arg)
 	int len = recv(fd, buf, sizeof buf - 1, 0);
 	if (len == 0) {
 		ax_reactor_remove(g_reactor, arg);
-		ax_util_close_fd(fd);
+		ax_socket_close(fd);
 		printf("client lost: %" PRIu64 "\n", (uint64_t)fd);
 	} else {
 		send(fd, buf, len, 0);

@@ -1,6 +1,6 @@
 #ifndef POLLING_H
 #define POLLING_H
-#include "ax/event/reactor.h"
+#include "ax/reactor.h"
 
 void * polling_init(ax_reactor * r);
 int polling_add(ax_reactor * r, ax_socket fd, short flags);

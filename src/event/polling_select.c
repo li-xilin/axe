@@ -1,8 +1,8 @@
 #include "event_ht.h"
 #include "polling.h"
 #include "reactor_type.h"
-#include "ax/event/socket.h"
-#include "ax/event/event.h"
+#include "ax/socket.h"
+#include "ax/event.h"
 #include "ax/hmap.h"
 #include "ax/iter.h"
 

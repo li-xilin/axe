@@ -3,8 +3,8 @@
 
 #include "ax/link.h"
 #include "ax/mutex.h"
-#include "ax/event/event.h"
-#include "ax/event/socket.h"
+#include "ax/event.h"
+#include "ax/socket.h"
 
 #ifndef AX_REACTOR_DEFINED
 #define AX_REACTOR_DEFINED
