@@ -34,9 +34,26 @@ const ax_trait ax_trait_ax_socket = {
 	.hash = socket_hash,
 };
 
+
+int ax_socket_init()
+{
+#ifdef AX_OS_WIN32
+        WSADATA wsaData;
+        WORD wVersionRequested = MAKEWORD(1, 1);
+        return WSAStartup(wVersionRequested, &wsaData);
+#endif
+}
+
+void ax_socket_deinit()
+{
+#ifdef AX_OS_WIN32
+	WSACleanup();
+#endif
+}
+
 int ax_socket_close(ax_socket fd) {
 #ifdef AX_OS_WIN32
-	return closesocket(fd) ? -1 : 0;
+	return - !closesocket(fd);
 #else
 	return close(fd);
 #endif

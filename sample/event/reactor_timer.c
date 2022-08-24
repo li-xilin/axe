@@ -1,7 +1,5 @@
 #include "ax/detect.h"
-
 #include "ax/reactor.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
@@ -10,23 +8,17 @@ ax_reactor *g_reactor;
 
 void timer_cb(ax_socket fd, short fl, void *arg)
 {
-	int *n = arg;
-	switch (*n) {
+	switch (*(int *)arg) {
 		case 0: fputs("-", stderr); break;
 		case 1: fputs("|", stderr); break;
 		case 2: fputs("\n", stderr); break;
 	}
-	
 	fflush(stderr);
 }
 
 int main(int argc, char *argv[]) {
-#ifdef AX_OS_WIN32
-        WORD wVersionRequested;
-        WSADATA wsaData;
-        wVersionRequested=MAKEWORD(1,1);
-        WSAStartup(wVersionRequested,&wsaData);
-#endif
+	ax_socket_init();
+
 	g_reactor = ax_reactor_create();
 
 	ax_event timer_ev[3];
@@ -41,6 +33,7 @@ int main(int argc, char *argv[]) {
 	ax_reactor_loop(g_reactor, NULL, 0);
 
 	ax_reactor_destroy(g_reactor);
+	ax_socket_deinit();
 	return 0;
 }
 

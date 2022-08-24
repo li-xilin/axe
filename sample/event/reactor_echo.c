@@ -18,7 +18,7 @@
 #include <inttypes.h>
 
 #ifdef AX_OS_WIN32
-#define last_error() (int)GetLastError()
+#define last_error() (int)WSAGetLastError()
 #else
 #define last_error() (int)errno
 #endif
@@ -59,12 +59,8 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-#ifdef AX_OS_WIN32
-	WORD wVersionRequested;
-	WSADATA wsaData;
-	wVersionRequested=MAKEWORD(1,1);
-	WSAStartup(wVersionRequested,&wsaData);
-#endif
+	ax_socket_init();
+
 	uint16_t port = atoi(argv[1]);;
 
 	g_reactor = ax_reactor_create();
@@ -101,6 +97,8 @@ int main(int argc, char *argv[]) {
 	ax_reactor_loop(g_reactor, NULL, 0);
 
 	ax_reactor_destroy(g_reactor);
+
+	ax_socket_deinit();
 
 	return 0;
 }
