@@ -1,3 +1,5 @@
+#define __BSD_VISIBLE 1
+
 #include "polling.h"
 #include "event_ht.h"
 #include "reactor_type.h"
