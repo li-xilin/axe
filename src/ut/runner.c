@@ -147,11 +147,11 @@ void ut_runner_run(ut_runner *r)
 	r->statistic.fail = 0;
 	r->statistic.term = 0;
 	ax_box_foreach(r->suites.ax_box, ut_suite * const*, ppsuite) {
-		const ax_seq *case_tab = ut_suite_all_case(*ppsuite);
 		r->arg = ut_suite_arg(*ppsuite);
-		ax_box_cforeach(ax_cr(ax_seq, case_tab).ax_box, const ut_case *, test_case) {
+		size_t size = ut_suite_size(*ppsuite);
+		for (size_t i = 0; i < size; i++) {
 			jmp_buf jmp;
-			ut_case *tc = (ut_case *)test_case;
+			ut_case *tc = ut_suite_at(*ppsuite, i);;
 			if (tc->state != UT_CS_READY)
 				continue;
 			r->jump_ptr = &jmp;

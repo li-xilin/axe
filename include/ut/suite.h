@@ -58,7 +58,9 @@ void *ut_suite_arg(const ut_suite *s);
 
 ax_fail ut_suite_add_case(ut_suite *s, const char *name, ut_case_proc_f proc, int priority);
 
-const ax_seq *ut_suite_all_case(const ut_suite *suite);
+ut_case *ut_suite_at(ut_suite *suite, size_t index);
+
+size_t ut_suite_size(const ut_suite *suite);
 
 const char *ut_suite_name(const ut_suite *suite);
 

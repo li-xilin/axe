@@ -111,9 +111,22 @@ ax_fail ut_suite_add_case(ut_suite *suite, const char *name, ut_case_proc_f proc
 	return false;
 }
 
-const ax_seq *ut_suite_all_case(const ut_suite *suite)
+ax_vector_r ut_suite_all_case(const ut_suite *suite)
 {
-	return suite->tctab.ax_seq;
+	return suite->tctab;
+}
+
+ut_case *ut_suite_at(ut_suite *suite, size_t index)
+{
+	ax_iter it = ax_seq_at(suite->tctab.ax_seq, index);
+	if (ax_box_iter_ended(suite->tctab.ax_box, &it))
+		return NULL;
+	return ax_iter_get(&it);
+}
+
+size_t ut_suite_size(const ut_suite *suite)
+{
+	return ax_box_size(suite->tctab.ax_box);
 }
 
 const char *ut_suite_name(const ut_suite *suite)
