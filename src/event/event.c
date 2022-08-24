@@ -4,7 +4,7 @@
 
 #include "reactor_type.h"
 #include "ax/event/event.h"
-#include "ax/event/util.h"
+#include "ax/event/socket.h"
 #include "ax/link.h"
 
 void ax_event_set(ax_event *e, ax_socket fd, short ev_flags, ax_event_cb_f *cb, void *arg){

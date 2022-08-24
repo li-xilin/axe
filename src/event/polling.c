@@ -1,6 +1,5 @@
 #include "config.h"
 #include "polling.h"
-#include "ax/event/util.h"
 
 #ifndef AX_REACTOR_DEFINED
 #define AX_REACTOR_DEFINED

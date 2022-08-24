@@ -1,13 +1,12 @@
 #include "polling.h"
 #include "reactor_type.h"
 #include "event_ht.h"
-#include "ax/log.h"
 #include "ax/event/timeval.h"
-
+#include "ax/log.h"
 #include <sys/errno.h>
 #include <poll.h>
-#include <assert.h>
 #include <memory.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 

@@ -4,7 +4,7 @@
 #include "ax/link.h"
 #include "ax/mutex.h"
 #include "ax/event/event.h"
-#include "ax/event/util.h"
+#include "ax/event/socket.h"
 
 #ifndef AX_REACTOR_DEFINED
 #define AX_REACTOR_DEFINED

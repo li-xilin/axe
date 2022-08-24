@@ -1,7 +1,7 @@
 #ifndef AX_EVENT_REACTOR_H
 #define AX_EVENT_REACTOR_H
 
-#include "util.h"
+#include "socket.h"
 #include "event.h"
 #include "signal.h"
 #include "../mutex.h"

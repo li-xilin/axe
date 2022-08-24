@@ -1,4 +1,4 @@
-#include "ax/event/util.h"
+#include "ax/socket.h"
 #include "ax/log.h"
 #include "ax/mem.h"
 #include "ax/detect.h"
@@ -34,7 +34,7 @@ const ax_trait ax_trait_ax_socket = {
 	.hash = socket_hash,
 };
 
-int ax_util_close_fd(ax_socket fd) {
+int ax_socket_close(ax_socket fd) {
 #ifdef AX_OS_WIN32
 	return closesocket(fd) ? -1 : 0;
 #else
@@ -43,7 +43,7 @@ int ax_util_close_fd(ax_socket fd) {
 }
 
 
-int ax_util_set_nonblocking(ax_socket fd)
+int ax_socket_set_nonblocking(ax_socket fd)
 {
 #ifdef AX_OS_WIN32
 	ULONG nonBlock = 1;
@@ -137,7 +137,7 @@ static int socketpair_ersatz(int family, int type, int protocol, ax_socket fd[2]
 		|| listen_addr.sin_addr.s_addr != connect_addr.sin_addr.s_addr
 		|| listen_addr.sin_port != connect_addr.sin_port)
 		goto abort_tidy_up_and_fail;
-	ax_util_close_fd(listener);
+	ax_socket_close(listener);
 	fd[0] = connector;
 	fd[1] = acceptor;
 
@@ -149,11 +149,11 @@ static int socketpair_ersatz(int family, int type, int protocol, ax_socket fd[2]
 	if (saved_errno < 0)
 		saved_errno = WSAGetLastError();
 	if (listener != -1)
-		ax_util_close_fd(listener);
+		ax_socket_close(listener);
 	if (connector != -1)
-		ax_util_close_fd(connector);
+		ax_socket_close(connector);
 	if (acceptor != -1)
-		ax_util_close_fd(acceptor);
+		ax_socket_close(acceptor);
 
 	WSASetLastError(saved_errno);
 	return -1;
@@ -313,7 +313,7 @@ static int socketpair_win32(int family, int type, int protocol, ax_socket fd[2])
 }
 #endif
 
-int ax_util_socketpair(int family, int type, int protocol, ax_socket fd[2])
+int ax_socket_pair(int family, int type, int protocol, ax_socket fd[2])
 {
 #ifdef AX_OS_WIN32
 	return socketpair_win32(family, type, protocol, fd);

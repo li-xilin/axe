@@ -2,7 +2,7 @@
 #define AX_EVENT_TIMER_H
 
 #include <sys/time.h>
-#include "ax/event/util.h"
+#include "ax/event/socket.h"
 
 #ifndef AX_REACTOR_DEFINED
 #define AX_REACTOR_DEFINED

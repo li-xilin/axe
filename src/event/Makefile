@@ -27,7 +27,7 @@ endif
 
 TARGET = $(LIB)/libaxevent.a
 
-OBJS = event.o event_ht.o polling.o reactor.o util.o timer.o
+OBJS = event.o event_ht.o polling.o reactor.o socket.o timer.o
 
 all: CFLAGS += $(RLSFLAGS)
 all: $(TARGET)

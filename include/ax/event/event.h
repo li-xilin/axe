@@ -1,7 +1,7 @@
 #ifndef AX_EVENT_EVENT_H
 #define AX_EVENT_EVENT_H
 
-#include "util.h"
+#include "socket.h"
 #include "../link.h"
 
 #define AX_EV_READ        (1 << 0)

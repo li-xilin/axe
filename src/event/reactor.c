@@ -5,7 +5,7 @@
 
 #include "ax/event/reactor.h"
 #include "ax/event/event.h"
-#include "ax/event/util.h"
+#include "ax/event/socket.h"
 #include "ax/event/timeval.h"
 
 #include "ax/log.h"
@@ -95,7 +95,7 @@ ax_reactor *ax_reactor_create()
 	}
 
 	r->out = 0;
-	if (ax_util_socketpair(AF_UNIX, SOCK_STREAM, 0, r->io_pipe) == -1) {
+	if (ax_socket_pair(AF_UNIX, SOCK_STREAM, 0, r->io_pipe) == -1) {
 		ax_perror("failed to create informing pipe.");
 		goto fail;
 	}
@@ -122,8 +122,8 @@ fail:
 			polling_destroy(r);
 
 		if (r->io_pipe[0]) {
-			ax_util_close_fd(r->io_pipe[0]);
-			ax_util_close_fd(r->io_pipe[1]);
+			ax_socket_close(r->io_pipe[0]);
+			ax_socket_close(r->io_pipe[1]);
 		}
 
 		if (r->pti) {
@@ -174,8 +174,8 @@ void ax_reactor_destroy(ax_reactor *r)
 
 	event_ht_free(r->eht);
 	polling_destroy(r);
-	ax_util_close_fd(r->io_pipe[0]);
-	ax_util_close_fd(r->io_pipe[1]);
+	ax_socket_close(r->io_pipe[0]);
+	ax_socket_close(r->io_pipe[1]);
 
 	if (r->pti) {
 		timerheap_destroy(r);
@@ -207,7 +207,6 @@ int ax_reactor_add(ax_reactor *r, ax_event *e)
 		assert(e->timerheap_idx != E_OUT_OF_TIMERHEAP);
 	}
 	else {
-		/* Normal I/O event registration. */
 		if (e->event_link.prev || e->event_link.next) {
 			ax_mutex_unlock(&r->lock);
 			/*
@@ -217,13 +216,11 @@ int ax_reactor_add(ax_reactor *r, ax_event *e)
 			ax_perror("event already in the reactor");
 			return -1;
 		}
-		//ax_perror("Adding a event [fd %d]", e->fd);
 		if (polling_add(r, e->fd, e->ev_flags) == -1) {
 			ax_mutex_unlock(&r->lock);
 			ax_perror("failed to add the event[%d] to the reactor.", e->fd);
 			return -1;
 		}
-		//ax_perror("Added a event [fd %d]", e->fd);
 		ax_link_add_back(&e->event_link, &r->event_list);
 
 		event_ht_insert(r->eht, e, e->fd);
