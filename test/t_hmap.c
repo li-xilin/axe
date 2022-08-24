@@ -215,8 +215,7 @@ static void check_size(ut_runner* r)
 {
 	ax_hmap_r hmap = ax_new(ax_hmap, ax_t(int), ax_t(void));
 	for (int i = 0; i < 10000; i++) {
-		int val = rand();
-		ax_map_put(hmap.ax_map, &val, NULL);
+		ax_map_put(hmap.ax_map, &i, NULL);
 	}
 	ut_assert_int_equal(r, 10000, ax_box_size(hmap.ax_box));
 	ax_iter it = ax_box_begin(hmap.ax_box);
@@ -232,8 +231,7 @@ static void check_size(ut_runner* r)
 	}
 
 	for (int i = 0; i < 10000; i++) {
-		int val = rand();
-		ax_map_put(hmap.ax_map, &val, NULL);
+		ax_map_put(hmap.ax_map, &i, NULL);
 	}
 	ut_assert_int_equal(r, 10000, ax_box_size(hmap.ax_box));
 
