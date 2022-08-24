@@ -126,7 +126,7 @@ int polling_add(ax_reactor *r, ax_socket fd, short flags)
 	}
 	uintptr_t ident = fd;
 	short filter = kqueue_setup_filter(flags);
-	ushort action = EV_ADD;
+	unsigned short action = EV_ADD;
 
 	struct kevent e;
 	EV_SET(&e, ident, filter, action, ((flags & AX_EV_ONCE) ? EV_ONESHOT : 0), 0, NULL);
@@ -152,7 +152,7 @@ int polling_mod(ax_reactor *r, ax_socket fd, short flags)
 	struct kqueue_internal *pki = r->polling_data;
 	uintptr_t ident = fd;
 	short filter = kqueue_setup_filter(flags);
-	ushort action = EV_ADD;
+	unsigned short action = EV_ADD;
 	/* EV_ADD will override the events if the fd is already registered */
 
 	struct kevent e;
@@ -174,7 +174,7 @@ void polling_del(ax_reactor *r, ax_socket fd, short flags)
 	struct kqueue_internal *pki = r->polling_data;
 	uintptr_t ident = fd;
 	short filter = kqueue_setup_filter(flags);
-	ushort action = EV_DELETE;
+	unsigned short action = EV_DELETE;
 
 	struct kevent kev;
 	EV_SET(&kev, ident, filter, action, 0, 0, NULL);
@@ -195,8 +195,8 @@ int polling_poll(ax_reactor *r, struct timeval *timeout)
 	assert(pki != NULL);
 
 	struct timespec *spec = timeout
-		? ax_p(struct timespec, { .tv_sec = timeout->tv_sec,
-				.tv_nsec = timeout->tv_usec * 1000 })
+		? (struct timespec[]){{ .tv_sec = timeout->tv_sec,
+				.tv_nsec = timeout->tv_usec * 1000 }}
 		: NULL;
 	ax_mutex_unlock(&r->lock);
 	nreadys = kevent(pki->kqueue_fd, NULL, 0, pki->events, pki->nevents, spec);

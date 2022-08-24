@@ -41,6 +41,8 @@ int ax_socket_init()
         WSADATA wsaData;
         WORD wVersionRequested = MAKEWORD(1, 1);
         return WSAStartup(wVersionRequested, &wsaData);
+#else
+	return 0;
 #endif
 }
 
