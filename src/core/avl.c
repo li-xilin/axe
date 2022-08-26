@@ -80,7 +80,7 @@ static void *node_change_value(ax_map *map, struct node_st *node, const void *va
 inline static void *node_val(const ax_map *map, struct node_st *node)
 {
 	assert(node);
-	return node->kvbuffer + ax_class_env(map).key_tr->size;
+	return node->kvbuffer + ax_class_data(map).key_tr->size;
 }
 
 inline static void *node_key(struct node_st *node)
@@ -148,7 +148,7 @@ static struct node_st *higher_node(const ax_map *map, struct node_st *node)
 static struct node_st *find_node(const ax_map *map, struct node_st *node, const void *key)
 {
 	if (node == NULL) return NULL;
-	const ax_trait *ktr = ax_class_env(map).key_tr;
+	const ax_trait *ktr = ax_class_data(map).key_tr;
 	if (ax_trait_less(ktr, key, node->kvbuffer))
 		return find_node(map, node->left, key);
 	else if (ax_trait_less(ktr, node->kvbuffer, key))
@@ -212,8 +212,8 @@ static struct node_st *rotate_left(struct node_st *root)
 static struct node_st *make_node(ax_map *map, struct node_st *parent, const void *key, const void *value, va_list *ap)
 {
 	ax_avl_r self = { map };
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
-	struct node_st *node = malloc(sizeof(struct node_st) + ax_class_env(map).key_tr->size + etr->size);
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
+	struct node_st *node = malloc(sizeof(struct node_st) + ax_class_data(map).key_tr->size + etr->size);
 	if (node == NULL)
 		goto failed;
 
@@ -221,7 +221,7 @@ static struct node_st *make_node(ax_map *map, struct node_st *parent, const void
 	node->height = 1;
 	node->left = NULL;
 	node->right = NULL;
-	const ax_trait *ktr = ax_class_env(map).key_tr;
+	const ax_trait *ktr = ax_class_data(map).key_tr;
 	if(ax_trait_copy(ktr, node->kvbuffer, key))
 		goto failed;
 	if (ax_trait_copy_or_init(etr, node_val(map, node), value, ap))
@@ -301,8 +301,8 @@ static struct node_st* remove_node(ax_avl *avl, struct node_st* node)
 		*pnode = rnode;
 	}
 
-	ax_trait_free(ax_class_env(self.ax_map).key_tr, node->kvbuffer);
-	ax_trait_free(ax_class_env(self.ax_box).elem_tr, node_val(self.ax_map, node));
+	ax_trait_free(ax_class_data(self.ax_map).key_tr, node->kvbuffer);
+	ax_trait_free(ax_class_data(self.ax_box).elem_tr, node_val(self.ax_map, node));
 	free(node);
 	return dirty_node;
 }
@@ -406,7 +406,7 @@ static void *node_change_value(ax_map *map, struct node_st *node, const void *va
 {
 
 	ax_avl_r self = AX_R_INIT(ax_map, map);
-	const ax_trait *vtr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *vtr = ax_class_data(self.ax_box).elem_tr;
 	void *dst = node_val(map, node);
 	ax_trait_free(vtr, dst);
 	if (ax_trait_copy_or_init(vtr, dst, val, ap))
@@ -457,8 +457,8 @@ static void *map_put (ax_map* map, const void *key, const void *val, va_list *ap
 
 	ax_avl_r self = AX_R_INIT(ax_map, map);
 	const ax_trait
-		*ktr = ax_class_env(self.ax_map).key_tr,
-		*vtr = ax_class_env(self.ax_box).elem_tr;
+		*ktr = ax_class_data(self.ax_map).key_tr,
+		*vtr = ax_class_data(self.ax_box).elem_tr;
 	struct node_st *current = self.ax_avl->root, *new_node = NULL;
 
 	if(!self.ax_avl->root) {
@@ -570,7 +570,7 @@ static ax_iter  map_at(const ax_map* map, const void *key)
 		.owner = (void *)map,
 		.point = node,
 		.tr = &ax_avl_tr.ax_box.iter,
-		.etr = ax_class_env(self.ax_box).elem_tr,
+		.etr = ax_class_data(self.ax_box).elem_tr,
 	};
 }
 
@@ -586,7 +586,7 @@ static const void *map_it_key(const ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, it->owner && it->point && it->tr);
 	CHECK_ITER_TYPE(it, one_name(NULL));
 	const ax_map *map = it->owner;
-	return ax_trait_out(ax_class_env(map).key_tr, node_key(it->point));
+	return ax_trait_out(ax_class_data(map).key_tr, node_key(it->point));
 }
 
 static void one_free(ax_one* one)
@@ -615,8 +615,8 @@ static ax_any *any_copy(const ax_any *any)
 
 	ax_avl_cr src = AX_R_INIT(ax_any, any);
 	const ax_trait
-		*ktr = ax_class_env(src.ax_map).key_tr,
-		*vtr = ax_class_env(src.ax_box).elem_tr;
+		*ktr = ax_class_data(src.ax_map).key_tr,
+		*vtr = ax_class_data(src.ax_box).elem_tr;
 	ax_avl_r dst =  ax_new(ax_avl, ktr, vtr);
 	if (ax_r_isnull(dst))
 		return NULL;
@@ -626,8 +626,8 @@ static ax_any *any_copy(const ax_any *any)
 			goto fail;
 	}
 
-	ax_class_env(dst.ax_one).scope.macro = NULL;
-	ax_class_env(dst.ax_one).scope.micro = 0;
+	ax_class_data(dst.ax_one).scope.macro = NULL;
+	ax_class_data(dst.ax_one).scope.micro = 0;
 	return dst.ax_any;
 fail:
 	ax_one_free(dst.ax_one);
@@ -662,7 +662,7 @@ static ax_iter box_begin(ax_box* box)
 		.owner = box,
 		.point = node,
 		.tr = &ax_avl_tr.ax_box.iter,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 	return it;
 }
@@ -675,7 +675,7 @@ static ax_iter box_end(ax_box* box)
 		.owner = box,
 		.point = NULL,
 		.tr = &ax_avl_tr.ax_box.iter,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 	return it;
 }
@@ -693,7 +693,7 @@ static ax_iter box_rbegin(ax_box* box)
 		.owner = box,
 		.point = node,
 		.tr = &ax_avl_tr.ax_box.riter,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 	return it;
 }
@@ -706,7 +706,7 @@ static ax_iter box_rend(ax_box* box)
 		.owner = box,
 		.tr = &ax_avl_tr.ax_box.riter,
 		.point = NULL,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 	return it;
 }
@@ -718,8 +718,8 @@ static void box_clear(ax_box* box)
 	ax_avl_r self = AX_R_INIT(ax_box, box);
 
 	const ax_trait
-		*ktr = ax_class_env(self.ax_map).key_tr,
-		*vtr = ax_class_env(self.ax_box).elem_tr;
+		*ktr = ax_class_data(self.ax_map).key_tr,
+		*vtr = ax_class_data(self.ax_box).elem_tr;
 
 	ax_iter cur = ax_box_begin(self.ax_box);
 	ax_iter last = ax_box_end(self.ax_box);

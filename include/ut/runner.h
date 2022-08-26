@@ -44,7 +44,7 @@ typedef struct ut_case_st ut_case;
 #endif
 
 #define ax_baseof_ut_runner ax_one
-ax_concrete(1, ut_runner);
+ax_concrete_declare(1, ut_runner);
 
 typedef void (*ut_output_f)(const char* suite_name, ut_case *tc, ax_str *out);
 
@@ -86,7 +86,7 @@ void __ut_term(ut_runner *r, const char *file, int line, const char *fmt, ...);
 
 #define ut_assert_uint_equal(r, ex, ac) __ut_assert_uint_equal((r), ex, ac, __FILE__, __LINE__)
 
-ax_class_constructor(ut_runner, ut_output_f ran_cb);
+ax_concrete_creator(ut_runner, ut_output_f ran_cb);
 
 #endif
 

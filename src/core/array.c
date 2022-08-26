@@ -72,7 +72,7 @@ static inline bool iter_if_valid(const ax_citer *it)
 {
 
 	ax_array_cr self = { it->owner };
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	ax_byte *ptr = self.ax_array->array;
 	size_t size = etr->size * self.ax_array->size;
 
@@ -86,7 +86,7 @@ static inline bool iter_if_have_value(const ax_citer *it)
 {
 	ax_array_cr self = { it->owner };
 	const ax_byte *ptr = self.ax_array->array;
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	size_t size = etr->size * self.ax_array->size;
 	return (ax_byte *)it->point >= ptr && (ax_byte *)it->point < ptr + size;
 }
@@ -98,7 +98,7 @@ static void citer_move(ax_citer *it, long i)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_array_cr self = { it->owner };
-	it->point = (ax_byte*)it->point + (i * ax_class_env(self.ax_box).elem_tr->size);
+	it->point = (ax_byte*)it->point + (i * ax_class_data(self.ax_box).elem_tr->size);
 
 	CHECK_PARAM_VALIDITY(i, iter_if_valid(it));
 }
@@ -110,7 +110,7 @@ static void citer_prev(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_array_cr self = { it->owner };
-	it->point = (ax_byte*)it->point - ax_class_env(self.ax_box).elem_tr->size;
+	it->point = (ax_byte*)it->point - ax_class_data(self.ax_box).elem_tr->size;
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -121,7 +121,7 @@ static void citer_next(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_array_cr self = { it->owner };
-	it->point = (ax_byte*)it->point + ax_class_env(self.ax_box).elem_tr->size;
+	it->point = (ax_byte*)it->point + ax_class_data(self.ax_box).elem_tr->size;
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -144,7 +144,7 @@ static long citer_dist(const ax_citer *it1, const ax_citer *it2)
 	CHECK_PARAM_VALIDITY(it2, iter_if_valid(it2));
 
 	const ax_array_cr self = { it1->owner };
-	return ((uintptr_t)it2->point - (uintptr_t)it1->point) / ax_class_env(self.ax_box).elem_tr->size;
+	return ((uintptr_t)it2->point - (uintptr_t)it1->point) / ax_class_data(self.ax_box).elem_tr->size;
 }
 
 static void rciter_move(ax_citer *it, long i)
@@ -153,7 +153,7 @@ static void rciter_move(ax_citer *it, long i)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_array_cr self = { it->owner };
-	it->point = (ax_byte*)it->point - (i * ax_class_env(self.ax_box).elem_tr->size);
+	it->point = (ax_byte*)it->point - (i * ax_class_data(self.ax_box).elem_tr->size);
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -163,7 +163,7 @@ static void rciter_prev(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_array_cr self = { it->owner };
-	it->point = (ax_byte*)it->point + ax_class_env(self.ax_box).elem_tr->size;
+	it->point = (ax_byte*)it->point + ax_class_data(self.ax_box).elem_tr->size;
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -173,7 +173,7 @@ static void rciter_next(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	const ax_array_cr self = { it->owner };
-	it->point = (ax_byte*)it->point - ax_class_env(self.ax_box).elem_tr->size;
+	it->point = (ax_byte*)it->point - ax_class_data(self.ax_box).elem_tr->size;
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -192,7 +192,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_cc(it)));
 
 	const ax_array_cr self = { it->owner };
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	ax_trait_free(etr, it->point);
 	if (ax_trait_copy_or_init(etr, it->point, val, ap))
 		return true;
@@ -231,7 +231,7 @@ static ax_iter box_begin(ax_box *box)
 		.owner = (void*)box,
 		.point = self->array,
 		.tr = &ax_array_tr.ax_box.iter,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 	return it;
 }
@@ -241,13 +241,13 @@ static ax_iter box_end(ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	ax_array_cr self = { .ax_box = box };
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 
 	ax_iter it = {
 		.owner = (void*)box,
 		.point = (ax_byte *)self.ax_array->array + self.ax_array->size  * etr->size,
 		.tr = &ax_array_tr.ax_box.iter,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 	return it;
 }
@@ -257,13 +257,13 @@ static ax_iter box_rbegin(ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	ax_array_r self = { box };
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 
 	ax_iter it = {
 		.owner = (void*)box,
 		.point = (ax_byte *)self.ax_array->array + (self.ax_array->size - 1) * etr->size,
 		.tr = &ax_array_tr.ax_box.riter,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 	return it;
 }
@@ -273,12 +273,12 @@ static ax_iter box_rend(ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	ax_array_cr self = { box };
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	ax_iter it = {
 		.owner = (void *)box,
 		.point = (ax_byte *)self.ax_array->array - etr->size,
 		.tr = &ax_array_tr.ax_box.riter,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 	return it;
 }
@@ -288,7 +288,7 @@ static void seq_invert(ax_seq *seq)
 	CHECK_PARAM_NULL(seq);
 
 	ax_array_r self = { seq };
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	size_t size = self.ax_array->size * etr->size;
 	ax_byte *ptr = self.ax_array->array;
 
@@ -297,7 +297,7 @@ static void seq_invert(ax_seq *seq)
 
 	size_t left = 0, right = size - etr->size;
 	while (right - left > etr->size) {
-		ax_memswp(ptr + left, ptr + right, ax_class_env(self.ax_box).elem_tr->size);
+		ax_memswp(ptr + left, ptr + right, ax_class_data(self.ax_box).elem_tr->size);
 		left += etr->size;
 		right -= etr->size;
 	}
@@ -319,7 +319,7 @@ static ax_iter seq_at(const ax_seq *seq, size_t index)
 	CHECK_PARAM_VALIDITY(index, index <= ax_box_size(ax_cr(ax_seq, seq).ax_box));
 
 	ax_array_r self = { .ax_seq = (ax_seq *) seq };
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 
 	ax_iter it = {
 		.owner = self.ax_one,
@@ -336,7 +336,7 @@ static void *seq_last(const ax_seq *seq)
 	ax_assert(ax_box_size(ax_cr(ax_seq, seq).ax_box) > 0, "empty");
 
 	ax_array_cr self = { .ax_seq = seq };
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	return (ax_byte *)self.ax_array->array + (etr->size  - 1) * self.ax_array->size;
 }
 

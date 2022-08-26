@@ -257,7 +257,7 @@ const ax_one_trait ut_runner_tr = {
 	.free = one_free,
 };
 
-ax_class_constructor(ut_runner, ut_output_f output_cb)
+ax_concrete_creator(ut_runner, ut_output_f output_cb)
 {
 	ut_runner *runner = NULL;
 	ax_avl_r smap = AX_R_NULL;

@@ -31,11 +31,11 @@ typedef struct ax_string_st ax_string;
 #endif
 
 #define ax_baseof_ax_string ax_str
-ax_concrete(5, ax_string);
+ax_concrete_declare(5, ax_string);
 
 ax_str *__ax_string_construct();
 
-inline static ax_class_constructor0(ax_string)
+inline static ax_concrete_creator0(ax_string)
 {
 	return __ax_string_construct();
 }

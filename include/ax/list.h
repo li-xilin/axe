@@ -31,13 +31,13 @@ typedef struct ax_list_st ax_list;
 
 #define ax_baseof_ax_list ax_seq
 
-ax_concrete(4, ax_list);
+ax_concrete_declare(4, ax_list);
 
 extern const ax_seq_trait ax_list_tr;
 
 ax_seq *__ax_list_construct(const ax_trait *elem_tr);
 
-inline static ax_class_constructor(ax_list, const ax_trait* trait)
+inline static ax_concrete_creator(ax_list, const ax_trait* trait)
 {
 	return __ax_list_construct(trait);
 }

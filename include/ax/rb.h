@@ -33,7 +33,7 @@ extern const ax_map_trait ax_rb_tr;
 
 #define ax_baseof_ax_rb ax_map
 
-ax_concrete(4, ax_rb);
+ax_concrete_declare(4, ax_rb);
 
 extern const ax_map_trait ax_hmap_tr;
 
@@ -42,7 +42,7 @@ ax_map *__ax_rb_construct(
 		const ax_trait* val_tr
 );
 
-inline static ax_class_constructor(ax_rb, const ax_trait* key_tr, const ax_trait* val_tr)
+inline static ax_concrete_creator(ax_rb, const ax_trait* key_tr, const ax_trait* val_tr)
 {
 	return __ax_rb_construct(key_tr, val_tr);
 }

@@ -69,7 +69,7 @@ static ax_fail tube_push(ax_tube *tube, const void *val, va_list *ap)
 	CHECK_PARAM_NULL(tube);
 
 	ax_pque_r self = AX_R_INIT(ax_tube, tube);
-	return ax_heap_insert(&self.ax_pque->heap, ax_trait_in(ax_class_env(self.ax_tube).elem_tr, val));
+	return ax_heap_insert(&self.ax_pque->heap, ax_trait_in(ax_class_data(self.ax_tube).elem_tr, val));
 }
 
 static void tube_pop(ax_tube *tube)
@@ -109,7 +109,7 @@ static ax_dump *any_dump(const ax_any *any)
 		return ax_dump_block(ax_one_name(self.ax_one), 0);
 
 	ax_dump *dmp = ax_dump_block(ax_one_name(self.ax_one), 1);
-	ax_dump *top = ax_trait_dump(ax_class_env(self.ax_tube).elem_tr, ax_heap_top(&self.ax_pque->heap));
+	ax_dump *top = ax_trait_dump(ax_class_data(self.ax_tube).elem_tr, ax_heap_top(&self.ax_pque->heap));
 	ax_dump_pair(ax_dump_symbol("TOP"), top);
 	return dmp;
 }
@@ -136,7 +136,7 @@ static bool less_then(const void *a, const void *b, void *ctx)
 }
 
 
-ax_class_constructor(ax_pque, const ax_trait *tr)
+ax_concrete_creator(ax_pque, const ax_trait *tr)
 {
 	CHECK_PARAM_NULL(tr);
 

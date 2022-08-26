@@ -99,7 +99,7 @@ static const ax_trait node_tr;
 
 inline static ax_btrie *iter_get_self(const ax_iter *it)
 {
-	return (ax_btrie *)(ax_class_env((ax_one *)it->owner).scope.macro);
+	return (ax_btrie *)(ax_class_data((ax_one *)it->owner).scope.macro);
 }
 
 static void citer_prev(ax_citer *it)
@@ -115,17 +115,17 @@ static void citer_next(ax_citer *it)
 static ax_box *citer_box(const ax_citer *it)
 {
 	const ax_map_cr map = AX_R_INIT(ax_map, it->owner);
-	return (ax_box *)ax_class_env(map.ax_one).scope.macro;
+	return (ax_box *)ax_class_data(map.ax_one).scope.macro;
 }
 
 inline static void node_set_parent(struct node_st *node, const void *parent)
 {
-	ax_class_env(node->submap_r.ax_one).scope.micro = (uintptr_t)parent;
+	ax_class_data(node->submap_r.ax_one).scope.micro = (uintptr_t)parent;
 }
 
 inline static void *node_get_parent(const struct node_st *node)
 {
-	return (void *)ax_class_env(node->submap_r.ax_one).scope.micro;
+	return (void *)ax_class_data(node->submap_r.ax_one).scope.micro;
 }
 
 static void *citer_get(const ax_citer *it)
@@ -145,7 +145,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 	ax_btrie_r self = AX_R_INIT(ax_btrie, iter_get_self(it));
 
 	struct node_st *node = ax_avl_tr.ax_box.iter.get(ax_iter_cc(it));
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	if (node->val) {
 		ax_trait_free(etr, node->val);
 	} else { 
@@ -161,7 +161,7 @@ static void node_free_value(ax_btrie *btrie, struct node_st *node)
 {
 	ax_btrie_r self = AX_R_INIT(ax_btrie, btrie);
 	if (node->val) {
-		const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+		const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 		ax_trait_free(etr, node->val);
 		free(node->val);
 		node->val = NULL;
@@ -343,7 +343,7 @@ void ax_btrie_dump(ax_btrie *btrie)
 {
 	CHECK_PARAM_NULL(btrie);
 
-	printf("top = %p\n", (void *)ax_class_env(btrie->root_r.ax_one).scope.micro);
+	printf("top = %p\n", (void *)ax_class_data(btrie->root_r.ax_one).scope.micro);
 	node_dump(btrie->root_r.ax_map, 1);
 }
 
@@ -382,7 +382,7 @@ static int match_key(const ax_btrie *self, const ax_seq *key, ax_citer *it_misma
 
 static ax_fail node_set_value(ax_btrie *btrie, struct node_st *node, const void *val, va_list *ap)
 {
-	const ax_trait *vtr = ax_class_env(ax_r(ax_btrie, btrie).ax_box).elem_tr;
+	const ax_trait *vtr = ax_class_data(ax_r(ax_btrie, btrie).ax_box).elem_tr;
 	void *value = NULL;
 
 	value = malloc(vtr->size);
@@ -410,7 +410,7 @@ fail:
 
 static struct node_st *make_path(ax_trie *trie, const ax_seq *key)
 {
-	ax_assert(ax_class_env(trie).key_tr == ax_class_env(ax_cr(ax_seq, key).ax_box).elem_tr, "invalid element trait for the key");
+	ax_assert(ax_class_data(trie).key_tr == ax_class_data(ax_cr(ax_seq, key).ax_box).elem_tr, "invalid element trait for the key");
 
 	ax_btrie_r self = { .ax_trie = trie };
 
@@ -431,10 +431,10 @@ static struct node_st *make_path(ax_trie *trie, const ax_seq *key)
 
 	int count = 0;
 	for (size_t i = 0; i < ins_count; i++) {
-		ax_avl_r new_submap = ax_new(ax_avl, ax_class_env(self.ax_trie).key_tr, &node_tr);
+		ax_avl_r new_submap = ax_new(ax_avl, ax_class_data(self.ax_trie).key_tr, &node_tr);
 		if (ax_r_isnull(new_submap))
 			goto fail;
-		ax_class_env(new_submap.ax_one).scope.macro = self.ax_one;
+		ax_class_data(new_submap.ax_one).scope.macro = self.ax_one;
 		new_node_tab[i].submap_r.ax_map = new_submap.ax_map;
 		count ++;
 	}
@@ -474,7 +474,7 @@ static void *trie_put(ax_trie *trie, const ax_seq *key, const void *val, va_list
 {
 	CHECK_PARAM_NULL(trie);
 	CHECK_PARAM_NULL(key);
-	ax_assert(ax_class_env(trie).key_tr == ax_class_env((ax_box *)key).elem_tr, "invalid element trait for the key");
+	ax_assert(ax_class_data(trie).key_tr == ax_class_data((ax_box *)key).elem_tr, "invalid element trait for the key");
 
 	ax_btrie_r self_r = { .ax_trie = trie };
 
@@ -550,7 +550,7 @@ static bool clean_path(ax_map *last) {
 	if (ax_box_size(parent_r.ax_box))
 		return retval;
 
-	parent_r.ax_one = (ax_one *)ax_class_env(parent_r.ax_one).scope.micro;
+	parent_r.ax_one = (ax_one *)ax_class_data(parent_r.ax_one).scope.micro;
 	if (parent_r.ax_one == NULL)
 		return retval;
 
@@ -565,7 +565,7 @@ static bool clean_path(ax_map *last) {
 		
 		ax_one_free(node->submap_r.ax_one);
 		ax_box_clear(parent_r.ax_box);
-		parent_r.ax_one = (ax_one *)ax_class_env(parent_r.ax_one).scope.micro;
+		parent_r.ax_one = (ax_one *)ax_class_data(parent_r.ax_one).scope.micro;
 		retval = true;
 	}
 	return retval;
@@ -783,7 +783,7 @@ ax_trie *__ax_btrie_construct(const ax_trait *key_tr, const ax_trait *val_tr)
 	if (ax_r_isnull(root))
 		goto fail;
 
-	ax_class_env(root.ax_one).scope.macro = ax_r(ax_btrie, self).ax_one;
+	ax_class_data(root.ax_one).scope.macro = ax_r(ax_btrie, self).ax_one;
 
 	ax_btrie btrie_init = {
 		.ax_trie = {

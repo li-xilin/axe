@@ -36,7 +36,7 @@ typedef struct ax_trie_st ax_trie;
 
 #define ax_baseof_ax_trie ax_box
 
-ax_abstract_begin(ax_trie)
+ax_abstract_code_begin(ax_trie)
 	const ax_iter_trait iter_root;
 	void       *(*put)      (ax_trie *trie, const ax_seq *key, const void *val, va_list *ap);
 	void       *(*get)      (const ax_trie *trie, const ax_seq *key);
@@ -53,11 +53,11 @@ ax_abstract_begin(ax_trie)
 	void        (*it_clean) (const ax_iter *it);
 ax_end;
 
-ax_abstract_env_begin(ax_trie)
+ax_abstract_data_begin(ax_trie)
 	const ax_trait *key_tr;
 ax_end;
 
-ax_abstract(3, ax_trie);
+ax_abstract_declare(3, ax_trie);
 
 inline static void *ax_trie_put(ax_trie *trie, const ax_seq *key, const void *val)
 {
@@ -167,7 +167,7 @@ inline static bool ax_trie_citer_valued(const ax_citer *it)
 
 inline static const ax_trait *ax_trie_key_tr(const ax_trie *trie)
 {
-	return ax_class_env(trie).key_tr;
+	return ax_class_data(trie).key_tr;
 }
 
 typedef bool (*ax_trie_enum_cb_f)(const ax_trie *trie, const ax_seq *key, const void *val, void *ctx);

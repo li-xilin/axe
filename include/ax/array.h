@@ -38,7 +38,7 @@ ax_concrete_begin(ax_array)
 	void *array;
 ax_end;
 
-ax_concrete(4, ax_array);
+ax_concrete_declare(4, ax_array);
 
 extern const ax_seq_trait ax_array_tr;
 

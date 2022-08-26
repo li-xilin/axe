@@ -66,7 +66,7 @@ typedef size_t  (*ax_box_size_f)  (const ax_box* box);
 typedef ax_iter (*ax_box_iter_f)  (      ax_box* box);
 typedef void    (*ax_box_clear_f) (      ax_box* box);
 
-ax_abstract_begin(ax_box)
+ax_abstract_code_begin(ax_box)
 	const ax_iter_trait iter;
 	const ax_iter_trait riter;
 
@@ -81,11 +81,11 @@ ax_abstract_begin(ax_box)
 	const ax_box_clear_f clear;
 ax_end;
 
-ax_abstract_env_begin(ax_box)
+ax_abstract_data_begin(ax_box)
 	const ax_trait *const elem_tr;
 ax_end;
 
-ax_abstract(2, ax_box);
+ax_abstract_declare(2, ax_box);
 
 static inline size_t ax_box_size(const ax_box* box)
 {

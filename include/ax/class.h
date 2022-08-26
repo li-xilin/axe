@@ -30,48 +30,47 @@
 #define __AX_CLASS_TRAIT_STRUCT(name) struct AX_CATENATE(name, _trait_st)
 #define __AX_CLASS_ENV_STRUCT(name) struct AX_CATENATE(name, _env_st)
 
-#define ax_class_new_n(_n, name, ...) \
+#define AX_CONCTETE_NEW_N(_n, name, ...) \
 	(name##_r) { .ax_base_of(1, name) = __AX_CATENATE_4(__, name, _construct, _n)(__VA_ARGS__) }
 
 #define ax_new0(name) \
-	ax_class_new_n(0, name, )
+	AX_CONCTETE_NEW_N(0, name, )
 
 #define ax_new(name, ...) \
-	ax_class_new_n(AX_NARG(__VA_ARGS__), name, __VA_ARGS__)
+	AX_CONCTETE_NEW_N(AX_NARG(__VA_ARGS__), name, __VA_ARGS__)
 
 #define __AX_CLASS_EXTERN_TRAIT(name) \
-	extern const __AX_CLASS_TRAIT_STRUCT(ax_base_of(1, name)) AX_CATENATE(name, _tr)
+	const __AX_CLASS_TRAIT_STRUCT(ax_base_of(1, name)) AX_CATENATE(name, _tr)
 
-#define ax_class_constructor0(name) \
+#define ax_concrete_creator0(name) \
 	__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) *AX_CATENATE(__, name, _construct0)()
 
-#define ax_class_constructor(name, ...) \
+#define ax_concrete_creator(name, ...) \
 	__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) *AX_CATENATE(__, name, _construct, AX_NARG(__VA_ARGS__))(__VA_ARGS__)
 
-#define ax_abstract_root_begin(name) \
+#define ax_abstract_root_code_begin(name) \
 	typedef __AX_CLASS_TRAIT_STRUCT(name)  AX_CATENATE(name, _trait); \
 	__AX_CLASS_TRAIT_STRUCT(name) {\
 
-#define ax_abstract_begin(name) \
-	ax_abstract_root_begin(name) \
+#define ax_abstract_code_begin(name) \
+	ax_abstract_root_code_begin(name) \
 		const __AX_CLASS_TRAIT_STRUCT(ax_base_of(1, name)) ax_base_of(1, name);
 
-#define ax_abstract_root_env_begin(name) \
+#define ax_abstract_root_data_begin(name) \
 	typedef __AX_CLASS_ENV_STRUCT(name) AX_CATENATE(name, _env); \
 	__AX_CLASS_ENV_STRUCT(name) {
 
-#define ax_abstract_env_begin(name) \
-	ax_abstract_root_env_begin(name) \
+#define ax_abstract_data_begin(name) \
+	ax_abstract_root_data_begin(name) \
 		__AX_CLASS_ENV_STRUCT(ax_base_of(1, name)) ax_base_of(1, name);
 
 #define ax_concrete_begin(name) \
 	__AX_CLASS_ENTRY_STRUCT(name) { \
 		__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) ax_base_of(1, name);
 
-#ifdef ax_end
-#undef ax_end
-#endif
+#ifndef ax_end
 #define ax_end }
+#endif
 
 #define __ax_base_of(n, name) __AX_PREFIX_TO_##n(ax_baseof_, name)
 #define ax_base_of(n, name) __ax_base_of(n, name)
@@ -104,26 +103,20 @@
 #define __AX_CLASS_NAME_ITEM(n, name) ax_stringy(ax_base_of(n, name)) "."
 #define ax_class_name(n, name) AX_PAVE_TO(n, __AX_CLASS_NAME_ITEM, name) ax_stringy(name)
 
-#define ax_abstract(n, name) \
+#define ax_abstract_declare(n, name) \
 	__AX_CLASS_ROLE(n, name); \
 	__AX_CLASS_ABSTRACT(name)
 
 #define ax_class_trait(obj) (*((obj)->tr))
-#define ax_class_env(obj) ((obj)->env)
+#define ax_class_data(obj) ((obj)->env)
 #define ax_class_do0(obj, func) ax_class_trait(obj).func(obj)
 #define ax_class_do(obj, func, ...) ax_class_trait(obj).func(obj, __VA_ARGS__)
 
-#define ax_concrete(n, name) \
+#define ax_concrete_declare(n, name) \
 	__AX_CLASS_ROLE(n, name)
 
 #define ax_r(type, ptr) ((type##_r){ .type = ptr })
 #define ax_cr(type, ptr) ((type##_cr){ .type = ptr })
-/*
-#define ax_r_trait(src, dst, ptr) ax_class_trait(ax_r(src, ptr).dst)
-#define ax_cr_trait(src, dst, ptr) ax_class_trait(ax_cr(src, ptr).dst)
-#define ax_r_env(src, dst, ptr) ax_class_env(ax_r(src, ptr).dst)
-#define ax_cr_env(src, dst, ptr) ax_class_env(ax_cr(src, ptr).dst)
-*/
 
 #define ax_r_isnull(r) (!(r).__ptr)
 #define AX_R_NULL { .__ptr = NULL }

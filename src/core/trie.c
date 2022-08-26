@@ -58,7 +58,7 @@ ax_fail ax_trie_enum(const ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx)
 		retval = true;
 		goto out;
 	}
-	key = ax_new(ax_list, ax_class_env(self.ax_trie).key_tr);
+	key = ax_new(ax_list, ax_class_data(self.ax_trie).key_tr);
 	if (ax_r_isnull(key)) {
 		retval = true;
 		goto out;
@@ -129,8 +129,8 @@ static bool trie_dump_cb(const ax_trie *trie, const ax_seq *key, const void *val
 	ax_trie_cr self = ax_cr(ax_trie, trie);
 
 	const ax_trait
-		*ktr = ax_class_env(self.ax_trie).key_tr,
-		*vtr = ax_class_env(self.ax_box).elem_tr;
+		*ktr = ax_class_data(self.ax_trie).key_tr,
+		*vtr = ax_class_data(self.ax_box).elem_tr;
 
 	ax_dump *key_dmp = ax_dump_block(ax_class_name(3, ax_seq), size);
 	size_t i = 0;

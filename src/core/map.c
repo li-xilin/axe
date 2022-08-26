@@ -28,7 +28,7 @@
 const void *ax_map_key(ax_map *map, const void *key)
 {
 	ax_map_r self = AX_R_INIT(ax_map, map);
-	ax_iter find = ax_map_at(self.ax_map, ax_trait_in(ax_class_env(map).key_tr, key)),
+	ax_iter find = ax_map_at(self.ax_map, ax_trait_in(ax_class_data(map).key_tr, key)),
 		end = ax_box_end(self.ax_box);
 	if (ax_iter_equal(&find, &end))
 		return NULL;
@@ -46,8 +46,8 @@ ax_dump *ax_map_dump(const ax_map *map)
 		return NULL;
 
 	const ax_trait
-		*etr = ax_class_env(self.ax_box).elem_tr,
-		*ktr = ax_class_env(self.ax_map).key_tr;
+		*etr = ax_class_data(self.ax_box).elem_tr,
+		*ktr = ax_class_data(self.ax_map).key_tr;
 
 	size_t i = 0;
 	ax_map_cforeach(self.ax_map, const void *, k, const void *, v) {

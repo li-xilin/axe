@@ -35,13 +35,13 @@ typedef struct ax_buff_st ax_buff;
 #endif
 
 #define ax_baseof_ax_buff ax_any
-ax_concrete(2, ax_buff);
+ax_concrete_declare(2, ax_buff);
 
 extern const ax_any_trait ax_buff_tr;
 
 ax_any *__ax_buff_construct();
 
-inline static ax_class_constructor0(ax_buff) {
+inline static ax_concrete_creator0(ax_buff) {
 	return __ax_buff_construct();
 }
 

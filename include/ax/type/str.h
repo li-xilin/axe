@@ -32,7 +32,7 @@ typedef struct ax_str_st ax_str;
 
 #define ax_baseof_ax_str ax_seq
 
-ax_abstract_begin(ax_str)
+ax_abstract_code_begin(ax_str)
 	ax_fail  (*append) (      ax_str *str, const char *s);
 	size_t   (*length) (const ax_str *str);
 	ax_fail  (*insert) (      ax_str *str, size_t start, const char *s);
@@ -43,9 +43,9 @@ ax_abstract_begin(ax_str)
 	ax_fail  (*sprintf)(      ax_str *str, const char *fmt, va_list args); 
 ax_end;
 
-ax_abstract_env_begin(ax_str) ax_end;
+ax_abstract_data_begin(ax_str) ax_end;
 
-ax_abstract(4, ax_str);
+ax_abstract_declare(4, ax_str);
 
 inline static ax_fail ax_str_append(ax_str* str, const char *s) {
 	return ax_obj_do(str, append, s);

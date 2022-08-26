@@ -51,7 +51,7 @@ ax_dump *ax_seq_dump(const ax_seq *seq)
 	ax_seq_cr self = AX_R_INIT(ax_seq, seq);
 	size_t size = ax_box_size(self.ax_box);
 	ax_dump *block_dmp = ax_dump_block(ax_one_name(self.ax_one), size);
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	size_t i = 0;
 	ax_box_cforeach(self.ax_box, const void *, p) {
 		ax_dump_bind(block_dmp, i, ax_trait_dump(etr, ax_trait_in(etr, p)));
@@ -67,7 +67,7 @@ ax_fail ax_seq_push_arraya(ax_seq *seq, const void *arrp)
 
 	ax_seq_cr self = AX_R_INIT(ax_seq, seq);
 	size_t size = ax_arraya_size(arrp);
-	int esize = ax_class_env(self.ax_box).elem_tr->size;
+	int esize = ax_class_data(self.ax_box).elem_tr->size;
 	ax_assert(size % esize == 0,
 			"different size of elements with seq and arraya");
 	const ax_byte *p = arrp;

@@ -56,7 +56,7 @@ typedef ax_map *ax_map_init_f(const ax_trait* tr1, const ax_trait* tr2);
 
 #define ax_baseof_ax_map ax_box
 
-ax_abstract_begin(ax_map)
+ax_abstract_code_begin(ax_map)
 	void *(*put) (ax_map *map, const void *key, const void *val, va_list *ap);
 	void *(*get) (const ax_map *map, const void *key);
 	ax_iter (*at) (const ax_map *map, const void *key);
@@ -66,11 +66,11 @@ ax_abstract_begin(ax_map)
 	const void *(*itkey)(const ax_citer *it);
 ax_end;
 
-ax_abstract_env_begin(ax_map)
+ax_abstract_data_begin(ax_map)
 	const ax_trait *key_tr;
 ax_end;
 
-ax_abstract(3, ax_map);
+ax_abstract_declare(3, ax_map);
 
 inline static void *ax_map_put(ax_map *map, const void *key, const void *val)
 {

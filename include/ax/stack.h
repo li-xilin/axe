@@ -30,11 +30,11 @@ typedef struct ax_stack_st ax_stack;
 #endif
 
 #define ax_baseof_ax_stack ax_tube
-ax_concrete(3, ax_stack);
+ax_concrete_declare(3, ax_stack);
 
 ax_tube *__ax_stack_construct(const ax_trait *elem_tr);
 
-inline static ax_class_constructor(ax_stack, const ax_trait *tr)
+inline static ax_concrete_creator(ax_stack, const ax_trait *tr)
 {
 	return __ax_stack_construct(tr);
 }

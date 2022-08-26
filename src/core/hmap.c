@@ -37,8 +37,8 @@
 
 #define DEFINE_KVTR(map) \
 	register const struct ax_trait_st \
-		*ktr = ax_class_env(map).key_tr,\
-		*vtr = ax_class_env(ax_r(ax_map, map).ax_box).elem_tr
+		*ktr = ax_class_data(map).key_tr,\
+		*vtr = ax_class_data(ax_r(ax_map, map).ax_box).elem_tr
 
 #undef free
 
@@ -143,7 +143,7 @@ static ax_fail rehash(ax_hmap *hmap, size_t nbucket)
 	hmap->bucket_list = NULL;
 	for (; bucket; bucket = bucket->next) {
 		for (struct node_st *currnode = bucket->node_list; currnode;) {
-			const ax_trait *ktr = ax_class_env(ax_r(ax_hmap, hmap).ax_map).key_tr;
+			const ax_trait *ktr = ax_class_data(ax_r(ax_hmap, hmap).ax_map).key_tr;
 
 			struct bucket_st *new_bucket = new_tab
 				+ ax_trait_hash(ktr, currnode->kvbuffer)
@@ -217,7 +217,7 @@ static struct node_st *make_node(ax_map *map, const void *key, const void *val, 
 {
 	DEFINE_KVTR(map);
 	ax_hmap_r self = AX_R_INIT(ax_map, map);
-	size_t node_size = sizeof(struct node_st) + ktr->size + ax_class_env(self.ax_box).elem_tr->size;
+	size_t node_size = sizeof(struct node_st) + ktr->size + ax_class_data(self.ax_box).elem_tr->size;
 
 	struct node_st *node = malloc(node_size);
 	if (!node)
@@ -236,7 +236,7 @@ fail:
 
 static inline struct bucket_st *locate_bucket(const ax_hmap *hmap, const void *key)
 {
-	size_t index = ax_trait_hash(ax_class_env(ax_cr(ax_hmap, hmap).ax_map).key_tr, key) % hmap->buckets;
+	size_t index = ax_trait_hash(ax_class_data(ax_cr(ax_hmap, hmap).ax_map).key_tr, key) % hmap->buckets;
 	return hmap->bucket_tab + index;
 }
 
@@ -270,7 +270,7 @@ static struct bucket_st *unlink_bucket(struct bucket_st *head, struct bucket_st 
 static struct node_st **find_node(const ax_map *map, struct bucket_st *bucket, const void *key)
 {
 	struct node_st **pp_node;
-	const ax_trait *ktr = ax_class_env(map).key_tr;
+	const ax_trait *ktr = ax_class_data(map).key_tr;
 	for (pp_node = &bucket->node_list; *pp_node; pp_node = &((*pp_node)->next))
 		if (ax_trait_equal(ktr, (*pp_node)->kvbuffer, key))
 			return pp_node;
@@ -281,7 +281,7 @@ static void free_node(ax_map *map, struct node_st **pp_node)
 {
 	assert(pp_node);
 	DEFINE_KVTR(map);
-	ax_byte *value_ptr = (*pp_node)->kvbuffer + ax_class_env(map).key_tr->size;
+	ax_byte *value_ptr = (*pp_node)->kvbuffer + ax_class_data(map).key_tr->size;
 	ax_trait_free(ktr, (*pp_node)->kvbuffer);
 	ax_trait_free(vtr, value_ptr);
 	struct node_st *node_to_free = *pp_node;
@@ -313,7 +313,7 @@ static void *citer_get(const ax_citer *it)
 
 	ax_hmap_cr self = AX_R_INIT(ax_one, it->owner);
 	struct node_st *node = it->point;
-	const ax_trait *ktr = ax_class_env(self.ax_map).key_tr;
+	const ax_trait *ktr = ax_class_data(self.ax_map).key_tr;
 	return node->kvbuffer + ktr->size;
 }
 
@@ -360,7 +360,7 @@ static void iter_erase(ax_iter *it)
 
 inline static void *node_val(const ax_map* map, struct node_st *node)
 {
-	return node->kvbuffer + ax_class_env(map).key_tr->size;
+	return node->kvbuffer + ax_class_data(map).key_tr->size;
 }
 
 inline static void *node_key(struct node_st *node)
@@ -472,7 +472,7 @@ static ax_iter  map_at(const ax_map *map, const void *key)
 		.owner = (void *)map,
 		.point = *findpp,
 		.tr = &ax_hmap_tr.ax_box.iter,
-		.etr = ax_class_env(self.ax_box).elem_tr,
+		.etr = ax_class_data(self.ax_box).elem_tr,
 	};
 }
 
@@ -496,7 +496,7 @@ static void *map_chkey(ax_map *map, const void *key, const void *new_key)
 
 	const ax_hmap_r self = AX_R_INIT(ax_map, map);
 
-	const ax_trait *ktr = ax_class_env(self.ax_map).key_tr;
+	const ax_trait *ktr = ax_class_data(self.ax_map).key_tr;
 
 	if (!self.ax_hmap->buckets)
 		return NULL;
@@ -527,7 +527,7 @@ static const void *map_it_key(const ax_citer *it)
 	CHECK_ITER_TYPE(it, one_name(NULL));
 	struct node_st *node = it->point;
 	const ax_map *map = it->owner;
-	return ax_trait_out(ax_class_env(map).key_tr, node_key(node));
+	return ax_trait_out(ax_class_data(map).key_tr, node_key(node));
 }
 
 static void one_free(ax_one *one)
@@ -567,8 +567,8 @@ static ax_any *any_copy(const ax_any *any)
 		}
 	}
 
-	ax_class_env(dst.ax_one).scope.macro = NULL;
-	ax_class_env(dst.ax_one).scope.micro = 0;
+	ax_class_data(dst.ax_one).scope.macro = NULL;
+	ax_class_data(dst.ax_one).scope.micro = 0;
 	return dst.ax_any;
 }
 
@@ -599,7 +599,7 @@ static ax_iter box_begin(ax_box *box)
 		.point = self.ax_hmap->bucket_list
 			? self.ax_hmap->bucket_list->node_list
 			: NULL,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 	return it;
 }
@@ -612,7 +612,7 @@ static ax_iter box_end(ax_box *box)
 		.owner = box,
 		.tr = &ax_hmap_tr.ax_box.iter,
 		.point = NULL,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 	return it;
 }

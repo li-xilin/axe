@@ -41,10 +41,10 @@ typedef ax_seq *(ax_seq_construct_f)(const ax_trait *tr);
 
 #define ax_baseof_ax_seq ax_box
 
-ax_abstract_env_begin(ax_seq)
+ax_abstract_data_begin(ax_seq)
 ax_end;
 
-ax_abstract_begin(ax_seq)
+ax_abstract_code_begin(ax_seq)
 	const ax_seq_push_f   push;
 	const ax_seq_pop_f    pop;
 	const ax_seq_push_f   pushf;
@@ -57,11 +57,11 @@ ax_abstract_begin(ax_seq)
 	const ax_seq_end_f   last;
 ax_end;
 
-ax_abstract(3, ax_seq);
+ax_abstract_declare(3, ax_seq);
 
 inline static ax_fail ax_seq_push(ax_seq *seq, const void *val)
 {
-	return ax_obj_do(seq, push, ax_trait_in(ax_class_env(ax_r(ax_seq, seq).ax_box).elem_tr, val), NULL);
+	return ax_obj_do(seq, push, ax_trait_in(ax_class_data(ax_r(ax_seq, seq).ax_box).elem_tr, val), NULL);
 }
 
 inline static ax_fail ax_seq_ipush(ax_seq *seq, ...)
@@ -80,7 +80,7 @@ inline static ax_fail ax_seq_pop(ax_seq *seq)
 
 inline static ax_fail ax_seq_pushf(ax_seq *seq, const void *val)
 {
-	return ax_obj_do(seq, pushf, ax_trait_in(ax_class_env(ax_r(ax_seq, seq).ax_box).elem_tr, val), NULL);
+	return ax_obj_do(seq, pushf, ax_trait_in(ax_class_data(ax_r(ax_seq, seq).ax_box).elem_tr, val), NULL);
 }
 
 inline static ax_fail ax_seq_ipushf(ax_seq *seq, ...)
@@ -119,7 +119,7 @@ inline static ax_citer ax_seq_cat(const ax_seq *seq, size_t index)
 
 static inline ax_fail ax_seq_insert(ax_seq *seq, ax_iter *it, const void *val)
 {
-	return ax_obj_do(seq, insert, it, ax_trait_in(ax_class_env(ax_r(ax_seq, seq).ax_box).elem_tr, val), NULL);
+	return ax_obj_do(seq, insert, it, ax_trait_in(ax_class_data(ax_r(ax_seq, seq).ax_box).elem_tr, val), NULL);
 }
 
 static inline ax_fail ax_seq_iinsert(ax_seq *seq, ax_iter *it, ...)

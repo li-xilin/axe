@@ -327,7 +327,7 @@ static ax_iter box_begin(ax_box* box)
 		.owner = box,
 		.point = (ax_byte *)ax_buff_ptr(self.ax_string->buff.ax_buff),
 		.tr = &ax_string_tr.ax_seq.ax_box.iter,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 }
 
@@ -343,7 +343,7 @@ static ax_iter box_end(ax_box* box)
 		.point = (ax_byte *)ax_buff_ptr(buff)
 			+ ax_buff_size(buff, NULL) - sizeof(char),
 		.tr = &ax_string_tr.ax_seq.ax_box.iter,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 }
 
@@ -358,7 +358,7 @@ static ax_iter box_rbegin(ax_box* box)
 		.point = (ax_byte *)ax_buff_ptr(buff)
 			+ ax_buff_size(buff, NULL) - 2 * sizeof(char),
 		.tr = &ax_string_tr.ax_seq.ax_box.riter,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 }
 
@@ -371,7 +371,7 @@ static ax_iter box_rend(ax_box* box)
 		.owner = box,
 		.point = (ax_byte *)ax_buff_ptr(self.ax_string->buff.ax_buff) - sizeof(char),
 		.tr = &ax_string_tr.ax_seq.ax_box.riter,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 }
 
@@ -666,7 +666,7 @@ static ax_iter seq_at(const ax_seq *seq, size_t index)
 		.owner = (void *)self.ax_one,
 		.point =  ptr + index,
 		.tr = &ax_string_tr.ax_seq.ax_box.iter,
-		.etr = ax_class_env(self.ax_box).elem_tr,
+		.etr = ax_class_data(self.ax_box).elem_tr,
 	};
 
 	CHECK_PARAM_VALIDITY(index, iter_if_have_value(ax_iter_c(&it)));

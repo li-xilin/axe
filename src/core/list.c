@@ -278,7 +278,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 
 	struct node_st *node = it->point;
 	ax_list *list = (ax_list *) it->owner;
-	const ax_trait *etr = ax_class_env(ax_r(ax_list, list).ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(ax_r(ax_list, list).ax_box).elem_tr;
 
 	ax_trait_free(etr, node->data);
 
@@ -308,7 +308,7 @@ static void iter_erase(ax_iter *it)
 		node->next->pre = node->pre;
 	}
 	list->size --;
-	const ax_trait *etr = ax_class_env(ax_r(ax_list, list).ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(ax_r(ax_list, list).ax_box).elem_tr;
 	ax_trait_free(etr, node->data);
 	free(node);
 }
@@ -339,7 +339,7 @@ static ax_any *any_copy(const ax_any *any)
 	CHECK_PARAM_NULL(any);
 
 	ax_list_cr self = AX_R_INIT(ax_any, any);
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 
 	ax_list_r new = ax_new(ax_list, etr);
 	if (ax_r_isnull(new))
@@ -381,7 +381,7 @@ static ax_iter box_begin(ax_box *box)
 		.owner = box,
 		.point = self.ax_list->head,
 		.tr = &ax_list_tr.ax_box.iter,
-		.etr = ax_class_env(self.ax_box).elem_tr,
+		.etr = ax_class_data(self.ax_box).elem_tr,
 	};
 	return it;
 }
@@ -394,7 +394,7 @@ static ax_iter box_end(ax_box *box)
 		.owner = box,
 		.point = NULL,
 		.tr = &ax_list_tr.ax_box.iter,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 	};
 	return it;
 	
@@ -409,7 +409,7 @@ static ax_iter box_rbegin(ax_box *box)
 	ax_iter it = {
 		.owner = (void *)box,
 		.point = right_end,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 		.tr = &ax_list_tr.ax_box.riter,
 	};
 	return it;
@@ -422,7 +422,7 @@ static ax_iter box_rend(ax_box *box)
 	ax_iter it = {
 		.owner = box,
 		.point = NULL,
-		.etr = ax_class_env(box).elem_tr,
+		.etr = ax_class_data(box).elem_tr,
 		.tr = &ax_list_tr.ax_box.riter,
 	};
 	return it;
@@ -437,7 +437,7 @@ static void box_clear(ax_box *box)
 	if (self.ax_list->size == 0)
 		return;
 
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	struct node_st *node = self.ax_list->head;
 	do {	
 		struct node_st *next = node->next;
@@ -459,7 +459,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 	ax_list_r self = AX_R_INIT(ax_seq, seq);
 	CHECK_PARAM_VALIDITY(it, (it->point ? !!self.ax_list->head : 1));
 
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	struct node_st *node = malloc(sizeof(struct node_st) + etr->size);
 	if (node == NULL) {
 		return true;
@@ -523,7 +523,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val, va_list *ap)
 
 	ax_list_r self = AX_R_INIT(ax_seq, seq);
 
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 
 	struct node_st *node = make_node(etr, val, ap);
 	if (!node) {
@@ -564,7 +564,7 @@ static ax_fail seq_pop(ax_seq *seq)
 		self.ax_list->head = NULL;
 	}
 
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 
 	ax_trait_free(etr, node->data);
 	free(node);
@@ -578,7 +578,7 @@ static ax_fail seq_pushf(ax_seq *seq, const void *val, va_list *ap)
 	CHECK_PARAM_NULL(seq);
 
 	ax_list_r self = AX_R_INIT(ax_seq, seq);
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	struct node_st *node = make_node(etr, val, ap);
 	if (!node) {
 		free(node);
@@ -620,7 +620,7 @@ static ax_fail seq_popf(ax_seq *seq)
 		list->head = NULL;
 	}
 
-	const ax_trait *etr = ax_class_env(self.ax_box).elem_tr;
+	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	ax_trait_free(etr, node->data);
 	free(node);
 	list->size --;
@@ -694,7 +694,7 @@ static ax_iter seq_at(const ax_seq *seq, size_t index) /* Could optimized to mea
 		.owner = (void *)seq,
 		.point = cur,
 		.tr = &ax_list_tr.ax_box.iter,
-		.etr = ax_class_env(self.ax_box).elem_tr,
+		.etr = ax_class_data(self.ax_box).elem_tr,
 	};
 
 	if (index == 0)
