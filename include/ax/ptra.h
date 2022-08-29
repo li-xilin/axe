@@ -32,6 +32,7 @@ typedef struct ax_ptra_st ax_ptra;
 #endif
 
 #define ax_baseof_ax_ptra ax_one
+
 ax_abstract_code_begin(ax_ptra)
 	void *(*get)(ax_ptra* ptra);
 	void *(*reset)(ax_ptra* ptra, void *ptr);
@@ -43,7 +44,7 @@ ax_concrete_begin(ax_ptra)
 	size_t nref;
 ax_end;
 
-ax_concrete_declare(0, ax_ptra);
+ax_concrete_declare(1, ax_ptra);
 
 inline static void *ax_ptra_get(ax_ptra* ptra)
 {
@@ -82,7 +83,7 @@ const struct ax_one_trait_st ax_ptra_tr =
 			})
 
 #define ax_onelize_2(_p, _f) \
-	ax_class_new_n(2, ax_ptra, ax_p(const ax_trait, { .free = _f }), _p).ax_one
+	AX_CONCRETE_NEW_N(2, ax_ptra, ax_p(const ax_trait, { .free = _f }), _p).ax_one
 
 #define ax_onelize_1(_p) \
 	ax_onelize_2(_p, free)

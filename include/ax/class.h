@@ -30,14 +30,14 @@
 #define __AX_CLASS_TRAIT_STRUCT(name) struct AX_CATENATE(name, _trait_st)
 #define __AX_CLASS_ENV_STRUCT(name) struct AX_CATENATE(name, _env_st)
 
-#define AX_CONCTETE_NEW_N(_n, name, ...) \
+#define AX_CONCRETE_NEW_N(_n, name, ...) \
 	(name##_r) { .ax_base_of(1, name) = __AX_CATENATE_4(__, name, _construct, _n)(__VA_ARGS__) }
 
 #define ax_new0(name) \
-	AX_CONCTETE_NEW_N(0, name, )
+	AX_CONCRETE_NEW_N(0, name, )
 
 #define ax_new(name, ...) \
-	AX_CONCTETE_NEW_N(AX_NARG(__VA_ARGS__), name, __VA_ARGS__)
+	AX_CONCRETE_NEW_N(AX_NARG(__VA_ARGS__), name, __VA_ARGS__)
 
 #define __AX_CLASS_EXTERN_TRAIT(name) \
 	const __AX_CLASS_TRAIT_STRUCT(ax_base_of(1, name)) AX_CATENATE(name, _tr)

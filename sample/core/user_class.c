@@ -10,15 +10,15 @@
 
 typedef struct sharp_st sharp;
 
-ax_abstract_env_begin(sharp)
+ax_abstract_data_begin(sharp)
 ax_end;
 
-ax_abstract_begin(sharp)
+ax_abstract_code_begin(sharp)
 	float (*area)(const struct sharp_st *sharp);
 	float (*side_length)(const struct sharp_st *sharp);
 ax_end;
 
-ax_abstract(2, sharp);
+ax_abstract_declare(2, sharp);
 
 inline static float ax_sharp_area(const struct sharp_st *sharp)
 {
@@ -38,7 +38,7 @@ ax_concrete_begin(circle)
 	float radius;
 ax_end;
 
-ax_concrete(3, circle);
+ax_concrete_declare(3, circle);
 
 static void one_free(ax_one *one);
 static ax_dump *any_dump(const ax_any *any);
@@ -47,8 +47,8 @@ static float sharp_area(const struct sharp_st *sharp);
 static float sharp_side_length(const struct sharp_st *sharp);
 static void ax_circle_set_radius(struct circle_st *circle, float radius);
 static float ax_circle_radius(const struct circle_st *circle);
-inline static ax_class_constructor0(circle);
-inline static ax_class_constructor(circle, int radius);
+inline static ax_concrete_creator0(circle);
+inline static ax_concrete_creator(circle, int radius);
 
 /* Implementation */
 
@@ -117,16 +117,16 @@ static const sharp_trait ax_circle_tr = {
 	.side_length = sharp_side_length,
 };
 
-inline static ax_class_constructor(circle, int radius)
+inline static ax_concrete_creator(circle, int radius)
 {
 	circle_r circ = ax_new0(circle);
 	ax_circle_set_radius(circ.circle, radius);
 	return circ.sharp;
 }
 
-inline static ax_class_constructor0(circle)
+inline static ax_concrete_creator0(circle)
 {
-	circle_r circ = { malloc(sizeof(struct circle_st)) };
+	circle_r circ = AX_R_INIT(ax_one, malloc(sizeof(struct circle_st)));
 	const struct sharp_st init = {
 		.tr = &ax_circle_tr,
 	};
