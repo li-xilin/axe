@@ -103,8 +103,8 @@ int polling_mod(ax_reactor *r, ax_socket fd, short flags)
 
 	short *pflags = ax_iter_get(&it);
 
-	int read_changed = (*pflags ^ flags) & AX_EV_READ ? ((flags & AX_EV_READ) << 1) - 1 : 0;
-	int write_changed = (*pflags ^ flags) & AX_EV_WRITE ? ((flags & AX_EV_WRITE) << 1) - 1 : 0;
+	int read_changed = ((*pflags ^ flags)) & AX_EV_READ ? (!!(flags & AX_EV_READ) << 1) - 1 : 0;
+	int write_changed = ((*pflags ^ flags)) & AX_EV_WRITE ? (!!(flags & AX_EV_WRITE) << 1) - 1 : 0;
 
 	if (psi->n_readfd + read_changed == FD_SETSIZE
 			|| psi->n_writefd + write_changed == FD_SETSIZE) {

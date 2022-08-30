@@ -30,10 +30,3 @@ CFLAGS = -Wall --pedantic -Werror -std=c99 -I$(ROOT)/src/include -I$(INCLUDE) -f
 CFLAGS += -D_ALL_SOURCE=1 -Wno-unused-value
 DBGFLAGS = -g -O0
 RLSFLAGS = -O2 -DNDEBUG
-
-ifeq ($(OS),Windows_NT)
-    SYSTEM = Windows
-else
-    SYSTEM = $(shell uname -s)
-endif
-

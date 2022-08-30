@@ -1,90 +1,86 @@
 #!/bin/bash
 
 CONFIG_HEADER=config.h
+TEST_CFLAGS="-Wall -Werror -O0"
+TEST_CC="gcc"
+TEMP_MAKEFILE=`mktemp`
+TEST_FILE=test.c
 
-rm -f $CONFIG_HEADER
+cat Makefile.in > $TEMP_MAKEFILE
 
-echo "#ifndef CONFIG_H_" > $CONFIG_HEADER
-echo -e "#define CONFIG_H_\n" >> $CONFIG_HEADER
+bool_test() {
+	local TEST_NAME=$1
+	local CONFIG_NAME=$2
+	local RESULT=no
+	echo -e "Checking for $TEST_NAME... \c" 
 
-CARROT_TEST_FILE="test.c"
-CARROT_TEST_CFLAGS="-Wall -Werror -O0"
-CARROT_TEST_CC="gcc"
+	cat > $TEST_FILE
+	$TEST_CC $TEST_CFLAGS -c $TEST_FILE > /dev/null 2>&1
 
-echo -e "Checking for select... \c" 
-cat << END > $CARROT_TEST_FILE
+	if [ $? -eq 0 ]; then
+		RESULT=yes
+	fi
+	echo $RESULT
+	sed -i "s/@$CONFIG_NAME@/$RESULT/g" $TEMP_MAKEFILE
+}
+
+system_test() {
+	local CONFIG_NAME=$1
+	local RESULT
+	echo -e "Checking for operation system... \c" 
+	if [ "$OS" == "Windows_NT" ]; then
+		RESULT=Win32
+	else
+		RESULT=`uname -s`
+	fi
+	echo $RESULT
+	sed -i "s/@$CONFIG_NAME@/$RESULT/g" $TEMP_MAKEFILE
+}
+
+system_test SYSTEM
+
+bool_test select HAVE_SELECT <<EOT
 #ifdef WIN32
-#include<winsock.h>
+#include <winsock.h>
 #else
-#include<sys/time.h>
-#include<sys/types.h>
-#include<unistd.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 #endif
-
 int main(){
     select(0, NULL, NULL, NULL, NULL);
     return 0;
 }
-END
+EOT
 
-CARROT_TEST="$CARROT_TEST_CC $CARROT_TEST_CFLAGS \
-      -c $CARROT_TEST_FILE > /dev/null 2>&1"
-
-eval "$CARROT_TEST"
-
-if [ $? -eq 0 ]; then
-    echo "yes"
-    echo -e "#define HAVE_SELECT\n" >> $CONFIG_HEADER
-else
-    echo "no"
-fi
-
-echo -e "Checking for poll... \c" 
-cat << END > $CARROT_TEST_FILE
-#include<sys/time.h>
-#include<sys/types.h>
-#include<unistd.h>
-#include<sys/poll.h>
-
+bool_test poll HAVE_POLL <<EOT
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/poll.h>
 int main(){
     poll(NULL, 0, 0);
     return 0;
 }
-END
+EOT
 
-eval "$CARROT_TEST"
-
-if [ $? -eq 0 ]; then
-    echo "yes"
-    echo -e "#define HAVE_POLL\n" >> $CONFIG_HEADER
-else
-    echo "no"
-fi
-
-echo -e "Checking for epoll... \c" 
-cat << END > $CARROT_TEST_FILE
-#include<sys/time.h>
-#include<sys/types.h>
-#include<unistd.h>
+bool_test epoll HAVE_EPOLL <<EOT
+#ifdef WIN32
+#include "wepoll.h"
+#else
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <sys/epoll.h>
+#endif
 
 int main(){
     epoll_wait(0, NULL, 0, -1);
     return 0;
 }
-END
+EOT
 
-eval "$CARROT_TEST"
-
-if [ $? -eq 0 ]; then
-    echo "yes"
-    echo -e "#define HAVE_EPOLL\n" >> $CONFIG_HEADER
-else
-    echo "no"
-fi
-
-echo -e "Checking for kqueue... \c" 
-cat << END > $CARROT_TEST_FILE
+bool_test kqueue HAVE_KQUEUE <<EOT
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
@@ -93,38 +89,8 @@ int main(){
     (void)kqueue();
     return 0;
 }
-END
+EOT
 
-eval "$CARROT_TEST"
+rm $TEST_FILE test.o
 
-if [ $? -eq 0 ]; then
-    echo "yes"
-    echo -e "#define HAVE_KQUEUE\n" >> $CONFIG_HEADER
-else
-    echo "no"
-fi
-
-echo -e "Checking for /dev/poll... \c" 
-cat << END > $CARROT_TEST_FILE
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/devpoll.h>
-
-int main(){
-    (void)kqueue();
-    return 0;
-}
-END
-
-eval "$CARROT_TEST"
-
-if [ $? -eq 0 ]; then
-    echo "yes"
-    echo -e "#define HAVE_DEVPOLL\n" >> $CONFIG_HEADER
-else
-    echo "no"
-fi
-
-rm -rf "$CARROT_TEST_FILE" "${CARROT_TEST_FILE%.c}.o"
-
-echo "#endif" >> $CONFIG_HEADER
+cat $TEMP_MAKEFILE > Makefile

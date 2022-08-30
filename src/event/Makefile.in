@@ -21,13 +21,36 @@
 ROOT = ../..
 include $(ROOT)/src/config.mak
 
-ifneq ($(SYSTEM),Windows)
+HAVE_EPOLL  = @HAVE_EPOLL@
+HAVE_POLL   = @HAVE_POLL@
+HAVE_KQUEUE = @HAVE_KQUEUE@
+HAVE_SELECT = @HAVE_SELECT@
+SYSTEM      = @SYSTEM@
+
+OBJS = event.o event_ht.o reactor.o socket.o timer.o wepoll.o
+
+ifneq ($(SYSTEM), Win32)
 CFLAGS += -D_XOPEN_SOURCE=600
+endif
+
+ifeq ($(HAVE_EPOLL),yes)
+	OBJS += polling_epoll.o
+	ifeq ($(SYSTEM),Win32)
+		OBJS += wepoll.o
+	endif
+else ifeq ($(HAVE_KQUEUE),yes)
+	OBJS += polling_kqueue.o
+else ifeq ($(HAVE_POLL),yes)
+	OBJS += polling_poll.o
+else ifeq ($(HAVE_SELECT),yes)
+	OBJS += polling_select.o
+else
+exit:
+	$(error Multiplexing calls are not found in system)
 endif
 
 TARGET = $(LIB)/libaxevent.a
 
-OBJS = event.o event_ht.o polling.o reactor.o socket.o timer.o
 
 all: CFLAGS += $(RLSFLAGS)
 all: $(TARGET)
@@ -39,5 +62,7 @@ $(TARGET): $(OBJS)
 	$(AR) -rcs $@ $(OBJS)
 clean:
 	$(RM) $(OBJS) $(TARGET)
+distclean: clean
+	$(RM) Makefile
 
-.PHONY: all clean debug
+.PHONY: all clean debug exit distclean

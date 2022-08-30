@@ -5,7 +5,13 @@
 #include "ax/timeval.h"
 #include "ax/log.h"
 
+#ifdef AX_OS_WIN32
+#include "wepoll.h"
+#else
 #include <sys/epoll.h>
+#include <windows.h>
+#endif
+
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
@@ -14,9 +20,21 @@
 
 #define EPOLL_INIT_EVENT_SIZE 32
 
+#ifdef AX_OS_WIN32
+#define close_epoll(fd) CloseHandle(fd);
+#define EPOLL_BAD_FD NULL
+#else
+#define close_epoll(fd) close(fd);
+#define EPOLL_BAD_FD -1
+#endif
+
 struct epoll_internal
 {
+#ifdef AX_OS_WIN32
+	HANDLE epoll_fd;
+#else
 	int epoll_fd;
+#endif
 	int n_events;
 	int max_events;
 	struct epoll_event * events;
@@ -58,7 +76,7 @@ void * polling_init(ax_reactor * r)
 
 	memset(ret, 0, sizeof(struct epoll_internal));
 	
-	if((ret->epoll_fd = epoll_create(EPOLL_INIT_EVENT_SIZE)) == -1) {
+	if((ret->epoll_fd = epoll_create(EPOLL_INIT_EVENT_SIZE)) == EPOLL_BAD_FD) {
 		ax_perror("failed on epoll_create");
 		free(ret);
 		return NULL;
@@ -66,7 +84,7 @@ void * polling_init(ax_reactor * r)
 
 	if(epoll_resize(ret, EPOLL_INIT_EVENT_SIZE) == -1) {
 		ax_perror("failed on epoll_resize");
-		close(ret->epoll_fd);
+		close_epoll(ret->epoll_fd);
 		free(ret);
 		return NULL;
 	}
@@ -77,28 +95,13 @@ void * polling_init(ax_reactor * r)
 static void epoll_free(struct epoll_internal * pei)
 {
 	assert(pei != NULL);
-	if(pei == NULL) {
-		ax_perror("pei is null!!");
-		return;
-	}
-
-	if(pei->events) {
-		free(pei->events);
-		pei->events = NULL;
-	}
-	if(pei->epoll_fd >= 0) {
-		close(pei->epoll_fd);
-	}
-
+	free(pei->events);
+	close_epoll(pei->epoll_fd);
 	free(pei);
 }
 
 void polling_destroy(ax_reactor * r) {
 	assert(r != NULL);
-	if(r == NULL) {
-		ax_perror("r is null!!");
-		return;
-	}
 	epoll_free(r->polling_data);
 }
 
@@ -111,9 +114,11 @@ static inline int epoll_setup_mask(short flags)
 	if(flags & AX_EV_WRITE) {
 		ret |= EPOLLOUT;
 	}
+	/*
 	if(flags & AX_EV_EDGE) {
 		ret |= EPOLLET;
 	}
+	*/
 	if(flags & AX_EV_ONCE) {
 		ret |= EPOLLONESHOT;
 	}
