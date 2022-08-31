@@ -19,21 +19,17 @@
 # THE SOFTWARE.
 
 ROOT = ../..
-include $(ROOT)/src/config.mak
+include $(ROOT)/config.mak
 
 TARGET = $(LIB)/libaxut.a
 
 OBJS = suite.o runner.o case.o
 
-all: CFLAGS += $(RLSFLAGS)
 all: $(TARGET)
-
-debug: CFLAGS += $(DBGFLAGS)
-debug: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(AR) -rcs $@ $(OBJS)
 clean:
 	$(RM) $(OBJS) $(TARGET)
 
-.PHONY: all clean debug
+.PHONY: all clean

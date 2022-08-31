@@ -19,15 +19,9 @@
 # THE SOFTWARE.
 
 ROOT = ../..
-include $(ROOT)/src/config.mak
+include $(ROOT)/config.mak
 
-HAVE_EPOLL  = @HAVE_EPOLL@
-HAVE_POLL   = @HAVE_POLL@
-HAVE_KQUEUE = @HAVE_KQUEUE@
-HAVE_SELECT = @HAVE_SELECT@
-SYSTEM      = @SYSTEM@
-
-OBJS = event.o event_ht.o reactor.o socket.o timer.o wepoll.o
+OBJS = event.o event_ht.o reactor.o socket.o timer.o
 
 ifneq ($(SYSTEM), Win32)
 CFLAGS += -D_XOPEN_SOURCE=600
@@ -45,24 +39,16 @@ else ifeq ($(HAVE_POLL),yes)
 else ifeq ($(HAVE_SELECT),yes)
 	OBJS += polling_select.o
 else
-exit:
-	$(error Multiplexing calls are not found in system)
+$(error Multiplexing calls are not found in system)
 endif
 
 TARGET = $(LIB)/libaxevent.a
 
-
-all: CFLAGS += $(RLSFLAGS)
 all: $(TARGET)
-
-debug: CFLAGS += $(DBGFLAGS)
-debug: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(AR) -rcs $@ $(OBJS)
 clean:
 	$(RM) $(OBJS) $(TARGET)
-distclean: clean
-	$(RM) Makefile
 
-.PHONY: all clean debug exit distclean
+.PHONY: all clean exit

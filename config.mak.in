@@ -22,11 +22,31 @@ INCLUDE = $(ROOT)/include
 LIB = $(ROOT)/lib
 BIN = $(ROOT)/bin
 
-AR = ar
-RM = rm -f
-CC = gcc
-CFLAGS = -Wall --pedantic -Werror -std=c99 -I$(ROOT)/src/include -I$(INCLUDE) -fno-strict-aliasing
+AR = @AR@
+RM = @RM@
+CC = @CC@
+CFLAGS = -Wall --pedantic -Werror -std=c99 -I$(ROOT)/src/include -I$(INCLUDE) -fno-strict-aliasing 
+SYSTEM = @SYSTEM@
+
+HAVE_EPOLL  = @HAVE_EPOLL@
+HAVE_POLL   = @HAVE_POLL@
+HAVE_KQUEUE = @HAVE_KQUEUE@
+HAVE_SELECT = @HAVE_SELECT@
+SYSTEM      = @SYSTEM@
+
 # Needed for AIX
 CFLAGS += -D_ALL_SOURCE=1 -Wno-unused-value
-DBGFLAGS = -g -O0
-RLSFLAGS = -O2 -DNDEBUG
+
+DISABLE_DEBUG = @DISABLE_DEBUG@
+DISABLE_CASSERT = @DISABLE_CASSERT@
+
+ifeq ($(DISABLE_DEBUG),yes)
+	CFLAGS += -O2
+else
+	CFLAGS += -g -O0
+endif
+
+ifeq ($(DISABLE_CASSERT),yes)
+	CFLAGS += -DNDEBUG
+endif
+

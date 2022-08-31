@@ -19,7 +19,7 @@
 # THE SOFTWARE.
 
 ROOT = ../..
-include $(ROOT)/src/config.mak
+include $(ROOT)/config.mak
 
 CFLAGS += -D_XOPEN_SOURCE=600
 
@@ -27,10 +27,8 @@ TARGET = $(LIB)/libaxthread.a
 
 OBJS = tpool.o
 
-all: CFLAGS += $(RLSFLAGS)
 all: $(TARGET)
 
-debug: CFLAGS += $(DBGFLAGS)
 debug: $(TARGET)
 
 $(TARGET): $(OBJS)
@@ -38,4 +36,4 @@ $(TARGET): $(OBJS)
 clean:
 	$(RM) $(OBJS) $(TARGET)
 
-.PHONY: all clean debug
+.PHONY: all clean

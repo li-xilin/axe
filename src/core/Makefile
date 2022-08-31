@@ -19,7 +19,7 @@
 # THE SOFTWARE.
 
 ROOT = ../..
-include $(ROOT)/src/config.mak
+include $(ROOT)/config.mak
 
 TARGET = $(LIB)/libaxcore.a
 
@@ -27,15 +27,11 @@ OBJS = trait.o debug.o any.o vector.o mem.o one.o log.o algo.o oper.o seq.o \
        iter.o list.o avl.o map.o u1024.o buff.o string.o btrie.o trie.o stack.o \
        queue.o array.o hmap.o dump.o dumpfmt.o rb.o deq.o pque.o option.o
 
-all: CFLAGS += $(RLSFLAGS)
 all: $(TARGET)
-
-debug: CFLAGS += $(DBGFLAGS)
-debug: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(AR) -rcs $@ $(OBJS)
 clean:
 	$(RM) $(OBJS) $(TARGET)
 
-.PHONY: all clean debug
+.PHONY: all clean
