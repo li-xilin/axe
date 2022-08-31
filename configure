@@ -78,7 +78,7 @@ done
 # Test build conditions
 
 TEST_CFLAGS="-Wall -Werror -O0"
-TEST_CC="gcc"
+TEST_CC=$CC
 TEST_FILE=test.c
 
 c_bool_test() {
@@ -89,7 +89,7 @@ c_bool_test() {
 	echo -e "checking for $TEST_NAME... \c" 
 
 	cat > $TEST_FILE
-	$TEST_CC $TEST_CFLAGS -c $TEST_FILE > /dev/null 2>&1
+	$TEST_CC $TEST_CFLAGS -c $TEST_FILE -o test.o > /dev/null 2>&1
 
 	if [ $? -eq 0 ]; then
 		RET_CODE=0
@@ -111,22 +111,6 @@ system_test() {
 	fi
 	echo $RESULT
 	eval $CONFIG_NAME=$RESULT
-}
-
-c_output_test() {
-	local TEST_NAME=$1
-	local CONFIG_NAME=$2
-	echo -e "checking for $TEST_NAME... \c" 
-
-	cat > $TEST_FILE
-	local RESULT=$(TEST_CC $TEST_CFLAGS -c $TEST_FILE 2>/dev/null)
-
-	if [ $? -ne 0 ]; then
-		return 1
-	fi
-	echo $RESULT
-	eval $CONFIG_NAME=$RESULT
-	return 0
 }
 
 system_test SYSTEM
@@ -183,7 +167,7 @@ int main() {
 }
 EOT
 
-rm $TEST_FILE test.o
+eval $RM $TEST_FILE test.o
 
 # Apply configure
 
