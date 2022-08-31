@@ -4,23 +4,33 @@
 
 ---
 
-AXE is the light-weight and low-level library. It provides data structure handling and object system for C.
+AXE is the light-weight and low-level library. It provides data structure handling, object system, multi-thread and event-driven for C.
 
-AXE是一个轻量级的低级程序库，它为C语言提供了数据结构处理能力和对象系统.
+AXE是一个轻量级的低级程序库，它为C语言提供了数据结构封装、对象系统、多线程支持和事件驱动.
 
 ## COMPILE AND INSTALL
 
-该函数库可以使用 *make*(1)编译和安装，使用`make debug`将函数库编译为调试版本，安装程序会将头文件、库文件和手册页文件正确复制到系统的特定目录中.
+该库在编译之前需要执行*configure*脚本进行配置，然后通过*make*(1)编译和安装.
+
+编译结束后，在*lib*目录会生成一些库文件，包括
+
+* *libaxcore.a* 核心模块，只依赖C99标准
+* *libaxut.a* 单元测试支持模块
+* *libaxthread.a* 多线程支持模块
+* *libaxevent.a* 事件驱动支持模块
+
+执行`configure --help`获取更多配置信息.
 
 ```
 $ cd axe
+$ ./configure
 $ make
 $ sudo make install
 ```
 
 ## HOW TO USE
 
-您可以直接通过引入相关头文件来使用它们的功能，下面是一个样例程序，这其中包括一些有趣的特性，比如链表、迭代器算法、RAII、对象转储和容器遍历等操作. 在编译客户程序时需要通过加入编译参数`-lax`或`-laxut`来连接相关的库文件. 详细的帮助文档请参考MAN手册页，它们位于工程目录的 *man/man3* 目录下，或参考单元测试程序和附带的样例程序，它们分别位于工程目录的 *test* 和 *sample* 目录. 
+您可以直接通过引入相关头文件来使用它们的功能，下面是一个样例程序，这其中包括一些有趣的特性，比如链表、迭代器算法、RAII、对象转储和容器遍历等操作. 在编译客户程序时需要通过加入编译参数`-lax`来连接相关的库文件. 详细的帮助文档请参考MAN手册页，它们位于工程目录的 *man/man3* 目录下，或参考单元测试程序和附带的样例程序，它们分别位于工程目录的 *test* 和 *sample* 目录. 
 
 ```c
 /* gcc foo.c -lax */
@@ -131,6 +141,8 @@ int main(void)
 | ax/cond.h      | 条件变量 |
 | ax/tss.h       | 线程本地存储 |
 | ax/tpool.h     | 线程池 |
+| ax/event.h     | 事件结构 |
+| ax/reactor.h   | 基于Reactor结构的事件驱动模型 |
 | ut/case.h      | 测试用例 |
 | ut/suite.h     | 测试用例集 |
 | ut/runner.h    | 测试用例执行容器 |
