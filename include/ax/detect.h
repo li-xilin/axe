@@ -23,6 +23,20 @@
 #ifndef AX_ARCH_H
 #define AX_ARCH_H
 
+/* detect machine byte-order */
+
+#if defined(__ORDER_BIG_ENDIAN__)
+#  define AX_BIG_ENDIAN __ORDER_BIG_ENDIAN__
+#else
+#  define AX_BIG_ENDIAN 4321
+#endif
+
+#if defined(__ORDER_LITTLE_ENDIAN__)
+#  define AX_LITTLE_ENDIAN __ORDER_LITTLE_ENDIAN__
+#else
+#  define AX_LITTLE_ENDIAN 1234
+#endif
+
 /* detect architecture */
 
 #if defined(__x86_64__) || defined(__x86_64) || defined(__amd64__) || defined(_M_X64) || defined(_M_AMD64)
@@ -72,10 +86,10 @@
 #  endif
 #elif defined(__sh__)
 #  define AX_ARCH_SUPERH
-#elif defined(__PPC__) || defined(__ppc__) || defined(__ppc) || defined(__powerpc__) || defined(__POWERPC__) || defined(_M_PPC) || defined(_ARCH_PPC)
-#  define AX_ARCH_PPC
 #elif defined(__PPC64__) || defined(__ppc64__) || defined(__ppc64) || defined(__powerpc64__) || defined(_ARCH_PPC64)
 #  define AX_ARCH_PPC64
+#elif defined(__PPC__) || defined(__ppc__) || defined(__ppc) || defined(__powerpc__) || defined(__POWERPC__) || defined(_M_PPC) || defined(_ARCH_PPC)
+#  define AX_ARCH_PPC
 #elif defined(__sparc__) || defined(__sparc)
 #  define AX_ARCH_SPARC
 #elif defined(__m68k__) || defined(__MC68K__) || defined(M68000)
