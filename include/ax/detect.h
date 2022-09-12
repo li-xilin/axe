@@ -120,12 +120,46 @@
 
 /* detect operation system */
 
+/*
+   The operating system, must be one of: (AX_OS_x)
+     DARWIN   - Any Darwin system (macOS, iOS, watchOS, tvOS)
+     MACOS    - macOS
+     IOS      - iOS
+     WATCHOS  - watchOS
+     TVOS     - tvOS
+     WIN32    - Win32 (Windows 2000/XP/Vista/7 and Windows Server 2003/2008)
+     CYGWIN   - Cygwin
+     SOLARIS  - Sun Solaris
+     HPUX     - HP-UX
+     LINUX    - Linux [has variants]
+     FREEBSD  - FreeBSD [has variants]
+     NETBSD   - NetBSD
+     OPENBSD  - OpenBSD
+     INTERIX  - Interix
+     AIX      - AIX
+     HURD     - GNU Hurd
+     QNX      - QNX [has variants]
+     QNX6     - QNX RTP 6.1
+     LYNX     - LynxOS
+     BSD4     - Any BSD 4.4 system
+     UNIX     - Any UNIX BSD/SYSV system
+     ANDROID  - Android platform
+     HAIKU    - Haiku
+     WEBOS    - LG WebOS
+   The following operating systems have variants:
+     LINUX    - both AX_OS_LINUX and AX_OS_ANDROID are defined when building for Android
+              - only AX_OS_LINUX is defined if building for other Linux systems
+     MACOS    - both AX_OS_BSD4 and AX_OS_IOS are defined when building for iOS
+              - both AX_OS_BSD4 and AX_OS_MACOS are defined when building for macOS
+     FREEBSD  - AX_OS_FREEBSD is defined only when building for FreeBSD with a BSD userland
+              - AX_OS_FREEBSD_KERNEL is always defined on FreeBSD, even if the userland is from GNU
+*/
+
 #if defined(__APPLE__) && (defined(__GNUC__) || defined(__xlC__) || defined(__xlc__))
 #  include <TargetConditionals.h>
 #  if defined(TARGET_OS_MAC) && TARGET_OS_MAC
 #    define AX_OS_DARWIN
 #    define AX_OS_BSD4
-#    define AX_OS_UNIX
 #    ifdef __LP64__
 #      define AX_OS_DARWIN64
 #    else
@@ -143,44 +177,124 @@
 #      define AX_OS_MACOS
 #    endif
 #  else
-#    error "AXE has not been ported to this Apple platform"
+#    error "Unknown system"
 #  endif
 #elif defined(__WEBOS__)
 #  define AX_OS_WEBOS
 #  define AX_OS_LINUX
-#  define AX_OS_UNIX
 #elif defined(__ANDROID__) || defined(ANDROID)
 #  define AX_OS_ANDROID
 #  define AX_OS_LINUX
-#  define AX_OS_UNIX
 #elif defined(__CYGWIN__)
 #  define AX_OS_CYGWIN
 #elif !defined(SAG_COM) && (!defined(WINAPI_FAMILY) || WINAPI_FAMILY==WINAPI_FAMILY_DESKTOP_APP) && (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))
 #  define AX_OS_WIN32
 #  define AX_OS_WIN64
 #elif !defined(SAG_COM) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__))
-#  if defined(WINAPI_FAMILY)
-#    ifndef WINAPI_FAMILY_PC_APP
-#      define WINAPI_FAMILY_PC_APP WINAPI_FAMILY_APP
-#    endif
-#    if defined(WINAPI_FAMILY_PHONE_APP) && WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
-#      define AX_OS_WINRT
-#    elif WINAPI_FAMILY==WINAPI_FAMILY_PC_APP
-#      define AX_OS_WINRT
-#    else
-#      define AX_OS_WIN32
-#    endif
-#  else
 #    define AX_OS_WIN32
+#elif defined(__sun) || defined(sun)
+#  define AX_OS_SOLARIS
+#elif defined(hpux) || defined(__hpux)
+#  define AX_OS_HPUX
+#elif defined(__native_client__)
+#  define AX_OS_NACL
+#elif defined(__EMSCRIPTEN__)
+#  define AX_OS_WASM
+#elif defined(__linux__) || defined(__linux)
+#  define AX_OS_LINUX
+#elif defined(__FreeBSD__) || defined(__DragonFly__) || defined(__FreeBSD_kernel__)
+#  ifndef __FreeBSD_kernel__
+#    define AX_OS_FREEBSD
 #  endif
+#  define AX_OS_FREEBSD_KERNEL
+#  define AX_OS_BSD4
 #elif defined(__NetBSD__)
 #  define AX_OS_NETBSD
+#  define AX_OS_BSD4
+#elif defined(__OpenBSD__)
+#  define AX_OS_OPENBSD
+#  define AX_OS_BSD4
+#elif defined(__INTERIX)
+#  define AX_OS_INTERIX
+#  define AX_OS_BSD4
+#elif defined(_AIX)
+#  define AX_OS_AIX
+#elif defined(__Lynx__)
+#  define AX_OS_LYNX
+#elif defined(__GNU__)
+#  define AX_OS_HURD
+#elif defined(__QNXNTO__)
+#  define AX_OS_QNX
+#elif defined(__INTEGRITY)
+#  define AX_OS_INTEGRITY
+#elif defined(__rtems__)
+#  define AX_OS_RTEMS
+#elif defined(__HAIKU__)
+#  define AX_OS_HAIKU
+#else
+#  error "Unknown system"
+#endif
+
+#if defined(AX_OS_WIN32) || defined(AX_OS_WIN64)
+#  define AX_OS_WIN
+#endif
+
+#if defined(AX_OS_WIN)
+#  undef AX_OS_UNIX
+#elif !defined(AX_OS_UNIX)
 #  define AX_OS_UNIX
-#elif defined(__FreeBSD__)
-#  define AX_OS_FREEBSD
-#  define AX_OS_UNIX
-#elif defined(unix) || defined(UNIX) || defined(__unix__) || defined(__UNIX__)
-#  define AX_OS_UNIX
+#endif
+
+#if defined(AX_OS_DARWIN)
+#    define AX_OS_TEXT "darwin"
+#  elif defined(AX_OS_MACOS)
+#    define AX_OS_TEXT "macos"
+#  elif defined(AX_OS_IOS)
+#    define AX_OS_TEXT "ios"
+#  elif defined(AX_OS_WATCHOS)
+#    define AX_OS_TEXT "watchos"
+#  elif defined(AX_OS_TVOS)
+#    define AX_OS_TEXT "tvos"
+#  elif defined(AX_OS_WIN32)
+#    define AX_OS_TEXT "win32"
+#  elif defined(AX_OS_CYGWIN)
+#    define AX_OS_TEXT "cygwin"
+#  elif defined(AX_OS_SOLARIS)
+#    define AX_OS_TEXT "solaris"
+#  elif defined(AX_OS_HPUX)
+#    define AX_OS_TEXT "hpux"
+#  elif defined(AX_OS_LINUX)
+#    define AX_OS_TEXT "linux"
+#  elif defined(AX_OS_FREEBSD)
+#    define AX_OS_TEXT "freebsd"
+#  elif defined(AX_OS_NETBSD)
+#    define AX_OS_TEXT "netbsd"
+#  elif defined(AX_OS_OPENBSD)
+#    define AX_OS_TEXT "openbsd"
+#  elif defined(AX_OS_INTERIX)
+#    define AX_OS_TEXT "interix"
+#  elif defined(AX_OS_AIX)
+#    define AX_OS_TEXT "aix"
+#  elif defined(AX_OS_HURD)
+#    define AX_OS_TEXT "qnx"
+#  elif defined(AX_OS_QNX)
+#    define AX_OS_TEXT "qnx"
+#  elif defined(AX_OS_QNX6)
+#    define AX_OS_TEXT "qnx6"
+#  elif defined(AX_OS_LYNX)
+#    define AX_OS_TEXT "lynx"
+#  elif defined(AX_OS_BSD4)
+#    define AX_OS_TEXT "bsd4"
+#  elif defined(AX_OS_ANDROID)
+#    define AX_OS_TEXT "android"
+#  elif defined(AX_OS_HAIKU)
+#    define AX_OS_TEXT "haiku"
+#  elif defined(AX_OS_WEBOS)
+#    define AX_OS_TEXT "webos"
+#  elif defined(AX_OS_UNIX)
+#    define AX_OS_TEXT "unix"
+#  else
+#    define AX_OS_TEXT "unknown"
 #endif
 
 #endif
