@@ -9,7 +9,6 @@
 #include "wepoll.h"
 #else
 #include <sys/epoll.h>
-#include <windows.h>
 #endif
 
 #include <errno.h>

@@ -6,6 +6,7 @@ MAKE_FILE=Makefile
 # Default configure for config.mak
 CC=gcc
 AR=ar
+CPP=cpp
 RM='rm -f'
 CFLAGS=
 LDFLAGS=
@@ -15,7 +16,8 @@ HAVE_EPOLL=
 HAVE_KQUEUE=
 HAVE_SELECT=
 HAVE_SELECT=
-SYSTEM=
+TARGET_SYSTEM=
+BUILD_SYSTEM=
 
 # Default configure for Makefile
 PREFIX='/usr/local'
@@ -66,22 +68,26 @@ if [ -z "$INCLUDEDIR" ]; then
 	INCLUDEDIR="$PREFIX/include"
 fi
 
+ORIG_IFS="$IFS"
+IFS="="
 for arg do
-	IFS='=' PAIR=($arg)
+	PAIR=($arg)
 	case ${PAIR[0]} in
 		CC) CC=${PAIR[1]};;
 		CFLAGS) CFLAGS=${PAIR[1]};;
 		LDFLAGS) LDFLAGS=${PAIR[1]};;
 	esac
 done
+IFS="$ORIG_IFS"
 
 # Test build conditions
 
 TEST_CFLAGS="-Wall -Werror -O0"
 TEST_CC=$CC
 TEST_FILE=test.c
+TEST_FILE_OUTPUT=test.o
 
-c_bool_test() {
+compile-test() {
 	local TEST_NAME=$1
 	local CONFIG_NAME=$2
 	local RESULT=no
@@ -89,7 +95,7 @@ c_bool_test() {
 	echo -e "checking for $TEST_NAME... \c" 
 
 	cat > $TEST_FILE
-	$TEST_CC $TEST_CFLAGS -c $TEST_FILE -o test.o > /dev/null 2>&1
+	$TEST_CC $TEST_CFLAGS -c $TEST_FILE -o $TEST_FILE_OUTPUT > /dev/null 2>&1
 
 	if [ $? -eq 0 ]; then
 		RET_CODE=0
@@ -100,22 +106,68 @@ c_bool_test() {
 	return $RET_CODE
 }
 
-system_test() {
+macro-defined-test() {
+	local MACRO_NAME=$1
+	local CONFIG_NAME=$2
+	local RESULT=no
+	echo -e "checking whether $MACRO_NAME defined... \c" 
+	cat > $TEST_FILE
+	cat >> $TEST_FILE <<EOT
+#ifdef $MACRO_NAME
+@TEST_RESULT yes
+#else
+@TEST_RESULT no
+#endif
+EOT
+	RESULT=$($CPP $TEST_FILE | sed -ne '/@TEST_RESULT/p' | sed -e 's/^@TEST_RESULT \(.*\)$/\1/')
+	echo $RESULT
+	eval $CONFIG_NAME=$RESULT
+	return 0
+}
+
+macro-test() {
+	local MACRO_NAME=$1
+	local CONFIG_NAME=$2
+	local RESULT=no
+	echo -e "checking for macro $MACRO_NAME... \c" 
+	cat > $TEST_FILE
+	echo "@TEST_RESULT $MACRO_NAME" >> $TEST_FILE
+	RESULT=$($CPP $TEST_FILE | sed -ne '/@TEST_RESULT/p' | sed -e 's/^@TEST_RESULT \(.*\)$/\1/')
+	echo $RESULT
+	eval $CONFIG_NAME=$RESULT
+	return 0
+}
+
+build-system-test() {
 	local CONFIG_NAME=$1
-	local RESULT
-	echo -e "checking for operation system... \c" 
+	local RESULT=
+	echo -e "checking for building system... \c" 
 	if [ "$OS" == "Windows_NT" ]; then
-		RESULT=Win32
+		RESULT=win32
 	else
-		RESULT=`uname -s`
+		RESULT=$(echo `uname -s` | sed 's/.*/\L&/')
 	fi
 	echo $RESULT
 	eval $CONFIG_NAME=$RESULT
 }
 
-system_test SYSTEM
+target-system-test() {
+	local CONFIG_NAME=$1
+	local RESULT=
+	echo -e "checking for target system... \c" 
+	cat include/ax/detect.h > $TEST_FILE
+	echo 'echo AX_OS_TEXT' >> $TEST_FILE
+	RESULT=$($CPP $TEST_FILE | sh)
+	echo $RESULT
+	eval $CONFIG_NAME=$RESULT
+	# gcc -E -dM -xc -c 
+}
 
-c_bool_test select HAVE_SELECT <<EOT
+build-system-test BUILD_SYSTEM
+
+target-system-test TARGET_SYSTEM
+
+compile-test select HAVE_SELECT <<EOT
 #ifdef WIN32
 #include <winsock.h>
 #else
@@ -129,7 +181,7 @@ int main() {
 }
 EOT
 
-c_bool_test poll HAVE_POLL <<EOT
+compile-test poll HAVE_POLL <<EOT
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -140,7 +192,7 @@ int main() {
 }
 EOT
 
-c_bool_test epoll HAVE_EPOLL <<EOT
+compile-test epoll HAVE_EPOLL <<EOT
 #ifdef WIN32
 int main() { }
 #else
@@ -156,7 +208,7 @@ int main() {
 #endif
 EOT
 
-c_bool_test kqueue HAVE_KQUEUE <<EOT
+compile-test kqueue HAVE_KQUEUE <<EOT
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
@@ -167,7 +219,7 @@ int main() {
 }
 EOT
 
-eval $RM $TEST_FILE test.o
+$RM $TEST_FILE $TEST_FILE_OUTPUT
 
 # Apply configure
 
@@ -177,22 +229,25 @@ TEMP_MAKE_FILE=`mktemp`
 cat $CONFIG_FILE.in > $TEMP_CONFIG_FILE
 cat $MAKE_FILE.in > $TEMP_MAKE_FILE
 
-sed -i "s/@CC@/$CC/g" $TEMP_CONFIG_FILE
-sed -i "s/@AR@/$AR/g" $TEMP_CONFIG_FILE
-sed -i "s/@RM@/$RM/g" $TEMP_CONFIG_FILE
-sed -i "s/@CFLAGS@/$CFLAGS/g" $TEMP_CONFIG_FILE
-sed -i "s/@LDFLAGS@/$LDFLAGS/g" $TEMP_CONFIG_FILE
-sed -i "s/@DISABLE_DEBUG@/$DISABLE_DEBUG/g" $TEMP_CONFIG_FILE
-sed -i "s/@DISABLE_CASSERT@/$DISABLE_CASSERT/g" $TEMP_CONFIG_FILE
-sed -i "s/@HAVE_POLL@/$HAVE_POLL/g" $TEMP_CONFIG_FILE
-sed -i "s/@HAVE_EPOLL@/$HAVE_EPOLL/g" $TEMP_CONFIG_FILE
-sed -i "s/@HAVE_KQUEUE@/$HAVE_KQUEUE/g" $TEMP_CONFIG_FILE
-sed -i "s/@HAVE_SELECT@/$HAVE_SELECT/g" $TEMP_CONFIG_FILE
-sed -i "s/@SYSTEM@/$SYSTEM/g" $TEMP_CONFIG_FILE
+sed -e "s/@CC@/$CC/g" \
+    -e "s/@AR@/$AR/g" \
+    -e "s/@RM@/$RM/g" \
+    -e "s/@CFLAGS@/$CFLAGS/g" \
+    -e "s/@LDFLAGS@/$LDFLAGS/g" \
+    -e "s/@DISABLE_DEBUG@/$DISABLE_DEBUG/g" \
+    -e "s/@DISABLE_CASSERT@/$DISABLE_CASSERT/g" \
+    -e "s/@HAVE_POLL@/$HAVE_POLL/g" \
+    -e "s/@HAVE_EPOLL@/$HAVE_EPOLL/g" \
+    -e "s/@HAVE_KQUEUE@/$HAVE_KQUEUE/g" \
+    -e "s/@HAVE_SELECT@/$HAVE_SELECT/g" \
+    -e "s/@BUILD_SYSTEM@/$BUILD_SYSTEM/g" \
+    -e "s/@TARGET_SYSTEM@/$TARGET_SYSTEM/g" \
+    $TEMP_CONFIG_FILE > $CONFIG_FILE
 
-sed -i "s#@PREFIX@#$PREFIX#g" $TEMP_MAKE_FILE
-sed -i "s#@INCLUDEDIR@#$INCLUDEDIR#g" $TEMP_MAKE_FILE
+sed -e "s#@PREFIX@#$PREFIX#g" \
+    -e "s#@INCLUDEDIR@#$INCLUDEDIR#g" \
+    $TEMP_MAKE_FILE > $MAKE_FILE
 
-cat $TEMP_CONFIG_FILE > $CONFIG_FILE
-cat $TEMP_MAKE_FILE > $MAKE_FILE
+$RM $TEMP_CONFIG_FILE
+$RM $TEMP_MAKE_FILE
 

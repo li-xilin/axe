@@ -23,13 +23,13 @@ include $(ROOT)/config.mak
 
 OBJS = event.o event_ht.o reactor.o socket.o timer.o
 
-ifneq ($(SYSTEM), Win32)
+ifneq ($(TARGET_SYSTEM), win32)
 CFLAGS += -D_XOPEN_SOURCE=600
 endif
 
 ifeq ($(HAVE_EPOLL),yes)
 	OBJS += polling_epoll.o
-	ifeq ($(SYSTEM),Win32)
+	ifeq ($(TARGET_SYSTEM),win32)
 		OBJS += wepoll.o
 	endif
 else ifeq ($(HAVE_KQUEUE),yes)
