@@ -1,4 +1,3 @@
-#include "config.h"
 #include "polling.h"
 
 #ifndef AX_REACTOR_DEFINED
