@@ -9,6 +9,7 @@
 #include "ax/timeval.h"
 #include "ax/log.h"
 #include "ax/link.h"
+#include "ax/reactor.h"
 
 #ifdef AX_OS_WIN32
 #include <windows.h>

@@ -3,7 +3,6 @@
 
 #include "socket.h"
 #include "event.h"
-#include "mutex.h"
 
 #ifndef AX_REACTOR_DEFINED
 #define AX_REACTOR_DEFINED
