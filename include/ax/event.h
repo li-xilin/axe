@@ -51,6 +51,13 @@ struct ax_event_st
 */
 void ax_event_set(ax_event *e, ax_socket fd, short ev_flags,ax_event_cb_f *cb, void *arg);
 
+inline static ax_event ax_event_make(ax_socket fd, short ev_flags,ax_event_cb_f *cb, void *arg)
+{
+	ax_event event;
+	ax_event_set(&event, fd, ev_flags, cb, arg);
+	return event;
+}
+
 bool ax_event_in_use(const ax_event *e);
 
 #endif
