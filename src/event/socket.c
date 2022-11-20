@@ -1,6 +1,7 @@
 #include "ax/socket.h"
 #include "ax/log.h"
 #include "ax/mem.h"
+#include "ax/trick.h"
 #include "ax/detect.h"
 
 #ifdef AX_OS_WIN32
@@ -18,22 +19,17 @@
 #include <string.h>
 #include <assert.h>
 
-bool socket_equal(const void *s1, const void *s2)
+static bool socket_equal(const void *s1, const void *s2)
 {
 	return *(ax_socket *)s1 == *(ax_socket *)s2;
 }
 
-size_t socket_hash(const void *p)
+static size_t socket_hash(const void *p)
 {
 	return ax_memhash(p, sizeof(ax_socket));
 }
 
-const ax_trait ax_trait_ax_socket = {
-	.size = sizeof(ax_socket),
-	.equal = socket_equal,
-	.hash = socket_hash,
-};
-
+ax_trait_declare(ax_socket, ax_socket, EQUAL(socket_equal), HASH(socket_hash));
 
 int ax_socket_init()
 {
