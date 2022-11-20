@@ -6,14 +6,19 @@
 #include <stddef.h>
 
 #ifdef AX_OS_WIN32
-typedef uintptr_t ax_socket;
+#include <winsock2.h>
+typedef SOCKET ax_socket;
 #else
+#include<sys/socket.h>
+#include<sys/types.h>
+#include<netinet/in.h>
+#include<arpa/inet.h>
 typedef int ax_socket;
 #endif
 
 struct timeval;
 
-extern const ax_trait ax_trait_ax_socket;
+extern const ax_trait ax_trait_type_ax_socket;
 
 int ax_socket_init();
 
