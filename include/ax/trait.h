@@ -168,10 +168,14 @@ typedef ptrdiff_t ax_type(diff);
 
 #define __AX_TRAIT_SET(i, x) __AX_TRAIT_SET_##x,
 
-#define ax_trait_declare(_name, _type, ...) \
+#define ax_trait_declare(_name, _type) \
+	typedef _type ax_type(_name); \
+	extern const struct ax_trait_st __AX_TRAIT_STRUCT_NAME(_name)
+
+#define ax_trait_define(_name, ...) \
 	const struct ax_trait_st __AX_TRAIT_STRUCT_NAME(_name) = \
-	{ .size = sizeof(_type), AX_MTOOL_TRANSFORM(__AX_TRAIT_SET, __VA_ARGS__) }; \
-	typedef _type ax_type(_name)
+	{ .size = sizeof(ax_type(_name)), AX_MTOOL_TRANSFORM(__AX_TRAIT_SET, __VA_ARGS__) }
+
 
 #define ax_trait_in(_tr, _ptr) ((_tr)->link ? &(_ptr) : *&(_ptr))
 
@@ -191,7 +195,6 @@ inline static size_t ax_trait_hash(const ax_trait *tr, const void *p)
 
 inline static void ax_trait_free(const ax_trait *tr, void *p)
 {
-	__ax_require(tr->free);
 	if (tr->link && !*(void **)p)
 		return;
 	if (!tr->free)
