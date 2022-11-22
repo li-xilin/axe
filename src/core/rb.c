@@ -778,15 +778,17 @@ inline static void *node_set_value(ax_map *map, struct node_st *node, const void
 {
 	ax_rb_r self = AX_R_INIT(ax_map, map);
 	const ax_trait *vtr = ax_class_data(self.ax_box).elem_tr;
-	ax_byte tmp[vtr->size];
-	if (ax_trait_copy_or_init(vtr, tmp, val, ap))
-		return NULL;
+	ax_byte tmp[vtr->size]; // Backup old value
 
 	void *ptr = node_val(map, node);
+	memcpy(tmp, ptr, vtr->size);
+	if (ax_trait_copy_or_init(vtr, ptr, val, ap)) {
+		memcpy(ptr, tmp, vtr->size); // Restore old value
+		return NULL;
+	}
 	if (need_clean)
-		ax_trait_free(vtr, ptr);
+		ax_trait_free(vtr, tmp);
 
-	memcpy(ptr, tmp, vtr->size);
 	return ptr;
 }
 
