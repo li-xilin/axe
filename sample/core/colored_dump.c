@@ -230,9 +230,8 @@ void location_free(void *p)
 	
 }
 
-ax_trait_declare(location, struct location,
-	INIT(location_init),
-	DUMP(location_dump),
+ax_trait_declare(location, struct location);
+ax_trait_define(location, INIT(location_init), DUMP(location_dump),
 	FREE(location_free)
 );
 

@@ -48,8 +48,9 @@ ax_dump* stuff_trait_dump(const struct stuff *stuff, size_t size)
 	return dump;
 }
 
+ax_trait_declare(stuff, struct stuff);
 
-ax_trait_declare(stuff, struct stuff,
+ax_trait_define(stuff,
 	COPY((ax_trait_copy_f) stuff_trait_copy),
 	INIT((ax_trait_init_f) stuff_trait_init),
 	FREE((ax_trait_free_f) stuff_trait_free),
