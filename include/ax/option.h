@@ -60,4 +60,6 @@ int ax_option_parse_long(struct ax_option_st *options,
  */
 char *ax_option_arg(struct ax_option_st *options);
 
+int ax_argv_from_buf(char *line, char *argv[], int argc_max);
+
 #endif
