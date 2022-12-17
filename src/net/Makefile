@@ -42,7 +42,7 @@ else
 $(error Multiplexing calls are not found in system)
 endif
 
-TARGET = $(LIB)/libaxevent.a
+TARGET = $(LIB)/libaxnet.a
 
 all: $(TARGET)
 

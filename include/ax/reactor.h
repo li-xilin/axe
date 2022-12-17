@@ -9,6 +9,9 @@
 typedef struct ax_reactor_st ax_reactor;
 #endif
 
+/* exits after having processed at least one active event */
+#define AX_REACTOR_ONCE 0x01
+
 ax_reactor *ax_reactor_create();
 
 void ax_reactor_exit(ax_reactor *r);

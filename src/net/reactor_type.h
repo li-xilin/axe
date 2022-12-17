@@ -14,9 +14,6 @@ typedef struct ax_reactor_st ax_reactor;
 struct timerheap_st;
 struct ax_event_ht_st;
 
-/* exits after having processed at least one active event */
-#define REACTOR_ONCE 0x01
-
 /* 
 * The timer event's initial timerheap_idx value,
 * indicates that the event is not in the heap.

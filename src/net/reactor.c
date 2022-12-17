@@ -379,7 +379,7 @@ void ax_reactor_loop(ax_reactor *r, struct timeval *timeout, int flags)
 				ev->cb(ev->fd, ev->res_flags, ev->arg);
 				ax_mutex_lock(&r->lock);
 			}
-			if (flags & REACTOR_ONCE) {
+			if (flags & AX_REACTOR_ONCE) {
 				r->out = 1;
 			}
 		}

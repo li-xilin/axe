@@ -29,7 +29,23 @@ static size_t socket_hash(const void *p)
 	return ax_memhash(p, sizeof(ax_socket));
 }
 
-ax_trait_declare(ax_socket, ax_socket, EQUAL(socket_equal), HASH(socket_hash));
+static ax_fail socket_copy(void *dst, const void *src)
+{
+	*(ax_socket *)dst = *(ax_socket *)src;
+	return false;
+}
+
+static ax_fail socket_init(void *p, va_list *ap)
+{
+	*(ax_socket *)p = ap ? va_arg(*ap, ax_socket) : AX_SOCKET_INVALID;
+	return false;
+}
+
+ax_trait_define(ax_socket,
+	EQUAL(socket_equal),
+	HASH(socket_hash),
+	COPY(socket_copy),
+	INIT(socket_init));
 
 int ax_socket_init()
 {
@@ -335,5 +351,52 @@ int ax_socket_pair(int family, int type, int protocol, ax_socket fd[2])
 #else
 	return socketpair(family, type, protocol, fd);
 #endif
+}
+
+int ax_socket_syncsend(ax_socket sock, const void *data, size_t len)
+{
+        size_t sent = 0;
+	int flags = 0;
+#ifndef AX_OS_WIN32
+	flags = MSG_NOSIGNAL;
+#endif
+        while (sent != len) {
+                ssize_t ret = send(sock, (char *)data + sent, len - sent, flags);
+                if (ret <  0) {
+#ifndef AX_OS_WIN32
+                        if (errno == EINTR)
+                                continue;
+#endif
+                        return -1;
+                }
+                sent += ret;
+
+        }
+        return 0;
+}
+
+int ax_socket_syncrecv(ax_socket sock, void *buf, size_t len)
+{
+        if (len == 0)
+                return 0;
+        size_t received = 0;
+        while (received != len) {
+                ssize_t ret = recv(sock, (char *)buf + received, len - received, MSG_WAITALL);
+                if (ret <  0) {
+#ifndef AX_OS_WIN32
+                        if (errno == EINTR)
+                                continue;
+#endif
+                        return -1;
+                }
+                if (ret == 0) {
+                        /* 意外的文件结尾，数据读取不完整 */
+                        errno = ENODATA;
+                        return -1;
+                }
+                received += ret;
+
+        }
+        return 0;
 }
 
