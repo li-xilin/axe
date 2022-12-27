@@ -33,6 +33,7 @@ Options:
   --prefix                install architecture-independent files in PREFIX
                           [/usr/local]
   --includedir=DIR        C header files [PREFIX/include]
+  --with-pic              use only PIC/non-PIC objects [default=no]
   --disable-debug         disable support for running in debug mode
   --disable-cassert       disable C assertion
 
