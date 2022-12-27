@@ -6,7 +6,7 @@ MAKE_FILE=Makefile
 # Default configure for config.mak
 CC=gcc
 AR=ar
-CPP=cpp
+CPP="gcc -E"
 RM='rm -f'
 CFLAGS=
 LDFLAGS=
@@ -74,7 +74,7 @@ IFS="="
 for arg do
 	PAIR=($arg)
 	case ${PAIR[0]} in
-		CC) CC=${PAIR[1]};;
+		CC) CC=${PAIR[1]};CPP="$CC -E";;
 		CFLAGS) CFLAGS="$CFLAGS ${PAIR[1]}";;
 		LDFLAGS) LDFLAGS="$LDFLAGS ${PAIR[1]}";;
 	esac
@@ -142,7 +142,7 @@ macro-test() {
 build-system-test() {
 	local CONFIG_NAME=$1
 	local RESULT=
-	echo -e "checking for building system... \c" 
+	echo -e "checking for system for build... \c" 
 	if [ "$OS" == "Windows_NT" ]; then
 		RESULT=win32
 	else
@@ -155,7 +155,7 @@ build-system-test() {
 target-system-test() {
 	local CONFIG_NAME=$1
 	local RESULT=
-	echo -e "checking for target system... \c" 
+	echo -e "checking for system for target... \c" 
 	cat include/ax/detect.h > $TEST_FILE
 	echo 'echo AX_OS_TEXT' >> $TEST_FILE
 	RESULT=$($CPP $TEST_FILE | sh)
