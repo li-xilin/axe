@@ -416,6 +416,7 @@ ut_suite *suite_for_btrie()
 	ut_suite_add(suite, trie_get, 1);
 	ut_suite_add(suite, trie_exist, 2);
 	ut_suite_add(suite, trie_at, 2);
+	ut_suite_add(suite, trie_erase, 2);
 	ut_suite_add(suite, trie_prune, 2);
 	ut_suite_add(suite, trie_rekey, 2);
 	ut_suite_add(suite, iterater, 2);

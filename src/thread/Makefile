@@ -21,7 +21,11 @@
 ROOT = ../..
 include $(ROOT)/config.mak
 
-CFLAGS += -D_XOPEN_SOURCE=600
+ifeq ($(TARGET_SYSTEM),win32)
+	CFLAGS += -D_WIN32_WINNT=0x0600
+else
+	CFLAGS += -D_XOPEN_SOURCE=600
+endif
 
 TARGET = $(LIB)/libaxthread.a
 

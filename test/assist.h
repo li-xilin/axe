@@ -25,7 +25,7 @@
 #include <ax/algo.h>
 #include <ax/type/seq.h>
 
-static bool seq_equal_array(ax_seq *seq, void *arr, size_t mem_size)
+inline static bool seq_equal_array(ax_seq *seq, void *arr, size_t mem_size)
 {
 	ax_iter first = ax_box_begin(ax_r(ax_seq, seq).ax_box);
 	ax_iter last = ax_box_end(ax_r(ax_seq, seq).ax_box);

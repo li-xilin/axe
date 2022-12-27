@@ -1,12 +1,5 @@
 ROOT = ..
-CC = gcc
-CFLAGS = -I$(ROOT)/include -std=c99 --pedantic -Werror
-
-ifneq ($(DEBUG), 0)
-	CFLAGS += -O0 -DAX_DEBUG -g
-else
-	CFLAGS += -O2
-endif
+include ../config.mak
 
 LDFLAGS = -L$(ROOT)/lib -laxut -laxcore -laxthread  #-fsanitize=address
 
@@ -16,7 +9,6 @@ OBJS = t_main.o t_pred.o t_vector.o t_list.o t_avl.o \
        t_class.o t_stuff.o t_map_impl.o
 
 TARGET = t_all
-
 
 all: $(TARGET)
 

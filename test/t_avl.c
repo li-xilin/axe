@@ -50,6 +50,7 @@ static void insert(ut_runner *r)
 
 	int i = 0;
 	ax_map_foreach(avl.ax_map, const int32_t *, key, int32_t *, val) {
+        ax_unused(val);
 		 ut_assert(r, *key == i++);
 	}
 
@@ -118,6 +119,7 @@ static void foreach(ut_runner *r)
 
 	count = 0;
 	ax_map_cforeach(avl.ax_map, const int *, k, const int *, v) {
+        ax_unused(v);
 		if (*k == 10)
 			break;
 		count++;

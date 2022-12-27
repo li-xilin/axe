@@ -74,7 +74,6 @@ static void iter_erase(ut_runner* r)
 	int table[N] = {0};
 	ax_iter it = ax_box_begin(hmap.ax_box),
 		end = ax_box_end(hmap.ax_box);
-	int i = 0;
 	while(!ax_iter_equal(&it, &end)) {
 		int *k = (int*)ax_map_iter_key(&it);
 		int *v = (int*)ax_iter_get(&it);
@@ -188,7 +187,7 @@ static void rehash(ut_runner* r)
 		sprintf(key, "%d", i);
 		ax_map_put(hmap.ax_map, key, &i);
 	}
-	printf("threshold = %lu\n", ax_hmap_threshold(hmap.ax_hmap));
+	printf("threshold = %zu\n", ax_hmap_threshold(hmap.ax_hmap));
 	if (ax_hmap_rehash(hmap.ax_hmap, 20))
 		ut_term(r, "ax_hmap_rehash");
 
