@@ -25,7 +25,7 @@ MANDIR = $(DESTDIR)/share/man
 all debug clean:
 	$(MAKE) -C src/core $@
 	$(MAKE) -C src/thread $@
-	$(MAKE) -C src/event $@
+	$(MAKE) -C src/net $@
 	$(MAKE) -C src/ut $@
 
 install:
@@ -35,7 +35,7 @@ install:
 		$(DESTDIR)/include/ax/unix \
 		$(DESTDIR)/include/ut \
 		$(MANDIR)/man3
-	install -m 644 lib/libaxcore.a lib/libaxthread.a lib/libaxut.a lib/libaxevent.a $(DESTDIR)/lib
+	install -m 644 lib/libaxcore.a lib/libaxthread.a lib/libaxut.a lib/libaxnet.a $(DESTDIR)/lib
 	install -m 644 include/ax/*.h $(DESTDIR)/include/ax
 	install -m 644 include/ax/type/*.h $(DESTDIR)/include/ax/type
 	install -m 644 include/ax/win32/*.h $(DESTDIR)/include/ax/win32
