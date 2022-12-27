@@ -18,15 +18,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-INCLUDE = $(ROOT)/include
-LIB = $(ROOT)/lib
-BIN = $(ROOT)/bin
-
-AR = @AR@
-RM = @RM@
-CC = @CC@
-CFLAGS = -Wall --pedantic -Werror -std=c99 -I$(ROOT)/src/include -I$(INCLUDE) -fno-strict-aliasing 
-
+AR            = @AR@
+RM            = @RM@
+CC            = @CC@
+CFLAGS        = @CFLAGS@
+LDFLAGS       = @LDFLAGS@
 HAVE_EPOLL    = @HAVE_EPOLL@
 HAVE_POLL     = @HAVE_POLL@
 HAVE_KQUEUE   = @HAVE_KQUEUE@
@@ -34,8 +30,14 @@ HAVE_SELECT   = @HAVE_SELECT@
 TARGET_SYSTEM = @TARGET_SYSTEM@
 BUILD_SYSTEM  = @BUILD_SYSTEM@
 
+INCLUDE = $(ROOT)/include
+LIB = $(ROOT)/lib
+BIN = $(ROOT)/bin
+
 # Needed for AIX
 CFLAGS += -D_ALL_SOURCE=1 -Wno-unused-value
+
+CFLAGS += -Wall --pedantic -Werror -std=c99 -I$(ROOT)/src/include -I$(INCLUDE) -fno-strict-aliasing 
 
 DISABLE_DEBUG = @DISABLE_DEBUG@
 DISABLE_CASSERT = @DISABLE_CASSERT@
