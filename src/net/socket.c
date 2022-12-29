@@ -400,3 +400,26 @@ int ax_socket_syncrecv(ax_socket sock, void *buf, size_t len)
         return 0;
 }
 
+int ax_socket_waitrecv(ax_socket sock, size_t millise)
+{
+	fd_set fdset;
+        FD_ZERO(&fdset);
+
+        ax_socket fd_max = sock;
+
+	struct timeval timeout = {
+		.tv_sec = millise / 1000,
+		.tv_usec = millise % 1000 * 1000,
+	};
+redo:;
+        int nreadys = select(fd_max + 1, &fdset, NULL, NULL, &timeout);
+
+        if (nreadys < 0) {
+#ifndef AX_OS_WIN32
+		if (errno == EINTR)
+			goto redo;
+#endif
+                return -1;
+	}
+	return 0;
+}

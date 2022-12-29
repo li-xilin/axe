@@ -35,4 +35,7 @@ int ax_socket_set_nonblocking(ax_socket fd);
 int ax_socket_syncsend(ax_socket sock, const void *data, size_t len);
 int ax_socket_syncrecv(ax_socket sock, void *buf, size_t len);
 
+
+int ax_socket_waitrecv(ax_socket sock, size_t millise);
+
 #endif
