@@ -384,8 +384,9 @@ int ax_socket_syncrecv(ax_socket sock, void *buf, size_t len)
                 ssize_t ret = recv(sock, (char *)buf + received, len - received, MSG_WAITALL);
                 if (ret <  0) {
 #ifndef AX_OS_WIN32
-                        if (errno == EINTR)
+                        if (errno == EINTR) {
                                 continue;
+			}
 #endif
                         return -1;
                 }
@@ -411,7 +412,9 @@ int ax_socket_waitrecv(ax_socket sock, size_t millise)
 		.tv_sec = millise / 1000,
 		.tv_usec = millise % 1000 * 1000,
 	};
+#ifndef AX_OS_WIN32
 redo:;
+#endif
         int nreadys = select(fd_max + 1, &fdset, NULL, NULL, &timeout);
 
         if (nreadys < 0) {
