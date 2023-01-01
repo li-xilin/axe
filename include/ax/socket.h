@@ -8,7 +8,7 @@
 #ifdef AX_OS_WIN32
 #include <winsock2.h>
 typedef SOCKET ax_socket;
-#define AX_SOCKET_INVALID SOCKET_INVALID
+#define AX_SOCKET_INVALID INVALID_SOCKET
 #else
 #include<sys/socket.h>
 #include<sys/types.h>
