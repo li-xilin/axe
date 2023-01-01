@@ -24,6 +24,7 @@
 #define AX_TRAIT_H
 #include "def.h"
 #include "debug.h"
+#include "trick.h"
 #include <stdint.h>
 #include <string.h>
 #include <stddef.h>
