@@ -2,9 +2,9 @@
 #define EVENT_REACTOR_TYPE_H
 
 #include "ax/link.h"
-#include "ax/mutex.h"
-#include "ax/event.h"
 #include "ax/socket.h"
+#include "ax/event.h"
+#include "ax/mutex.h"
 
 #ifndef AX_REACTOR_DEFINED
 #define AX_REACTOR_DEFINED
