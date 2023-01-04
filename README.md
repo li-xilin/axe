@@ -4,9 +4,9 @@
 
 ---
 
-AXE is the light-weight and low-level library. It provides data structure handling, object system, multi-thread and event-driven for C.
+AXE is a light-weight and cross platform library. It provides data structure handling, object system, multi-thread and network for C.
 
-AXE是一个轻量级的低级程序库，它为C语言提供了数据结构封装、对象系统、多线程支持和事件驱动.
+AXE是一个轻量级的跨平台程序库，它为C语言提供了数据结构封装、对象系统、多线程支持和网络.
 
 ## COMPILE AND INSTALL
 
@@ -15,9 +15,10 @@ AXE是一个轻量级的低级程序库，它为C语言提供了数据结构封�
 编译结束后，在*lib*目录会生成一些库文件，包括
 
 * *libaxcore.a* 核心模块，只依赖C99标准
-* *libaxut.a* 单元测试支持模块
-* *libaxthread.a* 多线程支持模块
-* *libaxevent.a* 事件驱动支持模块
+* *libaxut.a* 单元测试模块
+* *libaxthread.a* 多线程模块
+* *libaxnet.a* 事件驱动的网络模块
+* *libaxkit.a* 平台工具库
 
 执行`configure --help`获取更多配置信息.
 
@@ -143,6 +144,8 @@ int main(void)
 | ax/tpool.h     | 线程池 |
 | ax/event.h     | 事件结构 |
 | ax/reactor.h   | 基于Reactor结构的事件驱动模型 |
+| ax/edit.h      | 终端行编辑工具 |
+| ax/lib.h       | 动态加载共享对象(DLL活SO文件) |
 | ut/case.h      | 测试用例 |
 | ut/suite.h     | 测试用例集 |
 | ut/runner.h    | 测试用例执行容器 |
