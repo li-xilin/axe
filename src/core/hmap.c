@@ -683,9 +683,11 @@ ax_map *__ax_hmap_construct(const ax_trait *key_tr, const ax_trait *val_tr)
 	CHECK_PARAM_NULL(key_tr);
 	CHECK_PARAM_NULL(key_tr->equal);
 	CHECK_PARAM_NULL(key_tr->hash);
+	CHECK_PARAM_NULL(key_tr->copy);
 
 	CHECK_PARAM_NULL(val_tr);
-	CHECK_PARAM_NULL(val_tr->free);
+	CHECK_PARAM_NULL(val_tr->copy || val_tr->init);
+
 
 	ax_hmap *hmap = malloc(sizeof(ax_hmap));
 	if (!hmap)

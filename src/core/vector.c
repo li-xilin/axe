@@ -613,8 +613,7 @@ const ax_seq_trait ax_vector_tr =
 ax_seq *__ax_vector_construct(const ax_trait *elem_tr)
 {
 	CHECK_PARAM_NULL(elem_tr);
-	CHECK_PARAM_NULL(elem_tr->copy);
-	CHECK_PARAM_NULL(elem_tr->free);
+	CHECK_PARAM_NULL(elem_tr->copy || elem_tr->init);
 
 	ax_buff *buff = NULL;
 	ax_seq *seq = NULL;

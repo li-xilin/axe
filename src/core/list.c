@@ -793,7 +793,6 @@ const ax_seq_trait ax_list_tr =
 ax_seq* __ax_list_construct(const ax_trait *elem_tr)
 {
 	CHECK_PARAM_NULL(elem_tr);
-
 	CHECK_PARAM_NULL(elem_tr->init || elem_tr->copy);
 
 	ax_list_r self = { malloc(sizeof(ax_list)) };
