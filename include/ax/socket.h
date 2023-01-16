@@ -38,4 +38,39 @@ int ax_socket_syncrecv(ax_socket sock, void *buf, size_t len);
 
 int ax_socket_waitrecv(ax_socket sock, size_t millise);
 
+
+inline static int ax_socket_recv_u16(ax_socket sock, uint16_t *valuep)
+{
+        uint16_t value;
+        if (ax_socket_syncrecv(sock, &value, sizeof value))
+                return -1;
+        *valuep = ntohs(value);
+        return 0;
+}
+
+inline static int ax_socket_recv_u32(ax_socket sock, uint32_t *valuep)
+{
+        uint32_t value;
+        if (ax_socket_syncrecv(sock, &value, sizeof value))
+                return -1;
+        *valuep = ntohl(value);
+        return 0;
+}
+
+inline static int ax_socket_send_u16(ax_socket sock, uint16_t value)
+{
+        uint16_t value_n = htons(value);
+        if (ax_socket_syncsend(sock, &value_n, sizeof value_n))
+                return -1;
+        return 0;
+}
+
+inline static int ax_socket_send_u32(ax_socket sock, uint32_t value)
+{
+        uint32_t value_n = htonl(value);
+        if (ax_socket_syncsend(sock, &value_n, sizeof value_n))
+                return -1;
+        return 0;
+}
+
 #endif
