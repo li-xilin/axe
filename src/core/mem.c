@@ -232,7 +232,7 @@ void ax_membyhex(const char *text, void *out)
 	char *buf = out;
 	int i = 0;
 	for (i = 0; text[i] != '\0'; i++)
-		ax_assert(isdigit(text[i]) || (text[i] >= 'A' && text[i] <= 'Z'), "invalid charactor '%c'", text[i]);
+		ax_assert(isdigit((int)text[i]) || (text[i] >= 'A' && text[i] <= 'Z'), "invalid charactor '%c'", text[i]);
 	ax_assert(i % 2 == 0, "length of text is odd number");
 
 	for (i = 0; text[i] != '\0'; i += 2)

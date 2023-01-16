@@ -39,10 +39,10 @@ do { \
 	CHECK_PARAM_NULL(_sym); \
 	ax_assert(_sym[0] != '\0', \
 			"invalid zero-length symbol name"); \
-	ax_assert(isalpha(_sym[0]) || _sym[0] == '_', \
+	ax_assert(isalpha((int)_sym[0]) || _sym[0] == '_', \
 			"symbol name %s begin with invalid charactor", _sym); \
 	for (int i = 1; _sym[i]; i++) { \
-		ax_assert(_sym[i] == '_' || _sym[i] == '.' || isdigit(_sym[i]) || isalpha(_sym[i]), \
+		ax_assert(_sym[i] == '_' || _sym[i] == '.' || isdigit((int)_sym[i]) || isalpha((int)_sym[i]), \
 				"invalid charactor \'%c\' in symbol name \'%s\'", _sym[i], _sym); \
 	} \
 } while(0)
