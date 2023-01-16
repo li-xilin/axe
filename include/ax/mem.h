@@ -96,6 +96,8 @@ size_t ax_memhash(const void *p, size_t size);
 
 char *ax_strsplit(char **s, char ch);
 
+size_t ax_strtoargv(char *s, char *argv[], size_t len);
+
 char *ax_strrepl(const char *orig, const char *rep, const char *with);
 
 char *ax_memtoustr(const void *p, size_t size, char *buf);

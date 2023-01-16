@@ -239,3 +239,19 @@ void ax_membyhex(const char *text, void *out)
 		buf[i / 2] = (text[i] - (isdigit((int)text[i]) ? '0' : ('A' - 0xA))) * 0x10
 			+ (text[i + 1] - (isdigit((int)text[i + 1]) ? '0' : ('A' - 0xA)));
 }
+
+size_t ax_strtoargv(char *s, char *argv[], size_t argc_max)
+{
+	CHECK_PARAM_NULL(s);
+        ax_assert(argc_max > 0, "argc_max must be positive integer");
+        char *next_ptr = s, *item;
+        size_t count = 0;
+        while (count < argc_max - 1 && (item = ax_strsplit(&next_ptr, ' '))) {
+                if (*item == '\0')
+                        continue;
+                argv[count] = item;
+                count++;
+        }
+        argv[count] = NULL;
+        return count;
+}

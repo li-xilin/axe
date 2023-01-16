@@ -263,17 +263,3 @@ int ax_option_parse_long(struct ax_option_st *options,
     return option_error(options, OPT_MSG_INVALID, option);
 }
 
-int ax_argv_from_buf(char *line, char *argv[], int argc_max)
-{
-	ax_assert(argc_max > 0, "argc_max must be positive integer");
-        char *next_ptr = line, *item;
-        int count = 0;
-        while (count < argc_max - 1 && (item = ax_strsplit(&next_ptr, ' '))) {
-                if (*item == '\0')
-                        continue;
-                argv[count] = item;
-                count++;
-        }
-        argv[count] = NULL;
-        return count;
-}
