@@ -9,6 +9,9 @@
 #include <winsock2.h>
 typedef SOCKET ax_socket;
 #define AX_SOCKET_INVALID INVALID_SOCKET
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
 #else
 #include<sys/socket.h>
 #include<sys/types.h>
