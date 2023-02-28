@@ -43,7 +43,6 @@ static DWORD WINAPI ThreadFunc(LPVOID lpParam)
 static inline int ax_thread_create(ax_thread_func_f *thread_func, void *arg, ax_thread *thread)
 {
 	assert(thread_func);
-	assert(arg);
 	assert(thread);
 
 	DWORD dwThreadId;
