@@ -26,7 +26,7 @@ struct ax_reactor_st
 
 	ax_link pending_list;
 
-	void *polling_data;
+	struct mux_st *mux;
 
 	struct ax_event_ht_st *eht;
 

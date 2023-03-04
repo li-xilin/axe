@@ -1,4 +1,4 @@
-#include "polling.h"
+#include "mux.h"
 #include "event_ht.h"
 #include "timer.h"
 #include "reactor_type.h"
@@ -88,8 +88,8 @@ ax_reactor *ax_reactor_create()
 	ax_link_init(&r->event_list);
 	ax_link_init(&r->pending_list);
 
-	r->polling_data = polling_init(r);
-	if (!r->polling_data) {
+	r->mux = mux_init();
+	if (!r->mux) {
 		ax_perror("failed to initialize polling");
 		goto fail;
 	}
@@ -118,8 +118,8 @@ fail:
 			free(r->eht);
 		}
 
-		if (r->polling_data)
-			polling_destroy(r);
+		if (r->mux)
+			mux_free(r->mux);
 
 		if (r->io_pipe[0]) {
 			ax_socket_close(r->io_pipe[0]);
@@ -141,7 +141,7 @@ static void reactor_free_events(ax_reactor *r)
 	ax_event *e = NULL;
 
 	while ((e = reactor_dequeue_event(r))) {
-		polling_del(r, e->fd, e->ev_flags);
+		mux_del(r->mux, e->fd, e->ev_flags);
 		ax_link_del(&e->event_link);
 		event_ht_delete(r->eht, e);
 		ax_link_del(&e->pending_link);
@@ -173,7 +173,7 @@ void ax_reactor_destroy(ax_reactor *r)
 	reactor_free_events(r);
 
 	event_ht_free(r->eht);
-	polling_destroy(r);
+	mux_free(r->mux);
 	ax_socket_close(r->io_pipe[0]);
 	ax_socket_close(r->io_pipe[1]);
 
@@ -216,7 +216,7 @@ int ax_reactor_add(ax_reactor *r, ax_event *e)
 			ax_perror("event already in the reactor");
 			return -1;
 		}
-		if (polling_add(r, e->fd, e->ev_flags) == -1) {
+		if (mux_add(r->mux, e->fd, e->ev_flags) == -1) {
 			ax_mutex_unlock(&r->lock);
 			ax_perror("failed to add the event[%d] to the reactor.", e->fd);
 			return -1;
@@ -243,7 +243,7 @@ int ax_reactor_modify(ax_reactor *r, ax_event *e)
 
 	ax_mutex_lock(&r->lock);
 
-	if (polling_mod(r, e->fd, e->ev_flags) == -1) {
+	if (mux_mod(r->mux, e->fd, e->ev_flags) == -1) {
 		ax_mutex_unlock(&r->lock);
 		ax_perror("failed to modify the event[%d] in the reactor.", e->fd);
 		return -1;
@@ -281,7 +281,7 @@ int ax_reactor_remove(ax_reactor *r, ax_event *e)
 		assert(e->timerheap_idx == E_OUT_OF_TIMERHEAP);
 	}
 	else {
-		polling_del(r, e->fd, e->ev_flags);
+		mux_del(r->mux, e->fd, e->ev_flags);
 		ax_link_del(&e->event_link);
 		event_ht_delete(r->eht, e);
 		ax_link_del(&e->pending_link);
@@ -335,6 +335,13 @@ bool ax_reactor_empty(ax_reactor *r)
 	return ax_link_is_empty(&r->event_list);
 }
 
+static void pending_cb(ax_socket fd, short flags, void *arg)
+{
+	ax_reactor *r = arg;
+	ax_event *e = event_ht_retrieve(r->eht, fd);
+	ax_reactor_add_to_pending(r, e, flags);
+}
+
 void ax_reactor_loop(ax_reactor *r, struct timeval *timeout, int flags)
 {
 	assert(r != NULL);
@@ -367,7 +374,7 @@ void ax_reactor_loop(ax_reactor *r, struct timeval *timeout, int flags)
 			}
 		}
 
-		int nreadys = polling_poll(r, pt);
+		int nreadys = mux_poll(r->mux, &r->lock, pt, pending_cb, r);
 		reactor_handle_timer(r);
 
 		if (nreadys) {

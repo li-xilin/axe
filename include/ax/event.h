@@ -7,7 +7,8 @@
 #define AX_EV_READ        (1 << 0)
 #define AX_EV_WRITE       (1 << 1)
 #define AX_EV_TIMEOUT     (1 << 2)
-#define AX_EV_EDGE        (1 << 3)
+#define AX_EV_ERROR       (1 << 3)
+// #define AX_EV_EDGE        (1 << 3)
 #define AX_EV_ONCE        (1 << 4)
 #define AX_EV_REACTING    (1 << 5)
 

@@ -28,18 +28,28 @@ CFLAGS += -D_XOPEN_SOURCE=600
 endif
 
 ifeq ($(HAVE_EPOLL),yes)
-	OBJS += polling_epoll.o
+	MUX = epoll
+else ifeq ($(HAVE_KQUEUE),yes)
+	MUX = kqueue
+else ifeq ($(HAVE_POLL),yes)
+	MUX = poll
+else ifeq ($(HAVE_SELECT),yes)
+	MUX = select
+else
+$(error Multiplexing calls are not found in system)
+endif
+
+# MUX = select
+# multiplex interface could be manual specified by changing MUX variable
+
+$(info $(MUX) is used)
+
+OBJS += mux/$(MUX).o
+
+ifeq ($(MUX),epoll)
 	ifeq ($(TARGET_SYSTEM),win32)
 		OBJS += wepoll.o
 	endif
-else ifeq ($(HAVE_KQUEUE),yes)
-	OBJS += polling_kqueue.o
-else ifeq ($(HAVE_POLL),yes)
-	OBJS += polling_poll.o
-else ifeq ($(HAVE_SELECT),yes)
-	OBJS += polling_select.o
-else
-$(error Multiplexing calls are not found in system)
 endif
 
 TARGET = $(LIB)/libaxnet.a
