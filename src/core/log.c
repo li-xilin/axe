@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
 
 static FILE *g_logfp = NULL;
 static int g_mode = 0;
@@ -102,10 +103,19 @@ int __ax_log_print(const char *file, const char *func, int line, int level, cons
 	vsnprintf(buf, sizeof buf - 1, fmt, vl);
 	va_end(vl);
 
-	return fprintf(g_logfp ? g_logfp : stderr,
-			"[%s] %s:%s:%d:%s\n",
-			type, file, func, line, buf) == -1
+	char time_buf[64];
+	time_t tim = time(NULL);
+	struct tm *t = localtime(&tim);
+	sprintf(time_buf, "%4d-%02d-%02d %02d:%02d:%02d:%03ld", t->tm_year + 1900, t->tm_mon + 1,
+			t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, clock() % 1000);
+
+
+	int ret = fprintf(g_logfp ? g_logfp : stderr,
+			"[%-4s] %s %s:%s:%d:%s\n",
+			type, time_buf, file, func, line, buf) == -1
 		? -1
 		: 0;
+	fflush(g_logfp);
+	return ret;
 }
 
