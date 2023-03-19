@@ -106,5 +106,7 @@ char *ax_memtohex(const void *p, size_t size, char *out);
 
 void ax_membyhex(const char *text, void *out);
 
+char **ax_strargv(const char *cmdline, int* count);
+
 #endif
 
