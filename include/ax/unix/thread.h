@@ -88,4 +88,9 @@ static inline void ax_thread_yield(void)
 	sched_yield();
 }
 
+static inline void ax_thread_kill(ax_thread *thread)
+{
+	(void)pthread_cancel(thread->thread);
+}
+
 #endif

@@ -103,4 +103,9 @@ static inline void ax_thread_yield(void)
 	SwitchToThread();
 }
 
+static inline void ax_thread_kill(ax_thread *thread)
+{
+	(void)TerminateThread(thread->hThread, 0);
+}
+
 #endif
