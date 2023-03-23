@@ -70,7 +70,7 @@ int mux_add(mux *mux, ax_socket fd, short flags)
 	return 0;
 }
 
-int polling_mod(mux *mux, ax_socket fd, short flags)
+int mux_mod(mux *mux, ax_socket fd, short flags)
 {
 	assert(mux != NULL);
 
