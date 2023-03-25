@@ -1,3 +1,8 @@
+#include <ax/detect.h>
+#ifdef AX_OS_WIN32
+#define FD_SETSIZE 1024
+#endif
+
 #include "../mux.h"
 
 #include "ax/socket.h"
@@ -50,11 +55,14 @@ int mux_add(mux *mux, ax_socket fd, short flags)
 {
 	assert(mux != NULL);
 
-	if (mux->n_readfd + (flags & AX_EV_READ) == FD_SETSIZE
-			|| mux->n_writefd + (flags & AX_EV_WRITE) == FD_SETSIZE) {
+	if (mux->n_readfd + !!(flags & AX_EV_READ) > FD_SETSIZE
+			|| mux->n_writefd + !!(flags & AX_EV_WRITE) > FD_SETSIZE) {
 		ax_perror("Number of fd exceeds the limit");
 		return -1;
 	}
+
+	if (ax_map_exist(mux->fds.ax_map, &fd))
+		return -1;
 
 	if (flags & AX_EV_READ)
 		mux->n_readfd ++;
@@ -62,8 +70,6 @@ int mux_add(mux *mux, ax_socket fd, short flags)
 		mux->n_writefd ++;
 
 	short flags_insert = flags & (AX_EV_READ|AX_EV_WRITE);
-	if (ax_map_exist(mux->fds.ax_map, &fd))
-		return -1;
 	if (!ax_map_put(mux->fds.ax_map, &fd, &flags_insert))
 		return -1;
 
@@ -98,17 +104,17 @@ int mux_mod(mux *mux, ax_socket fd, short flags)
 void mux_del(mux *mux, ax_socket fd, short flags)
 {
 	assert(mux != NULL);
+	short *ptr = ax_map_get(mux->fds.ax_map, &fd);
+	if (!ptr)
+		return;
+	short old_flags= *(short *)ptr;
 
-	short old_flags= *(short *)ax_map_get(mux->fds.ax_map, &fd);
-
-	if ((old_flags & AX_EV_READ) && (flags & AX_EV_READ))
+	if (old_flags & AX_EV_READ)
 		mux->n_readfd--;
-	if ((old_flags & AX_EV_WRITE) && (flags & AX_EV_WRITE))
-		mux->n_readfd--;
+	if (old_flags & AX_EV_WRITE)
+		mux->n_writefd--;
 
-	short new_flags = old_flags = old_flags & (~flags);
-	if (!(new_flags & (AX_EV_READ|AX_EV_WRITE)))
-		ax_map_erase(mux->fds.ax_map, &fd);
+	ax_map_erase(mux->fds.ax_map, &fd);
 }
 
 int mux_poll(mux *mux, ax_mutex *lock, struct timeval * timeout, mux_pending_cb *pending_cb, void *arg)
