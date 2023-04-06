@@ -5,6 +5,7 @@
 
 #include "stringbuf.h"
 #include "ax/utf8.h"
+#include "ax/mem.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -60,7 +61,7 @@ char *sb_to_string(stringbuf *sb)
 {
 	if (sb->data == NULL) {
 		/* Return an allocated empty string, not null */
-		return strdup("");
+		return ax_strdup("");
 	}
 	else {
 		/* Just return the data and free the stringbuf structure */

@@ -77,6 +77,7 @@
 
 #include "ax/edit.h"
 #include "ax/utf8.h"
+#include "ax/mem.h"
 #include "stringbuf.h"
 
 #ifdef _WIN32 /* Windows platform, either MinGW or Visual Studio (MSVC) */
@@ -109,7 +110,6 @@
 
 #if defined(_WIN32) && !defined(__MINGW32__)
 /* Microsoft headers don't like old POSIX names */
-#define strdup _strdup
 #define snprintf _snprintf
 #endif
 
@@ -494,11 +494,6 @@ void ax_edit_screen_clear(void)
 	IGNORE_RC(write(STDOUT_FILENO, "\x1b[H\x1b[2J", 7));
 }
 
-void ax_edit_screen_clear(void)
-{
-	IGNORE_RC(write(STDOUT_FILENO, "\x1b[H\x1b[2J", 7));
-}
-
 /**
  * Reads a char from 'fd', waiting at most 'timeout' milliseconds.
  *
@@ -845,7 +840,7 @@ ax_edit_completion_cb * ax_edit_set_completion_cb(ax_edit_completion_cb *fn, voi
 
 void ax_edit_add_completion(ax_edit_completions *lc, const char *str) {
 	lc->cvec = (char **)realloc(lc->cvec,sizeof(char*)*(lc->len+1));
-	lc->cvec[lc->len++] = strdup(str);
+	lc->cvec[lc->len++] = ax_strdup(str);
 }
 
 void ax_edit_set_hints_cb(ax_edit_hints_cb *callback, void *arg)
@@ -1442,7 +1437,7 @@ static void set_history_index(struct current *current, int new_index)
 		/* Update the current history entry before to
 		 * overwrite it with the next one. */
 		free(history[history_len - 1 - history_index]);
-		history[history_len - 1 - history_index] = strdup(sb_str(current->buf));
+		history[history_len - 1 - history_index] = ax_strdup(sb_str(current->buf));
 		/* Show the new entry */
 		history_index = new_index;
 		if (history_index < 0) {
@@ -1920,7 +1915,7 @@ notinserted:
 }
 
 int ax_edit_history_add(const char *line) {
-	return ax_edit_history_add_allocated(strdup(line));
+	return ax_edit_history_add_allocated(ax_strdup(line));
 }
 
 int ax_edit_history_maxlen(void) {
