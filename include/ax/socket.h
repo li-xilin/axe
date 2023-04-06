@@ -17,6 +17,7 @@ typedef SOCKET ax_socket;
 #include<sys/types.h>
 #include<netinet/in.h>
 #include<arpa/inet.h>
+#include<endian.h>
 typedef int ax_socket;
 #define AX_SOCKET_INVALID -1
 #endif
@@ -74,6 +75,24 @@ inline static int ax_socket_send_u32(ax_socket sock, uint32_t value)
         if (ax_socket_syncsend(sock, &value_n, sizeof value_n))
                 return -1;
         return 0;
+}
+
+inline static int64_t ax_htonll(int64_t num)
+{
+#ifdef AX_OS_WIN32
+	return (((int64_t)htonl(num)) << 32) + htonl(num >> 32);
+#else
+	return (int64_t)htobe64((int64_t)num);
+#endif
+}
+
+inline static int64_t ax_ntohll(int64_t num)
+{
+#ifdef AX_OS_WIN32
+	return (((int64_t)ntohl(num)) << 32) + ntohl(num >> 32);
+#else
+	return (int64_t)be64toh((int64_t)num);
+#endif
 }
 
 #endif
