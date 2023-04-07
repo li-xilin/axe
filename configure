@@ -202,7 +202,6 @@ int main() { }
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/epoll.h>
-
 int main() {
     epoll_wait(0, NULL, 0, -1);
     return 0;
@@ -217,6 +216,15 @@ compile-test kqueue HAVE_KQUEUE <<EOT
 
 int main() {
     (void)kqueue();
+    return 0;
+}
+EOT
+
+compile-test afunix.h HAVE_AFUNIX_H <<EOT
+#include <winsock2.h>
+#include <afunix.h>
+int main() {
+    (void)sizeof(struct sockaddr_un);
     return 0;
 }
 EOT
@@ -236,6 +244,7 @@ sed -e "s#@CC@#$CC#g" \
     -e "s#@HAVE_EPOLL@#$HAVE_EPOLL#g" \
     -e "s#@HAVE_KQUEUE@#$HAVE_KQUEUE#g" \
     -e "s#@HAVE_SELECT@#$HAVE_SELECT#g" \
+    -e "s#@HAVE_AFUNIX_H@#$HAVE_AFUNIX_H#g" \
     -e "s#@BUILD_SYSTEM@#$BUILD_SYSTEM#g" \
     -e "s#@TARGET_SYSTEM@#$TARGET_SYSTEM#g" \
     > $CONFIG_FILE < $CONFIG_FILE.in

@@ -8,6 +8,7 @@
 #include <ws2tcpip.h>
 #include <winsock.h>
 #include <windows.h>
+#include <afunix.h>
 #else
 #include <unistd.h>
 #include <fcntl.h>
@@ -19,6 +20,10 @@
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
+
+#ifdef HAVE_AFUNIX_H
+int have_working_afunix_ = -1;
+#endif
 
 static bool socket_equal(const void *s1, const void *s2)
 {
@@ -222,7 +227,7 @@ static int check_working_afunix()
 		}
 		else {
 			have_working_afunix_ = 1;
-			ax_util_close_fd(sd);
+			ax_socket_close(sd);
 		}
 	}
 	return have_working_afunix_;
@@ -240,7 +245,7 @@ static int socketpair_win32_afunix(int family, int type, int protocol, ax_socket
 	struct sockaddr_un connect_addr;
 	char tmp_file[MAX_PATH] = {0};
 
-	ev_socklen_t size;
+	socklen_t size;
 	int saved_errno = -1;
 
 	listener = socket(family, type, 0);
@@ -254,11 +259,11 @@ static int socketpair_win32_afunix(int family, int type, int protocol, ax_socket
 	}
 	DeleteFileA(tmp_file);
 	listen_addr.sun_family = AF_UNIX;
-	if (strlcpy(listen_addr.sun_path, tmp_file, UNIX_PATH_MAX) >=
-		UNIX_PATH_MAX) {
-		event_warnx("Temp file name is too long");
+	if (strlen(tmp_file) >= UNIX_PATH_MAX) {
+		ax_pwarn("Temp file name is too long");
 		goto tidy_up_and_fail;
 	}
+	strcpy(listen_addr.sun_path, tmp_file);
 
 	if (bind(listener, (struct sockaddr *) &listen_addr, sizeof (listen_addr))
 		== -1)
@@ -296,27 +301,27 @@ static int socketpair_win32_afunix(int family, int type, int protocol, ax_socket
 	    listen_addr.sun_family != connect_addr.sun_family || _stricmp(listen_addr.sun_path, connect_addr.sun_path))
 		goto abort_tidy_up_and_fail;
 
-	ax_util_close_fd(listener);
+	ax_socket_close(listener);
 	fd[0] = connector;
 	fd[1] = acceptor;
 
 	return 0;
 
  abort_tidy_up_and_fail:
-	saved_errno = ERR(ECONNABORTED);
+	saved_errno = AX_SOCKET_ERR(ECONNABORTED);
  tidy_up_and_fail:
 	if (saved_errno < 0)
-		saved_errno = EVUTIL_SOCKET_ERROR();
+		saved_errno = ax_socket_errno();
 	if (listener != -1)
-		ax_util_close_fd(listener);
+		ax_socket_close(listener);
 	if (connector != -1)
-		ax_util_close_fd(connector);
+		ax_socket_close(connector);
 	if (acceptor != -1)
-		ax_util_close_fd(acceptor);
+		ax_socket_close(acceptor);
 	if (tmp_file[0])
 		DeleteFileA(tmp_file);
 
-	EVUTIL_SET_SOCKET_ERROR(saved_errno);
+	ax_socket_set_errno(saved_errno);
 	return -1;
 }
 #endif

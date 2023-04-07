@@ -24,7 +24,11 @@ include $(ROOT)/config.mak
 OBJS = event.o event_ht.o reactor.o socket.o timer.o
 
 ifneq ($(TARGET_SYSTEM), win32)
-CFLAGS += -D_DEFAULT_SOURCE
+	CFLAGS += -D_DEFAULT_SOURCE
+else
+	ifeq ($(HAVE_AFUNIX_H), yes)
+		CFLAGS += -DHAVE_AFUNIX_H
+	endif
 endif
 
 ifeq ($(HAVE_EPOLL),yes)

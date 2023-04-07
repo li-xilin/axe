@@ -22,6 +22,17 @@ typedef int ax_socket;
 #define AX_SOCKET_INVALID -1
 #endif
 
+#ifdef AX_OS_WIN32
+#define ax_socket_errno() WSAGetLastError()
+#define ax_socket_set_errno(errcode) WSASetLastError(errcode)
+#define AX_SOCKET_ERR(name) WSA##name
+#else
+#define ax_socket_errno() errno
+#define ax_socket_set_errno(errcode) (void)(errno = (errcode))
+#define AX_SOCKET_ERR(name) name
+#endif
+
+
 struct timeval;
 
 ax_trait_declare(ax_socket, ax_socket);
