@@ -24,7 +24,7 @@ include $(ROOT)/config.mak
 OBJS = event.o event_ht.o reactor.o socket.o timer.o
 
 ifneq ($(TARGET_SYSTEM), win32)
-CFLAGS += -D_XOPEN_SOURCE=600
+CFLAGS += -D_DEFAULT_SOURCE
 endif
 
 ifeq ($(HAVE_EPOLL),yes)

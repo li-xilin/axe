@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <sys/time.h>
 #include <sys/socket.h>
+#include <netinet/tcp.h>
 #endif
 
 #include <errno.h>
@@ -425,4 +426,39 @@ redo:;
                 return -1;
 	}
 	return 0;
+}
+
+int ax_socket_set_keepalive(ax_socket sock, uint32_t idle_sec, uint32_t interval_sec)
+{
+	int old_keep_alive;
+	socklen_t size = sizeof old_keep_alive;
+	if (getsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (char *)&old_keep_alive, &size))
+		return -1;
+	if (!old_keep_alive && setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (char *)ax_p(int, 1), sizeof(int)))
+		return -1;
+
+#ifdef AX_OS_WIN32
+	struct tcp_keepalive keepalive = {
+		.onoff = 1,
+		.keepalivetime = idle_sec * 1000,
+		.keepaliveinterval = interval_sec * 1000,
+	};
+	if (WSAIoctl(sock, SIO_KEEPALIVE_VALS, &keepalive, sizeof(keepalive), NULL, 0, NULL, NULL, NULL) == SOCKET_ERROR)
+		goto fail;
+#else
+	if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPIDLE, &idle_sec, sizeof idle_sec))
+		goto fail;
+
+	if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPINTVL, &interval_sec, sizeof interval_sec))
+		goto fail;
+
+	//Campatible with NT6.0 or later.
+	if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPCNT, (char *)ax_p(int, 10), sizeof(int)))
+		goto fail;
+#endif
+
+	return 0;
+fail:
+	(void)setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (char *)&old_keep_alive, sizeof old_keep_alive);
+	return -1;
 }

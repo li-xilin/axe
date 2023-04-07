@@ -95,4 +95,6 @@ inline static int64_t ax_ntohll(int64_t num)
 #endif
 }
 
+int ax_socket_set_keepalive(ax_socket sock, uint32_t idle_sec, uint32_t interval_sec);
+
 #endif
