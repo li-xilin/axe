@@ -489,7 +489,7 @@ static void cursor_down(struct current *current, int n)
 	}
 }
 
-void ax_edit_screen_clear(void)
+void ax_edit_clear_screen(void)
 {
 	IGNORE_RC(write(STDOUT_FILENO, "\x1b[H\x1b[2J", 7));
 }
