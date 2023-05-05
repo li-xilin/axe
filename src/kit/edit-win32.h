@@ -59,8 +59,6 @@ static int enable_raw_mode(struct current *current) {
     if (GetConsoleMode(current->inh, &orig_consolemode)) {
         SetConsoleMode(current->inh, ENABLE_PROCESSED_INPUT);
     }
-    /* XXX is this the right thing to do? */
-    SetConsoleCP(65001);
     return 0;
 }
 
