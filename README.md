@@ -14,13 +14,13 @@ AXE是一个轻量级的跨平台程序库，它为C语言提供了数据结构�
 
 编译结束后，在*lib*目录会生成一些库文件，包括
 
-* *libaxcore.a* 核心模块，只依赖C99标准
+* *libaxcore.a* 核心模块（只依赖C99标准）
 * *libaxut.a* 单元测试模块
-* *libaxthread.a* 多线程模块
-* *libaxnet.a* 事件驱动的网络模块
-* *libaxkit.a* 平台工具库
+* *libaxthread.a* 多线程和锁模块
+* *libaxnet.a* 网络统信模块
+* *libaxkit.a* 系统依赖模块
 
-执行`configure --help`获取更多配置信息.
+开发者可以选择性的引用指定的模块，通过执行`configure --help`获取更多配置信息.
 
 ```
 $ cd axe
@@ -42,7 +42,7 @@ $ sudo make install
 #include <stdio.h>
 
 /* 定义一个一元算子函数 */
-void oper_rmodd(void *out, const void *in, void *args)
+void oper_del_odd(void *out, const void *in, void *args)
 {
         const int *num = in;
         int *ret = out;
@@ -52,38 +52,38 @@ void oper_rmodd(void *out, const void *in, void *args)
 
 int main(void)
 {
-        /* 定义一个双链表 */
-        ax_list_r l = ax_new(ax_list, ax_t(int));
+        /* 定义双链表 */
+        ax_list_r list = ax_new(ax_list, ax_t(int));
 
         int *count = malloc(sizeof *count);
 
-        /* 将双链表指针和堆变量加入范围块，当范围执行结束后，链表自动被释放，可放置多个指针 */
-        ax_scope(l.ax_one, ax_onelize(count)) {
+        /* RAII块，退出作用域后，list和count自动被释放 */
+        ax_scope(list.ax_one, ax_onelize(count)) {
 
                 /* 对区间[1, 11)进行循环迭代 */
-                ax_forrange(1, 11)
+                ax_forrange(10, 0, -1)
                         /* 将区间每个元素逐个压入链表 */
-                        ax_seq_push(l.ax_seq, &_);
+                        ax_seq_push(list.ax_seq, &_);
 
                 /* 对双链表进行转储 */
-                ax_any_so(l.ax_any);
-                // OUTPUT: string.c:12:one.any.box.seq.list {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+                ax_any_so(list.ax_any);
+		// OUTPUT: foo.c:33:ax_one.ax_any.ax_box.ax_seq.ax_list {10, 9, 8, 7, 6, 5, 4, 3, 2, 1}
 
                 /* 创建一个一元谓词 */
-                ax_pred rmodd = ax_pred_unary_make(oper_rmodd, NULL, NULL);
-                /* 从头迭代器所在元素开始逐个执行谓词，将所有奇数元素设为0 */
-                ax_transform(
-                                ax_p(ax_citer, ax_box_cbegin(l.ax_box)),
-                                ax_p(ax_citer, ax_box_cend(l.ax_box)),
-                                ax_p(ax_iter, ax_box_begin(l.ax_box)),
-                                &rmodd);
+                ax_pred del_odd = ax_pred_unary_make(oper_del_odd, NULL, NULL);
 
-                /* 对双链表进行DUMP */
-                ax_any_so(l.ax_any);
-                // OUTPUT: string.c:33:one.any.box.seq.list {0, 2, 0, 4, 0, 6, 0, 8, 0, 10}
+		ax_citer cbegin = ax_box_cbegin(list.ax_box);
+		ax_citer cend = ax_box_cend(list.ax_box);
+
+		/* 遍历容器中所有元素，对每个元素应用rmodd谓词 */
+                ax_transform(&cbegin, &cend, ax_p(ax_iter, ax_box_begin(list.ax_box)), &del_odd);
+
+                /* 转储list */
+                ax_any_so(list.ax_any);
+                // OUTPUT: a.c:46:ax_one.ax_any.ax_box.ax_seq.ax_list {10, 0, 8, 0, 6, 0, 4, 0, 2, 0}
 
                 /* 按顺序枚举链表所有元素，求和 */
-                ax_box_foreach(l.ax_box, int *, i)
+                ax_box_foreach(list.ax_box, int *, i)
                         *count += *i;
 
                 printf("Sum of elements = %d\n", *count);
@@ -113,16 +113,16 @@ int main(void)
 | ax/narg.h      | 参数测量宏 |
 | ax/detect.h    | 编译环境探测宏 |
 | ax/debug.h     | 断言 |
-| ax/arraya.h    | 自动数组 |
+| ax/arraya.h    | 匿名的栈数组 |
 | ax/oper.h      | 算子，包括C语言运算符的函数化包装 |
 | ax/dump.h      | 容器内容的可视化转储 |
 | ax/log.h       | 日志打印 |
-| ax/pred.h      | 谓词和参数绑定 |
+| ax/algo.h      | 基于迭代器的算法 |
+| ax/pred.h      | 算法函数的谓词和参数绑定 |
 | ax/trait.h     | 类型特性，对数据类型的描述 |
 | ax/iter.h      | 迭代器 |
-| ax/algo.h      | 基于迭代器的算法 |
 | ax/mem.h       | 内存和串的操作 |
-| ax/u1024.h     | 1024位无符号整数 |
+| ax/u1024.h     | 1024位无符号整数运算 |
 | ax/array.h     | 静态数组容器 |
 | ax/vector.h    | 向量表容器 |
 | ax/deq.h       | 双端队列容器 |
@@ -143,18 +143,20 @@ int main(void)
 | ax/tss.h       | 线程本地存储 |
 | ax/tpool.h     | 线程池 |
 | ax/event.h     | 事件结构 |
-| ax/reactor.h   | 基于Reactor结构的事件驱动模型 |
-| ax/edit.h      | 终端行编辑工具 |
-| ax/lib.h       | 动态加载共享对象(DLL活SO文件) |
+| ax/reactor.h   | 基于Reactor结构的socket事件驱动模型 |
+| ax/edit.h      | 终端行编辑工具(readline) |
+| ax/lib.h       | 动态加载共享对象(DLL/SO文件) |
+| ax/tcolor.h    | 终端多彩色文本输出 |
+| ax/utf8.h      | 计算UTF8文本的字符尺寸 |
 | ut/case.h      | 测试用例 |
-| ut/suite.h     | 测试用例集 |
+| ut/suite.h     | 测试用例套件，用于批量执行测试 |
 | ut/runner.h    | 测试用例执行容器 |
 
 ## LICENSE
 
-该软件程序基于MIT协议发布.
+该软件程序基于MIT协议发布. 参考[LICENSE](./LICENSE)文件
 
 ## AUTHOR
 
-李希林 <lihsilyn@gmail.com>
+李希林 <lixilin@gmx.com>
 
