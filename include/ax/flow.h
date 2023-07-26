@@ -46,8 +46,8 @@
 
 #define __AX_FORRANGE_END(first, ...) \
 	(__AX_FORRANGE_LAST(__VA_ARGS__) \
-	 - (__AX_FORRANGE_LAST(__VA_ARGS__) - first - 1) % __AX_FORRANGE_STEP(__VA_ARGS__) \
-	 + __AX_FORRANGE_STEP(__VA_ARGS__)) - 1
+	 - (__AX_FORRANGE_LAST(__VA_ARGS__) - first + (__AX_FORRANGE_STEP(__VA_ARGS__) > 0 ? -1 : 1)) % __AX_FORRANGE_STEP(__VA_ARGS__) \
+	 + __AX_FORRANGE_STEP(__VA_ARGS__)) + (__AX_FORRANGE_STEP(__VA_ARGS__) > 0 ? -1 : 1)
 
 #define ax_forrange(first, ...) \
 	for (ptrdiff_t _ = first, __ax_forrange_end = __AX_FORRANGE_END(first, __VA_ARGS__); \
