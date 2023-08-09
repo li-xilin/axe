@@ -80,14 +80,14 @@ static inline int ax_thread_join(ax_thread *thread, uintptr_t *retval)
 	assert(retval);
 	DWORD rval = -1;
 
-	if(WaitForSingleObject(thread->hThread, INFINITE)) {
+	if(WaitForSingleObject(thread->hThread, INFINITE))
 		return -1;
-	}
 
 	if (!GetExitCodeThread(thread->hThread, &rval))
 		return -1;
 
 	*retval = rval;
+	(void)CloseHandle(thread->hThread);
 	return 0;
 }
 
