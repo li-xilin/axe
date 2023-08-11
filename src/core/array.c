@@ -428,7 +428,6 @@ const ax_seq_trait ax_array_tr =
 ax_array_r ax_array_make(ax_array *array, const ax_trait *elem_tr, void *ptr, size_t size)
 {
 	CHECK_PARAM_NULL(elem_tr);
-	CHECK_PARAM_NULL(elem_tr->copy || elem_tr->init);
 
 	ax_array array_init = {
 		.ax_seq = {

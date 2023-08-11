@@ -23,6 +23,7 @@
 #ifndef AX_TRAIT_H
 #define AX_TRAIT_H
 #include "def.h"
+#include "mem.h"
 #include "debug.h"
 #include "trick.h"
 #include <stdint.h>
@@ -177,6 +178,12 @@ typedef ptrdiff_t ax_type(diff);
 	const struct ax_trait_st __AX_TRAIT_STRUCT_NAME(_name) = \
 	{ .size = sizeof(ax_type(_name)), AX_MTOOL_TRANSFORM(__AX_TRAIT_SET, __VA_ARGS__) }
 
+#define ax_trait_define0(_name) \
+	const struct ax_trait_st __AX_TRAIT_STRUCT_NAME(_name) = \
+	{ .size = sizeof(ax_type(_name)) }
+
+
+
 
 #define ax_trait_in(_tr, _ptr) ((_tr)->link ? &(_ptr) : *&(_ptr))
 
@@ -184,14 +191,16 @@ typedef ptrdiff_t ax_type(diff);
 
 inline static bool ax_trait_equal(const ax_trait *tr, const void *p1, const void *p2)
 {
-	__ax_require(tr->equal);
-	return tr->equal(p1, p2);
+	if(tr->equal)
+		return tr->equal(p1, p2);
+	return memcmp(p1, p2, tr->size) == 0;
 }
 
 inline static size_t ax_trait_hash(const ax_trait *tr, const void *p)
 {
-	__ax_require(tr->hash);
-	return tr->hash(p);
+	if (tr->hash)
+		return tr->hash(p);
+	return ax_memhash(p, tr->size);
 }
 
 inline static void ax_trait_free(const ax_trait *tr, void *p)
@@ -205,13 +214,13 @@ inline static void ax_trait_free(const ax_trait *tr, void *p)
 
 inline static bool ax_trait_less(const ax_trait *tr, const void *p1, const void *p2)
 {
-	__ax_require(tr->less);
-	return tr->less(p1, p2);
+	if (tr->less)
+		return tr->less(p1, p2);
+	return memcmp(p1, p2, tr->size) < 0;
 }
 
 inline static ax_fail ax_trait_copy(const ax_trait *tr, void* dst, const void* src)
 {
-	__ax_require(tr->copy);
 	if (tr->copy)
 		return tr->copy(dst, src);
 	memcpy(dst, src, tr->size);

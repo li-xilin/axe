@@ -1125,11 +1125,7 @@ const ax_map_trait ax_rb_tr =
 ax_map *__ax_rb_construct(const ax_trait* key_tr, const ax_trait* val_tr)
 {
 	CHECK_PARAM_NULL(key_tr);
-	CHECK_PARAM_NULL(key_tr->less);
-	CHECK_PARAM_NULL(key_tr->copy);
-
 	CHECK_PARAM_NULL(val_tr);
-	CHECK_PARAM_NULL(val_tr->copy || val_tr->init);
 
 	ax_rb *rb = malloc(sizeof(ax_rb));
 	if (rb == NULL)

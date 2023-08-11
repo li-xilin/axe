@@ -711,10 +711,6 @@ const ax_seq_trait ax_deq_tr =
 ax_seq* __ax_deq_construct(const ax_trait *elem_tr)
 {
 	CHECK_PARAM_NULL(elem_tr);
-
-	CHECK_PARAM_NULL(elem_tr->free);
-	CHECK_PARAM_NULL(elem_tr->copy);
-
 	
 	ax_deq deq = {
 		.ax_seq = {
