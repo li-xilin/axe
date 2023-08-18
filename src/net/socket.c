@@ -8,7 +8,11 @@
 #include <ws2tcpip.h>
 #include <winsock.h>
 #include <windows.h>
+
+#ifdef HAVE_AFUNIX_H
 #include <afunix.h>
+#endif
+
 #else
 #include <unistd.h>
 #include <fcntl.h>
