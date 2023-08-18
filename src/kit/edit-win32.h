@@ -153,8 +153,8 @@ static int flush_output(struct current *current)
     /* convert utf8 in current->output into utf16 in current->ubuf
      */
     while (len) {
-        int ch;
-        int n = ax_utf8_tounicode(pt, &ch);
+        uint32_t ch;
+        int n = ax_utf8_to_ucode(pt, &ch);
 
         pt += n;
         len -= n;

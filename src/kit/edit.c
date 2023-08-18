@@ -5,6 +5,7 @@
  * Copyright (c) 2010, Salvatore Sanfilippo <antirez at gmail dot com>
  * Copyright (c) 2010, Pieter Noordhuis <pcnoordhuis at gmail dot com>
  * Copyright (c) 2011, Steve Bennett <steveb at workware dot net dot au>
+ * Copyright (c) 2023, Li hsilin <lihsilyn@gmail.com>
  *
  * ------------------------------------------------------------------------
  *
@@ -76,7 +77,7 @@
 */
 
 #include "ax/edit.h"
-#include "ax/utf8.h"
+#include "ax/unicode.h"
 #include "ax/mem.h"
 #include "stringbuf.h"
 
@@ -526,9 +527,8 @@ static int fd_read_char(int fd, int timeout)
 static int fd_read(struct current *current)
 {
 	char buf[MAX_UTF8_LEN];
-	int n;
-	int i;
-	int c;
+	int n, i;
+	uint32_t c;
 
 	if (read(current->fd, &buf[0], 1) != 1) {
 		return -1;
@@ -543,7 +543,7 @@ static int fd_read(struct current *current)
 		}
 	}
 	/* decode and return the character */
-	ax_utf8_tounicode(buf, &c);
+	ax_utf8_to_ucode(buf, &c);
 	return c;
 }
 
@@ -726,7 +726,7 @@ static void output_control_char(struct current *current, char ch)
 
 static int utf8_getchars(char *buf, int c)
 {
-	return ax_utf8_fromunicode(buf, c);
+	return ax_ucode_to_utf8(buf, c);
 }
 
 /**
@@ -736,9 +736,9 @@ static int utf8_getchars(char *buf, int c)
 static int get_char(struct current *current, int pos)
 {
 	if (pos >= 0 && pos < sb_chars(current->buf)) {
-		int c;
+		uint32_t c;
 		int i = ax_utf8_index(sb_str(current->buf), pos);
-		(void)ax_utf8_tounicode(sb_str(current->buf) + i, &c);
+		(void)ax_utf8_to_ucode(sb_str(current->buf) + i, &c);
 		return c;
 	}
 	return -1;
@@ -790,7 +790,7 @@ static int completeLine(struct current *current) {
 		while(!stop) {
 			/* Show completion or original buffer */
 			if (i < lc.len) {
-				int chars = ax_utf8_strlen(lc.cvec[i], -1);
+				int chars = ax_utf8_charcnt(lc.cvec[i], -1);
 				refresh_line_alt(current, current->prompt, lc.cvec[i], chars);
 			} else {
 				refresh_line(current);
@@ -871,8 +871,8 @@ static const char *reduce_single_buf(const char *buf, int availcols, int *cursor
 	DRL("reduce_single_buf: availcols=%d, cursor_pos=%d\n", availcols, *cursor_pos);
 
 	while (*pt) {
-		int ch;
-		int n = ax_utf8_tounicode(pt, &ch);
+		uint32_t ch;
+		int n = ax_utf8_to_ucode(pt, &ch);
 		pt += n;
 
 		needcols += char_display_width(ch);
@@ -884,7 +884,7 @@ static const char *reduce_single_buf(const char *buf, int availcols, int *cursor
 		 * can't be used.
 		 */
 		while (needcols >= availcols - 3) {
-			n = ax_utf8_tounicode(buf, &ch);
+			n = ax_utf8_to_ucode(buf, &ch);
 			buf += n;
 			needcols -= char_display_width(ch);
 			DRL_CHAR(ch);
@@ -945,8 +945,8 @@ static int refresh_show_hints(struct current *current, const char *buf, int avai
 				DRL("<hint bold=%d,color=%d>", bold, color);
 				pt = hint;
 				while (*pt) {
-					int ch;
-					int n = ax_utf8_tounicode(pt, &ch);
+					uint32_t ch;
+					int n = ax_utf8_to_ucode(pt, &ch);
 					int width = char_display_width(ch);
 
 					if (width >= availcols) {
@@ -1065,8 +1065,8 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 
 	while (*pt) {
 		int width;
-		int ch;
-		int n = ax_utf8_tounicode(pt, &ch);
+		uint32_t ch;
+		int n = ax_utf8_to_ucode(pt, &ch);
 
 		if (visible && ch == CHAR_ESCAPE) {
 			/* The start of an escape sequence, so not visible */
@@ -1140,8 +1140,8 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 	notecursor = -1;
 
 	while (*pt) {
-		int ch;
-		int n = ax_utf8_tounicode(pt, &ch);
+		uint32_t ch;
+		int n = ax_utf8_to_ucode(pt, &ch);
 		int width = char_display_width(ch);
 
 		if (currentpos == cursor_pos) {
@@ -1397,8 +1397,8 @@ static int insert_chars(struct current *current, int pos, const char *chars)
 	int inserted = 0;
 
 	while (*chars) {
-		int ch;
-		int n = ax_utf8_tounicode(chars, &ch);
+		uint32_t ch;
+		int n = ax_utf8_to_ucode(chars, &ch);
 		if (insert_char(current, pos, ch) == 0) {
 			break;
 		}
@@ -1545,7 +1545,7 @@ static int reverse_incremental_search(struct current *current)
 				/* Copy the matching line and set the cursor position */
 				history_index = history_len - 1 - searchpos;
 				set_current(current,history[searchpos]);
-				current->pos = ax_utf8_strlen(history[searchpos], p - history[searchpos]);
+				current->pos = ax_utf8_charcnt(history[searchpos], p - history[searchpos]);
 				break;
 			}
 		}

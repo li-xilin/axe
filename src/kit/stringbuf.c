@@ -4,7 +4,7 @@
  */
 
 #include "stringbuf.h"
-#include "ax/utf8.h"
+#include "ax/unicode.h"
 #include "ax/mem.h"
 #include <stdlib.h>
 #include <string.h>
@@ -54,7 +54,7 @@ void sb_append_len(stringbuf *sb, const char *str, int len)
 
 	sb->last += len;
 	sb->remaining -= len;
-	sb->chars += ax_utf8_strlen(str, len);
+	sb->chars += ax_utf8_charcnt(str, len);
 }
 
 char *sb_to_string(stringbuf *sb)
@@ -103,7 +103,7 @@ static void sb_delete_space(stringbuf *sb, int pos, int len)
 	assert(pos < sb->last);
 	assert(pos + len <= sb->last);
 
-	sb->chars -= ax_utf8_strlen(sb->data + pos, len);
+	sb->chars -= ax_utf8_charcnt(sb->data + pos, len);
 
 	/* Now move it up */
 	memmove(sb->data + pos, sb->data + pos + len, sb->last - pos - len);
@@ -124,7 +124,7 @@ void sb_insert(stringbuf *sb, int index, const char *str)
 
 		sb_insert_space(sb, index, len);
 		memcpy(sb->data + index, str, len);
-		sb->chars += ax_utf8_strlen(str, len);
+		sb->chars += ax_utf8_charcnt(str, len);
 	}
 }
 

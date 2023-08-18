@@ -1,43 +1,108 @@
-/**
- * UTF-8 utility functions
+/*
+ * Unicode utility functions
  *
- * (c) 2010-2019 Steve Bennett <steveb@workware.net.au>
+ * Copyright (c) 2010-2019 Steve Bennett <steveb@workware.net.au>
+ * Copyright (c) 2022-2023 Li hsilin <lihsilyn@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
-#include "ax/utf8.h"
+#include "ax/unicode.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
-int ax_utf8_fromunicode(char *p, unsigned uc)
+#define ARRAYSIZE(A) sizeof(A) / sizeof(*(A))
+
+#define BMP_END 0xFFFF
+
+#define INVALID_CODEPOINT 0xFFFD
+
+/* If a character, masked with GENERIC_SURROGATE_MASK, matches this value, it is a surrogate. */
+#define GENERIC_SURROGATE_VALUE 0xD800
+/* The mask to apply to a character before testing it against GENERIC_SURROGATE_VALUE */
+#define GENERIC_SURROGATE_MASK 0xF800
+
+/* If a character, masked with SURROGATE_MASK, matches this value, it is a high surrogate. */
+#define HIGH_SURROGATE_VALUE 0xD800
+
+/* If a character, masked with SURROGATE_MASK, matches this value, it is a low surrogate. */
+#define LOW_SURROGATE_VALUE 0xDC00
+
+/* The mask to apply to a character before testing it against HIGH_SURROGATE_VALUE or LOW_SURROGATE_VALUE */
+#define SURROGATE_MASK 0xFC00
+
+/* The value that is subtracted from a codepoint before encoding it in a surrogate pair */
+#define SURROGATE_CODEPOINT_OFFSET 0x10000
+
+/* A mask that can be applied to a surrogate to extract the codepoint value contained in it */
+#define SURROGATE_CODEPOINT_MASK 0x03FF
+
+/* The number of bits of SURROGATE_CODEPOINT_MASK */
+#define SURROGATE_CODEPOINT_BITS 10
+
+size_t ax_ucode_utf8len(uint32_t uc)
 {
 	if (uc <= 0x7f) {
-		*p = uc;
 		return 1;
 	}
 	else if (uc <= 0x7ff) {
-		*p++ = 0xc0 | ((uc & 0x7c0) >> 6);
-		*p = 0x80 | (uc & 0x3f);
 		return 2;
 	}
 	else if (uc <= 0xffff) {
-		*p++ = 0xe0 | ((uc & 0xf000) >> 12);
-		*p++ = 0x80 | ((uc & 0xfc0) >> 6);
-		*p = 0x80 | (uc & 0x3f);
 		return 3;
 	}
-	/* Note: We silently truncate to 21 bits here: 0x1fffff */
 	else {
-		*p++ = 0xf0 | ((uc & 0x1c0000) >> 18);
-		*p++ = 0x80 | ((uc & 0x3f000) >> 12);
-		*p++ = 0x80 | ((uc & 0xfc0) >> 6);
-		*p = 0x80 | (uc & 0x3f);
 		return 4;
 	}
 }
 
-int ax_utf8_charlen(int c)
+size_t ax_ucode_to_utf8(char *p, uint32_t uc)
+{
+	size_t len = ax_ucode_utf8len(uc);
+
+	switch (len) {
+		case 1:
+			*p = uc;
+			break;
+		case 2:
+			*p++ = 0xc0 | ((uc & 0x7c0) >> 6);
+			*p = 0x80 | (uc & 0x3f);
+			break;
+		case 3:
+			*p++ = 0xe0 | ((uc & 0xf000) >> 12);
+			*p++ = 0x80 | ((uc & 0xfc0) >> 6);
+			*p = 0x80 | (uc & 0x3f);
+			break;
+		default:
+			/* Note: We silently truncate to 21 bits here: 0x1fffff */
+			*p++ = 0xf0 | ((uc & 0x1c0000) >> 18);
+			*p++ = 0x80 | ((uc & 0x3f000) >> 12);
+			*p++ = 0x80 | ((uc & 0xfc0) >> 6);
+			*p = 0x80 | (uc & 0x3f);
+			break;
+	}
+	return len;
+}
+
+size_t ax_utf8_charlen(uint8_t c)
 {
 	if ((c & 0x80) == 0) {
 		return 1;
@@ -55,15 +120,15 @@ int ax_utf8_charlen(int c)
 	return -1;
 }
 
-int ax_utf8_strlen(const char *str, int bytelen)
+size_t ax_utf8_charcnt(const char *str, int bytelen)
 {
 	int charlen = 0;
 	if (bytelen < 0) {
 		bytelen = strlen(str);
 	}
 	while (bytelen > 0) {
-		int c;
-		int l = ax_utf8_tounicode(str, &c);
+		uint32_t c;
+		int l = ax_utf8_to_ucode(str, &c);
 		charlen++;
 		str += l;
 		bytelen -= l;
@@ -71,12 +136,28 @@ int ax_utf8_strlen(const char *str, int bytelen)
 	return charlen;
 }
 
-int ax_utf8_strwidth(const char *str, int charlen)
+size_t ax_utf16_charcnt(const uint16_t* str, int bytelen)
+{
+	int charlen = 0;
+	if (bytelen < 0) {
+		bytelen = ax_utf16_strlen(str) * 2;
+	}
+	while (bytelen > 0) {
+		uint32_t c;
+		int l = ax_utf16_to_ucode(str, &c);
+		charlen++;
+		str += l;
+		bytelen -= l;
+	}
+	return charlen;
+}
+
+size_t ax_utf8_strwidth(const char *str, int charlen)
 {
 	int width = 0;
 	while (charlen) {
-		int c;
-		int l = ax_utf8_tounicode(str, &c);
+		uint32_t c;
+		int l = ax_utf8_to_ucode(str, &c);
 		width += ax_utf8_width(c);
 		str += l;
 		charlen--;
@@ -84,17 +165,17 @@ int ax_utf8_strwidth(const char *str, int charlen)
 	return width;
 }
 
-int ax_utf8_index(const char *str, int index)
+size_t ax_utf8_index(const char *str, int index)
 {
 	const char *s = str;
 	while (index--) {
-		int c;
-		s += ax_utf8_tounicode(s, &c);
+		uint32_t c;
+		s += ax_utf8_to_ucode(s, &c);
 	}
 	return s - str;
 }
 
-int ax_utf8_tounicode(const char *str, int *uc)
+size_t ax_utf8_to_ucode(const char *str, uint32_t *uc)
 {
 	unsigned const char *s = (unsigned const char *)str;
 
@@ -108,7 +189,6 @@ int ax_utf8_tounicode(const char *str, int *uc)
 			if (*uc >= 0x80) {
 				return 2;
 			}
-			/* Otherwise this is an invalid sequence */
 		}
 	}
 	else if (s[0] < 0xf0) {
@@ -117,7 +197,6 @@ int ax_utf8_tounicode(const char *str, int *uc)
 			if (*uc >= 0x800) {
 				return 3;
 			}
-			/* Otherwise this is an invalid sequence */
 		}
 	}
 	else if (s[0] < 0xf8) {
@@ -126,12 +205,11 @@ int ax_utf8_tounicode(const char *str, int *uc)
 			if (*uc >= 0x10000) {
 				return 4;
 			}
-			/* Otherwise this is an invalid sequence */
 		}
 	}
 
-	/* Invalid sequence, so just return the byte */
-	*uc = *s;
+	/* Otherwise this is an invalid sequence */
+	*uc = INVALID_CODEPOINT;
 	return 1;
 }
 
@@ -206,8 +284,6 @@ static const struct utf8range unicode_range_wide[] = {
 	{ 0x1f9c0, 0x1f9c0 },   { 0x1f9d0, 0x1f9e6 },   { 0x20000, 0x2fffd },   { 0x30000, 0x3fffd },
 };
 
-#define ARRAYSIZE(A) sizeof(A) / sizeof(*(A))
-
 static int cmp_range(const void *key, const void *cm)
 {
 	const struct utf8range *range = (const struct utf8range *)cm;
@@ -228,7 +304,7 @@ static int utf8_in_range(const struct utf8range *range, int num, int ch)
 	return 0;
 }
 
-int ax_utf8_width(int ch)
+size_t ax_utf8_width(uint8_t ch)
 {
 	/* short circuit for common case */
 	if (ch > 0 && ch < 128)
@@ -239,3 +315,120 @@ int ax_utf8_width(int ch)
 		return 2;
 	return 1;
 }
+
+
+
+size_t ax_ucode_to_utf16(uint32_t codepoint, uint16_t* utf16)
+{
+	int len = ax_ucode_utf16len(codepoint);
+	if (len == 1) {
+		utf16[0] = codepoint;
+		goto out;
+	}
+	
+	codepoint -= SURROGATE_CODEPOINT_OFFSET;
+
+	uint16_t low = LOW_SURROGATE_VALUE;
+	low |= codepoint & SURROGATE_CODEPOINT_MASK;
+
+	codepoint >>= SURROGATE_CODEPOINT_BITS;
+
+	uint16_t high = HIGH_SURROGATE_VALUE;
+	high |= codepoint & SURROGATE_CODEPOINT_MASK;
+
+	utf16[0] = high;
+	utf16[1] = low;
+out:
+	return len;
+}
+
+size_t ax_utf16_to_ucode(uint16_t const* utf16, uint32_t *codepoint)
+{
+	int len = 1;
+	uint16_t high = utf16[0], low = utf16[1];
+
+	if ((high & GENERIC_SURROGATE_MASK) != GENERIC_SURROGATE_VALUE) {
+		*codepoint = high; 
+		goto out;
+	}
+
+	if ((high & SURROGATE_MASK) != HIGH_SURROGATE_VALUE) {
+		*codepoint = INVALID_CODEPOINT;
+		goto out;
+	}
+
+	if ((low & SURROGATE_MASK) != LOW_SURROGATE_VALUE) {
+		*codepoint = INVALID_CODEPOINT;
+		goto out;
+	}
+
+	/*
+	 * The high bits of the codepoint are the value bits of the high surrogate
+	 * The low bits of the codepoint are the value bits of the low surrogate
+	 */
+	uint32_t result = high & SURROGATE_CODEPOINT_MASK;
+	result <<= SURROGATE_CODEPOINT_BITS;
+	result |= low & SURROGATE_CODEPOINT_MASK;
+	result += SURROGATE_CODEPOINT_OFFSET;
+
+	*codepoint = result;
+
+	len = 2;
+out:
+	return len;
+}
+
+size_t ax_ucode_utf16len(uint32_t codepoint)
+{
+	if (codepoint <= BMP_END)
+		return 1;
+	return 2;
+}
+
+
+size_t ax_utf8_to_utf16(const char *utf8, size_t utf8_len, uint16_t* utf16, size_t utf16_len)
+{
+	size_t i = 0, j = 0; 
+	uint32_t codepoint;
+
+	if (utf16) {
+		while (i < utf8_len && j < utf16_len) {
+			i += ax_utf8_to_ucode((char *)utf8 + i, &codepoint);
+			if (ax_ucode_utf16len(codepoint) + j > utf16_len)
+				break;
+			j += ax_ucode_to_utf16(codepoint, utf16 + j);
+		}
+	}
+	else {
+		while (i < utf8_len) {
+			i += ax_utf8_to_ucode((char *)utf8 + i, &codepoint);
+			j += ax_ucode_utf16len(codepoint);
+		}
+	}
+
+	return j;
+}
+
+size_t ax_utf16_to_utf8(uint16_t const* utf16, size_t utf16_len, char* utf8, size_t utf8_len)
+{
+	size_t i = 0, j = 0; 
+	uint32_t codepoint;
+
+	if (utf8) {
+		while (j < utf16_len && i < utf8_len) {
+			j += ax_utf16_to_ucode(utf16 + j, &codepoint);
+			if (ax_ucode_utf8len(codepoint) + i > utf8_len)
+				break;
+			i += ax_ucode_to_utf8((char *)utf8 + i, codepoint);
+		}
+	}
+	else {
+		while (j < utf16_len) {
+			j += ax_utf16_to_ucode(utf16 + j, &codepoint);
+			i += ax_ucode_utf8len(codepoint);
+		}
+	}
+
+	return i;
+}
+
