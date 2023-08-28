@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef SYS_H
-#define SYS_H
+#ifndef AX_SYS_H
+#define AX_SYS_H
 
 #include "uchar.h"
 #include "types.h"

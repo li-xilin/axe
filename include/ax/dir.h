@@ -21,8 +21,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef DIR_H
-#define DIR_H
+#ifndef AX_DIR_H
+#define AX_DIR_H
 
 #include "types.h"
 #include <stdint.h>

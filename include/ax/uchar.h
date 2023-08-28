@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef UCHAR_H
-#define UCHAR_H
+#ifndef AX_UCHAR_H
+#define AX_UCHAR_H
 
 #include <ax/detect.h>
 #include <stdint.h>

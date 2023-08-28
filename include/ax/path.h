@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef PATH_H
-#define PATH_H
+#ifndef AX_PATH_H
+#define AX_PATH_H
 
 #include "uchar.h"
 
