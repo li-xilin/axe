@@ -27,7 +27,7 @@ endif
 
 TARGET = $(LIB)/libaxkit.a
 
-OBJS = lib.o edit.o stringbuf.o tcolor.o stat.o sys.o path.o dir.o
+OBJS = lib.o edit.o stringbuf.o tcolor.o stat.o sys.o path.o dir.o uchar.o
 
 all: $(TARGET)
 
