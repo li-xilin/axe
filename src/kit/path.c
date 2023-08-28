@@ -20,11 +20,10 @@
  * SOFTWARE.
  */
 
-#include "path.h"
-#include "sys.h"
-
-#include <ax/detect.h>
-#include <ax/mem.h>
+#include "ax/path.h"
+#include "ax/sys.h"
+#include "ax/detect.h"
+#include "ax/mem.h"
 
 #include <errno.h>
 #include <stdarg.h>
@@ -161,9 +160,7 @@ ax_uchar *ax_path_fixsep(ax_uchar *path)
 	return path;
 }
 
-/**
- * path must be trimed
- */
+/* path must be trimed before */
 static int path_root(const ax_uchar *path)
 {
 	if (path[0] == AX_PATH_SEP_CHAR)

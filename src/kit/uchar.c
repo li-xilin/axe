@@ -20,11 +20,10 @@
  * SOFTWARE.
  */
 
-#include "uchar.h"
-
-#include <ax/detect.h>
-#include <ax/debug.h>
-#include <ax/unicode.h>
+#include "ax/uchar.h"
+#include "ax/detect.h"
+#include "ax/debug.h"
+#include "ax/unicode.h"
 
 #include <string.h>
 #include <errno.h>
@@ -87,7 +86,8 @@ int ax_ustr_from_utf8(ax_uchar *us, size_t size, const char *from)
 #ifdef AX_OS_WIN
 	if (ax_utf8_to_utf16(from, utf8_len, us, size) != utf8_len) {
 		errno = ENOBUFS;
-	} else {
+	}
+	else {
 		us[utf8_len] = ax_u('\0');
 		retval = utf8_len + 1;
 	}
@@ -175,7 +175,8 @@ int ax_ustr_utf16(const ax_uchar *us, uint16_t *to, size_t size)
 	int utf8_len = strlen(us);
 	if (ax_utf8_to_utf16(us, utf8_len, to, size) != utf8_len) {
 		errno = ENOBUFS;
-	} else {
+	}
+	else {
 		to[utf8_len] = ax_u('\0');
 		retval = utf8_len + 1;
 	}
@@ -197,7 +198,8 @@ ax_uchar *ax_ustrsplit(ax_uchar **s, ax_uchar ch)
 			return ret ;
 		}
 		ret = *s;
-	} else {
+	}
+	else {
 		ret = NULL;
 	}
 	*s = NULL;

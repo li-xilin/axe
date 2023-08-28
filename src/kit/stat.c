@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#include "stat.h"
-#include <ax/detect.h>
+#include "ax/stat.h"
+#include "ax/detect.h"
 #include <stdlib.h>
 #include <stdbool.h>
 

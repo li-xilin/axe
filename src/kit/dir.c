@@ -24,13 +24,13 @@
 #ifndef AX_DIR_H
 #define AX_DIR_H
 
-#include "dir.h"
-#include <ax/detect.h>
+#include "ax/dir.h"
+#include "ax/detect.h"
 
 #ifdef AX_OS_WIN
 
-#include "sys.h"
-#include "stat.h"
+#include "ax/sys.h"
+#include "ax/stat.h"
 
 #include <sys/types.h>
 #include <stdint.h>

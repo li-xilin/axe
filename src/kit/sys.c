@@ -20,19 +20,20 @@
  * SOFTWARE.
  */
 
-#include "sys.h"
-#include "types.h"
-#include <ax/detect.h>
+#include "ax/sys.h"
+#include "ax/types.h"
+#include "ax/detect.h"
+
 #include <stdio.h>
 #include <errno.h>
-#	include <stdlib.h>
+#include <stdlib.h>
 
 #ifdef AX_OS_WIN
-#	include <windows.h>
+#include <windows.h>
 #else
-#	include <fcntl.h>
-#	include <unistd.h>
-#	include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/types.h>
 #endif
 
 int ax_sys_mkdir(const ax_uchar *path, int mode)
