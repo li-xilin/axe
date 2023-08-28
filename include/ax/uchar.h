@@ -42,8 +42,9 @@ typedef WCHAR ax_uchar;
 #define ax_ustrrchr wcsrchr
 #define ax_ustrcmp wcscmp
 #define ax_ustrncmp wcscmp
-#define ax_usprintf wsprintfW
+#define ax_usprintf swprintf
 #define ax_uvsnprintf wvsnprintf
+#define AX_PRIus L"ls"
 
 #else
 
@@ -59,6 +60,7 @@ typedef char ax_uchar;
 #define ax_ustrncmp strncmp
 #define ax_usprintf sprintf
 #define ax_uvsnprintf vsnprintf
+#define AX_PRIus "s"
 
 #endif
 
