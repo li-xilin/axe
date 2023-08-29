@@ -44,6 +44,7 @@ typedef WCHAR ax_uchar;
 #define ax_ustrncmp wcscmp
 #define ax_usprintf swprintf
 #define ax_uvsnprintf wvsnprintf
+#define ax_ustrhash ax_wcshash
 #define AX_PRIus L"ls"
 
 #else
@@ -60,6 +61,7 @@ typedef char ax_uchar;
 #define ax_ustrncmp strncmp
 #define ax_usprintf sprintf
 #define ax_uvsnprintf vsnprintf
+#define ax_ustrhash ax_strhash
 #define AX_PRIus "s"
 
 #endif
