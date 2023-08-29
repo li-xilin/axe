@@ -21,9 +21,6 @@
  * THE SOFTWARE.
  */
 
-#ifndef AX_DIR_H
-#define AX_DIR_H
-
 #include "ax/dir.h"
 #include "ax/detect.h"
 
@@ -252,7 +249,5 @@ void ax_dir_close(ax_dir* dirp)
 #else
 
 extern char __ax_dir_dummy_variable;
-
-#endif
 
 #endif

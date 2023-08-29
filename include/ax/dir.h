@@ -25,9 +25,10 @@
 #define AX_DIR_H
 
 #include "types.h"
+#include "detect.h"
 #include <stdint.h>
 
-#ifndef _WIN32
+#ifndef AX_OS_WIN
 #include <dirent.h>
 
 #define  AX_DT_UNKNOWN DT_UNKNOWN
