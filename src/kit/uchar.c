@@ -28,6 +28,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef AX_OS_WIN
 #include <windows.h>
@@ -204,5 +205,15 @@ ax_uchar *ax_ustrsplit(ax_uchar **s, ax_uchar ch)
 	}
 	*s = NULL;
 	return ret;
+}
+
+ax_uchar *ax_ustrdup(const ax_uchar *s)
+{
+	size_t size = ax_ustrlen(s) + sizeof(ax_uchar);
+	ax_uchar *dup = malloc(size);
+	if (!dup)
+		return NULL;
+	memcpy(dup, s, size);
+	return dup;
 }
 
