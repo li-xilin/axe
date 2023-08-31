@@ -85,12 +85,13 @@ int ax_ustr_from_utf8(ax_uchar *us, size_t size, const char *from)
 	int retval = -1;
 	int utf8_len = strlen(from);
 #ifdef AX_OS_WIN
-	if (ax_utf8_to_utf16(from, utf8_len, us, size) != utf8_len) {
+	int utf16_len = ax_utf8_to_utf16(from, utf8_len, us, size);
+	if (utf16_len == size) {
 		errno = ENOBUFS;
 	}
 	else {
-		us[utf8_len] = ax_u('\0');
-		retval = utf8_len + 1;
+		us[utf16_len] = ax_u('\0');
+		retval = utf16_len;
 	}
 #else
 	if (utf8_len > size - 1) {
@@ -99,8 +100,8 @@ int ax_ustr_from_utf8(ax_uchar *us, size_t size, const char *from)
 	}
 	else {
 		memcpy(us, from, utf8_len);
-		us[utf8_len + 1] = ax_u('\0');
-		retval = utf8_len + 1;
+		us[utf8_len] = ax_u('\0');
+		retval = utf8_len;
 	}
 #endif
 	return retval;
@@ -126,15 +127,16 @@ int ax_ustr_from_utf16(ax_uchar *us, size_t size, const uint16_t *from)
 	}
 	else {
 		memcpy(us, from, (utf16_len + 1) * 2);
-		retval = utf16_len + 1;
+		retval = utf16_len;
 	}
 #else
-	if (ax_utf16_to_utf8(from, utf16_len, us, size) != utf16_len) {
+	int utf8_len = ax_utf16_to_utf8(from, utf16_len, us, size);
+	if (utf8_len == size) {
 		errno = ENOBUFS;
 	}
 	else {
 		us[utf16_len] = ax_u('\0');
-		retval = utf16_len + 1;
+		retval = utf16_len;
 	}
 #endif
 	return retval;
@@ -149,7 +151,7 @@ int ax_ustr_utf8(const ax_uchar *us, char *to, size_t size)
 		errno = ENOBUFS;
 	else {
 		to[utf16_len] = '\0';
-		retval = utf16_len + 1;
+		retval = utf16_len;
 	}
 	return retval;
 #else
@@ -179,7 +181,7 @@ int ax_ustr_utf16(const ax_uchar *us, uint16_t *to, size_t size)
 	}
 	else {
 		to[utf8_len] = ax_u('\0');
-		retval = utf8_len + 1;
+		retval = utf8_len;
 	}
 	return retval;
 #endif
@@ -209,7 +211,7 @@ ax_uchar *ax_ustrsplit(ax_uchar **s, ax_uchar ch)
 
 ax_uchar *ax_ustrdup(const ax_uchar *s)
 {
-	size_t size = ax_ustrlen(s) + sizeof(ax_uchar);
+	size_t size = (ax_ustrlen(s) + 1) * sizeof(ax_uchar);
 	ax_uchar *dup = malloc(size);
 	if (!dup)
 		return NULL;
