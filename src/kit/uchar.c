@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #ifdef AX_OS_WIN
 #include <windows.h>
@@ -217,5 +218,15 @@ ax_uchar *ax_ustrdup(const ax_uchar *s)
 		return NULL;
 	memcpy(dup, s, size);
 	return dup;
+}
+
+size_t ax_ustrihash(const ax_uchar *s)
+{
+	size_t h = 5381;
+	int c;
+	while ((c = *s++)) {
+		h = (h ^ (h << 5)) ^ tolower(c);
+	}
+	return h;
 }
 

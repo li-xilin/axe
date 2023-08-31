@@ -90,4 +90,6 @@ ax_uchar *ax_ustrsplit(ax_uchar **s, ax_uchar ch);
 
 ax_uchar *ax_ustrdup(const ax_uchar *s);
 
+size_t ax_ustrihash(const ax_uchar *s);
+
 #endif
