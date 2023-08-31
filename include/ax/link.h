@@ -76,6 +76,9 @@ inline static int ax_link_is_empty(const ax_link *head)
 #define ax_link_first_entry_or_null(ptr, type, member) \
 	(!ax_link_is_empty(ptr) ? ax_link_first_entry(ptr, type, member) : NULL)
 
+#define ax_link_last_entry_or_null(ptr, type, member) \
+	(!ax_link_is_empty(ptr) ? ax_link_last_entry(ptr, type, member) : NULL)
+
 #define ax_link_foreach(pos, head) for (pos = (head)->next; pos != (head); pos = pos->next)
 
 #endif
