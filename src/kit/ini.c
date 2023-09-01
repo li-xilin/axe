@@ -21,12 +21,6 @@
  */
 
 #include "ax/ini.h"
-
-#include "ax/list.h"
-#include "ax/rb.h"
-#include "ax/mem.h"
-#include "ax/sys.h"
-#include "ax/rb.h"
 #include "ax/link.h"
 
 #include <stdint.h>
@@ -37,8 +31,14 @@
 #include <errno.h>
 #include <ctype.h>
 
+#ifdef AX_OS_WIN
+#define ufprintf fwprintf
+#else
+#define ufprintf fprintf
+#endif
+
 #define BASE_LEN 1024
-#define MAX_LEN (1024 * 1024 * 1024) /* aligned with BASE_LEN, here is 1GB */ 
+#define MAX_LEN (BASE_LEN * 1024 * 1024) /* aligned with BASE_LEN, here is 1GB */ 
 
 #define DEFAULT_SEC_NAME ax_u("__default")
 
@@ -143,10 +143,10 @@ const ax_uchar *ax_ini_get(const ax_ini *d, const ax_uchar *sec_name, const ax_u
 
 static void free_section(struct section *sec)
 {
-	if (sec) {
-		free(sec->name);
-		free(sec);
-	}
+	if (!sec)
+		return;
+	free(sec->name);
+	free(sec);
 }
 
 static void free_option(struct option *opt)
@@ -196,10 +196,9 @@ fail:
 int ax_ini_set(ax_ini *d, const ax_uchar *sec_name, const ax_uchar *key, const ax_uchar *val)
 {
 	int retval = -1;
-
 	struct option *opt = NULL;
-	
 	struct section *sec = NULL;
+
 	if (!(sec = find_section(d, sec_name))) {
 		if (!(sec = alloc_section(sec_name)))
 			goto out;
@@ -251,10 +250,8 @@ out:
 int ax_ini_push_opt(ax_ini *d, const ax_uchar *key, const ax_uchar *val)
 {
 	int retval = -1;
-
 	struct option *opt = NULL;
 	struct section *sec = NULL;
-	
 	if (!(sec = ax_link_last_entry_or_null(&d->sec_list, struct section, link))) {
 		if (!(sec = alloc_section(DEFAULT_SEC_NAME)))
 			goto out;
@@ -271,7 +268,6 @@ int ax_ini_push_opt(ax_ini *d, const ax_uchar *key, const ax_uchar *val)
 
 	ax_link_add_back(&opt->link, &sec->opt_list);
 	d->size++;
-	
 	retval = 0;
 out:
 	return retval;
@@ -297,35 +293,23 @@ void ax_ini_unset(ax_ini *d, const ax_uchar *sec_name, const ax_uchar *key)
 	return ;
 }
 
-void ax_ini_dump(const ax_ini * d, FILE * out)
+void ax_ini_dump(const ax_ini *d, FILE *out)
 {
 	ax_link *cur_sec, *cur_opt;
 	ax_link_foreach(cur_sec, &d->sec_list) {
 		struct section *sec = ax_link_entry(cur_sec, struct section, link);
 		if (&sec->link != d->sec_list.next || ax_ustricmp(sec->name, DEFAULT_SEC_NAME) != 0)
-			printf("[%s]\n", sec->name);
+			ufprintf(out, ax_u("[%") AX_PRIus ax_u("]\n"), sec->name);
 		ax_link_foreach(cur_opt, &sec->opt_list) {
 			struct option *opt = ax_link_entry(cur_opt, struct option, link);
-			printf("%s = %s\n", opt->key, opt->val);
+			ufprintf(out, ax_u("%") AX_PRIus ax_u(" = %") AX_PRIus ax_u("\n"), opt->key, opt->val);
 		}
 	}
-}
-
-static const char * strlwc(const char * fp, char *out, unsigned len)
-{
-	int i = 0;
-	while (fp[i] != '\0' && i < len-1) {
-		out[i] = (char)tolower((int)fp[i]);
-		i++ ;
-	}
-	out[i] = '\0';
-	return out ;
 }
 
 static ax_uchar *ustrstrip(ax_uchar *s)
 {
 	ax_uchar *last = NULL ;
-
 	last = s + ax_ustrlen(s);
 	while (isspace((int)*s) && *s)
 		s++;
@@ -354,7 +338,7 @@ bool ax_ini_check_name(ax_uchar *name)
 static int parse_line(ax_uchar *line_buf, ax_ini *d)
 {
 	int val_off = -1;
-	int comment_off = -1;
+	// int comment_off = -1;
 
 	ax_uchar *line = ustrstrip(line_buf);
 
@@ -362,7 +346,7 @@ static int parse_line(ax_uchar *line_buf, ax_ini *d)
 	for (int i = 0; line[i]; i++) {
 		if (line[i] == ax_u(';') || line[i] == ax_u('#')) {
 			line[i] = ax_u('\0');
-			comment_off = i + 1;
+			// comment_off = i + 1;
 			break;
 		}
 
@@ -426,15 +410,17 @@ ax_ini *ax_ini_load(FILE *fp, ax_ini_parse_error_f *error_cb, void *args)
 
 		if (line_buf[buf_offset - 1] != ax_u('\n')) {
 			/* incomplete text for a line */
-			buf_len *= 2;
 			if (buf_len - buf_offset >= sizeof line)
 				continue;
+
+			buf_len *= 2;
 
 			if (buf_len >= MAX_LEN) {
 				/* max size limit exceed*/
 				int ch;
 				if (error_cb(lineno, AX_INI_ETOOLONG, args))
 					goto out;
+				/* consume the remaining chars in current line */
 				while (((ch = fgetc(fp)) != ax_u('\n') && ch != EOF));
 				buf_offset = 0;
 			}
@@ -468,25 +454,5 @@ fail:
 out:
 	free(line_buf);
 	return d;
-}
-
-
-static int ini_parse_error(unsigned lineno, unsigned error, void *args)
-{
-	printf("error, line =%u, err = %u\n", lineno, error);
-	return 0;
-}
-
-int main()
-{
-
-	FILE * fp = NULL;
-	if ((fp=ax_sys_fopen(ax_u("example.ini"), ax_u("r")))==NULL)
-		exit(1);
-	ax_ini *ini = ax_ini_load(fp, ini_parse_error, NULL);
-	const ax_uchar *p = ax_ini_get(ini, NULL, ax_u("name"));
-	ax_ini_dump(ini, stdout);
-
-	printf("%s\n", p);
 }
 
