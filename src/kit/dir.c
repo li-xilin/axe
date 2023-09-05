@@ -32,8 +32,8 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <errno.h>
-#include <windows.h>
 #include <shlwapi.h>
+#include <winioctl.h>
 
 #define NAME_MAX 260
 
