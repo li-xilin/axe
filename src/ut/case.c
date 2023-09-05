@@ -32,12 +32,12 @@ static ax_fail case_copy(void* dst, const void* src);
 
 const ax_trait ut_case_tr =
 {
-	.copy = case_copy,
-	.less = case_less,
-	.equal = case_equal,
-	.free = case_free,
-	.size = sizeof(ut_case),
-	.link = false
+	.t_copy = case_copy,
+	.t_less = case_less,
+	.t_equal = case_equal,
+	.t_free = case_free,
+	.t_size = sizeof(ut_case),
+	.t_link = false
 };
 
 static void case_free(void *p)

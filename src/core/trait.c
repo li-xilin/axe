@@ -426,200 +426,200 @@ static void free_wcs(void* p)
 	free(*(char**)p);
 }
 
-const ax_trait ax_trait_void = { 
-	.size  = 0,
-	.equal = do_nothing_ret_true,
-	.less  = less_void,
-	.dump  = dump_void,
-	.hash  = hash_void,
-	.free  = do_nothing,
-	.copy  = copy_void,
-	.init  = do_nothing_ret_false,
-	.link  = false
+const ax_trait ax_t_void = { 
+	.t_size  = 0,
+	.t_equal = do_nothing_ret_true,
+	.t_less  = less_void,
+	.t_dump  = dump_void,
+	.t_hash  = hash_void,
+	.t_free  = do_nothing,
+	.t_copy  = copy_void,
+	.t_init  = do_nothing_ret_false,
+	.t_link  = false
 };
 
-const ax_trait ax_trait_i8 = { 
-	.size  = sizeof(int8_t),
-	.equal = equal_i8,
-	.less  = less_i8,
-	.dump  = dump_i8,
-	.hash  = hash_i8,
-	.free  = do_nothing,
-	.copy  = copy_i8,
-	.init  = init_i8,
-	.link  = false
+const ax_trait ax_t_i8 = { 
+	.t_size  = sizeof(int8_t),
+	.t_equal = equal_i8,
+	.t_less  = less_i8,
+	.t_dump  = dump_i8,
+	.t_hash  = hash_i8,
+	.t_free  = do_nothing,
+	.t_copy  = copy_i8,
+	.t_init  = init_i8,
+	.t_link  = false
 };
 
-const ax_trait ax_trait_i16 = { 
-	.size  = sizeof(int16_t),
-	.equal = equal_i16,
-	.less  = less_i16,
-	.dump  = dump_i16,
-	.hash  = hash_i16,
-	.free  = do_nothing,
-	.copy  = copy_i16,
-	.init  = init_i16,
-	.link  = false
+const ax_trait ax_t_i16 = { 
+	.t_size  = sizeof(int16_t),
+	.t_equal = equal_i16,
+	.t_less  = less_i16,
+	.t_dump  = dump_i16,
+	.t_hash  = hash_i16,
+	.t_free  = do_nothing,
+	.t_copy  = copy_i16,
+	.t_init  = init_i16,
+	.t_link  = false
 };
 
-const ax_trait ax_trait_i32 = { 
-	.size  = sizeof(int32_t),
-	.equal = equal_i32,
-	.less  = less_i32,
-	.dump  = dump_i32,
-	.hash  = hash_i32,
-	.free  = do_nothing,
-	.copy  = copy_i32,
-	.init  = init_i32,
-	.link  = false
+const ax_trait ax_t_i32 = { 
+	.t_size  = sizeof(int32_t),
+	.t_equal = equal_i32,
+	.t_less  = less_i32,
+	.t_dump  = dump_i32,
+	.t_hash  = hash_i32,
+	.t_free  = do_nothing,
+	.t_copy  = copy_i32,
+	.t_init  = init_i32,
+	.t_link  = false
 };
 
-const ax_trait ax_trait_i64 = { 
-	.size  = sizeof(int64_t),
-	.equal = equal_i64,
-	.less  = less_i64,
-	.dump  = dump_i64,
-	.hash  = hash_i64,
-	.free  = do_nothing,
-	.copy  = copy_i64,
-	.init  = init_i64,
-	.link  = false
+const ax_trait ax_t_i64 = { 
+	.t_size  = sizeof(int64_t),
+	.t_equal = equal_i64,
+	.t_less  = less_i64,
+	.t_dump  = dump_i64,
+	.t_hash  = hash_i64,
+	.t_free  = do_nothing,
+	.t_copy  = copy_i64,
+	.t_init  = init_i64,
+	.t_link  = false
 };
 
-const ax_trait ax_trait_u8 = { 
-	.size  = sizeof(uint8_t),
-	.equal = equal_u8,
-	.less  = less_u8,
-	.dump  = dump_u8,
-	.hash  = hash_u8,
-	.free  = do_nothing,
-	.copy  = copy_u8,
-	.init  = init_u8,
-	.link  = false
+const ax_trait ax_t_u8 = { 
+	.t_size  = sizeof(uint8_t),
+	.t_equal = equal_u8,
+	.t_less  = less_u8,
+	.t_dump  = dump_u8,
+	.t_hash  = hash_u8,
+	.t_free  = do_nothing,
+	.t_copy  = copy_u8,
+	.t_init  = init_u8,
+	.t_link  = false
 };
 
-const ax_trait ax_trait_u16 = { 
-	.size  = sizeof(uint16_t),
-	.equal = equal_u16,
-	.less  = less_u16,
-	.dump  = dump_u16,
-	.hash  = hash_u16,
-	.free  = do_nothing,
-	.copy  = copy_u16,
-	.init  = init_u16,
-	.link  = false
+const ax_trait ax_t_u16 = { 
+	.t_size  = sizeof(uint16_t),
+	.t_equal = equal_u16,
+	.t_less  = less_u16,
+	.t_dump  = dump_u16,
+	.t_hash  = hash_u16,
+	.t_free  = do_nothing,
+	.t_copy  = copy_u16,
+	.t_init  = init_u16,
+	.t_link  = false
 };
 
-const ax_trait ax_trait_u32 = { 
-	.size  = sizeof(uint32_t),
-	.equal = equal_u32,
-	.less  = less_u32,
-	.dump  = dump_u32,
-	.hash  = hash_u32,
-	.free  = do_nothing,
-	.copy  = copy_u32,
-	.init  = init_u32,
-	.link  = false
+const ax_trait ax_t_u32 = { 
+	.t_size  = sizeof(uint32_t),
+	.t_equal = equal_u32,
+	.t_less  = less_u32,
+	.t_dump  = dump_u32,
+	.t_hash  = hash_u32,
+	.t_free  = do_nothing,
+	.t_copy  = copy_u32,
+	.t_init  = init_u32,
+	.t_link  = false
 };
 
-const ax_trait ax_trait_u64 = { 
-	.size  = sizeof(int64_t),
-	.equal = equal_u64,
-	.less  = less_u64,
-	.dump  = dump_u64,
-	.hash  = hash_u64,
-	.free  = do_nothing,
-	.copy  = copy_u64,
-	.init  = init_u64,
-	.link  = false
+const ax_trait ax_t_u64 = { 
+	.t_size  = sizeof(int64_t),
+	.t_equal = equal_u64,
+	.t_less  = less_u64,
+	.t_dump  = dump_u64,
+	.t_hash  = hash_u64,
+	.t_free  = do_nothing,
+	.t_copy  = copy_u64,
+	.t_init  = init_u64,
+	.t_link  = false
 };
 
-const ax_trait ax_trait_size = { 
-	.size  = sizeof(size_t),
-	.equal = equal_size,
-	.less  = less_size,
-	.dump  = dump_size,
-	.hash  = hash_size,
-	.free  = do_nothing,
-	.copy  = copy_size,
-	.init  = init_size,
-	.link  = false
+const ax_trait ax_t_size = { 
+	.t_size  = sizeof(size_t),
+	.t_equal = equal_size,
+	.t_less  = less_size,
+	.t_dump  = dump_size,
+	.t_hash  = hash_size,
+	.t_free  = do_nothing,
+	.t_copy  = copy_size,
+	.t_init  = init_size,
+	.t_link  = false
 };
 
-const ax_trait ax_trait_float = { 
-	.size  = sizeof(float),
-	.equal = equal_float,
-	.less  = less_float,
-	.dump  = dump_float,
-	.hash  = hash_float,
-	.free  = do_nothing,
-	.copy  = copy_float,
-	.init  = init_float,
-	.link  = false
+const ax_trait ax_t_float = { 
+	.t_size  = sizeof(float),
+	.t_equal = equal_float,
+	.t_less  = less_float,
+	.t_dump  = dump_float,
+	.t_hash  = hash_float,
+	.t_free  = do_nothing,
+	.t_copy  = copy_float,
+	.t_init  = init_float,
+	.t_link  = false
 };
 
-const ax_trait ax_trait_double = { 
-	.size  = sizeof(double),
-	.equal = equal_double,
-	.less  = less_double,
-	.dump  = dump_double,
-	.hash  = hash_double,
-	.free  = do_nothing,
-	.copy  = copy_double,
-	.init  = init_double,
-	.link  = false
+const ax_trait ax_t_double = { 
+	.t_size  = sizeof(double),
+	.t_equal = equal_double,
+	.t_less  = less_double,
+	.t_dump  = dump_double,
+	.t_hash  = hash_double,
+	.t_free  = do_nothing,
+	.t_copy  = copy_double,
+	.t_init  = init_double,
+	.t_link  = false
 };
 
-const ax_trait ax_trait_ptr= { 
-	.size  = sizeof(void *),
-	.equal = equal_ptr,
-	.less  = less_ptr,
-	.dump  = dump_ptr,
-	.hash  = hash_ptr,
-	.free  = do_nothing,
-	.copy  = copy_ptr,
-	.init  = init_ptr,
-	.link  = false
+const ax_trait ax_t_ptr= { 
+	.t_size  = sizeof(void *),
+	.t_equal = equal_ptr,
+	.t_less  = less_ptr,
+	.t_dump  = dump_ptr,
+	.t_hash  = hash_ptr,
+	.t_free  = do_nothing,
+	.t_copy  = copy_ptr,
+	.t_init  = init_ptr,
+	.t_link  = false
 };
 
-const ax_trait ax_trait_str = { 
-	.size  = sizeof(void*),
-	.equal = equal_str,
-	.less  = less_str,
-	.dump  = dump_str,
-	.hash  = hash_str,
-	.free  = free_str,
-	.copy  = copy_str,
-	.init  = init_str,
-	.link  = true
+const ax_trait ax_t_str = { 
+	.t_size  = sizeof(void*),
+	.t_equal = equal_str,
+	.t_less  = less_str,
+	.t_dump  = dump_str,
+	.t_hash  = hash_str,
+	.t_free  = free_str,
+	.t_copy  = copy_str,
+	.t_init  = init_str,
+	.t_link  = true
 };
 
-const ax_trait ax_trait_wcs = { 
-	.size  = sizeof(void*),
-	.equal = equal_wcs,
-	.less  = less_wcs,
-	.dump  = dump_wcs,
-	.hash  = hash_wcs,
-	.free  = free_wcs,
-	.copy  = copy_wcs,
-	.init  = init_wcs,
-	.link  = true
+const ax_trait ax_t_wcs = { 
+	.t_size  = sizeof(void*),
+	.t_equal = equal_wcs,
+	.t_less  = less_wcs,
+	.t_dump  = dump_wcs,
+	.t_hash  = hash_wcs,
+	.t_free  = free_wcs,
+	.t_copy  = copy_wcs,
+	.t_init  = init_wcs,
+	.t_link  = true
 };
 
-const ax_trait ax_trait_diff = { 
-	.size  = sizeof(void*),
-	.equal = equal_diff,
-	.less  = less_diff,
-	.dump  = dump_diff,
-	.hash  = hash_diff,
-	.free  = do_nothing,
-	.copy  = copy_diff,
-	.init  = init_diff,
-	.link  = true
+const ax_trait ax_t_diff = { 
+	.t_size  = sizeof(void*),
+	.t_equal = equal_diff,
+	.t_less  = less_diff,
+	.t_dump  = dump_diff,
+	.t_hash  = hash_diff,
+	.t_free  = do_nothing,
+	.t_copy  = copy_diff,
+	.t_init  = init_diff,
+	.t_link  = true
 };
 
-ax_dump *ax_trait_dump(const ax_trait *tr, const void* p)
+ax_dump *ax_t_dump(const ax_trait *tr, const void* p)
 {
-	return tr->dump ? tr->dump(p) : ax_dump_symbol("?");
+	return tr->t_dump ? tr->t_dump(p) : ax_dump_symbol("?");
 }
 

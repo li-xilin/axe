@@ -33,6 +33,8 @@
 #include <assert.h>
 #include <string.h>
 
+#define KEY_SIZE(m) ax_trait_size(ax_class_data(m).key_tr)
+
 #undef free
 
 ax_concrete_begin(ax_avl)
@@ -80,7 +82,7 @@ static void *node_change_value(ax_map *map, struct node_st *node, const void *va
 inline static void *node_val(const ax_map *map, struct node_st *node)
 {
 	assert(node);
-	return node->kvbuffer + ax_class_data(map).key_tr->size;
+	return node->kvbuffer + KEY_SIZE(map);
 }
 
 inline static void *node_key(struct node_st *node)
@@ -213,7 +215,7 @@ static struct node_st *make_node(ax_map *map, struct node_st *parent, const void
 {
 	ax_avl_r self = { map };
 	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
-	struct node_st *node = malloc(sizeof(struct node_st) + ax_class_data(map).key_tr->size + etr->size);
+	struct node_st *node = malloc(sizeof(struct node_st) + KEY_SIZE(map) + ax_trait_size(etr));
 	if (node == NULL)
 		goto failed;
 
@@ -726,7 +728,7 @@ static void box_clear(ax_box* box)
 	while (!ax_iter_equal(&cur, &last)) {
 		struct node_st *node = cur.point;
 		ax_trait_free(ktr, node->kvbuffer);
-		ax_trait_free(vtr, node->kvbuffer + ktr->size);
+		ax_trait_free(vtr, node->kvbuffer + KEY_SIZE(self.ax_map));
 		ax_iter_next(&cur);
 	}
 

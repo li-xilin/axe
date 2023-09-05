@@ -63,7 +63,6 @@ const ax_tube_trait ax_pque_tr =
 		.prime = tube_prime,
 };
 
-
 static ax_fail tube_push(ax_tube *tube, const void *val, va_list *ap)
 {
 	CHECK_PARAM_NULL(tube);
@@ -154,7 +153,7 @@ ax_concrete_creator(ax_pque, const ax_trait *tr)
 		},
 	};
 
-	if (ax_heap_init(&pque_init.heap, tr->size, 1, less_then, (void *)tr))
+	if (ax_heap_init(&pque_init.heap, ax_trait_size(tr), 1, less_then, (void *)tr))
 		goto fail;
 
 	memcpy(self, &pque_init, sizeof pque_init);

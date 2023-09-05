@@ -33,10 +33,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-
-#undef free
-
 #define MIN_SIZE
+#define ELEM_SIZE(b) ax_trait_size(ax_class_data(b.ax_box).elem_tr)
+#undef free
 
 ax_concrete_begin(ax_vector)
 	ax_buff *buff;
@@ -91,8 +90,8 @@ static inline bool iter_if_valid(const ax_citer *it)
 
 	return  (ax_citer_norm(it)
 		? ((ax_byte *)it->point >= ptr && (ax_byte *)it->point <= ptr + size)
-		: ((ax_byte *)it->point >= ptr - etr->size && (ax_byte *)it->point < ptr + size))
-		&& ((intptr_t)it->point - (intptr_t)ptr) % etr->size == 0;
+		: ((ax_byte *)it->point >= ptr - ax_trait_size(etr) && (ax_byte *)it->point < ptr + size))
+		&& ((intptr_t)it->point - (intptr_t)ptr) % ax_trait_size(etr) == 0;
 }
 
 static inline bool iter_if_have_value(const ax_citer *it)
@@ -111,7 +110,7 @@ static void citer_move(ax_citer *it, long i)
 
 	
 	ax_vector_cr self = AX_R_INIT(ax_one, it->owner);
-	it->point = (ax_byte*)it->point + (i * (ax_class_data(self.ax_box).elem_tr->size));
+	it->point = (ax_byte*)it->point + (i * ax_trait_size(ax_class_data(self.ax_box).elem_tr));
 
 	CHECK_PARAM_VALIDITY(i, iter_if_valid(it));
 }
@@ -122,7 +121,7 @@ static void citer_prev(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	ax_vector_cr self = AX_R_INIT(ax_one, it->owner);
-	it->point = (ax_byte*)it->point - ax_class_data(self.ax_box).elem_tr->size;
+	it->point = (ax_byte*)it->point - ELEM_SIZE(self);
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -133,7 +132,7 @@ static void citer_next(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	ax_vector_cr self = AX_R_INIT(ax_one, it->owner);
-	it->point = (ax_byte*)it->point + ax_class_data(self.ax_box).elem_tr->size;
+	it->point = (ax_byte*)it->point + ELEM_SIZE(self);
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -157,7 +156,7 @@ static long citer_dist(const ax_citer *it1, const ax_citer *it2)
 
 	ax_vector_cr self = AX_R_INIT(ax_one, it1->owner);
 	return ((uintptr_t)it2->point - (uintptr_t)it1->point)
-		/ ax_class_data(self.ax_box).elem_tr->size;
+		/ ELEM_SIZE(self);
 }
 
 ax_box *citer_box(const ax_citer *it)
@@ -172,7 +171,7 @@ static void rciter_move(ax_citer *it, long i)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	ax_vector_cr self = AX_R_INIT(ax_one, it->owner);
-	it->point = (ax_byte*)it->point - (i * (ax_class_data(self.ax_box).elem_tr->size));
+	it->point = (ax_byte*)it->point - (i * ELEM_SIZE(self));
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -182,7 +181,7 @@ static void rciter_prev(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	ax_vector_cr self = AX_R_INIT(ax_one, it->owner);
-	it->point = (ax_byte*)it->point + ax_class_data(self.ax_box).elem_tr->size;
+	it->point = (ax_byte*)it->point + ELEM_SIZE(self);
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -192,7 +191,7 @@ static void rciter_next(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 
 	ax_vector_cr self = AX_R_INIT(ax_one, it->owner);
-	it->point = (ax_byte*)it->point - ax_class_data(self.ax_box).elem_tr->size;
+	it->point = (ax_byte*)it->point - ELEM_SIZE(self);
 
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
@@ -232,14 +231,14 @@ static void iter_erase(ax_iter *it)
 	 
 	ax_trait_free(etr, it->point);
 
-	ax_byte *end = ptr + size - etr->size;
-	for (ax_byte *p = it->point ; p < end ; p += etr->size)
-		memcpy(p, p + etr->size, etr->size);
+	ax_byte *end = ptr + size - ELEM_SIZE(self);
+	for (ax_byte *p = it->point ; p < end ; p += ELEM_SIZE(self))
+		memcpy(p, p + ELEM_SIZE(self), ELEM_SIZE(self));
 
 	size_t shift = (ax_byte*)it->point - ptr;
-	(void)ax_buff_adapt(buff, size - etr->size);
+	(void)ax_buff_adapt(buff, size - ELEM_SIZE(self));
 	if(!ax_iter_norm(it))
-		it->point = (ax_byte *)ax_buff_ptr(buff) + shift - etr->size;
+		it->point = (ax_byte *)ax_buff_ptr(buff) + shift - ELEM_SIZE(self);
 }
 
 static void one_free(ax_one *one)
@@ -297,15 +296,13 @@ static size_t box_size(const ax_box *box)
 	CHECK_PARAM_NULL(box);
 
 	ax_vector_cr self = AX_R_INIT(ax_box, box);
-	return ax_buff_size(self.ax_vector->buff, NULL)
-		/ ax_class_data(self.ax_box).elem_tr->size;
+	return ax_buff_size(self.ax_vector->buff, NULL) / ELEM_SIZE(self);
 }
 
 static size_t box_maxsize(const ax_box *box)
 {
 	ax_vector_cr self = AX_R_INIT(ax_box, box);
-	return ax_buff_max(self.ax_vector->buff)
-		/ ax_class_data(self.ax_box).elem_tr->size;
+	return ax_buff_max(self.ax_vector->buff) / ELEM_SIZE(self);
 }
 
 static ax_iter box_begin(ax_box *box)
@@ -345,7 +342,7 @@ static ax_iter box_rbegin(ax_box *box)
 	ax_iter it = {
 		.owner = (void*)box,
 		.point = (ax_byte *)ax_buff_ptr(self.ax_vector->buff)
-			+ ax_buff_size(self.ax_vector->buff, NULL) - ax_class_data(self.ax_box).elem_tr->size,
+			+ ax_buff_size(self.ax_vector->buff, NULL) - ELEM_SIZE(self),
 		.tr = &ax_vector_tr.ax_box.riter,
 		.etr = ax_class_data(box).elem_tr,
 	};
@@ -359,7 +356,7 @@ static ax_iter box_rend(ax_box *box)
 	ax_vector_r self = AX_R_INIT(ax_box, box);
 	ax_iter it = {
 		.owner = box,
-		.point = (ax_byte *)ax_buff_ptr(self.ax_vector->buff) - ax_class_data(box).elem_tr->size,
+		.point = (ax_byte *)ax_buff_ptr(self.ax_vector->buff) - ELEM_SIZE(self),
 		.tr = &ax_vector_tr.ax_box.riter,
 		.etr = ax_class_data(box).elem_tr,
 	};
@@ -376,7 +373,7 @@ static void box_clear(ax_box *box)
 	size_t size = ax_buff_size(self.ax_vector->buff, NULL);
 
 	ax_byte *end = ptr + size;
-	for (ax_byte *p = ptr ; p < end ; p += etr->size) {
+	for (ax_byte *p = ptr ; p < end ; p += ELEM_SIZE(self)) {
 		ax_trait_free(etr, p);
 	}
 	ax_buff_adapt(self.ax_vector->buff, 0);
@@ -395,16 +392,16 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 
 	long offset = (ax_byte *)it->point - ptr; //backup offset before realloc
 
-	if (ax_buff_adapt(self.ax_vector->buff, size + etr->size))
+	if (ax_buff_adapt(self.ax_vector->buff, size + ELEM_SIZE(self)))
 		return true;
 
 	ptr = ax_buff_ptr(self.ax_vector->buff);
 	it->point = ptr + offset; //restore offset
 
-	void *ins = ax_iter_norm(it) ? it->point : ((ax_byte*)it->point + etr->size);
+	void *ins = ax_iter_norm(it) ? it->point : ((ax_byte*)it->point + ELEM_SIZE(self));
 	void *end = ptr + size;
-	for (ax_byte *p = end ; p != ins ; p -= etr->size) {
-		memcpy(p, p - etr->size, etr->size);
+	for (ax_byte *p = end ; p != ins ; p -= ELEM_SIZE(self)) {
+		memcpy(p, p - ELEM_SIZE(self), ELEM_SIZE(self));
 	}
 
 	if (ax_trait_copy_or_init(etr, ins, val, ap)) {
@@ -413,7 +410,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 	}
 
 	if(ax_iter_norm(it))
-		it->point = (ax_byte*)it->point + etr->size;
+		it->point = (ax_byte*)it->point + ELEM_SIZE(self);
 	return false;
 }
 
@@ -426,7 +423,7 @@ static ax_fail seq_push(ax_seq *seq, const void *val, va_list *ap)
 
 	size_t size = ax_buff_size(self.ax_vector->buff, NULL);
 
-	if (ax_buff_adapt(self.ax_vector->buff, size + etr->size))
+	if (ax_buff_adapt(self.ax_vector->buff, size + ELEM_SIZE(self)))
 		return true;
 
 	ax_byte *ptr = ax_buff_ptr(self.ax_vector->buff);
@@ -451,9 +448,9 @@ static ax_fail seq_pop(ax_seq *seq)
 	if (size == 0) {
 		return false;
 	}
-	ax_trait_free(etr, ptr + size - etr->size);
+	ax_trait_free(etr, ptr + size - ELEM_SIZE(self));
 
-	if (ax_buff_adapt(self.ax_vector->buff, size - etr->size))
+	if (ax_buff_adapt(self.ax_vector->buff, size - ELEM_SIZE(self)))
 		return true;
 	return false;
 }
@@ -463,18 +460,17 @@ static void seq_invert(ax_seq *seq)
 	CHECK_PARAM_NULL(seq);
 
 	const ax_vector_cr self = AX_R_INIT(ax_seq, seq);
-	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	size_t size = ax_buff_size(self.ax_vector->buff, NULL);
 	ax_byte *ptr = ax_buff_ptr(self.ax_vector->buff);
 
 	if (size == 0)
 		return;
 
-	size_t left = 0, right = size - etr->size;
-	while (right - left > etr->size) {
-		ax_memswp(ptr + left, ptr + right, etr->size);
-		left += etr->size;
-		right -= etr->size;
+	size_t left = 0, right = size - ELEM_SIZE(self);
+	while (right - left > ELEM_SIZE(self)) {
+		ax_memswp(ptr + left, ptr + right, ELEM_SIZE(self));
+		left += ELEM_SIZE(self);
+		right -= ELEM_SIZE(self);
 	}
 }
 
@@ -488,14 +484,14 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 	size_t old_size = ax_buff_size(self.ax_vector->buff, NULL);
 
 
-	size *= etr->size;
+	size *= ELEM_SIZE(self);
 
 	if (size == old_size) 
 		return false;
 
 	if (size < old_size) {
 		ax_byte *ptr = ax_buff_ptr(self.ax_vector->buff);
-		for (size_t off = size; off <= old_size; off += etr->size) {
+		for (size_t off = size; off <= old_size; off += ELEM_SIZE(self)) {
 			ax_trait_free(etr, ptr + off);
 		}
 		if (ax_buff_adapt(self.ax_vector->buff, size))
@@ -505,7 +501,7 @@ static ax_fail seq_trunc(ax_seq *seq, size_t size)
 			return true;
 		ax_byte *ptr = ax_buff_ptr(self.ax_vector->buff);
 
-		for (size_t off = old_size; off < size ; off += etr->size) {
+		for (size_t off = old_size; off < size ; off += ELEM_SIZE(self)) {
 			ax_trait_init(etr, ptr + off, NULL); //FIXME: maybe init failed
 		}
 	}
@@ -523,7 +519,7 @@ static ax_iter seq_at(const ax_seq *seq, size_t index)
 
 	ax_iter it = {
 		.owner = (void *)self.ax_one,
-		.point =  ptr + index * etr->size,
+		.point =  ptr + index * ELEM_SIZE(self),
 		.tr = &ax_vector_tr.ax_box.iter,
 		.etr = etr,
 	};
@@ -533,12 +529,12 @@ static ax_iter seq_at(const ax_seq *seq, size_t index)
 static void *seq_last(const ax_seq *seq)
 {
 	CHECK_PARAM_NULL(seq);
-	ax_assert(ax_box_size(ax_cr(ax_seq, seq).ax_box) > 0, "empty");
+
 	ax_vector_cr self = AX_R_INIT(ax_seq, seq);
-	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
+	ax_assert(ax_box_size(ax_cr(ax_seq, seq).ax_box) > 0, "empty");
 
 	return (ax_byte *)ax_buff_ptr(self.ax_vector->buff)
-		+ ax_buff_size(self.ax_vector->buff, NULL) - etr->size;
+		+ ax_buff_size(self.ax_vector->buff, NULL) - ELEM_SIZE(self);
 }
 
 static void *seq_first(const ax_seq *seq)

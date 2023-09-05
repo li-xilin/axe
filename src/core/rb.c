@@ -33,6 +33,9 @@
 #include <assert.h>
 #include <string.h>
 
+#define KEY_TR(r) ax_class_data(r.ax_map).key_tr
+#define VAL_TR(r) ax_class_data(r.ax_box).elem_tr
+
 #if defined(AX_ARCH_AMD64) && defined(_LP64)
 # define USE_AUGMENTED_PTR
 # define COLOR_SHIFT 63
@@ -612,7 +615,7 @@ static void rb_tree_remove(struct ax_rb_st *tree, struct node_st *node)
 inline static void *node_val(const ax_map *map, struct node_st *node)
 {
 	assert(node);
-	return node->kvbuffer + ax_class_data(map).key_tr->size;
+	return node->kvbuffer + ax_trait_size(ax_class_data(map).key_tr);
 }
 
 inline static void *node_key(struct node_st *node)
@@ -777,13 +780,13 @@ static void *citer_get(const ax_citer *it)
 inline static void *node_set_value(ax_map *map, struct node_st *node, const void *val, va_list *ap, bool need_clean)
 {
 	ax_rb_r self = AX_R_INIT(ax_map, map);
-	const ax_trait *vtr = ax_class_data(self.ax_box).elem_tr;
-	ax_byte tmp[vtr->size]; // Backup old value
+	const ax_trait *vtr = VAL_TR(self);
+	ax_byte tmp[ax_trait_size(vtr)]; // Backup old value
 
 	void *ptr = node_val(map, node);
-	memcpy(tmp, ptr, vtr->size);
+	memcpy(tmp, ptr, ax_trait_size(vtr));
 	if (ax_trait_copy_or_init(vtr, ptr, val, ap)) {
-		memcpy(ptr, tmp, vtr->size); // Restore old value
+		memcpy(ptr, tmp, ax_trait_size(vtr)); // Restore old value
 		return NULL;
 	}
 	if (need_clean)
@@ -818,7 +821,6 @@ static void iter_erase(ax_iter *it)
 	ax_trait_free(ax_class_data(self.ax_map).key_tr, node_key(node));
 	ax_trait_free(ax_class_data(self.ax_box).elem_tr, node_val(self.ax_map, node));
 	free(node);
-
 }
 
 static void *map_put(ax_map* map, const void *key, const void *val, va_list *ap)
@@ -827,10 +829,9 @@ static void *map_put(ax_map* map, const void *key, const void *val, va_list *ap)
 
 	ax_rb_r self = AX_R_INIT(ax_map, map);
 
-	const ax_trait *ktr = ax_class_data(self.ax_map).key_tr,
-	      *vtr = ax_class_data(self.ax_box).elem_tr;
+	const ax_trait *ktr = KEY_TR(self), *vtr = VAL_TR(self);
 
-	struct node_st *node = malloc(sizeof(struct node_st) + ax_class_data(map).key_tr->size + vtr->size);
+	struct node_st *node = malloc(sizeof(struct node_st) + ax_trait_size(ktr) + ax_trait_size(vtr));
 	if (node == NULL)
 		return NULL;
 	node->left = node->right = node->parent = NULL;
@@ -1052,16 +1053,14 @@ static void box_clear(ax_box* box)
 
 	ax_rb_r self = AX_R_INIT(ax_box, box);
 
-	const ax_trait
-		*ktr = ax_class_data(self.ax_map).key_tr,
-		*vtr = ax_class_data(self.ax_box).elem_tr;
+	const ax_trait *ktr = KEY_TR(self), *vtr = VAL_TR(self);
 
 	ax_iter cur = ax_box_begin(self.ax_box);
 	ax_iter last = ax_box_end(self.ax_box);
 	while (!ax_iter_equal(&cur, &last)) {
 		struct node_st *node = cur.point;
 		ax_trait_free(ktr, node->kvbuffer);
-		ax_trait_free(vtr, node->kvbuffer + ktr->size);
+		ax_trait_free(vtr, node->kvbuffer + ax_trait_size(ktr));
 		ax_iter_next(&cur);
 	}
 

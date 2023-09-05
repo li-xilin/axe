@@ -67,7 +67,7 @@ ax_fail ax_seq_push_arraya(ax_seq *seq, const void *arrp)
 
 	ax_seq_cr self = AX_R_INIT(ax_seq, seq);
 	size_t size = ax_arraya_size(arrp);
-	int esize = ax_class_data(self.ax_box).elem_tr->size;
+	int esize = ax_trait_size(ax_class_data(self.ax_box).elem_tr);
 	ax_assert(size % esize == 0,
 			"different size of elements with seq and arraya");
 	const ax_byte *p = arrp;

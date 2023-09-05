@@ -460,7 +460,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 	CHECK_PARAM_VALIDITY(it, (it->point ? !!self.ax_list->head : 1));
 
 	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
-	struct node_st *node = malloc(sizeof(struct node_st) + etr->size);
+	struct node_st *node = malloc(sizeof(struct node_st) + ax_trait_size(etr));
 	if (node == NULL) {
 		return true;
 	}
@@ -504,7 +504,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 inline static struct node_st *make_node(const ax_trait *etr, const void *val, va_list *ap)
 {
 	struct node_st *node = NULL;
-	node = malloc(sizeof(struct node_st) + etr->size);
+	node = malloc(sizeof(struct node_st) + ax_trait_size(etr));
 	if (!node)
 		goto fail;
 
@@ -793,7 +793,6 @@ const ax_seq_trait ax_list_tr =
 ax_seq* __ax_list_construct(const ax_trait *elem_tr)
 {
 	CHECK_PARAM_NULL(elem_tr);
-	CHECK_PARAM_NULL(elem_tr->init || elem_tr->copy);
 
 	ax_list_r self = { malloc(sizeof(ax_list)) };
 	if (self.ax_list == NULL) {

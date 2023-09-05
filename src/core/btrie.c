@@ -149,7 +149,7 @@ static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 	if (node->val) {
 		ax_trait_free(etr, node->val);
 	} else { 
-		node->val = malloc(etr->size);
+		node->val = malloc(ax_trait_size(etr));
 		if (!node->val)
 			return true;
 	}
@@ -385,7 +385,7 @@ static ax_fail node_set_value(ax_btrie *btrie, struct node_st *node, const void 
 	const ax_trait *vtr = ax_class_data(ax_r(ax_btrie, btrie).ax_box).elem_tr;
 	void *value = NULL;
 
-	value = malloc(vtr->size);
+	value = malloc(ax_trait_size(vtr));
 	if (!value)
 		goto fail;
 
@@ -393,7 +393,7 @@ static ax_fail node_set_value(ax_btrie *btrie, struct node_st *node, const void 
 		goto fail;
 
 	if (node->val) {
-		vtr->free(node->val);
+		ax_trait_free(vtr, node->val);
 		free(node->val);
 	} else {
 		btrie->size ++;
@@ -710,9 +710,9 @@ static ax_fail node_copy(void *dst, const void *src)
 }
 
 static const ax_trait node_tr = { 
-	.size  = sizeof(struct node_st),
-	.free  = node_free,
-	.copy  = node_copy,
+	.t_size  = sizeof(struct node_st),
+	.t_free  = node_free,
+	.t_copy  = node_copy,
 };
 
 const ax_trie_trait ax_btrie_tr =

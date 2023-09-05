@@ -262,7 +262,7 @@ inline static void ax_iter_swap(const ax_iter *it1, const ax_iter *it2)
 {
 	ax_assert(it1->tr->get && it2->tr->get, "operation not supported");
 	ax_memswp(it1->tr->get(ax_iter_cc(it1)),
-			it2->tr->get(ax_iter_cc(it2)), it1->etr->size);
+			it2->tr->get(ax_iter_cc(it2)), ax_trait_size(it1->etr));
 }
 
 const char *ax_iter_type_str(int type);

@@ -239,7 +239,7 @@ static void quick_sort(const ax_iter *first, const ax_iter *last)
 	ax_iter left_last = right_first;
 	ax_iter_prev(&left_last);
 	ax_memswp(left_last.tr->get(ax_iter_cc(&left_last)),
-			first->tr->get(ax_iter_cc(first)), first->etr->size);
+			first->tr->get(ax_iter_cc(first)), ax_trait_size(first->etr));
 
 	quick_sort(first, &left_last);
 	quick_sort(&right_first, last);
@@ -399,7 +399,7 @@ bool ax_equal_to_arr(const ax_iter *first, const ax_iter *last, void *arr, size_
 	CHECK_PARAM_VALIDITY(arr, !!arr == !!size);
 
 	const ax_trait *tr = first->etr;
-	ax_assert(size % tr->size == 0, "unexpected size");
+	ax_assert(size % ax_trait_size(tr) == 0, "unexpected size");
 
 	size_t pos = 0;
 	ax_iter cur = *first;
@@ -407,7 +407,7 @@ bool ax_equal_to_arr(const ax_iter *first, const ax_iter *last, void *arr, size_
 		if (!ax_trait_equal(tr, ax_iter_get(&cur), (ax_byte*)arr + pos))
 			return false;
 		ax_iter_next(&cur);
-		pos += tr->size;
+		pos += ax_trait_size(tr);
 	}
 	return ax_iter_equal(&cur, last) == (pos == size);
 }
@@ -476,7 +476,7 @@ ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 
 	ax_pred pred;
 	const ax_trait *etr = first->etr;
-	void *tmp = malloc(etr->size);
+	void *tmp = malloc(ax_trait_size(etr));
 	if (!tmp) {
 		return true;
 	}
@@ -497,7 +497,7 @@ ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 		find = sorted_first;
 		search_if_not(ax_iter_c(&find), ax_iter_c(&cur), &pred);
 
-		memcpy(tmp, cur.tr->get(ax_iter_cc(&cur)), etr->size);
+		memcpy(tmp, cur.tr->get(ax_iter_cc(&cur)), ax_trait_size(etr));
 		ax_iter swapit = cur;
 		while(!ax_iter_equal(&find, &swapit)) {
 			swap_prev.point = swapit.point;
@@ -505,7 +505,7 @@ ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 			ax_iter_swap(&swapit, &swap_prev);
 			swapit.point = swap_prev.point;
 		}
-		memcpy(find.tr->get(ax_iter_cc(&find)), tmp, etr->size);
+		memcpy(find.tr->get(ax_iter_cc(&find)), tmp, ax_trait_size(etr));
 
 		ax_iter_next(&cur);
 	}

@@ -45,9 +45,9 @@ ax_fail ax_trie_enum(const ax_trie *trie, ax_trie_enum_cb_f cb, void *ctx)
 	ax_trie_cr self = AX_R_INIT(ax_trie, trie);
 	
 	ax_trait iter_tr = {
-		.size = sizeof(ax_iter),
-		.copy = iter_copy,
-		.free = iter_free
+		.t_size = sizeof(ax_iter),
+		.t_copy = iter_copy,
+		.t_free = iter_free
 	};
 
 	ax_list_r list = AX_R_NULL;

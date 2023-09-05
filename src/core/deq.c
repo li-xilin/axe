@@ -38,6 +38,8 @@
 #include <assert.h>
 #include <math.h>
 
+#define ELEM_TR(r) ax_class_data(r.ax_box).elem_tr
+
 #define BLOCK_SIZE 0x400
 
 #define RESET_FRONT_AND_REAR(deq) \
@@ -124,7 +126,8 @@ inline static struct position back_end_position(ax_deq *deq)
 
 inline static ax_byte *position_ptr(const ax_deq *deq, const struct position *pos)
 {
-	return *ring_at(&deq->map, pos->midx) + pos->boff * ax_class_data(ax_cr(ax_deq, deq).ax_box).elem_tr->size;
+	ax_deq_cr self = AX_R_INIT(ax_deq, deq);
+	return *ring_at(&deq->map, pos->midx) + pos->boff * ax_trait_size(ELEM_TR(self));
 }
 
 inline static ptrdiff_t move_position(const ax_deq *deq, struct position *pos, ptrdiff_t step)
@@ -178,7 +181,7 @@ inline static struct position get_position_by_iter(const ax_citer *it)
 	const ax_deq *self = it->owner;
 	return (struct position) {
 		ring_offset_to_index(&self->map, it->extra),
-		((ax_byte *)it->point - *ring_at_offset(&self->map, it->extra)) / it->etr->size,
+		((ax_byte *)it->point - *ring_at_offset(&self->map, it->extra)) / ax_trait_size(it->etr),
 	};
 }
 
@@ -261,11 +264,11 @@ static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 
 	ax_seq_cr self = AX_R_INIT(ax_one, it->owner);
 	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
-	ax_byte tmp[etr->size];
+	ax_byte tmp[ax_trait_size(etr)];
 	if (ax_trait_copy_or_init(it->etr, tmp, val, ap))
 		return true;
 	ax_trait_free(etr, it->point);
-	ax_memswp(tmp, it->point, etr->size);
+	ax_memswp(tmp, it->point, ax_trait_size(etr));
 	return false;
 }
 
@@ -289,7 +292,7 @@ static void iter_erase(ax_iter *it)
 	ax_trait_free(etr, val);
 	while (!POS_EQUAL(next_pos, end)) {
 		void *next_val = position_ptr(self.ax_deq, &next_pos);
-		memcpy(val, next_val, etr->size);
+		memcpy(val, next_val, ax_trait_size(etr));
 		val = next_val;
 		pos = next_pos;
 		move_position(self.ax_deq, &next_pos, 1);
@@ -331,8 +334,6 @@ static ax_dump *any_dump(const ax_any *any)
 static ax_any *any_copy(const ax_any *any)
 {
 	CHECK_PARAM_NULL(any);
-
-
 	return NULL;
 }
 
@@ -445,6 +446,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr);
 
 	ax_deq_r self = AX_R_INIT(ax_seq, seq);
+	const ax_trait *etr = ELEM_TR(self);
 	struct position pos = { ring_size(&self.ax_deq->map) - 1, self.ax_deq->rear, };
 
 	struct position new_rear_pos = pos;
@@ -452,7 +454,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 
 	bool block_added = false;
 	if (!have_follow_pos(self.ax_deq, &pos)) {
-		ax_byte *block = malloc(BLOCK_SIZE * ax_class_data(self.ax_box).elem_tr->size);
+		ax_byte *block = malloc(BLOCK_SIZE * ax_trait_size(etr));
 		if (!block)
 			return true;
 		if (ring_push_back(&self.ax_deq->map, &block)) {
@@ -462,8 +464,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 		block_added = true;
 	}
 
-	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
-	ax_byte tmp[etr->size];
+	ax_byte tmp[ax_trait_size(etr)];
 	if (ax_trait_copy_or_init(etr, tmp, val, ap)) {
 		if (block_added) {
 			free(*ring_back(&self.ax_deq->map));
@@ -476,7 +477,7 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 	ax_byte *current = it->point;
 	struct position target_pos = {
 		ring_offset_to_index(&self.ax_deq->map, it->extra),
-		(current - block) / it->etr->size,
+		(current - block) / ax_trait_size(it->etr),
 	};
 
 	while (!POS_EQUAL(pos, target_pos)) {
@@ -484,9 +485,9 @@ static ax_fail seq_insert(ax_seq *seq, ax_iter *it, const void *val, va_list *ap
 		move_position(self.ax_deq, &pos, -1);
 		void *src = position_ptr(self.ax_deq, &pos),
 			 *dst = position_ptr(self.ax_deq, &pos1);
-		memcpy(dst, src, it->etr->size);
+		memcpy(dst, src, ax_trait_size(it->etr));
 	}
-	memcpy(position_ptr(self.ax_deq, &target_pos), tmp, etr->size);
+	memcpy(position_ptr(self.ax_deq, &target_pos), tmp, ax_trait_size(etr));
 	self.ax_deq->rear = new_rear_pos.boff;
 
 	move_position(self.ax_deq, &target_pos, 1);
@@ -499,10 +500,12 @@ static ax_fail seq_push(ax_seq *seq, const void *val, va_list *ap)
 	CHECK_PARAM_NULL(seq);
 
 	ax_deq_r self = AX_R_INIT(ax_seq, seq);
+	const ax_trait *etr = ELEM_TR(self);
+
 	struct position pos = { ring_size(&self.ax_deq->map) - 1, self.ax_deq->rear };
 	bool block_added = false;
 	if (!have_follow_pos(self.ax_deq, &pos)) {
-		ax_byte *block = malloc(BLOCK_SIZE * ax_class_data(self.ax_box).elem_tr->size);
+		ax_byte *block = malloc(BLOCK_SIZE * ax_trait_size(etr));
 		if (!block)
 			return true;
 		if (ring_push_back(&self.ax_deq->map, &block)) {
@@ -542,10 +545,12 @@ static ax_fail seq_pushf(ax_seq *seq, const void *val, va_list *ap)
 	CHECK_PARAM_NULL(seq);
 
 	ax_deq_r self = AX_R_INIT(ax_seq, seq);
+	const ax_trait *etr = ELEM_TR(self);
+
 	struct position pos = { 0,  self.ax_deq->front, };
 	bool block_added = false;
 	if (!have_previous_pos(self.ax_deq, &pos)) {
-		ax_byte *block = malloc(BLOCK_SIZE * ax_class_data(self.ax_box).elem_tr->size);
+		ax_byte *block = malloc(BLOCK_SIZE * ax_trait_size(etr));
 		if (!block)
 			return true;
 		if (ring_push_front(&self.ax_deq->map, &block)) {
@@ -586,11 +591,11 @@ static void seq_invert(ax_seq *seq)
 	CHECK_PARAM_NULL(seq);
 
 	ax_deq_r self = AX_R_INIT(ax_seq, seq);
+	const ax_trait *etr = ELEM_TR(self);
 
 	size_t map_size = ring_size(&self.ax_deq->map);
-
 	struct position pos1 = { 0, self.ax_deq->front, },
-					pos2 = { map_size - 1, self.ax_deq->rear, };
+			pos2 = { map_size - 1, self.ax_deq->rear, };
 
 	next_position(self.ax_deq, &pos1);
 	prev_position(self.ax_deq, &pos2);
@@ -599,7 +604,7 @@ static void seq_invert(ax_seq *seq)
 
 	for (size_t i = 0; i < size / 2; i++) {
 		ax_memswp(position_ptr(self.ax_deq, &pos1), position_ptr(self.ax_deq, &pos2),
-				ax_class_data(self.ax_box).elem_tr->size);
+				ax_trait_size(etr));
 		next_position(self.ax_deq, &pos1);
 		prev_position(self.ax_deq, &pos2);
 	}
@@ -729,7 +734,7 @@ ax_seq* __ax_deq_construct(const ax_trait *elem_tr)
 	if (ax_r_isnull(self))
 		goto fail;
 
-	block = malloc(BLOCK_SIZE * elem_tr->size);
+	block = malloc(BLOCK_SIZE * ax_trait_size(elem_tr));
 	if (!block)
 		goto fail;
 
