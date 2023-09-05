@@ -618,7 +618,7 @@ const ax_trait ax_t_diff = {
 	.t_link  = true
 };
 
-ax_dump *ax_t_dump(const ax_trait *tr, const void* p)
+ax_dump *ax_trait_dump(const ax_trait *tr, const void* p)
 {
 	return tr->t_dump ? tr->t_dump(p) : ax_dump_symbol("?");
 }

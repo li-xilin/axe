@@ -12,8 +12,8 @@ bool str_less(const char *a, const char *b, size_t size)
 int main()
 {
 	/* setup string trait for sorting */
-	ax_trait str_tr = *ax_t(str);
-	str_tr.less = (ax_trait_compare_f)str_less;
+	ax_trait str_tr = ax_t_str;
+	str_tr.t_less = (ax_trait_compare_f)str_less;
 
 	char *strs[] = {
 		"Amy",

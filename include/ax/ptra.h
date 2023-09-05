@@ -53,13 +53,13 @@ inline static void *ax_ptra_get(ax_ptra* ptra)
 
 inline static void ax_ptra_reset(ax_ptra* ptra, void *ptr)
 {
-	ptra->tr->free(ptra->ptr);
+	ax_trait_free(ptra->tr, ptra->ptr);
 	ptra->ptr = ptr;
 }
 
 static void ax_ptra_free(ax_ptra *ptra)
 {
-	ptra->tr->free(ptra->ptr);
+	ax_trait_free(ptra->tr, ptra->ptr);
 	ptra->ptr = NULL;
 }
 
@@ -83,7 +83,7 @@ const struct ax_one_trait_st ax_ptra_tr =
 			})
 
 #define ax_onelize_2(_p, _f) \
-	AX_CONCRETE_NEW_N(2, ax_ptra, ax_p(const ax_trait, { .free = _f }), _p).ax_one
+	AX_CONCRETE_NEW_N(2, ax_ptra, ax_p(const ax_trait, { .t_free = _f }), _p).ax_one
 
 #define ax_onelize_1(_p) \
 	ax_onelize_2(_p, free)
