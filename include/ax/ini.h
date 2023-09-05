@@ -40,6 +40,10 @@ typedef int ax_ini_parse_error_f(unsigned lineno, unsigned error, void *args);
 
 ax_ini *ax_ini_create();
 
+ax_ini *ax_ini_load(FILE *fp, ax_ini_parse_error_f *error_cb, void *args);
+
+void ax_ini_dump(const ax_ini * d, FILE * out);
+
 void ax_ini_free(ax_ini * d);
 
 const ax_uchar *ax_ini_get(const ax_ini *d, const ax_uchar *sec_name, const ax_uchar *key);
@@ -51,8 +55,6 @@ int ax_ini_push_sec(ax_ini *d, const ax_uchar *sec_name);
 int ax_ini_push_opt(ax_ini *d, const ax_uchar *key, const ax_uchar *val);
 
 void ax_ini_unset(ax_ini *d, const ax_uchar *sec_name, const ax_uchar *key);
-
-void ax_ini_dump(const ax_ini * d, FILE * out);
 
 bool ax_ini_check_name(ax_uchar *name);
 
