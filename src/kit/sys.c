@@ -21,12 +21,14 @@
  */
 
 #include "ax/sys.h"
+#include "ax/errno.h"
 #include "ax/types.h"
 #include "ax/detect.h"
 
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #ifdef AX_OS_WIN
 #include <windows.h>
@@ -40,84 +42,112 @@ int ax_sys_mkdir(const ax_uchar *path, int mode)
 {
 #ifdef AX_OS_WIN
 	if (!CreateDirectoryW(path, 0)) {
-		switch (GetLastError()) {
-			case ERROR_ALREADY_EXISTS:
-				errno = EEXIST;
-				break;
-			case ERROR_PATH_NOT_FOUND:
-				errno = ENOENT;
-				break;
-		}
+#else
+	if (mkdir(path, mode)) {
+#endif
+		ax_error_occur();
 		return -1;
 	}
 	return 0;
-#else
-	return mkdir(path, mode);
-#endif
 }
 
 int ax_sys_unlink(const ax_uchar *path)
 {
 #ifdef AX_OS_WIN
 	if (!DeleteFileW(path)) {
-		switch (GetLastError()) {
-			case ERROR_FILE_NOT_FOUND:
-				errno = ENOENT;
-				break;
-			case ERROR_ACCESS_DENIED:
-				errno = EPERM;
-				break;
-			default:
-				errno = EINVAL;
-		}
+#else
+	if (unlink(path)) {
+#endif
+		ax_error_occur();
 		return -1;
 	}
 	return 0;
-#else
-	return unlink(path);
-#endif
 }
 
 int ax_sys_rename(const ax_uchar *path, const ax_uchar *new_path)
 {
 #ifdef AX_OS_WIN
 	if (!MoveFileW(path, new_path)) {
-		switch (GetLastError()) {
-			case ERROR_FILE_NOT_FOUND:
-				errno = ENOENT;
-				break;
-			case ERROR_ACCESS_DENIED:
-				errno = EPERM;
-				break;
-			case ERROR_ALREADY_EXISTS:
-				errno = EEXIST;
-				break;
-			default:
-				errno = EINVAL;
-		}
+		
+#else
+	if (rename(path, new_path)) {
+#endif
+		ax_error_occur();
+		return -1;
 	}
 	return 0;
+}
+
+int ax_sys_copy(const ax_uchar *path, const ax_uchar *new_path)
+{
+	
+	int retval = -1;
+#ifdef AX_OS_WIN
+	if (!CopyFileW(path, new_path, FALSE)) {
+		ax_error_occur();
+		return -1;
+	}
+	retval = 0;
 #else
-	return rename(path, new_path);
+	FILE *from_fp = NULL;
+	FILE *to_fp = NULL;
+
+       	if (!(from_fp = ax_sys_fopen(path, ax_u("rb"))))
+		goto out;
+
+       	if (!(to_fp = ax_sys_fopen(new_path, ax_u("wb"))))
+		goto out;
+
+	ssize_t len;
+	char buf[4096];
+	while ((len = fread(buf, 1, sizeof buf, from_fp))) {
+		if (fwrite(buf, 1, len, to_fp) < len)
+			break;
+	}
+
+	if (ferror(from_fp) || ferror(to_fp)) {
+		ax_sys_unlink(new_path);
+		errno = AX_EIO;
+		goto out;
+	}
+
+	retval = 0;
+out:
+	if (from_fp)
+		fclose(from_fp);
+	if (to_fp)
+		fclose(to_fp);
 #endif
+	return retval;
 }
 
-int ax_sys_copy(const ax_uchar *path, const ax_uchar *target_path)
+int ax_sys_link(const ax_uchar *path, const ax_uchar *link_path)
 {
-	errno = ENOTSUP;
-	return -1;
+#ifdef AX_OS_WIN
+	if (!CreateHardLinkW(link_path, path, NULL)) {
+#else
+	if (link(path, link_path)) {
+#endif
+		ax_error_occur();
+		return -1;
+	}
+	return 0;
 }
 
-int ax_sys_link(const ax_uchar *path, const ax_uchar *target_path)
+int ax_sys_symlink(const ax_uchar *path, const ax_uchar *link_path, bool dir_link)
 {
-	errno = ENOTSUP;
-	return -1;
-}
-
-int ax_sys_access(const ax_uchar *path, int mode)
-{
-	errno = ENOTSUP;
-	return -1;
+#ifdef AX_OS_WIN
+	DWORD dwFlags = 0;
+	if (dir_link)
+		dwFlags |= SYMBOLIC_LINK_FLAG_DIRECTORY;
+	if (!CreateSymbolicLinkW(link_path, path, dwFlags)) {
+#else
+	if (symlink(path, link_path)) {
+#endif
+		ax_error_occur();
+		return -1;
+	}
+	return 0;
 }
 
 FILE *ax_sys_fopen(const ax_uchar *path, const ax_uchar *mode)
@@ -126,6 +156,15 @@ FILE *ax_sys_fopen(const ax_uchar *path, const ax_uchar *mode)
 	return _wfopen(path, mode);
 #else
 	return fopen(path, mode);
+#endif
+}
+
+FILE *ax_sys_freopen(const ax_uchar *path, const ax_uchar *mode, FILE *fp)
+{
+#ifdef AX_OS_WIN
+	return _wfreopen(path, mode, fp);
+#else
+	return freopen(path, mode, fp);
 #endif
 }
 

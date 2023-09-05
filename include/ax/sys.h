@@ -31,6 +31,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #ifdef AX_OS_WIN
 #define ax_sys_getenv _wgetenv
@@ -44,13 +45,15 @@ int ax_sys_unlink(const ax_uchar *path);
 
 int ax_sys_rename(const ax_uchar *path, const ax_uchar *new_path);
 
-int ax_sys_copy(const ax_uchar *path, const ax_uchar *target_path);
+int ax_sys_copy(const ax_uchar *path, const ax_uchar *new_path);
 
-int ax_sys_link(const ax_uchar *path, const ax_uchar *target_path);
+int ax_sys_link(const ax_uchar *path, const ax_uchar *link_path);
 
-int ax_sys_access(const ax_uchar *path, int mode);
+int ax_sys_symlink(const ax_uchar *path, const ax_uchar *link_path, bool dir_link);
 
 FILE *ax_sys_fopen(const ax_uchar *path, const ax_uchar *mode);
+
+FILE *ax_sys_freopen(const ax_uchar *path, const ax_uchar *mode, FILE *fp);
 
 #endif
 
