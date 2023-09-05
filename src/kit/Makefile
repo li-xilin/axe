@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Li xilin <lixilin@gmx.com>
+# Copyright (c) 2022-2023 Li Xilin <lixilin@gmx.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,12 @@ include $(ROOT)/config.mak
 
 ifneq ($(TARGET_SYSTEM), win32)
 	CFLAGS += -D_DEFAULT_SOURCE
-#else
+else
 	CFLAGS += -DWIN32_LEAN_AND_MEAN
 	CFLAGS += -D_WIN32_WINNT=0x0600
 endif
 
 TARGET = $(LIB)/libaxkit.a
-
 OBJS = lib.o edit.o stringbuf.o tcolor.o stat.o sys.o path.o dir.o uchar.o ini.o errno.o
 
 all: $(TARGET)
