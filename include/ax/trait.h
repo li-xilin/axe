@@ -47,8 +47,6 @@ typedef struct ax_dump_st ax_dump;
 #endif
 #define ax_end }
 
-#define __ax_require(_fun) ax_assert(_fun, "NULL pointer of %s", _fun)
-
 typedef void    (*ax_trait_free_f)(void* p);
 typedef bool    (*ax_trait_compare_f) (const void* p1, const void* p2);
 typedef size_t  (*ax_trait_hash_f)(const void* p);
@@ -226,8 +224,10 @@ inline static ax_fail ax_trait_copy(const ax_trait *tr, void* dst, const void* s
 
 inline static ax_fail ax_trait_init(const ax_trait *tr, void* p, va_list *ap)
 {
-	__ax_require(tr->t_init);
-	return tr->t_init(p, ap);
+	if (tr->t_init)
+		return tr->t_init(p, ap);
+	memset(p, 0, tr->t_size);
+	return false;
 }
 
 inline static ax_fail ax_trait_copy_or_init(const ax_trait *tr, void* dst, const void *src, va_list *ap)
@@ -242,7 +242,5 @@ inline static size_t ax_trait_size(const ax_trait *tr)
 }
 
 ax_dump *ax_trait_dump(const ax_trait *tr, const void* p);
-
-#undef __ax_require
 
 #endif
