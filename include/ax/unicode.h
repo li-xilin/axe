@@ -31,6 +31,12 @@
 
 #define MAX_UTF8_LEN 4
 
+#define AX_UTF8_BOM    (uint8_t[]) { 0xEF, 0xBB, 0xBF }
+#define AX_UTF16BE_BOM (uint8_t[]) { 0xFE, 0XFF }
+#define AX_UTF16LE_BOM (uint8_t[]) { 0xFF, 0XFE }
+#define AX_UTF32BE_BOM (uint8_t[]) { 0x00, 0x00, 0xFE, 0XFF }
+#define AX_UTF32LE_BOM (uint8_t[]) { 0xFF, 0XFE, 0x00, 0x00 }
+
 /**
  * Converts the given unicode codepoint (0 - 0x1fffff) to utf-8
  * and stores the result at 'p'.
