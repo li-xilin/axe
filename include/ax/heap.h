@@ -35,7 +35,7 @@
 
 #ifndef NAME
 # define NAME ax_
-# define HEAP_H
+# define AX_TPL_HEAP_H
 # define __AX_HEAP_DYNAMIC_TYPE
 # define __AX_HEAP_GET_ENTRY(h, index) (h->table + (index) * h->entry_size)
 # define __AX_HEAP_ENTRIES_PER_PAGE(h) (__AX_HEAP_PAGE_SIZE / h->entry_size)

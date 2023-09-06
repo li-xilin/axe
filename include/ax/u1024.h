@@ -20,6 +20,9 @@
  * THE SOFTWARE.
  */
 
+#ifndef AX_U1024_H
+#define AX_U1024_H
+
 #include "def.h"
 #include <stdint.h>
 
@@ -27,11 +30,15 @@
 #define AX_U1024_MAX ((uint64_t)0xFFFFFFFF)
 #define AX_U1024_WORD_SIZE (sizeof(uint32_t))
 
-typedef struct ax_u1024_st ax_u1024;
 struct ax_u1024_st
 {
 	uint32_t array[AX_U1024_ARR_LEN];
 };
+
+#ifndef AX_U1024_DEFINED
+#define AX_U1024_DEFINED
+typedef struct ax_u1024_st ax_u1024;
+#endif
 
 enum {
 	AX_U1024_SMALLER = -1,
@@ -70,3 +77,4 @@ void ax_u1024_pow(const ax_u1024* a, const ax_u1024* b, ax_u1024* c); /* Calcula
 void ax_u1024_isqrt(const ax_u1024* a, ax_u1024* b);                  /* Integer square root -- e.g. isqrt(5) => 2*/
 void ax_u1024_assign(ax_u1024* dst, const ax_u1024* src);             /* Copy src into dst -- dst := src */
 
+#endif

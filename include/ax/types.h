@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Li xilin <lixilin@gmx.com>
+ * Copyright (c) 2023 Li Xilin <lixilin@gmx.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef AX_TYPES_H
+#define AX_TYPES_H
 
 #include <ax/detect.h>
 #include <sys/types.h>
