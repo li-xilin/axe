@@ -94,6 +94,10 @@ size_t ax_wcshash(const wchar_t *s);
 
 size_t ax_memhash(const void *p, size_t size);
 
+uint64_t ax_hash64_thomas(uint64_t key);
+
+uint64_t ax_hash64inv_thomas(uint64_t key);
+
 char *ax_strsplit(char **s, char ch);
 
 size_t ax_strtoargv(char *s, char *argv[], size_t len);
