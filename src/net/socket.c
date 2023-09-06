@@ -78,6 +78,7 @@ const ax_trait ax_t_socket = {
 	.t_equal = socket_equal,
 	.t_hash = socket_hash,
 	.t_init = socket_init,
+	.t_copy = socket_copy,
 
 };
 

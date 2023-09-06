@@ -54,10 +54,9 @@ typedef int ax_socket;
 #define AX_SOCKET_ERR(name) name
 #endif
 
-
 struct timeval;
 
-ax_trait_declare(ax_socket, ax_socket);
+const ax_trait ax_t_socket;
 
 int ax_socket_init();
 
@@ -70,11 +69,10 @@ int ax_socket_close(ax_socket fd);
 int ax_socket_set_nonblocking(ax_socket fd);
 
 int ax_socket_syncsend(ax_socket sock, const void *data, size_t len);
+
 int ax_socket_syncrecv(ax_socket sock, void *buf, size_t len);
 
-
 int ax_socket_waitrecv(ax_socket sock, size_t millise);
-
 
 inline static int ax_socket_recv_u16(ax_socket sock, uint16_t *valuep)
 {
