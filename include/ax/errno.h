@@ -109,13 +109,11 @@
 #define AX_ETXTBSY		ETXTBSY
 #define AX_EWOULDBLOCK		EWOULDBLOCK
 
-
-
 #define AX_EDQUOT __AX_EBASE + 1
+#define AX_ERRBUF_MAX 1024
+#define ax_error_goto(label) do { ax_error_occur(); goto label; } while(0)
 
 void ax_error_occur(void);
-
-#define AX_ERRBUF_MAX 1024
 
 ax_uchar *ax_strerror(ax_uchar *buf);
 
