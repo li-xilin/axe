@@ -33,13 +33,11 @@
 typedef struct ax_proc_st ax_proc;
 #endif
 
-ax_proc *ax_proc_open(const ax_uchar* fname);
+ax_proc *ax_proc_open(const ax_uchar* file, ax_uchar *const argv[]);
 
-FILE *ax_proc_stdin(const ax_proc *proc);
+FILE *ax_proc_stdio(const ax_proc *proc, int fd);
 
-FILE *ax_proc_stdout(const ax_proc *proc);
-
-FILE *ax_proc_stderr(const ax_proc *proc);
+int ax_proc_fclose(ax_proc *proc, int fd);
 
 pid_t ax_proc_pid(const ax_proc *proc);
 
