@@ -212,6 +212,42 @@ char *ax_strrepl(const char *orig, const char *rep, const char *with)
 	return result;
 }
 
+wchar_t *ax_wcsrepl(const wchar_t *orig, const wchar_t *rep, const wchar_t *with)
+{
+	CHECK_PARAM_NULL(orig);
+	CHECK_PARAM_NULL(rep);
+	CHECK_PARAM_NULL(with);
+	ax_assert(rep[0], "length of parameter rep is 0");
+
+	const wchar_t *ins;
+	wchar_t *result, *tmp;
+	size_t len_rep, len_with, len_front, count;
+
+	len_rep = wcslen(rep);
+	if (len_rep == 0)
+		return NULL;
+	len_with = wcslen(with);
+
+	ins = orig;
+	for (count = 0; (tmp = wcsstr(ins, rep)); ++count) {
+		ins = tmp + len_rep;
+	}
+
+	tmp = result = malloc((wcslen(orig) + (len_with - len_rep) * count + 1) * sizeof(wchar_t));
+	if (!result)
+		return NULL;
+
+	while (count--) {
+		ins = wcsstr(orig, rep);
+		len_front = ins - orig;
+		tmp = wcsncpy(tmp, orig, len_front) + len_front;
+		tmp = wcscpy(tmp, with) + len_with;
+		orig += len_front + len_rep;
+	}
+	wcscpy(tmp, orig);
+	return result;
+}
+
 uint64_t ax_hash64_thomas(uint64_t key)
 {
 	key = (~key) + (key << 21); // key = (key << 21) - key - 1;

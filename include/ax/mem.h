@@ -104,6 +104,8 @@ size_t ax_strtoargv(char *s, char *argv[], size_t len);
 
 char *ax_strrepl(const char *orig, const char *rep, const char *with);
 
+wchar_t *ax_wcsrepl(const wchar_t *orig, const wchar_t *rep, const wchar_t *with);
+
 char *ax_memtoustr(const void *p, size_t size, char *buf);
 
 char *ax_memtohex(const void *p, size_t size, char *out);
