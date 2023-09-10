@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Li xilin <lixilin@gmx.com>
+ * Copyright (c) 2023 Li Xilin <lixilin@gmx.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -148,23 +148,5 @@ int ax_sys_symlink(const ax_uchar *path, const ax_uchar *link_path, bool dir_lin
 		return -1;
 	}
 	return 0;
-}
-
-FILE *ax_sys_fopen(const ax_uchar *path, const ax_uchar *mode)
-{
-#ifdef AX_OS_WIN
-	return _wfopen(path, mode);
-#else
-	return fopen(path, mode);
-#endif
-}
-
-FILE *ax_sys_freopen(const ax_uchar *path, const ax_uchar *mode, FILE *fp)
-{
-#ifdef AX_OS_WIN
-	return _wfreopen(path, mode, fp);
-#else
-	return freopen(path, mode, fp);
-#endif
 }
 

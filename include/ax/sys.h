@@ -51,9 +51,5 @@ int ax_sys_link(const ax_uchar *path, const ax_uchar *link_path);
 
 int ax_sys_symlink(const ax_uchar *path, const ax_uchar *link_path, bool dir_link);
 
-FILE *ax_sys_fopen(const ax_uchar *path, const ax_uchar *mode);
-
-FILE *ax_sys_freopen(const ax_uchar *path, const ax_uchar *mode, FILE *fp);
-
 #endif
 
