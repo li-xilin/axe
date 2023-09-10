@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Li hsilin <lihsilyn@gmail.com>
+ * Copyright (c) 2021-2023 Li Xilin <lixilin@gmx.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,19 +29,19 @@
 #include <wchar.h>
 #include <assert.h>
 
-static int snumber(int64_t value, ax_dump_out_cb_f *out_cb, void *ctx)
+static int snumber(intmax_t value, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	char buf[24];
-	int ret = sprintf(buf, "%" PRIi64, value);
+	int ret = sprintf(buf, "%" PRIiMAX, value);
 	if ((ret = out_cb(buf, ret, ctx)))
 		return ret;
 	return 0;
 }
 
-static int unumber(uint64_t value, ax_dump_out_cb_f *out_cb, void *ctx)
+static int unumber(uintmax_t value, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	char buf[24];
-	int ret = sprintf(buf, "%" PRIu64, value);
+	int ret = sprintf(buf, "%" PRIuMAX, value);
 	if ((ret = out_cb(buf, ret, ctx)))
 		return ret;
 	return 0;

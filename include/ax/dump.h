@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Li hsilin <lihsilyn@gmail.com>
+ * Copyright (c) 2021-2023 Li Xilin <lixilin@gmx.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,8 @@ typedef int ax_dump_out_cb_f(const char *str, size_t len, void *ctx);
 
 typedef struct ax_dump_format_st
 {
-	int (*snumber)(int64_t value, ax_dump_out_cb_f *out_cb, void *ctx);
-	int (*unumber)(uint64_t value, ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*snumber)(intmax_t value, ax_dump_out_cb_f *out_cb, void *ctx);
+	int (*unumber)(uintmax_t value, ax_dump_out_cb_f *out_cb, void *ctx);
 	int (*fnumber)(double value, ax_dump_out_cb_f *out_cb, void *ctx);
 	int (*pointer)(const void *value, ax_dump_out_cb_f *out_cb, void *ctx);
 	int (*string)(const char *value, size_t length, ax_dump_out_cb_f *out_cb, void *ctx);
@@ -53,9 +53,9 @@ typedef struct ax_dump_format_st
 	int (*indent)(int depth, ax_dump_out_cb_f *out_cb, void *ctx);
 } ax_dump_format;
 
-ax_dump *ax_dump_int(int64_t val);
+ax_dump *ax_dump_int(intmax_t val);
 
-ax_dump *ax_dump_uint(uint64_t val);
+ax_dump *ax_dump_uint(uintmax_t val);
 
 ax_dump *ax_dump_float(double val);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Li hsilin <lihsilyn@gmail.com>
+ * Copyright (c) 2021-2023 Li Xilin <lixilin@gmx.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,8 +76,8 @@ struct search_args
 
 union value_u
 {
-	int64_t snum;
-	uint64_t unum;
+	intmax_t snum;
+	uintmax_t unum;
 	double fnum;
 	const void *ptr;
 
@@ -126,23 +126,23 @@ inline static void set_bind_bit(ax_dump *dmp, bool set)
 			: (dmp->type & ~DTYPE_BIND);
 }
 
-ax_dump *ax_dump_int(int64_t val)
+ax_dump *ax_dump_int(intmax_t val)
 {
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof val);
 	if (!dmp)
 		return NOMEM_DMP;
 	dmp->type = DTYPE_SNUM;
-	*(int64_t *)dmp->value = val;
+	*(intmax_t *)dmp->value = val;
 	return dmp;
 }
 
-ax_dump *ax_dump_uint(uint64_t val)
+ax_dump *ax_dump_uint(uintmax_t val)
 {
 	ax_dump *dmp = malloc(sizeof(ax_dump) + sizeof val);
 	if (!dmp)
 		return NOMEM_DMP;
 	dmp->type = DTYPE_UNUM;
-	*(uint64_t *)dmp->value = val;
+	*(uintmax_t *)dmp->value = val;
 	return dmp;
 }
 

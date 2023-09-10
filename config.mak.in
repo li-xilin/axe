@@ -37,10 +37,7 @@ INCLUDE = $(ROOT)/include
 LIB = $(ROOT)/lib
 BIN = $(ROOT)/bin
 
-# Needed for AIX
-CFLAGS += -D_ALL_SOURCE=1 -Wno-unused-value
-
-CFLAGS += -Wall --pedantic -Werror -std=c99 -I$(ROOT)/src/include -I$(INCLUDE) -fno-strict-aliasing 
+CFLAGS += -Wall --pedantic -Werror -Wno-format -std=c99 -I$(ROOT)/src/include -I$(INCLUDE) -fno-strict-aliasing 
 
 DISABLE_DEBUG = @DISABLE_DEBUG@
 DISABLE_CASSERT = @DISABLE_CASSERT@
