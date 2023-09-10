@@ -56,7 +56,7 @@ typedef int ax_socket;
 
 struct timeval;
 
-const ax_trait ax_t_socket;
+extern const ax_trait ax_t_socket;
 
 int ax_socket_init();
 
