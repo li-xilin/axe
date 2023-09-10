@@ -23,7 +23,7 @@
 #ifndef AX_ARCH_H
 #define AX_ARCH_H
 
-/* detect machine byte-order */
+/* Detect machine byte-order */
 
 #if defined(__ORDER_BIG_ENDIAN__)
 #  define AX_BIG_ENDIAN __ORDER_BIG_ENDIAN__
@@ -37,7 +37,7 @@
 #  define AX_LITTLE_ENDIAN 1234
 #endif
 
-/* detect architecture */
+/* Detect architecture */
 
 #if defined(__x86_64__) || defined(__x86_64) || defined(__amd64__) || defined(_M_X64) || defined(_M_AMD64)
 #  define AX_ARCH_AMD64
@@ -295,6 +295,81 @@
 #    define AX_OS_TEXT "unix"
 #  else
 #    define AX_OS_TEXT "unknown"
+#endif
+
+/* Detect compiler */
+
+#if defined(_MSC_VER)
+#  define AX_CC_MSVC
+#  if defined(__INTEL_COMPILER)
+#    define AX_CC_INTEL
+#  endif
+#elif defined(__BORLANDC__) || defined(__TURBOC__)
+#  define AX_CC_BORLANDC
+#elif defined(__WATCOMC__)
+#  define AX_CC_WATCOMC
+/* Symbian GCCE */
+#elif defined(__GCCE__)
+#  define AX_CC_GCCE
+/* RVCT compiler also defines __EDG__ and __GNUC__ , so check for it before that */
+#elif defined(__ARMCC__) || defined(__CC_ARM)
+#  define AX_CC_RVCT
+#elif defined(__GNUC__)
+#  define AX_CC_GNU
+#  if defined(__MINGW32__)
+#    define AX_CC_MINGW
+#  endif
+#  if defined(__INTEL_COMPILER)
+/* Intel C++ also masquerades as GCC 3.2.0 */
+#    define AX_CC_INTEL
+#  endif
+#  if defined(__clang__)
+/* Clang also masquerades as GCC 4.2.1 */
+#    define AX_CC_CLANG
+#  endif
+#endif
+#elif defined(__xlC__)
+#  define AX_CC_XLC
+#elif defined(__DECCXX) || defined(__DECC)
+#  define AX_CC_DEC
+#  if defined(__EDG__)
+#    define AX_CC_EDG
+#  endif
+/* The Portland Group C++ compiler is based on EDG and does define __EDG__
+   but the C compiler does not */
+#elif defined(__PGI)
+#  define AX_CC_PGI
+#elif !defined(AX_OS_HPUX) && (defined(__EDG) || defined(__EDG__))
+#  define AX_CC_EDG
+#  if defined(__COMO__)
+#    define AX_CC_COMEAU
+#  elif defined(__INTEL_COMPILER)
+#    define AX_CC_INTEL
+#  elif defined(__DCC__)
+#    define AX_CC_DIAB
+#  elif defined(__USLC__) && defined(__SCO_VERSION__)
+#    define AX_CC_USLC
+#  elif defined(CENTERLINE_CLPP) || defined(OBJECTCENTER)
+#    define AX_CC_OC
+#elif defined(_DIAB_TOOL)
+#  define AX_CC_DIAB
+#elif defined(__HIGHC__)
+#  define AX_CC_HIGHC
+#elif defined(__SUNPRO_CC) || defined(__SUNPRO_C)
+#  define AX_CC_SUN
+#elif defined(sinix)
+#  define AX_CC_EDG
+#  define AX_CC_CDS
+#elif defined(AX_OS_HPUX)
+#  define AX_CC_HPACC
+#elif defined(__WINSCW__) && !defined(AX_CC_NOKIAX86)
+#  define AX_CC_NOKIAX86
+#elif defined(__TINYC__)
+#  define AX_CC_TCC
+#elif defined(__PCC__)
+#  define AX_CC_PCC
+#else
+#  error "Unknown compiler"
 #endif
 
 #endif
