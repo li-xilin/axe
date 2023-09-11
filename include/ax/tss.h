@@ -1,30 +1,82 @@
-/*
- * Copyright (c) 2022-2023 Li Xilin <lixilin@gmx.com>
- * 
- * Permission is hereby granted, free of charge, to one person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+#ifndef AX_TSS_H
+#define AX_TSS_H
 
-#include "detect.h"
-#if defined(AX_OS_UNIX)
-#include "unix/tss.h"
-#elif defined(AX_OS_WIN32)
-#include "win32/tss.h"
+#include <errno.h>
+#include <assert.h>
+
+#ifdef AX_OS_WIN
+#include <windows.h>
+#include <process.h>
 #else
-#error Unsupported platform.
+#include <pthread.h>
 #endif
+
+#ifndef AX_TSS_DEFINED
+#define AX_TSS_DEFINED
+typedef struct ax_tss_st ax_tss;
+#endif
+
+struct ax_tss_st
+{
+#ifdef AX_OS_WIN
+	DWORD dwKey;
+#else
+	pthread_key_t key;
+#endif
+};
+
+#ifndef AX_OS_WIN
+static inline void _ax_tss_free_cb(void *ptr) { }
+#endif
+
+static inline int ax_tss_init(ax_tss *key)
+{
+	assert(key);
+#ifdef AX_OS_WIN
+	DWORD dwKey = TlsAlloc();
+	if (dwKey == TLS_OUT_OF_INDEXES)
+		return -1;
+	key->dwKey = dwKey;
+#else
+	return pthread_key_create(&key->key, &_ax_tss_free_cb);
+#endif
+	return 0;
+}
+
+static inline void ax_tss_destroy(ax_tss *key)
+{
+	assert(key);
+
+#ifdef AX_OS_WIN
+	TlsFree(key->dwKey);
+#else
+	pthread_key_delete(key->key);
+#endif
+}
+
+static inline void *ax_tss_get(ax_tss *key)
+{
+	assert(key);
+#ifdef AX_OS_WIN
+	return TlsGetValue(key->dwKey);
+#else
+	return pthread_getspecific(key->key);
+#endif
+}
+
+static inline int ax_tss_set(ax_tss *key, void *value)
+{
+	assert(key);
+#ifdef AX_OS_WIN
+	if (!TlsSetValue(key->dwKey, value))
+		return -1;
+#else
+	if (pthread_setspecific(key->key, value)) {
+		return -1;
+	}
+#endif
+	return 0;
+}
+
+#endif
+

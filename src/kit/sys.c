@@ -21,6 +21,7 @@
  */
 
 #include "ax/sys.h"
+#include "ax/stdio.h"
 #include "ax/errno.h"
 #include "ax/types.h"
 #include "ax/detect.h"
@@ -92,10 +93,10 @@ int ax_sys_copy(const ax_uchar *path, const ax_uchar *new_path)
 	FILE *from_fp = NULL;
 	FILE *to_fp = NULL;
 
-       	if (!(from_fp = ax_sys_fopen(path, ax_u("rb"))))
+       	if (!(from_fp = ax_fopen(path, ax_u("rb"))))
 		goto out;
 
-       	if (!(to_fp = ax_sys_fopen(new_path, ax_u("wb"))))
+       	if (!(to_fp = ax_fopen(new_path, ax_u("wb"))))
 		goto out;
 
 	ssize_t len;
