@@ -49,19 +49,24 @@ struct __ax_thread_argument_st
 
 #ifdef AX_OS_WIN
 static DWORD WINAPI __ax_thread_proc(void *arg)
-#else
-static void * __ax_thread_proc(void *arg)
-#endif
 {
         struct __ax_thread_argument_st ta =
 		*(struct __ax_thread_argument_st *)arg;
 	free(arg);
-#ifdef AX_OS_WIN
-	return (DWORD)ta.func(ta.arg);
-#else
-	return (void *)ta.func(ta.arg);
-#endif
+	DWORD dwRetCode = ta.func(ta.arg);
+	void __ax_tss_free_all_win32(void);
+	__ax_tss_free_all_win32();
+	return dwRetCode;
 }
+#else
+static void * __ax_thread_proc(void *arg)
+{
+        struct __ax_thread_argument_st ta =
+		*(struct __ax_thread_argument_st *)arg;
+	free(arg);
+	return (void *)ta.func(ta.arg);
+}
+#endif
 
 static inline int ax_thread_create(ax_thread_func_f *thread_func, void *arg, ax_thread *thread)
 {
@@ -96,6 +101,8 @@ static inline int ax_thread_create(ax_thread_func_f *thread_func, void *arg, ax_
 static inline void ax_thread_exit(uintptr_t ret_code)
 {
 #ifdef AX_OS_WIN
+	void __ax_tss_free_all_win32(void);
+	__ax_tss_free_all_win32();
 	ExitThread(ret_code);
 #else
 	pthread_exit((void *)ret_code);
@@ -115,22 +122,21 @@ static inline void ax_thread_sleep(unsigned int millise)
 #endif
 }
 
-static inline int ax_thread_join(ax_thread *thread, uintptr_t *retval)
+#include <stdio.h>
+static inline int ax_thread_join(ax_thread *thread, uintptr_t *ret_code)
 {
 	assert(thread);
-	assert(retval);
 #ifdef AX_OS_WIN
-	DWORD rval = -1;
-
+	DWORD dwRetCode = -1;
 	if(WaitForSingleObject(thread->hThread, INFINITE))
 		return -1;
 
-	if (!GetExitCodeThread(thread->hThread, &rval))
+	if (!GetExitCodeThread(thread->hThread, &dwRetCode))
 		return -1;
 
-	*retval = rval;
+	if (ret_code)
+		*ret_code = dwRetCode;
 	(void)CloseHandle(thread->hThread);
-	return 0;
 #else
 	void *retptr;
 	int err = pthread_join(thread->thread, &retptr);
@@ -139,10 +145,11 @@ static inline int ax_thread_join(ax_thread *thread, uintptr_t *retval)
 	}
 	if (retptr == PTHREAD_CANCELED)
 		return -1;
-	*retval = (uintptr_t)retptr;
-	return 0;
 
+	if (ret_code)
+		*ret_code = (uintptr_t)retptr;
 #endif
+	return 0;
 }
 
 static inline int ax_thread_detach(ax_thread *thread)

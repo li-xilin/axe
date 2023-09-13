@@ -1,6 +1,7 @@
 #ifndef AX_TSS_H
 #define AX_TSS_H
 
+#include "detect.h"
 #include <errno.h>
 #include <assert.h>
 
@@ -25,30 +26,28 @@ struct ax_tss_st
 #endif
 };
 
-#ifndef AX_OS_WIN
-static inline void _ax_tss_free_cb(void *ptr) { }
-#endif
+typedef void (ax_tss_free_f)(void *ptr);
 
-static inline int ax_tss_init(ax_tss *key)
+static inline int ax_tss_create(ax_tss *key, ax_tss_free_f *free_cb)
 {
 	assert(key);
 #ifdef AX_OS_WIN
-	DWORD dwKey = TlsAlloc();
-	if (dwKey == TLS_OUT_OF_INDEXES)
+	extern int ax_tss_create_win32(ax_tss *key, ax_tss_free_f *free_cb);
+	if (ax_tss_create_win32(key, free_cb))
 		return -1;
-	key->dwKey = dwKey;
 #else
-	return pthread_key_create(&key->key, &_ax_tss_free_cb);
+	return pthread_key_create(&key->key, free_cb);
 #endif
 	return 0;
 }
 
-static inline void ax_tss_destroy(ax_tss *key)
+static inline void ax_tss_remove(ax_tss *key)
 {
 	assert(key);
 
 #ifdef AX_OS_WIN
-	TlsFree(key->dwKey);
+	extern void ax_tss_remove_win32(ax_tss *key);
+	ax_tss_remove_win32(key);
 #else
 	pthread_key_delete(key->key);
 #endif
@@ -58,7 +57,8 @@ static inline void *ax_tss_get(ax_tss *key)
 {
 	assert(key);
 #ifdef AX_OS_WIN
-	return TlsGetValue(key->dwKey);
+	extern void *ax_tss_get_win32(ax_tss *key);
+	return ax_tss_get_win32(key);
 #else
 	return pthread_getspecific(key->key);
 #endif
@@ -68,7 +68,8 @@ static inline int ax_tss_set(ax_tss *key, void *value)
 {
 	assert(key);
 #ifdef AX_OS_WIN
-	if (!TlsSetValue(key->dwKey, value))
+	extern int ax_tss_set_win32(ax_tss *key, void *value);
+	if (ax_tss_set_win32(key, value))
 		return -1;
 #else
 	if (pthread_setspecific(key->key, value)) {
