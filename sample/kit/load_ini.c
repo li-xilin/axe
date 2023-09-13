@@ -1,6 +1,5 @@
+#include <ax/stdio.h>
 #include <ax/ini.h>
-#include <ax/sys.h>
-
 #include <stdio.h>
 
 int err_cb(unsigned line, unsigned err, void *args)
@@ -10,7 +9,7 @@ int err_cb(unsigned line, unsigned err, void *args)
 }
 int main()
 {
-	FILE *fp = ax_sys_fopen(ax_u("example.ini"), ax_u("r"));
+	FILE *fp = ax_fopen(ax_u("example.ini"), ax_u("r"));
 	ax_ini *d = ax_ini_load(fp, err_cb, NULL);
 
 	puts("\nFind option:");

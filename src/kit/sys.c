@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#include "ax/sys.h"
 #include "ax/stdio.h"
+#include "ax/sys.h"
 #include "ax/errno.h"
 #include "ax/types.h"
 #include "ax/detect.h"
