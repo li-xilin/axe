@@ -118,7 +118,7 @@ static inline void ax_thread_sleep(unsigned int millise)
 	int sec = millise / 1000;
 	int msec = millise % 1000;
 	sleep(sec);
-	usleep(msec * 1000);
+	usleep(msec * 100);
 #endif
 }
 
