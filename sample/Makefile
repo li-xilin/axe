@@ -1,35 +1,41 @@
 ROOT = ..
 include $(ROOT)/config.mak
 
+ifeq ($(TARGET_SYSTEM), win32)
+EXT = .exe
+else
+EXT = .out
+endif
+
 # Needed for AIX
 CFLAGS += -D _ISOC99_SOURCE=1 -D _ALL_SOURCE=1 -Wno-unused-value
 LDFLAGS = -L../lib -lm
 SRCS = $(wildcard core/*.c net/*.c kit/*.c)
-TARGETS = $(SRCS:.c=.out)
+TARGETS = $(SRCS:.c=$(EXT))
 
 all: $(TARGETS)
 
-core/%.out: LDFLAGS += -laxcore
-core/%.out: core/%.c
+core/%$(EXT): LDFLAGS += -laxcore
+core/%$(EXT): core/%.c
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
 ifeq ($(TARGET_SYSTEM), win32)
-net/%.out: LDFLAGS += -laxnet -laxcore -lws2_32
+net/%$(EXT): LDFLAGS += -laxnet -laxcore -lws2_32
 else
-net/%.out: LDFLAGS += -laxnet -laxcore -lpthread
-net/%.out: CFLAGS += -D_XOPEN_SOURCE=600
+net/%$(EXT): LDFLAGS += -laxnet -laxcore -lpthread
+net/%$(EXT): CFLAGS += -D_XOPEN_SOURCE=600
 endif
 
-net/%.out: net/%.c
+net/%$(EXT): net/%.c
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
 ifeq ($(TARGET_SYSTEM), win32)
-kit/%.out: LDFLAGS += -laxkit -laxcore
+kit/%$(EXT): LDFLAGS += -laxkit -laxcore
 else
-kit/%.out: LDFLAGS += -laxkit -laxcore -lpthread
+kit/%$(EXT): LDFLAGS += -laxkit -laxcore -lpthread
 endif
 
-kit/%.out: kit/%.c
+kit/%$(EXT): kit/%.c
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
 
