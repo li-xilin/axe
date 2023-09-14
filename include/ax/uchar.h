@@ -28,12 +28,13 @@
 #include <stddef.h>
 #include <string.h>
 
+
 #ifdef AX_OS_WIN
 
 #include <windef.h>
 #include <winbase.h>
 typedef WCHAR ax_uchar;
-#define ax_u(s) L##s
+#define __ax_u(s) L##s
 #define ax_ustrlen wcslen
 #define ax_ustrcat wcscat
 #define ax_ustrcpy wcscpy
@@ -54,7 +55,7 @@ typedef WCHAR ax_uchar;
 #else
 
 typedef char ax_uchar;
-#define ax_u(s) s
+#define __ax_u(s) s
 #define ax_ustrlen strlen
 #define ax_ustrcat strcat
 #define ax_ustrcpy strcpy
@@ -73,6 +74,8 @@ typedef char ax_uchar;
 #define AX_PRIus "s"
 
 #endif
+
+#define ax_u(s) __ax_u(s)
 
 int ax_ustr_from_utf8(ax_uchar *us, size_t size, const char *from);
 
