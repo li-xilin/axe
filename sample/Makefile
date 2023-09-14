@@ -23,7 +23,7 @@ ifeq ($(TARGET_SYSTEM), win32)
 net/%$(EXT): LDFLAGS += -laxnet -laxcore -lws2_32
 else
 net/%$(EXT): LDFLAGS += -laxnet -laxcore -lpthread
-net/%$(EXT): CFLAGS += -D_XOPEN_SOURCE=600
+net/%$(EXT): CFLAGS += -D_DEFAULT_SOURCE
 endif
 
 net/%$(EXT): net/%.c
@@ -32,7 +32,8 @@ net/%$(EXT): net/%.c
 ifeq ($(TARGET_SYSTEM), win32)
 kit/%$(EXT): LDFLAGS += -laxkit -laxcore
 else
-kit/%$(EXT): LDFLAGS += -laxkit -laxcore -lpthread
+kit/%$(EXT): LDFLAGS += -laxkit -laxcore -pthread
+kit/%$(EXT): CFLAGS += -D_DEFAULT_SOURCE
 endif
 
 kit/%$(EXT): kit/%.c
