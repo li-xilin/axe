@@ -25,6 +25,9 @@
 #include "ax/errno.h"
 #include "ax/types.h"
 #include "ax/detect.h"
+#include "ax/once.h"
+#include "ax/tss.h"
+#include "ax/mutex.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -90,8 +93,7 @@ int ax_sys_copy(const ax_uchar *path, const ax_uchar *new_path)
 	}
 	retval = 0;
 #else
-	FILE *from_fp = NULL;
-	FILE *to_fp = NULL;
+	FILE *from_fp = NULL, *to_fp = NULL;
 
        	if (!(from_fp = ax_fopen(path, ax_u("rb"))))
 		goto out;
@@ -149,5 +151,64 @@ int ax_sys_symlink(const ax_uchar *path, const ax_uchar *link_path, bool dir_lin
 		return -1;
 	}
 	return 0;
+}
+
+static ax_once sg_env_once = AX_ONCE_INIT;
+static ax_tss sg_env_tss;
+static ax_mutex sg_env_lock = AX_MUTEX_INIT;
+
+static void getcwd_tss_free(void *p)
+{
+        free(p);
+}
+
+static void getcwd_init(void)
+{
+        ax_tss_create(&sg_env_tss, getcwd_tss_free);
+}
+
+const ax_uchar *ax_sys_getenv(const ax_uchar *name)
+{
+	assert(name);
+
+	ax_uchar *tss_buf = NULL, *val;
+        if (ax_once_run(&sg_env_once, getcwd_init))
+		goto out;
+
+	if (ax_mutex_lock(&sg_env_lock))
+		goto out;
+#ifdef AX_OS_WIN
+	val = _wgetenv(name);
+#else
+	val = getenv(name);
+#endif
+        if (!val)
+		goto unlock;
+	if (!(tss_buf = ax_ustrdup(val)))
+		goto unlock;
+
+	free(ax_tss_get(&sg_env_tss));
+	if (ax_tss_set(&sg_env_tss, tss_buf)) {
+		free(tss_buf);
+		tss_buf = NULL;
+		goto unlock;
+	}
+unlock:
+	ax_mutex_unlock(&sg_env_lock);
+out:
+	return tss_buf;
+}
+
+int ax_sys_setenv(const ax_uchar *name, const ax_uchar *value)
+{
+#ifdef AX_OS_WIN
+	if (!SetEnvironmentVariableW(name, value)) {
+		ax_error_occur();
+		return -1;
+	}
+	return 0;
+#else
+	return setenv(name, value, 1)
+#endif
 }
 

@@ -33,12 +33,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#ifdef AX_OS_WIN
-#define ax_sys_getenv _wgetenv
-#else
-#define ax_sys_getenv getenv
-#endif
-
 int ax_sys_mkdir(const ax_uchar *path, int mode);
 
 int ax_sys_unlink(const ax_uchar *path);
@@ -50,6 +44,10 @@ int ax_sys_copy(const ax_uchar *path, const ax_uchar *new_path);
 int ax_sys_link(const ax_uchar *path, const ax_uchar *link_path);
 
 int ax_sys_symlink(const ax_uchar *path, const ax_uchar *link_path, bool dir_link);
+
+const ax_uchar *ax_sys_getenv(const ax_uchar *name);
+
+int ax_sys_setenv(const ax_uchar *name, const ax_uchar *value);
 
 #endif
 

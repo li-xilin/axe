@@ -61,7 +61,7 @@ static inline int ax_cond_sleep(ax_cond *cond, ax_mutex *mutex, int millise)
 			return -1;
 		}
 		InitializeConditionVariable(condp);
-		if (InterlockedCompareExchangePointer((PVOID*)cond->condvar, condp, NULL)) {
+		if (InterlockedCompareExchangePointer((PVOID*)&cond->condvar, condp, NULL)) {
 			HeapFree(GetProcessHeap(), 0, condp);
 		}
 	}

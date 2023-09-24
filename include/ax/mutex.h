@@ -61,7 +61,7 @@ static inline int ax_mutex_lock(ax_mutex *lock)
 			return -1;
 		}
 		InitializeCriticalSection(secp);
-		if (InterlockedCompareExchangePointer((PVOID*)lock->section, secp, NULL)) {
+		if (InterlockedCompareExchangePointer((PVOID*)&lock->section, secp, NULL)) {
 			DeleteCriticalSection(lock->section);
 			HeapFree(GetProcessHeap(), 0, secp);
 		}

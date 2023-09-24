@@ -302,7 +302,7 @@ int ax_path_setcwd(const ax_uchar *path)
 
 ax_uchar *ax_path_homedir(ax_uchar *path, size_t size)
 {
-	ax_uchar *home_dir = ax_sys_getenv(
+	const ax_uchar *home_dir = ax_sys_getenv(
 #ifdef AX_OS_WIN
 	L"USERPROFILE"
 #else
