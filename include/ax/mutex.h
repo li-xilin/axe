@@ -8,10 +8,10 @@
 #ifdef AX_OS_WIN
 #include <synchapi.h>
 #include <windows.h>
-#define AX_MUTEX_INITIALIZER { .section = NULL }
+#define AX_MUTEX_INIT { .section = NULL }
 #else
 #include <pthread.h>
-#define AX_MUTEX_INITIALIZER { .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP }
+#define AX_MUTEX_INIT { .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP }
 #endif
 
 #ifndef AX_THREAD_DEFINED

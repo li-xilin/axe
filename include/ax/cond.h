@@ -9,10 +9,10 @@
 
 #ifdef AX_OS_WIN
 #include <synchapi.h>
-#define AX_COND_INITIALIZER { .condver = NULL }
+#define AX_COND_INIT { .condver = NULL }
 #else
 #include <pthread.h>
-#define AX_COND_INITIALIZER { .cond = PTHREAD_COND_INITIALIZER }
+#define AX_COND_INIT { .cond = PTHREAD_COND_INITIALIZER }
 #endif
 
 struct ax_cond_st
