@@ -37,7 +37,8 @@ INCLUDE = $(ROOT)/include
 LIB = $(ROOT)/lib
 BIN = $(ROOT)/bin
 
-CFLAGS += -Wall --pedantic -Werror -Wno-format -std=c99 -I$(ROOT)/src/include -I$(INCLUDE) -fno-strict-aliasing 
+CFLAGS += --pedantic -std=c99 -I$(ROOT)/src/include -I$(INCLUDE)
+CFLAGS += -Wall -Werror -Wno-format -fno-strict-aliasing -Wno-free-nonheap-object
 
 DISABLE_DEBUG = @DISABLE_DEBUG@
 DISABLE_CASSERT = @DISABLE_CASSERT@

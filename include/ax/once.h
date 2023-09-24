@@ -53,7 +53,7 @@ typedef void ax_once_f(void);
 #ifdef AX_OS_WIN
 BOOL CALLBACK __ax_once_proc_win32(PINIT_ONCE InitOnce, PVOID pInitProc, PVOID *lpContext)
 {
-	((ax_once_f *)pInitProc)();
+	((ax_once_f *)(uintptr_t)pInitProc)();
 	return TRUE;
 }
 #endif
@@ -61,7 +61,7 @@ BOOL CALLBACK __ax_once_proc_win32(PINIT_ONCE InitOnce, PVOID pInitProc, PVOID *
 static inline int ax_once_run(ax_once *once, ax_once_f *once_proc)
 {
 #ifdef AX_OS_WIN
-	if (!InitOnceExecuteOnce(&once->InitOnce, __ax_once_proc_win32, (void *)once_proc, NULL)) {
+	if (!InitOnceExecuteOnce(&once->InitOnce, __ax_once_proc_win32, (PINIT_ONCE_FN *)(INT_PTR)once_proc, NULL)) {
 		return -1;
 	}
 #else
