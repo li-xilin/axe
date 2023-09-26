@@ -33,14 +33,17 @@ static FILE *g_logfp = NULL;
 static int g_mode = 0;
 	
 
-void ax_log_set_fp(void *fp)
+int ax_log_set_fp(void *fp)
 {
+	if (setvbuf(fp, 0, _IONBF, 0))
+		return -1;
 	g_logfp = fp;
+	return 0;
 }
 
 void *ax_log_fp()
 {
-	return g_logfp;
+	return g_logfp ? g_logfp: stderr;
 }
 
 int ax_log_mode()
@@ -55,67 +58,70 @@ void ax_log_set_mode(int mode)
 
 int __ax_log_print(const char *file, const char *func, int line, int level, const char* fmt, ...)
 {
+	char msg_buf[AX_LOG_MAX_LEN];
+	char time_buf[64];
+	char loc_buf[512];
+	char level_buf[32];
+	const char *type;
 
-	static const char *type_debug = "DEBUG";
-	static const char *type_info = "INFO";
-	static const char *type_warn= "WARN";
-	static const char *type_error = "ERR";
-	static const char *type_fatal = "DEBUG";
+	FILE *fp = g_logfp ? g_logfp : stderr;
 
-	const char* type;
+	va_list vl;
+	va_start(vl, fmt);
+	vsnprintf(msg_buf, sizeof msg_buf, fmt, vl);
+	va_end(vl);
+
 	switch(level)
 	{
 		case AX_LL_DEBUG:
 			if (g_mode & AX_LM_NODEBUG)
 				return 0;
-			type = type_debug;
+			type = "DEBUG";
 			break;
 		case AX_LL_INFO:
 			if (g_mode & AX_LM_NOINFO)
 				return 0;
-			type = type_info;
+			type = "INFO";
 			break;
 		case AX_LL_WARN:
 			if (g_mode & AX_LM_NOWARN)
 				return 0;
-			type = type_warn;
+			type = "WARN";
 			break;
 		case AX_LL_ERROR:
 			if (g_mode & AX_LM_NOERROR)
 				return 0;
-			type = type_error;
+			type = "ERROR";
 			break;
 		case AX_LL_FATAL:
 			if (g_mode & AX_LM_NOFATAL)
 				return 0;
-			type = type_fatal;
+			type = "FATAL";
 			break;
 		default:
-			errno = EINVAL;
-			return -1;
+			sprintf(level_buf, "%d", level);
+			type = level_buf;
 	}
 
-	char buf[AX_LOG_MAX_LEN];
-	buf[sizeof buf - 1] = '\0';
+	time_buf[0] = '\0';
+	loc_buf[0] = '\0';
 
-	va_list vl;
-	va_start(vl, fmt);
-	vsnprintf(buf, sizeof buf - 1, fmt, vl);
-	va_end(vl);
+	if (!(g_mode & AX_LM_NOTIME)) {
+		time_t tim = time(NULL);
+		struct tm *t = localtime(&tim);
+		sprintf(time_buf, "%4d-%02d-%02d %02d:%02d:%02d ", t->tm_year + 1900, t->tm_mon + 1,
+				t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+	}
+	if (!(g_mode & AX_LM_NOLOC)) {
+		snprintf(loc_buf, sizeof loc_buf, "%s:%s:%d:", file, func, line);
+	}
 
-	char time_buf[64];
-	time_t tim = time(NULL);
-	struct tm *t = localtime(&tim);
-	sprintf(time_buf, "%4d-%02d-%02d %02d:%02d:%02d:%03ld", t->tm_year + 1900, t->tm_mon + 1,
-			t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, clock() % 1000);
+	int ret;
+	ret = fprintf(fp,
+			"[%-5s] %s%s%s\n",
+			type, time_buf, loc_buf, msg_buf) < 0 ? -1 : 0;
 
-
-	int ret = fprintf(g_logfp ? g_logfp : stderr,
-			"[%-4s] %s %s:%s:%d:%s\n",
-			type, time_buf, file, func, line, buf) == -1
-		? -1
-		: 0;
-	fflush(g_logfp);
+	fflush(fp);
 	return ret;
 }
 
