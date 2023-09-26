@@ -23,7 +23,7 @@
 #ifndef AX_TCOLOR_H
 #define AX_TCOLOR_H
 
-#include <stdio.h>
+#include "io.h"
 
 enum {
 	AX_TCOLOR_BLACK = 0,

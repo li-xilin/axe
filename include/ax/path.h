@@ -24,10 +24,7 @@
 #define AX_PATH_H
 
 #include "uchar.h"
-
-#include <ax/detect.h>
-
-#include <stdio.h>
+#include "detect.h"
 #include <limits.h>
 #include <stdbool.h>
 

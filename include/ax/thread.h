@@ -122,7 +122,6 @@ static inline void ax_thread_sleep(unsigned int millise)
 #endif
 }
 
-#include <stdio.h>
 static inline int ax_thread_join(ax_thread *thread, uintptr_t *ret_code)
 {
 	assert(thread);

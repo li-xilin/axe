@@ -23,9 +23,9 @@
 #ifndef AX_INI_H
 #define AX_INI_H
 
-#include <ax/uchar.h>
+#include "uchar.h"
+#include "io.h"
 #include <stdbool.h>
-#include <stdio.h>
 
 #define AX_INI_EBADNAME 1
 #define AX_INI_ETOOLONG 2

@@ -30,7 +30,7 @@ endif
 
 TARGET = $(LIB)/libaxkit.a
 OBJS = lib.o edit.o stringbuf.o tcolor.o stat.o sys.o path.o dir.o uchar.o \
-       ini.o errno.o proc.o ctrlc.o stdio.o tpool.o tss.o
+       ini.o errno.o proc.o ctrlc.o io.o tpool.o tss.o
 
 all: $(TARGET)
 

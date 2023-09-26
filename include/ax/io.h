@@ -20,14 +20,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef AX_STDIO_H
-#define AX_STDIO_H
+#ifndef AX_IO_H
+#define AX_IO_H
 
 #include "detect.h"
 #if defined(AX_OS_WIN) && defined(AX_CC_MINGW)
 /* https://sourceforge.net/p/mingw-w64/bugs/846/ */
 #  ifdef _INC_STDIO
-#    error "ax/stdio.h should be placed before stdandard stdio.h"
+#    error "ax/io.h should be placed before stdandard stdio.h"
 #  else
 #    undef __USE_MINGW_ANSI_STDIO
 #    define __USE_MINGW_ANSI_STDIO 0

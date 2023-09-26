@@ -25,8 +25,8 @@
 
 #include "uchar.h"
 #include "types.h"
+#include "io.h"
 #include <stdint.h>
-#include <stdio.h>
 
 #ifndef AX_PROC_DEFINED
 #define AX_PROC_DEFINED
