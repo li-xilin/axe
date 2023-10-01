@@ -11,7 +11,7 @@
 #define AX_MUTEX_INIT { .section = NULL }
 #else
 #include <pthread.h>
-#define AX_MUTEX_INIT { .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP }
+#define AX_MUTEX_INIT { .mutex = PTHREAD_MUTEX_INITIALIZER }
 #endif
 
 #ifndef AX_THREAD_DEFINED

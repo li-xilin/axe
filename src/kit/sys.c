@@ -208,7 +208,7 @@ int ax_sys_setenv(const ax_uchar *name, const ax_uchar *value)
 	}
 	return 0;
 #else
-	return setenv(name, value, 1)
+	return setenv(name, value, 1);
 #endif
 }
 
