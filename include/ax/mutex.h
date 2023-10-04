@@ -50,10 +50,10 @@ static inline int ax_mutex_init(ax_mutex *lock)
 	return 0;
 }
 
-static inline int ax_mutex_lock(ax_mutex *lock)
-{
 
 #ifdef AX_OS_WIN
+static inline int __ax_mutex_init_win32(ax_mutex *lock)
+{
 	if (!lock->section)
 	{
 		CRITICAL_SECTION *secp = HeapAlloc(GetProcessHeap(), 0, sizeof *secp);
@@ -66,6 +66,15 @@ static inline int ax_mutex_lock(ax_mutex *lock)
 			HeapFree(GetProcessHeap(), 0, secp);
 		}
 	}
+}
+#endif
+
+static inline int ax_mutex_lock(ax_mutex *lock)
+{
+
+#ifdef AX_OS_WIN
+	if (__ax_mutex_init_win32(lock))
+		return -1;
 	EnterCriticalSection(lock->section);
 #else
 	if (pthread_mutex_lock(&lock->mutex))
@@ -77,6 +86,8 @@ static inline int ax_mutex_lock(ax_mutex *lock)
 static inline int ax_mutex_trylock( ax_mutex *lock)
 {
 #ifdef AX_OS_WIN
+	if (__ax_mutex_init_win32(lock))
+		return -1;
 	if (TryEnterCriticalSection(lock->section) == 0) {
 		return 1;
 	}
