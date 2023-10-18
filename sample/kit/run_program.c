@@ -1,5 +1,5 @@
 #include <ax/detect.h>
-#include <ax/stdio.h>
+#include <ax/io.h>
 #include <inttypes.h>
 #include <ax/proc.h>
 #include <ax/errno.h>

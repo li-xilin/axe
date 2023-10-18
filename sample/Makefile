@@ -10,7 +10,7 @@ endif
 # Needed for AIX
 CFLAGS += -D _ISOC99_SOURCE=1 -D _ALL_SOURCE=1 -Wno-unused-value
 LDFLAGS = -L../lib -lm
-SRCS = $(wildcard core/*.c net/*.c kit/*.c)
+SRCS = $(wildcard core/*.c net/*.c kit/*.c ui/*.c)
 TARGETS = $(SRCS:.c=$(EXT))
 
 all: $(TARGETS)
@@ -38,6 +38,18 @@ endif
 
 kit/%$(EXT): kit/%.c
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
+
+ifeq ($(TARGET_SYSTEM), win32)
+ui/%$(EXT): LDFLAGS += -laxui -laxcore -lui -lgdi32
+else
+ui/%$(EXT): LDFLAGS += -laxui -laxcore -lui -lgtk-3 -pthread
+ui/%$(EXT): CFLAGS += -D_DEFAULT_SOURCE
+endif
+
+ui/%$(EXT): ui/%.c
+	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
+
+
 
 
 clean:
