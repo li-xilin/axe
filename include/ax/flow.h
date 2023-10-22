@@ -39,10 +39,10 @@
 		for (_t _ = ((_t[]){ __VA_ARGS__ })[__ax_i - 1]; __ax_i > 0; __ax_i = - __ax_i)
 
 #define __AX_FORRANGE_STEP(...) \
-	(AX_NARG_T(ptrdiff_t, __VA_ARGS__) > 1 ? ax_ptrof(ptrdiff_t, __VA_ARGS__)[1] : 1)
+	(AX_NARG_T(ptrdiff_t, __VA_ARGS__) > 1 ? ax_p(ptrdiff_t, __VA_ARGS__)[1] : 1)
 
 #define __AX_FORRANGE_LAST(...) \
-	ax_ptrof(ptrdiff_t, __VA_ARGS__)[0]
+	ax_p(ptrdiff_t, __VA_ARGS__)[0]
 
 #define __AX_FORRANGE_END(first, ...) \
 	(__AX_FORRANGE_LAST(__VA_ARGS__) \

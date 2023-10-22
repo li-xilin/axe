@@ -31,8 +31,8 @@ int main()
 	ax_array_r arr = ax_new(ax_array, &str_tr, strs, sizeof(strs));
 	
 	/* sort the sequence in ascending order*/
-	ax_quick_sort(ax_ptrof(ax_iter, ax_box_begin(arr.ax_box)), 
-			ax_ptrof(ax_iter, ax_box_end(arr.ax_box)));
+	ax_quick_sort(ax_p(ax_iter, ax_box_begin(arr.ax_box)), 
+			ax_p(ax_iter, ax_box_end(arr.ax_box)));
 
 	/* reverse the sequence */
 	ax_seq_invert(arr.ax_seq);

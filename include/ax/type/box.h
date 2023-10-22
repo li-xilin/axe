@@ -150,8 +150,8 @@ static inline bool ax_box_iter_ended(ax_box* box, ax_iter *it)
 		ax_obj_require(box, rend);
 
 	return ax_iter_equal(it, it->tr->norm
-			? ax_ptrof(ax_iter, ax_box_end(box))
-			: ax_ptrof(ax_iter, ax_box_rend(box)));
+			? ax_p(ax_iter, ax_box_end(box))
+			: ax_p(ax_iter, ax_box_rend(box)));
 }
 
 #endif

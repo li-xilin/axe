@@ -53,8 +53,8 @@ typedef uint_fast32_t ax_fast_uint;
 #define __ax_stringy(_x) #_x
 #define ax_stringy(_x) __ax_stringy(_x)
 
-#define ax_ptrof(_type, ...) ((_type []) { __VA_ARGS__ })
-#define ax_p(_type, _value) ax_ptrof(_type, _value)
+#define ax_p(_type, ...) ((_type []) { __VA_ARGS__ })
+#define ax_pstruct(_type, ...) ax_p(_type, { __VA_ARGS__ })
 
 #define ax_strcommalen(s) ("" s), (sizeof(s) - 1)
 
