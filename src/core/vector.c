@@ -70,13 +70,15 @@ static void    citer_next(ax_citer *it);
 static bool    citer_less(const ax_citer *it1, const ax_citer *it2);
 static long    citer_dist(const ax_citer *it1, const ax_citer *it2);
 ax_box        *citer_box(const ax_citer *it);
+static void    iter_erase(ax_iter *it);
 
 static void    rciter_move(ax_citer *it, long i);
 static void    rciter_prev(ax_citer *it);
 static void    rciter_next(ax_citer *it);
+static long    rciter_dist(const ax_citer *it1, const ax_citer *it2);
+static void    riter_erase(ax_iter *it);
 
 static void   *citer_get(const ax_citer *it);
-static void    iter_erase(ax_iter *it);
 static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap);
 
 #ifndef NDEBUG
@@ -186,6 +188,15 @@ static void rciter_prev(ax_citer *it)
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
 }
 
+static long rciter_dist(const ax_citer *it1, const ax_citer *it2)
+{
+	CHECK_ITER_COMPARABLE(it1, it2);
+	CHECK_PARAM_VALIDITY(it1, iter_if_valid(it1));
+	CHECK_PARAM_VALIDITY(it2, iter_if_valid(it2));
+
+	return - citer_dist(it1, it2);
+}
+
 static void rciter_next(ax_citer *it)
 {
 	CHECK_PARAM_VALIDITY(it, iter_if_valid(it));
@@ -217,28 +228,42 @@ static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 	return false;
 }
 
-static void iter_erase(ax_iter *it)
+
+static size_t erase_element(ax_vector_cr self, void *point)
 {
-	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
-
-
-	ax_vector_cr self = AX_R_INIT(ax_one, it->owner);
 	ax_buff *buff = self.ax_vector->buff;
 
 	const ax_trait *etr = ax_class_data(self.ax_box).elem_tr;
 	ax_byte *ptr = ax_buff_ptr(buff);
 	size_t size = ax_buff_size(buff, NULL);
 	 
-	ax_trait_free(etr, it->point);
+	ax_trait_free(etr, point);
 
 	ax_byte *end = ptr + size - ELEM_SIZE(self);
-	for (ax_byte *p = it->point ; p < end ; p += ELEM_SIZE(self))
+	for (ax_byte *p = point ; p < end ; p += ELEM_SIZE(self))
 		memcpy(p, p + ELEM_SIZE(self), ELEM_SIZE(self));
 
-	size_t shift = (ax_byte*)it->point - ptr;
+	size_t shift = (ax_byte*)point - ptr;
 	(void)ax_buff_adapt(buff, size - ELEM_SIZE(self));
-	if(!ax_iter_norm(it))
-		it->point = (ax_byte *)ax_buff_ptr(buff) + shift - ELEM_SIZE(self);
+	return shift;
+}
+
+static void iter_erase(ax_iter *it)
+{
+	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
+
+	ax_vector_cr self = AX_R_INIT(ax_one, it->owner);
+	erase_element(self, it->point);
+}
+
+static void riter_erase(ax_iter *it)
+{
+	CHECK_PARAM_VALIDITY(it, iter_if_have_value(ax_iter_c(it)));
+
+	ax_vector_cr self = AX_R_INIT(ax_one, it->owner);
+	ax_buff *buff = self.ax_vector->buff;
+	size_t shift = erase_element(self, it->point);
+	it->point = (ax_byte *)ax_buff_ptr(buff) + shift - ELEM_SIZE(self);
 }
 
 static void one_free(ax_one *one)
@@ -563,8 +588,8 @@ const ax_seq_trait ax_vector_tr =
 			.move = citer_move,
 			.next = citer_next,
 			.prev = citer_prev,
-			.less = citer_less,
 			.dist = citer_dist,
+			.less = citer_less,
 			.box  = citer_box,
 			.get = citer_get,
 			.set = iter_set,
@@ -576,11 +601,11 @@ const ax_seq_trait ax_vector_tr =
 			.move = rciter_move,
 			.next = rciter_next,
 			.prev = rciter_prev,
+			.dist = rciter_dist,
 			.less = citer_less,
-			.dist = citer_dist,
 			.get = citer_get,
 			.set = iter_set,
-			.erase = iter_erase,
+			.erase = riter_erase,
 		},
 
 		.size = box_size,
