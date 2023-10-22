@@ -21,33 +21,39 @@
 DESTDIR = @PREFIX@
 INCLUDEDIR = @INCLUDEDIR@
 MANDIR = $(DESTDIR)/share/man
+HAVE_LIBUI = @HAVE_LIBUI@
 
 all debug clean:
 	$(MAKE) -C src/core $@
 	$(MAKE) -C src/net $@
 	$(MAKE) -C src/kit $@
+	$(MAKE) -C src/gui $@
 	$(MAKE) -C src/ut $@
 
 install:
 	install -m 755 -d \
 		$(DESTDIR)/include/ax/type \
 		$(DESTDIR)/include/ut \
+		$(DESTDIR)/include/ui \
 		$(MANDIR)/man3
-	install -m 644 lib/libaxcore.a lib/libaxut.a lib/libaxnet.a lib/libaxkit.a $(DESTDIR)/lib
+	install -m 644 lib/libaxcore.a lib/libaxut.a lib/libaxnet.a lib/libaxkit.a lib/libaxgui.a $(DESTDIR)/lib
 	install -m 644 include/ax/*.h $(DESTDIR)/include/ax
 	install -m 644 include/ax/type/*.h $(DESTDIR)/include/ax/type
 	install -m 644 include/ut/*.h $(DESTDIR)/include/ut
+	install -m 644 include/ui/*.h $(DESTDIR)/include/ui
 	install -m 644 man/man3/* $(MANDIR)/man3
 
 uninstall:
-	$(RM) -r $(DESTDIR)/include/ax $(DESTDIR)/include/ut
+	$(RM) -r $(DESTDIR)/include/ax $(DESTDIR)/include/ut $(DESTDIR)/include/ui
 	$(RM) $(DESTDIR)/include/ax.h \
 		$(DESTDIR)/include/ut.h \
 		$(DESTDIR)/lib/libaxcore.a \
 		$(DESTDIR)/lib/libaxkit.a \
 		$(DESTDIR)/lib/libaxut.a
+		$(DESTDIR)/lib/libaxgui.a
 	$(RM) $(MANDIR)/share/man/man3/ax_*.3
 distclean:  clean
 	$(RM) Makefile config.mak
 
 .PHONY: all debug clean distclean install uninstall
+

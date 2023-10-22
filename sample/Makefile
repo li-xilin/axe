@@ -40,9 +40,9 @@ kit/%$(EXT): kit/%.c
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
 ifeq ($(TARGET_SYSTEM), win32)
-ui/%$(EXT): LDFLAGS += -laxui -laxcore -lui -lgdi32
+ui/%$(EXT): LDFLAGS += -laxgui -laxcore -lui -lgdi32
 else
-ui/%$(EXT): LDFLAGS += -laxui -laxcore -lui -lgtk-3 -pthread
+ui/%$(EXT): LDFLAGS += -laxgui -laxcore -lui -lgtk-3 -pthread
 ui/%$(EXT): CFLAGS += -D_DEFAULT_SOURCE
 endif
 

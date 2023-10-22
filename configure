@@ -128,6 +128,35 @@ compile-test() {
 	return $RET_CODE
 }
 
+link-test() {
+	local TEST_NAME=$1
+	local CONFIG_NAME=$2
+	local LIB=$3
+	local RESULT=no
+	local RET_CODE=1
+	echo -e "checking for $TEST_NAME... \c" 
+
+
+	cat > $TEST_FILE
+	$TEST_CC $TEST_CFLAGS $TEST_FILE -o $TEST_FILE_OUTPUT -l$LIB > /dev/null 2>&1
+
+	if [ $? -eq 0 ]; then
+		RET_CODE=0
+		RESULT=yes
+	else
+		if [ "$CONFIG_NAME" == "REQUIRE" ]; then
+			echo $RESULT
+			echo error: $TEST_NAME is required but not found
+			exit 1
+		fi
+	fi
+
+	echo $RESULT
+	eval $CONFIG_NAME=$RESULT
+	return $RET_CODE
+}
+
+
 macro-defined-test() {
 	local MACRO_NAME=$1
 	local CONFIG_NAME=$2
@@ -199,7 +228,6 @@ compile-test select HAVE_SELECT <<EOT
 #endif
 int main() {
     select(0, NULL, NULL, NULL, NULL);
-    return 0;
 }
 EOT
 
@@ -210,7 +238,6 @@ compile-test poll HAVE_POLL <<EOT
 #include <sys/poll.h>
 int main() {
     poll(NULL, 0, 0);
-    return 0;
 }
 EOT
 
@@ -224,7 +251,6 @@ int main() { }
 #include <sys/epoll.h>
 int main() {
     epoll_wait(0, NULL, 0, -1);
-    return 0;
 }
 #endif
 EOT
@@ -236,7 +262,6 @@ compile-test kqueue HAVE_KQUEUE <<EOT
 
 int main() {
     (void)kqueue();
-    return 0;
 }
 EOT
 
@@ -245,7 +270,16 @@ compile-test afunix.h HAVE_AFUNIX_H <<EOT
 #include <afunix.h>
 int main() {
     (void)sizeof(struct sockaddr_un);
-    return 0;
+}
+EOT
+
+link-test libui REQUIRE ui <<EOT
+#include <ui.h>
+int main() {
+	uiInitOptions opts;
+	uiInit(&opts);
+	uiWindow *w = uiNewWindow("", 0, 0, 0);
+	(void)w;
 }
 EOT
 
