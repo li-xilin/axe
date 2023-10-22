@@ -58,9 +58,7 @@ inline static ax_dump *ax_any_dump(const ax_any* any)
 
 ax_fail __ax_any_print(const ax_any *any, const char *file, int line);
 
-#define ax_any_so(_any) __ax_any_print(_any, __FILE__, __LINE__)
-
-//extern const ax_trait ax_any_tr;
+#define ax_dump_out(_any) __ax_any_print(_any, __FILE__, __LINE__)
 
 #endif
 

@@ -434,7 +434,7 @@ end_for:
 
 ax_fail ax_dump_fput(const ax_dump *dmp, const ax_dump_format *format, FILE *fp)
 {
-	return ax_dump_out(dmp, format, write_file_cb, fp) ? true : false;
+	return ax_dump_serialize(dmp, format, write_file_cb, fp) ? true : false;
 }
 
 static int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args)
@@ -515,7 +515,7 @@ static int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args)
 	return 0;
 }
 
-int ax_dump_out(const ax_dump *dmp, const ax_dump_format *format, ax_dump_out_cb_f *cb, void *ctx)
+int ax_dump_serialize(const ax_dump *dmp, const ax_dump_format *format, ax_dump_out_cb_f *cb, void *ctx)
 {
 	CHECK_PARAM_NULL(dmp);
 	CHECK_PARAM_NULL(cb);

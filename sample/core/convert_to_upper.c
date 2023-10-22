@@ -18,7 +18,7 @@ int main()
 		end = ax_box_end(s.ax_box);
 
 	ax_transform(ax_iter_c(&cur), ax_iter_c(&end), &cur, &pred);
-	ax_any_so(s.ax_any);
+	ax_dump_out(s.ax_any);
 
 	return 0;
 }

@@ -86,7 +86,7 @@ void ax_dump_free(ax_dump *dmp);
 
 ax_fail ax_dump_fput(const ax_dump *dmp, const ax_dump_format *format, FILE *fp);
 
-int ax_dump_out(const ax_dump *dmp, const ax_dump_format *format, ax_dump_out_cb_f *cb, void *ctx);
+int ax_dump_serialize(const ax_dump *dmp, const ax_dump_format *format, ax_dump_out_cb_f *cb, void *ctx);
 
 const ax_dump_format *ax_dump_get_default_format();
 

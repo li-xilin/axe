@@ -67,7 +67,7 @@ int main()
 	struct stuff zhaoliu = { .id = 4, .name = "Zhao Liu", .phone = "15200000004", };
 	ax_seq_push(stuffs.ax_seq, &zhaoliu);
 
-	ax_any_so(stuffs.ax_any);
+	ax_dump_out(stuffs.ax_any);
 
 	return 0;
 }

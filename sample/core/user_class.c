@@ -153,7 +153,7 @@ int main()
 	circle_r cir3 = ax_new0(circle);
 	printf("Create cir3 using class circle, with no parameter\n");
 	ax_circle_set_radius(cir3.circle, 5);
-	ax_any_so(cir3.ax_any); /* Dump out */
+	ax_dump_out(cir3.ax_any); /* Dump out */
 
 	ax_one_free(cir1.ax_one);
 	ax_one_free(cir2.ax_one);

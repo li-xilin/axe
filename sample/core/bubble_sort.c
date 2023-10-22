@@ -20,7 +20,7 @@ int main()
 		}
 	}
 
-	ax_any_so(v.ax_any);
+	ax_dump_out(v.ax_any);
 	ax_one_free(v.ax_one);
 	return 0;
 }
