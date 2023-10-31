@@ -39,13 +39,11 @@
 
 ax_concrete_begin(ax_avl)
 	struct node_st {
-		struct node_st *left;
-		struct node_st *right;
-		struct node_st *parent;
+		struct node_st *left, *right, *parent;
 		size_t height;
 		ax_byte kvbuffer[];
 	} *root;
-	size_t size;
+size_t size;
 ax_end;	
 
 static void *map_put(ax_map* map, const void *key, const void *val, va_list *ap);
@@ -166,7 +164,7 @@ inline static int height(struct node_st *root)
 
 inline static void adjust_height(struct node_st *root)
 {
-	root->height = 1 + AX_MAX(height(root->left), height(root->right));
+	root->height = 1 + ax_max(height(root->left), height(root->right));
 }
 
 static struct node_st *rotate_right(struct node_st *root)
@@ -268,7 +266,7 @@ static struct node_st* remove_node(ax_avl *avl, struct node_st* node)
 			pnode = &node->parent->right;
 	} else
 		pnode = &avl->root;
-	
+
 	if(node->left == NULL && node->right == NULL) {
 		*pnode = NULL;
 		dirty_node = node->parent;
@@ -287,7 +285,7 @@ static struct node_st* remove_node(ax_avl *avl, struct node_st* node)
 			rnode->parent = node->parent;
 			node->left->parent = rnode;
 			rnode->left = node->left;
-			
+
 		} else {
 			dirty_node = rnode->parent;
 			rnode->parent->left = rnode->right;
@@ -570,9 +568,9 @@ static ax_iter  map_at(const ax_map* map, const void *key)
 		return box_end((ax_box *)self.ax_box);
 	return (ax_iter) {
 		.owner = (void *)map,
-		.point = node,
-		.tr = &ax_avl_tr.ax_box.iter,
-		.etr = ax_class_data(self.ax_box).elem_tr,
+			.point = node,
+			.tr = &ax_avl_tr.ax_box.iter,
+			.etr = ax_class_data(self.ax_box).elem_tr,
 	};
 }
 
@@ -789,20 +787,20 @@ const ax_map_trait ax_avl_tr =
 	.itkey = map_it_key,
 };
 
-ax_map *__ax_avl_construct(const ax_trait* key_tr, const ax_trait* val_tr)
+ax_concrete_creator(ax_avl, const ax_trait* keytr, const ax_trait* valtr)
 {
-	CHECK_PARAM_NULL(key_tr);
-	CHECK_PARAM_NULL(val_tr);
+	CHECK_PARAM_NULL(keytr);
+	CHECK_PARAM_NULL(valtr);
 
 	ax_avl *avl = malloc(sizeof(ax_avl));
 	if (avl == NULL)
 		return NULL;
-	
+
 	ax_avl avl_init = {
 		.ax_map = {
 			.tr = &ax_avl_tr,
-			.env.ax_box.elem_tr = val_tr,
-			.env.key_tr = key_tr,
+			.env.ax_box.elem_tr = valtr,
+			.env.key_tr = keytr,
 		},
 		.size = 0,
 		.root = NULL

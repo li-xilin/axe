@@ -35,10 +35,10 @@ typedef uint8_t ax_byte;
 
 typedef uint_fast32_t ax_fast_uint;
 
-#define AX_MIN(a, b) ((a) < (b) ? (a) : (b))
-#define AX_MAX(a, b) ((a) > (b) ? (a) : (b))
-#define AX_INC(i, n) ((i + 1) % n)
-#define AX_DEC(i, n) ((i + n - 1) % n)
+#define ax_min(a, b) ((a) < (b) ? (a) : (b))
+#define ax_max(a, b) ((a) > (b) ? (a) : (b))
+#define ax_cyclic_inc(i, n) ((i + 1) % n)
+#define ax_cyclic_dec(i, n) ((i + n - 1) % n)
 
 #define AX_IMAX_BITS(m) ((m) /((m)%0x3fffffffL+1) /0x3fffffffL %0x3fffffffL *30 \
                   + (m)%0x3fffffffL /((m)%31+1)/31%31*5 + 4-12/((m)%31+3))
@@ -62,8 +62,6 @@ typedef uint_fast32_t ax_fast_uint;
 		(sizeof(_a) / sizeof(_a[0])))
 
 #define ax_container_of(ptr, type, member) (((type*)((char*)ptr - (offsetof(type, member)))))
-
-#define ax_spair(_name, _value) ._name = (_value)
 
 #endif
 

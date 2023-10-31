@@ -36,15 +36,7 @@ ax_concrete_declare(4, ax_avl);
 
 extern const ax_map_trait ax_hmap_tr;
 
-ax_map *__ax_avl_construct(
-		const ax_trait* key_tr,
-		const ax_trait* val_tr
-);
-
-inline static ax_concrete_creator(ax_avl, const ax_trait* key_tr, const ax_trait* val_tr)
-{
-	return __ax_avl_construct(key_tr, val_tr);
-}
+ax_concrete_creator(ax_avl, const ax_trait* key_tr, const ax_trait* val_tr);
 
 #endif
 

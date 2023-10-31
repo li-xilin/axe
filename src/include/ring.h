@@ -84,7 +84,7 @@ static ax_fail ring_push_front(struct ring_st *ring, TYPE *value)
 			return true;
 		_ring_resize(ring, new_buf, new_size);
 	}
-	ring->front = AX_DEC(ring->front, ring->size);
+	ring->front = ax_cyclic_dec(ring->front, ring->size);
 	ring->buf[ring->front] = *value;
 	return false;
 }
@@ -99,20 +99,20 @@ static ax_fail ring_push_back(struct ring_st *ring, TYPE *value)
 		_ring_resize(ring, new_buf, new_size);
 	}
 	ring->buf[ring->rear] = *value;
-	ring->rear = AX_INC(ring->rear, ring->size);
+	ring->rear = ax_cyclic_inc(ring->rear, ring->size);
 	return false;
 }
 
 static void ring_pop_front(struct ring_st *ring)
 {
 	ax_assert(!_ring_empty(ring), "empty");
-	ring->front = AX_INC(ring->front, ring->size);
+	ring->front = ax_cyclic_inc(ring->front, ring->size);
 }
 
 static void ring_pop_back(struct ring_st *ring)
 {
 	ax_assert(!_ring_empty(ring), "empty");
-	ring->rear = AX_DEC(ring->rear, ring->size);
+	ring->rear = ax_cyclic_dec(ring->rear, ring->size);
 }
 
 inline static size_t ring_size(const struct ring_st *ring)
@@ -129,7 +129,7 @@ static TYPE *ring_front(const struct ring_st *ring)
 static TYPE *ring_back(const struct ring_st *ring)
 {
 	ax_assert(!_ring_empty(ring), "empty");
-	return ring->buf + AX_DEC(ring->rear, ring->size);
+	return ring->buf + ax_cyclic_dec(ring->rear, ring->size);
 }
 
 static TYPE *ring_at(const struct ring_st *ring, size_t index)
