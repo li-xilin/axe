@@ -518,3 +518,15 @@ char **ax_strargv(const char *cmdline, int* count)
 
 	return argv;
 }
+
+void ax_memxor(void *a, const void *b, size_t size)
+{
+	int i, j;
+
+	for (i = 0; i < size / sizeof(long); i++)
+		((long *)a)[i] ^= ((long *)b)[i];
+
+	for (j = i * sizeof(long); j < size; j++)
+		((char *)a)[j] ^= ((char *)b)[j];
+}
+

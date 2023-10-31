@@ -114,5 +114,7 @@ void ax_membyhex(const char *text, void *out);
 
 char **ax_strargv(const char *cmdline, int* count);
 
+void ax_memxor(void *a, const void *b, size_t size);
+
 #endif
 
