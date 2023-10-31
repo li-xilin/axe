@@ -4,25 +4,11 @@
 
 ---
 
-AXE是一个由C语言实现的轻量级的可移植实用程序库，它提供了很多基础功能包括常用的数据结构、对象模型、系统接口调用、网络通信和用户界面等.
+AXE是一个由C语言实现的轻量级的可移植实用程序库，它提供了很多基础功能包括常用的数据结构、对象模型、系统接口调用、网络通信和用户界面等。正如该工程的名字所表达的，它可以通过略显笨拙但简单粗暴的方式完成预期的工作。
 
 ## 编译和安装
 
-该库在编译之前需要执行*configure*脚本进行配置，然后通过*make*(1)编译和安装.
-
-编译结束后，在*lib*目录会生成一些库文件，包括
-
-* *libaxcore.a* 核心模块（只依赖C99标准）
-* *libaxut.a* 单元测试模块
-* *libaxnet.a* 网络统信模块
-* *libaxkit.a* 依赖操作系统系的工具
-* *libaxgui.a* 图形用户界面
-
-在这些模块中，除了`axgui`调用了外部依赖[libui-ng](https://github.com/libui-ng/libui-ng)以外，其它模块未使用任何非系统接口。其中`axcore`模块基于C99编写，作为其他几个模块的共同依赖，并且其他这些模块之前互相没有依赖关系。
-
-对于不同操作系统，将其原生界面进行统一接口封装，是很难难通过C语言独立完成。比如在OSX系统中，界面的创建需要通过Objective-C语言调用Cocoa的接口。而在Linux下，带有图形用户界面的程序通常使用GTK+来创建界面，但GTK+已经依赖于强大的基础库`glib`，其功能和灵活性都要高于我们的`axe`实现。所以综合来看，`libui`是一个不错的`GUI`工具，它在不同的平台通过其自身提供的工具实现图形界面，并且在GUI的轻量级、功能完整性和灵活性之间达到了不错的平衡。
-
-开发者可以选择性的引用指定的模块，通过执行`configure --help`获取更多配置信息.
+该工程目前可以在流行的类Unix环境包括MSYS2、Linux、FreeBSD、OSX等进行编译，编译之前首先执行*configure*脚本进行配置，然后通过*make*(1)编译和安装。
 
 ```
 $ cd axe
@@ -31,9 +17,25 @@ $ make
 $ sudo make install
 ```
 
+编译结束后，在*lib*目录会生成一些库文件，他们包括
+
+| 库文件       | 描述 |
+|---           |---   |
+| libaxcore.a  | 公共核心库 |
+| libaxut.a    | 单元测试库 |
+| libaxnet.a   | 网络统信库 |
+| libaxkit.a   | 系统移植库 |
+| libaxgui.a   | 图形用户界面库 |
+
+在这些模块中，除 *axgui* 依赖了第三方程序[libui-ng](https://github.com/libui-ng/libui-ng)以外，其它模块未任何第三方接口。其中 *axcore* 基于C99标准编写，作为其他几个库的共同依赖。而其他这些库之间互相不存在依赖。
+
+在这里我们需要讨论一下关于 *axgui* 的实现，对于将不同操作系统的原生GUI进行统一接口封装，通过纯C语言完成存在很多难题。比如在OSX系统中，界面的创建需要通过Objective-C语言调用Cocoa的接口。而在Linux下，带有图形用户界面的程序通常使用GTK+来创建界面，但GTK+已经依赖于强大的基础库 *glib* ，其完整性、性能和灵活性都要高于我们的实现，直接通过 *glib* 对界面进行可移植封装可能是更好的方式。所以综合来看，*libui* 是一个不错的GUI工具，它在不同的平台通过原生GUI接口实现图形界面，并且在GUI的程序的轻便性、功能完整性和接口的灵活性之间达到了不错的平衡。
+
+开发者可以选择性的引用指定的模块，通过执行 `configure --help` 获取更多配置信息。
+
 ## 使用方法
 
-您可以直接通过引入相关头文件来使用它们的功能，下面是一个样例程序，这其中包括一些有趣的特性，比如链表、迭代器算法、RAII、对象转储和容器遍历等操作. 在编译客户程序时需要通过加入编译参数`-lax*`来连接相关的库文件. 详细的帮助文档请参考MAN手册页，它们位于工程目录的 *man/man3* 目录下，或参考单元测试程序和附带的样例程序，它们分别位于工程目录的 *test* 和 *sample* 目录. 
+您可以直接通过引入相关头文件来使用特定的功能，下面是一个样例程序，这其中包括一些有趣的特性，比如链表、迭代器算法、对象转储和容器遍历等操作. 在编译客户程序时需要通过加入编译参数`-lax*`来连接相关的库文件. 详细的帮助文档请参考MAN手册页，它们位于工程目录的 *man/man3* 目录下，或参考单元测试程序和附带的样例程序，它们分别位于工程目录下的 *test* 和 *sample* 目录. 
 
 ```c
 /* gcc foo.c -laxcore */
@@ -96,7 +98,7 @@ int main(void)
 }
 ```
 
-该程的`axui`模块可以实现常用的用户界面元素，下面是一个表格示例，源代码位于`sample/ui/table.c`
+该程的 *axui* 模块可以实现常用的用户界面控件，下面是一个表格示例，源代码位于 `sample/ui/table.c`
 
 ![GUI sample](./ui_sample.png "表格示例")
 
@@ -114,7 +116,9 @@ int main(void)
 | ax/type/map.h     | 映射表抽象 |
 | ax/type/trie.h    | 字典树抽象 |
 | ax/type/tube.h    | 单进单出管道抽象 |
-| ax/def.h          | 基本声明 |
+| ax/class.h        | 类型构造相关宏 |
+| ax/def.h          | 基础声明 |
+| ax/unicode.h      | Unicode支持 |
 | ax/flow.h         | 高级流程控制 |
 | ax/ring.h         | 模板化循环队列 |
 | ax/trick.h        | 魔法宏 |
@@ -122,11 +126,11 @@ int main(void)
 | ax/detect.h       | 编译环境探测宏 |
 | ax/debug.h        | 断言 |
 | ax/arraya.h       | 匿名的栈数组 |
-| ax/oper.h         | 算子函数，用于算法函数 |
+| ax/oper.h         | 算子 |
 | ax/dump.h         | 可视化转储 |
 | ax/log.h          | 打印 |
 | ax/algo.h         | 基于迭代器的算法 |
-| ax/pred.h         | 算法函数的谓词和参数绑定 |
+| ax/pred.h         | 算法的谓词和参数绑定 |
 | ax/trait.h        | 数值类型的特性描述 |
 | ax/iter.h         | 迭代器 |
 | ax/mem.h          | 内存和串的操作 |
@@ -143,13 +147,12 @@ int main(void)
 | ax/queue.h        | 队列 |
 | ax/stack.h        | 栈 |
 | ax/pque.h         | 优先队列 |
-| ax/unicode.h      | Unicode支持 |
 
 ### axnet 头文件列表
 
 | 名称              | 描述 |
 |---                |---   |
-| ax/reactor.h      | 基于Reactor的事件模型 |
+| ax/reactor.h      | Reactor事件模型 |
 | ax/event.h        | 事件相关操作 |
 | ax/socket.h       | 套接字操作 |
 
@@ -165,8 +168,7 @@ int main(void)
 | ax/sem.h          | 信号量 |
 | ax/tpool.h        | 线程池 |
 | ax/tss.h          | 线程本地存储 |
-| ax/ctrlc.h        | 处理终端Ctrl C事件 |
-| ax/detect.h       | 架构、操作系统等测试宏 |
+| ax/ctrlc.h        | 终端的中断事件 |
 | ax/dir.h          | 遍历文件夹 |
 | ax/edit.h         | 终端行编辑 |
 | ax/errno.h        | 跨平台的错误代码 |
@@ -213,9 +215,9 @@ int main(void)
 
 | 名称              | 描述 |
 |---                |---   |
-| ut/case.h         | 测试用例实体 |
-| ut/suite.h        | 测试用例的容器 |
-| ut/runner.h       | 用于执行测试用例 |
+| ut/case.h         | 测试用例 |
+| ut/suite.h        | 测试用例套件 |
+| ut/runner.h       | 测试用例套件的执行容器 |
 
 ## LICENSE
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Li hsilin <lihsilyn@gmail.com>
+ * Copyright (c) 2020-2023 Li Xilin <lixilin@gmx.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,73 +29,50 @@
 #include <errno.h>
 #include <time.h>
 
-static FILE *g_logfp = NULL;
-static int g_mode = 0;
+static int sg_mode = 0;
+static ax_log_handler_f *sg_handler = NULL;
+static void *sg_handler_arg = NULL;
 	
-
-int ax_log_set_fp(void *fp)
+void ax_log_set_handler(ax_log_handler_f *f, void *arg)
 {
-	if (setvbuf(fp, 0, _IONBF, 0))
-		return -1;
-	g_logfp = fp;
-	return 0;
-}
-
-void *ax_log_fp()
-{
-	return g_logfp ? g_logfp: stderr;
+	sg_handler = f;
+	sg_handler_arg = arg;
 }
 
 int ax_log_mode()
 {
-	return g_mode;
+	return sg_mode;
 }
 
 void ax_log_set_mode(int mode)
 {
-	g_mode = mode;
+	sg_mode = mode;
 }
 
-int __ax_log_print(const char *file, const char *func, int line, int level, const char* fmt, ...)
+static int default_handler(const ax_location *loc, void *arg, int level, const char* text)
 {
-	char msg_buf[AX_LOG_MAX_LEN];
 	char time_buf[64];
 	char loc_buf[512];
 	char level_buf[32];
 	const char *type;
 
-	FILE *fp = g_logfp ? g_logfp : stderr;
-
-	va_list vl;
-	va_start(vl, fmt);
-	vsnprintf(msg_buf, sizeof msg_buf, fmt, vl);
-	va_end(vl);
+	FILE *fp = arg ? arg : stderr;
 
 	switch(level)
 	{
 		case AX_LL_DEBUG:
-			if (g_mode & AX_LM_NODEBUG)
-				return 0;
 			type = "DEBUG";
 			break;
 		case AX_LL_INFO:
-			if (g_mode & AX_LM_NOINFO)
-				return 0;
 			type = "INFO";
 			break;
 		case AX_LL_WARN:
-			if (g_mode & AX_LM_NOWARN)
-				return 0;
 			type = "WARN";
 			break;
 		case AX_LL_ERROR:
-			if (g_mode & AX_LM_NOERROR)
-				return 0;
 			type = "ERROR";
 			break;
 		case AX_LL_FATAL:
-			if (g_mode & AX_LM_NOFATAL)
-				return 0;
 			type = "FATAL";
 			break;
 		default:
@@ -106,22 +83,65 @@ int __ax_log_print(const char *file, const char *func, int line, int level, cons
 	time_buf[0] = '\0';
 	loc_buf[0] = '\0';
 
-	if (!(g_mode & AX_LM_NOTIME)) {
+	if (!(sg_mode & AX_LM_NOTIME)) {
 		time_t tim = time(NULL);
 		struct tm *t = localtime(&tim);
 		sprintf(time_buf, "%4d-%02d-%02d %02d:%02d:%02d ", t->tm_year + 1900, t->tm_mon + 1,
 				t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
 	}
-	if (!(g_mode & AX_LM_NOLOC)) {
-		snprintf(loc_buf, sizeof loc_buf, "%s:%s:%d:", file, func, line);
+	if (!(sg_mode & AX_LM_NOLOC)) {
+		snprintf(loc_buf, sizeof loc_buf, "%s:%s:%d:", loc->file, loc->func, loc->line);
 	}
 
-	int ret;
-	ret = fprintf(fp,
-			"[%-5s] %s%s%s\n",
-			type, time_buf, loc_buf, msg_buf) < 0 ? -1 : 0;
+	if (fprintf(fp, "[%-5s] %s%s%s\n", type, time_buf, loc_buf, text) < 0)
+		return -1;
 
-	fflush(fp);
-	return ret;
+	if (fflush(fp))
+		return -1;
+
+	return 0;
+}
+
+
+int __ax_log_print(const ax_location *loc, int level, const char* fmt, ...)
+{
+	va_list va;
+	int retval = -1;
+
+	switch(level)
+	{
+		default:
+		case AX_LL_DEBUG:
+			if (sg_mode & AX_LM_NODEBUG)
+				return 0;
+			break;
+		case AX_LL_INFO:
+			if (sg_mode & AX_LM_NOINFO)
+				return 0;
+			break;
+		case AX_LL_WARN:
+			if (sg_mode & AX_LM_NOWARN)
+				return 0;
+			break;
+		case AX_LL_ERROR:
+			if (sg_mode & AX_LM_NOERROR)
+				return 0;
+			break;
+		case AX_LL_FATAL:
+			if (sg_mode & AX_LM_NOFATAL)
+				return 0;
+			break;
+	}
+
+	va_start(va, fmt);
+
+	char msg_buf[AX_LOG_MAX];
+	vsnprintf(msg_buf, sizeof msg_buf, fmt, va);
+
+	retval = sg_handler
+		? sg_handler(loc, sg_handler_arg, level, msg_buf)
+		: default_handler(loc, sg_handler_arg, level, msg_buf);
+	va_end(va);
+	return retval;
 }
 

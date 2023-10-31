@@ -23,6 +23,9 @@
 #ifndef AX_LOG_H
 #define AX_LOG_H
 
+#include "debug.h"
+#include <stdarg.h>
+
 #define AX_LL_DEBUG    0
 #define AX_LL_INFO     1
 #define AX_LL_WARN     2
@@ -44,15 +47,19 @@
 	| AX_LM_NOERROR \
 	| AX_LM_NOFATAL)
 
-#define AX_LOG_MAX_LEN 1024
+#define AX_LOG_MAX 1024
 
-int __ax_log_print(const char *file, const char *func, int line, int level, const char* fmt, ...);
+int __ax_log_print(const ax_location *loc, int level, const char* fmt, ...);
+
 void ax_log_set_mode(int mode);
-int ax_log_mode();
-int ax_log_set_fp(void *fp);
-void *ax_log_fp();
 
-#define ax_log(level, ...) __ax_log_print(__FILE__, __func__, __LINE__, level, __VA_ARGS__)
+int ax_log_mode();
+
+typedef int ax_log_handler_f(const ax_location *loc, void *arg, int level, const char *text);
+
+void ax_log_set_handler(ax_log_handler_f *f, void *arg);
+
+#define ax_log(level, ...) __ax_log_print(AX_WHERE, level, __VA_ARGS__)
 
 #define ax_pdebug(...) ax_log(AX_LL_DEBUG, __VA_ARGS__)
 #define ax_pinfo(...) ax_log(AX_LL_INFO, __VA_ARGS__)

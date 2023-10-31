@@ -28,11 +28,11 @@
 #include <string.h>
 
 
-int __ax_debug_assert_fail(const char* file, const char* func, int line, const char* brief, const char* fmt, ...)
+int __ax_debug_assert_fail(const ax_location *loc, const char* brief, const char* fmt, ...)
 {
 	va_list vl;
 	char text[2048];
-	int nchar = snprintf(text, sizeof text, "%s:%s:%d:%s", file, func, line, brief);
+	int nchar = snprintf(text, sizeof text, "%s:%s:%d:%s", loc->file, loc->func, loc->line, brief);
 	if (fmt && sizeof text - nchar > sizeof ":\n") {
 		text[nchar++] = ':';
 		text[nchar] = '\0';

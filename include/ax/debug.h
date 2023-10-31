@@ -25,13 +25,19 @@
 
 #include "trick.h"
 
-int __ax_debug_assert_fail (const char* file, const char* func,
-		int line, const char* brief, const char* fmt, ...);
+typedef struct {
+        const char *file;
+        const char *func;
+        int line;
+} ax_location;
+
+#define AX_WHERE ((const ax_location[1]) { { __FILE__, __func__, __LINE__ } })
+
+int __ax_debug_assert_fail (const ax_location *loc, const char* brief, const char* fmt, ...);
 
 #ifndef NDEBUG
 # define ax_assert(_exp, ...) ((_exp) \
-	? (void)0 : (void)__ax_debug_assert_fail(__FILE__, \
-		__func__, __LINE__, "assertion failed", __VA_ARGS__))
+	? (void)0 : (void)__ax_debug_assert_fail(AX_WHERE, "assertion failed", __VA_ARGS__))
 #else
 # define ax_assert(_exp, ...) ((void)0)
 #endif
