@@ -23,6 +23,8 @@
 #ifndef AX_DEBUG_H
 #define AX_DEBUG_H
 
+#include "trick.h"
+
 int __ax_debug_assert_fail (const char* file, const char* func,
 		int line, const char* brief, const char* fmt, ...);
 
@@ -32,6 +34,13 @@ int __ax_debug_assert_fail (const char* file, const char* func,
 		__func__, __LINE__, "assertion failed", __VA_ARGS__))
 #else
 # define ax_assert(_exp, ...) ((void)0)
+#endif
+
+#ifndef NDEBUG
+# define ax_static_assert(_exp) typedef char AX_CATENATE(__ax_static_assert_, \
+		__LINE__)[(_exp) ? 1 : -1]
+#else
+# define ax_static_assert(_exp) ((void)0)
 #endif
 
 #define ax_assert_not_null(x) ax_assert((x), "unexpected NULL with `%s`", #x);
