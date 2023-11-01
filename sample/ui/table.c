@@ -95,7 +95,7 @@ static void button1_on_clicked(ui_button *sender, void *arg)
 
 	if (count == 0) {
 		int index = ax_box_size(m.ax_box);
-		sprintf(buf, "%d", index);
+		sprintf(buf, "Text %d", index);
 		struct ui_model_record_st *r = create_record(m, buf);
 		ax_seq_push(m.ax_seq, r);
 	}
@@ -120,6 +120,26 @@ static void button2_on_clicked(ui_button *sender, void *arg)
 out:
 	free(rows);
 }
+
+static void button3_on_clicked(ui_button *sender, void *arg)
+{
+	ui_table *t = arg;
+	ui_model_r m = ui_table_get_model(t);
+
+	ax_box_foreach(m.ax_box, ui_model_record *, row) {
+		ui_model_text *t = ui_model_record_at(row, m.ui_model, 0);
+		ui_model_button *b = ui_model_record_at(row, m.ui_model, 1);
+		ui_model_checkbox *c = ui_model_record_at(row, m.ui_model, 2);
+		ui_model_progress *p = ui_model_record_at(row, m.ui_model, 3);
+		ui_model_image *i = ui_model_record_at(row, m.ui_model, 4);
+		ui_model_checkbox_text *ct = ui_model_record_at(row, m.ui_model, 5);
+		ui_model_image_text *it = ui_model_record_at(row, m.ui_model, 6);
+		printf("| '%s' | '%s' | %d | %d% | %p | %d '%s' | %p '%s' |\n", t->text, b->text, c->checked, p->progress, \
+				(void *)i->image, ct->checked, ct->text, (void *)it->image, it->text);
+	}
+	putchar('\n');
+}
+
 
 static void table_on_clicked(ui_table *sender, int row, void *arg)
 {
@@ -196,17 +216,21 @@ int main()
 	ui_model_on_changed(m.ui_model, model_on_changed, NULL);
 	ui_model_on_checked(m.ui_model, model_on_checked, NULL);
 	ui_model_on_clicked(m.ui_model, model_on_clicked, NULL);
+	ax_one_free(m.ax_one);
 
         ui_box_append(hbox.ui_box, t.ui_widget, true);
         ui_box_append(hbox.ui_box, vbox.ui_widget, false);
 
-        ui_button_r button1 = ax_new(ui_button, "Insert or push");
+        ui_button_r button1 = ax_new(ui_button, "Insert or append item");
 	ui_button_on_clicked(button1.ui_button, button1_on_clicked, t.ax_one);
-        ui_button_r button2 = ax_new(ui_button, "Remove selected");
+        ui_button_r button2 = ax_new(ui_button, "Remove selected item");
 	ui_button_on_clicked(button2.ui_button, button2_on_clicked, t.ax_one);
+        ui_button_r button3 = ax_new(ui_button, "Read model data");
+	ui_button_on_clicked(button3.ui_button, button3_on_clicked, t.ax_one);
 
         ui_box_append(vbox.ui_box, button1.ui_widget, false);
         ui_box_append(vbox.ui_box, button2.ui_widget, false);
+        ui_box_append(vbox.ui_box, button3.ui_widget, false);
 
         ui_window_set_child(wnd.ui_window, hbox.ui_widget);
 

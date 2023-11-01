@@ -269,7 +269,7 @@ static void riter_erase(ax_iter *it)
 
 static void one_free(ax_one *one)
 {
-	ax_pwarn("%s object is not allowed to free by user");
+	ax_pwarn("%s object is not allowed to free by user", one_name(one));
 }
 
 static const char *one_name(const ax_one *one)
