@@ -1,4 +1,5 @@
 #include "ax/log.h"
+#include "ax/dump.h"
 #include "ui/table.h"
 #include "ui/model.h"
 #include "ui/button.h"
@@ -137,9 +138,18 @@ static void button3_on_clicked(ui_button *sender, void *arg)
 		printf("| '%s' | '%s' | %d | %d% | %p | %d '%s' | %p '%s' |\n", t->text, b->text, c->checked, p->progress, \
 				(void *)i->image, ct->checked, ct->text, (void *)it->image, it->text);
 	}
+
 	putchar('\n');
 }
 
+static void button4_on_clicked(ui_button *sender, void *arg)
+{
+	ui_table *t = arg;
+	ui_model_r m = ui_table_get_model(t);
+
+	ax_dump_fput(ax_any_dump(m.ax_any), ax_dump_pretty_format(), stderr);
+	// ax_dump_out(m.ax_any);
+}
 
 static void table_on_clicked(ui_table *sender, int row, void *arg)
 {
@@ -225,12 +235,15 @@ int main()
 	ui_button_on_clicked(button1.ui_button, button1_on_clicked, t.ax_one);
         ui_button_r button2 = ax_new(ui_button, "Remove selected item");
 	ui_button_on_clicked(button2.ui_button, button2_on_clicked, t.ax_one);
-        ui_button_r button3 = ax_new(ui_button, "Read model data");
+        ui_button_r button3 = ax_new(ui_button, "Print model data");
 	ui_button_on_clicked(button3.ui_button, button3_on_clicked, t.ax_one);
+        ui_button_r button4 = ax_new(ui_button, "Dump model data");
+	ui_button_on_clicked(button4.ui_button, button4_on_clicked, t.ax_one);
 
         ui_box_append(vbox.ui_box, button1.ui_widget, false);
         ui_box_append(vbox.ui_box, button2.ui_widget, false);
         ui_box_append(vbox.ui_box, button3.ui_widget, false);
+        ui_box_append(vbox.ui_box, button4.ui_widget, false);
 
         ui_window_set_child(wnd.ui_window, hbox.ui_widget);
 

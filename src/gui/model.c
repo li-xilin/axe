@@ -266,7 +266,6 @@ static void riter_erase(ax_iter *it)
 	it->tr = &ui_model_tr.ax_box.riter;
 }
 
-
 static void one_free(ax_one *one)
 {
 	ax_pwarn("%s object is not allowed to free by user", one_name(one));
@@ -280,7 +279,15 @@ static const char *one_name(const ax_one *one)
 static ax_dump *any_dump(const ax_any *any)
 {
 	ui_model_cr self = AX_R_INIT(ax_any, any);
-	return ax_seq_dump(self.ui_model->rc_tab.ax_seq);
+	ax_dump *blk = ax_dump_block(one_name(self.ax_one), ax_box_size(self.ax_box));
+
+	int i = 0;
+	ax_box_cforeach(self.ax_box, const ui_model_record *, row) {
+		ui_model_record *r = (ui_model_record *)row;
+		ax_dump_bind(blk, i, ax_trait_dump(ax_class_data(self.ax_box).elem_tr, r));
+		i++;
+	}
+	return blk;
 }
 
 static ax_any *any_copy(const ax_any *any)
@@ -507,7 +514,50 @@ const ax_seq_trait ui_model_tr =
 
 static ax_dump *record_dump(const void* p)
 {
-        return ax_dump_ptr(p);
+	const ui_model_record *r = p;
+	if (!r->m)
+		return ax_dump_symbol("pending_record");
+
+	ax_dump *dmp = ax_dump_block("record", r->m->column_count);
+	for (int i = 0; i < r->m->column_count; i++) {
+		field_union field = { ui_model_record_at((ui_model_record *)r, r->m, i) };
+		ax_dump *item;
+
+		switch (r->m->type_tab[i]) {
+			case UI_MODEL_TEXT:
+				item = ax_dump_block("text", 1);
+				ax_dump_bind(item, 0, ax_dump_str(field.text->text));
+				break;
+			case UI_MODEL_BUTTON:
+				item = ax_dump_block("button", 1);
+				ax_dump_bind(item, 0, ax_dump_str(field.button->text));
+				break;
+			case UI_MODEL_CHECKBOX:
+				item = ax_dump_block("checkbox", 1);
+				ax_dump_bind(item, 0, ax_dump_symbol(field.checkbox->checked ? "checked" : "unchecked"));
+				break;
+			case UI_MODEL_IMAGE:
+				item = ax_dump_block("image", 1);
+				ax_dump_bind(item, 0, ax_dump_ptr(field.image->image));
+				break;
+			case UI_MODEL_PROGRESS:
+				item = ax_dump_block("progress", 1);
+				ax_dump_bind(item, 0, ax_dump_uint(field.progress->progress));
+				break;
+			case UI_MODEL_CHECKBOX_TEXT:
+				item = ax_dump_block("checkbox_text", 2);
+				ax_dump_bind(item, 0, ax_dump_symbol(field.checkbox_text->checked ? "checked" : "unchecked"));
+				ax_dump_bind(item, 1, ax_dump_str(field.checkbox_text->text));
+				break;
+			case UI_MODEL_IMAGE_TEXT:
+				item = ax_dump_block("image_text", 2);
+				ax_dump_bind(item, 0, ax_dump_ptr(field.image->image));
+				ax_dump_bind(item, 1, ax_dump_str(field.checkbox_text->text));
+				break;
+		}
+		ax_dump_bind(dmp, i, item);
+	}
+	return dmp;
 }
 
 static bool record_equal(const void* a, const void *b)
