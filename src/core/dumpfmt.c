@@ -29,7 +29,7 @@
 #include <wchar.h>
 #include <assert.h>
 
-static int snumber(intmax_t value, ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_snumber(intmax_t value, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	char buf[24];
 	int ret = sprintf(buf, "%" PRIiMAX, value);
@@ -38,7 +38,7 @@ static int snumber(intmax_t value, ax_dump_out_cb_f *out_cb, void *ctx)
 	return 0;
 }
 
-static int unumber(uintmax_t value, ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_unumber(uintmax_t value, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	char buf[24];
 	int ret = sprintf(buf, "%" PRIuMAX, value);
@@ -47,7 +47,7 @@ static int unumber(uintmax_t value, ax_dump_out_cb_f *out_cb, void *ctx)
 	return 0;
 }
 
-static int fnumber(double value, ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_fnumber(double value, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	char buf[24];
 	int ret = sprintf(buf, "%lg", value);
@@ -56,7 +56,7 @@ static int fnumber(double value, ax_dump_out_cb_f *out_cb, void *ctx)
 	return 0;
 }
 
-static int pointer(const void *value, ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_pointer(const void *value, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	char buf[24];
 	int ret = sprintf(buf, "%p", value);
@@ -65,7 +65,7 @@ static int pointer(const void *value, ax_dump_out_cb_f *out_cb, void *ctx)
 	return 0;
 }
 
-static int string(const char *value, size_t length, ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_string(const char *value, size_t length, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	char buf[1024];
 	int ret = sprintf(buf, "%p \"", (void *)value);
@@ -81,7 +81,7 @@ static int string(const char *value, size_t length, ax_dump_out_cb_f *out_cb, vo
 	return 0;
 }
 
-static int wstring(const wchar_t *value, size_t length, ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_wstring(const wchar_t *value, size_t length, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	char buf[1024];
 	int ret = sprintf(buf, "%p L\"", (void *)value);
@@ -107,7 +107,7 @@ static int wstring(const wchar_t *value, size_t length, ax_dump_out_cb_f *out_cb
 	return 0;
 }
 
-static int memory(const ax_byte *value, size_t size, ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_memory(const ax_byte *value, size_t size, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	char buf[1024];
 	int ret = sprintf(buf, "%p \\", (void *)value);
@@ -124,27 +124,27 @@ static int memory(const ax_byte *value, size_t size, ax_dump_out_cb_f *out_cb, v
 	return 0;
 }
 
-static int symbol(const char *name, ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_symbol(const char *name, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	return out_cb(name, strlen(name), ctx);
 }
 
-static int pair_left(ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_pair_left(ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	return 0;
 }
 
-static int pair_midst(ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_pair_midst(ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	return out_cb(" = ", 3, ctx);
 }
 
-static int pair_right(ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_pair_right(ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	return 0;
 }
 
-static int block_left(const char *label, ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_block_left(const char *label, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	if (label) {
 		if (out_cb(label, strlen(label), ctx))
@@ -155,52 +155,228 @@ static int block_left(const char *label, ax_dump_out_cb_f *out_cb, void *ctx)
 	return out_cb("{", 1, ctx);
 }
 
-static int block_midst(size_t index, ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_block_midst(size_t index, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	if (index == 0)
 		return 0;
 	return out_cb(", ", 2, ctx);
 }
 
-static int block_right(const char *label, ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_block_right(const char *label, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	return out_cb("}", 1, ctx);
 }
 
-static int nomem(ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_nomem(ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	char buf[] = "!ENOMEM";
 	return out_cb(buf, sizeof(buf) - 1, ctx);
 }
 
-static int indent(int depth, ax_dump_out_cb_f *out_cb, void *ctx)
+static int default_indent(int depth, ax_dump_out_cb_f *out_cb, void *ctx)
 {
 	return 0;
 }
 
-static const struct ax_dump_format_st ax_dump_default_format = 
+static const struct ax_dump_format_st default_format = 
 {
-	.snumber = snumber,
-	.unumber = unumber,
-	.fnumber = fnumber,
-	.pointer = pointer,
-	.string = string,
-	.wstring = wstring,
-	.memory = memory,
-	.symbol = symbol,
-	.pair_left = pair_left,
-	.pair_midst = pair_midst,
-	.pair_right = pair_right,
-	.block_left = block_left,
-	.block_midst = block_midst,
-	.block_right = block_right,
-	.nomem = nomem,
-	.indent = indent,
+	.snumber = default_snumber,
+	.unumber = default_unumber,
+	.fnumber = default_fnumber,
+	.pointer = default_pointer,
+	.string = default_string,
+	.wstring = default_wstring,
+	.memory = default_memory,
+	.symbol = default_symbol,
+	.pair_left = default_pair_left,
+	.pair_midst = default_pair_midst,
+	.pair_right = default_pair_right,
+	.block_left = default_block_left,
+	.block_midst = default_block_midst,
+	.block_right = default_block_right,
+	.nomem = default_nomem,
+	.indent = default_indent,
 };
 
-
-const ax_dump_format *ax_dump_get_default_format()
+static int pretty_snumber(int64_t value, ax_dump_out_cb_f *out_cb, void *ctx)
 {
-	return &ax_dump_default_format;
+        char buf[64];
+        int ret = sprintf(buf, "%" PRIi64, value);
+        if ((ret = out_cb(buf, ret, ctx)))
+                return ret;
+        return 0;
+}
+
+static int pretty_unumber(uint64_t value, ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        char buf[64];
+        int ret = sprintf(buf, "%" PRIu64, value);
+        if ((ret = out_cb(buf, ret, ctx)))
+                return ret;
+        return 0;
+}
+
+static int pretty_fnumber(double value, ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        char buf[64];
+        int ret = sprintf(buf, "%lg", value);
+        if ((ret = out_cb(buf, ret, ctx)))
+                return ret;
+        return 0;
+}
+
+static int pretty_pointer(const void *value, ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        char buf[64];
+        int ret = sprintf(buf, "%p", value);
+        if ((ret = out_cb(buf, ret, ctx)))
+                return ret;
+        return 0;
+}
+
+static int pretty_string(const char *value, size_t length, ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        int ret;
+        if ((ret = out_cb(ax_strcommalen("\""), ctx)))
+                return ret;
+
+        if ((ret = out_cb(value, length, ctx)))
+                return ret;
+
+        if ((ret = out_cb(ax_strcommalen("\""), ctx)))
+                return ret;
+
+        return 0;
+}
+
+static int pretty_wstring(const wchar_t *value, size_t length, ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        char buf[1024];
+        int ret;
+        if ((ret = out_cb(ax_strcommalen("L\""), ctx)))
+                return ret;
+        mbstate_t mbs = { 0 };
+        const wchar_t *p = (void *)value;
+        size_t conv = 0;
+        buf[sizeof(buf) - 1] = '\0';
+        while (p && (conv = wcsrtombs(buf, &p, sizeof(buf) - 1, &mbs)) != 0)
+                if ((ret = out_cb(buf, conv, ctx)))
+                        return ret;
+        if (conv == (size_t)-1)
+                if ((ret = out_cb(ax_strcommalen("BADCHAR"), ctx)))
+                        return ret;
+        if ((ret = out_cb(ax_strcommalen("\""), ctx)))
+                return ret;
+
+        return 0;
+}
+
+static int pretty_memory(const ax_byte *value, size_t size, ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        char buf[1024];
+        int ret;
+        if ((ret = out_cb(ax_strcommalen("\\"), ctx)))
+                return ret;
+        size_t shift = 0;
+        while (shift != size) {
+                size_t partsiz = (size - shift) % (sizeof(buf) / 2 - 1);
+                ax_memtohex(value + shift, partsiz, buf);
+                if ((ret = out_cb(buf, partsiz * 2, ctx)))
+                        return ret;
+                shift += partsiz;
+        }
+        return 0;
+}
+
+static int pretty_symbol(const char *name, ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        char buf[1024];
+        int ret = sprintf(buf, "%s", name);
+        return out_cb(buf, ret, ctx);
+}
+
+static int pretty_pair_left(ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        return 0;
+}
+
+static int pretty_pair_midst(ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        char equal[] = " " "=" " ";
+        return out_cb(equal, sizeof equal - 1, ctx);
+}
+
+static int pretty_pair_right(ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        return 0;
+}
+
+static int pretty_block_left(const char *label, ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        if (label) {
+                if (out_cb(label, strlen(label), ctx))
+                        return -1;
+	}
+
+        if (out_cb(" {\n", 3, ctx))
+                return -1;
+        return 0;
+}
+
+static int pretty_block_midst(size_t index, ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        if (index == 0)
+                return 0;
+        return out_cb(",\n", 2, ctx);
+}
+
+static int pretty_block_right(const char *label, ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        return out_cb("\n}", 2, ctx);
+}
+
+static int pretty_nomem(ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        char buf[] = "!ENOMEM";
+        return out_cb(buf, sizeof(buf) - 1, ctx);
+}
+
+static int pretty_indent(int depth, ax_dump_out_cb_f *out_cb, void *ctx)
+{
+        char buf[1024];
+        for (int i = 0; i < depth * 2; i++) {
+                buf[i] = ' ';
+        }
+        return out_cb(buf, depth * 2, ctx);
+}
+
+static const struct ax_dump_format_st pretty_format =
+{
+        .snumber = pretty_snumber,
+        .unumber = pretty_unumber,
+        .fnumber = pretty_fnumber,
+        .pointer = pretty_pointer,
+        .string = pretty_string,
+        .wstring = pretty_wstring,
+        .memory = pretty_memory,
+        .symbol = pretty_symbol,
+        .pair_left = pretty_pair_left,
+        .pair_midst = pretty_pair_midst,
+        .pair_right = pretty_pair_right,
+        .block_left = pretty_block_left,
+        .block_midst = pretty_block_midst,
+        .block_right = pretty_block_right,
+        .nomem = pretty_nomem,
+        .indent = pretty_indent,
+};
+
+const ax_dump_format *ax_dump_default_format()
+{
+	return &default_format;
+}
+
+const ax_dump_format *ax_dump_pretty_format()
+{
+	return &pretty_format;
 }
 

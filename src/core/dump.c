@@ -434,7 +434,10 @@ end_for:
 
 ax_fail ax_dump_fput(const ax_dump *dmp, const ax_dump_format *format, FILE *fp)
 {
-	return ax_dump_serialize(dmp, format, write_file_cb, fp) ? true : false;
+	ax_fail fail = ax_dump_serialize(dmp, format, write_file_cb, fp) ? true : false;
+	fputc('\n', fp);
+	fflush(fp);
+	return fail;
 }
 
 static int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args)
@@ -522,7 +525,7 @@ int ax_dump_serialize(const ax_dump *dmp, const ax_dump_format *format, ax_dump_
 
 	struct search_args args = {
 		.filter_cb = filter_cb,
-		.format = format ? format : ax_dump_get_default_format(),
+		.format = format ? format : ax_dump_default_format(),
 		.out_cb = cb,
 		.depth = 0,
 		.ctx = ctx,
