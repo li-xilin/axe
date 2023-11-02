@@ -41,17 +41,18 @@ kit/%$(EXT): kit/%.c
 
 ifeq ($(TARGET_SYSTEM), win32)
 ui/%$(EXT): LDFLAGS += -laxgui -laxcore -lui -luser32 -lgdi32 -lstdc++ -ld2d1 -lcomctl32 -lole32 -ldwrite -luxtheme
-ui/%$(EXT): RES_OBJ = ui/resource.o
 else
 ui/%$(EXT): LDFLAGS += -laxgui -laxcore -lui -lgtk-3 -pthread
 ui/%$(EXT): CFLAGS += -D_DEFAULT_SOURCE
 endif
 
-ui/%$(EXT): ui/resource.o ui/%.c 
-	echo $^
+ifeq ($(TARGET_SYSTEM), win32)
+RES_OBJ = ui/resource.o
+endif
+
+ui/%$(EXT): $(RES_OBJ) ui/%.c 
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 ui/resource.o: ui/resource.rc
-	echo $^
 	windres -i $^ -o $@
 clean:
 	$(RM) $(TARGETS)

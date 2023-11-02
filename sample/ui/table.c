@@ -12,9 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <windef.h>
-#include <winuser.h>
-
 bool on_closing(ui_window *sender, void *data)
 {
         printf("closing ...\n");
