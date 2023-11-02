@@ -100,6 +100,7 @@ ax_concrete_creator(ui_window, const char *title, const ui_size *size, bool has_
 	if (control_attach(uiControl(wnd), ax_r(ui_widget, widget).ax_one))
 		goto fail;
 
+#ifndef AX_OS_WIN
 	if (!_GetDpiForWindow) {
 		HMODULE hUser32 = GetModuleHandleA("user32.dll");
 
@@ -109,6 +110,7 @@ ax_concrete_creator(ui_window, const char *title, const ui_size *size, bool has_
 		if (!_GetDpiForWindow)
 			_GetDpiForWindow = &DefaultGetDpiForWindow;
 	}
+#endif
 
         ui_window window_init = {
 		.ui_widget = {
