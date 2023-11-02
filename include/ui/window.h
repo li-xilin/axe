@@ -71,5 +71,6 @@ void ui_window_on_clisize_changed(ui_window *wnd, ui_window_event_f *handler, vo
 void ui_window_on_moved(ui_window *wnd, ui_window_event_f *handler, void *data);
 void ui_window_on_focus_changed(ui_window *wnd, ui_window_event_f *handler, void *data);
 void ui_window_on_closing(ui_window *wnd, ui_window_bool_event_f *handler, void *data);
+double ui_window_scale(ui_window *wnd);
 
 #endif

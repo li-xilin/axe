@@ -21,8 +21,10 @@
  */
 
 #include "control.h"
+#include "ui/ui.h"
 #include "ui/window.h"
 #include "ui/types.h"
+#include "ax/detect.h"
 
 #include <ui.h>
 
@@ -31,6 +33,22 @@
 
 #define CONTROL(self) uiControl(ax_class_data(self.ui_widget).ctrl)
 #define WINDOW(self) uiWindow(CONTROL(self))
+
+#ifdef AX_OS_WIN
+#include <windef.h>
+#include <libloaderapi.h>
+#include <winuser.h>
+
+typedef WINAPI UINT (*GetDpiForWindowProc)(HWND);
+
+static GetDpiForWindowProc _GetDpiForWindow = NULL;
+
+static WINAPI UINT DefaultGetDpiForWindow(HWND hWnd)
+{
+        return 96;
+}
+
+#endif
 
 ax_concrete_begin(ui_window)
 	ui_window_event_f
@@ -71,7 +89,7 @@ ax_concrete_creator(ui_window, const char *title, const ui_size *size, bool has_
         ui_widget *widget = NULL;
 	uiWindow *wnd = NULL;
 
-	wnd = uiNewWindow(title, size->width, size->height, has_menu);
+	wnd = uiNewWindow(title, ui_scale() * size->width, ui_scale() * size->height, has_menu);
 	if (!wnd)
 		goto fail;
 
@@ -81,6 +99,16 @@ ax_concrete_creator(ui_window, const char *title, const ui_size *size, bool has_
 
 	if (control_attach(uiControl(wnd), ax_r(ui_widget, widget).ax_one))
 		goto fail;
+
+	if (!_GetDpiForWindow) {
+		HMODULE hUser32 = GetModuleHandleA("user32.dll");
+
+		if (hUser32)
+			_GetDpiForWindow = (GetDpiForWindowProc)GetProcAddress(hUser32, "GetDpiForWindow");
+
+		if (!_GetDpiForWindow)
+			_GetDpiForWindow = &DefaultGetDpiForWindow;
+	}
 
         ui_window window_init = {
 		.ui_widget = {
@@ -270,5 +298,34 @@ void ui_window_on_closing(ui_window *wnd, ui_window_bool_event_f *handler, void 
 	ui_window_r self = AX_R_INIT(ui_window, wnd);
 	self.ui_window->on_closing = handler;
 	uiWindowOnClosing(WINDOW(self), handler ? OnWindowClosing : NULL, data);
+}
+
+
+double ui_window_scale(ui_window *wnd)
+{
+	double ratio = 1;
+#ifdef AX_OS_WIN
+
+	ui_window_r self = AX_R_INIT(ui_window, wnd);
+	uiControl *ctl = ax_class_data(self.ui_widget).ctrl;
+	HWND hWnd = (HWND)uiControlHandle(ctl);
+	
+	int zoom = _GetDpiForWindow(hWnd);
+	switch (zoom) {
+		case 96:
+			ratio = 1;
+			break;
+		case 120:
+			ratio = 1.25;
+			break;
+		case 144:
+			ratio = 1.5;
+			break;
+		case 192:
+			ratio = 2;
+			break;
+	}
+#endif
+	return ratio;
 }
 

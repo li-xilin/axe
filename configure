@@ -53,7 +53,7 @@ Options:
   --prefix                install architecture-independent files in PREFIX
                           [/usr/local]
   --includedir=DIR        C header files [PREFIX/include]
-  --with-pic              use only PIC/non-PIC objects [default=no]
+  --libui=DIR             spicifies the location where libui-ng is installed
   --disable-debug         disable support for running in debug mode
   --disable-cassert       disable C assertion
 
@@ -65,7 +65,7 @@ Some influential environment variables:
 EOT
 }
 
-TEMP=`getopt -o h --long help,prefix:,includedir:,with-pic,disable-debug,disable-cassert -n 'configure' -- "$@"`
+TEMP=`getopt -o h --long help,prefix:,includedir:,libui:,disable-debug,disable-cassert -n 'configure' -- "$@"`
 
 if [ $? != 0 ] ; then
 	usage
@@ -79,7 +79,7 @@ while true; do
 		-h|--help) usage; exit 0;;
 		--prefix) PREFIX=$2; shift 2;;
 		--includedir) INCLUDEDIR=$2; shift 2;;
-		--with-pic) CFLAGS="$CLFAGS -fPIC"; shift;;
+		--libui) CFLAGS="$CLFAGS -I$2/include"; LDFLAGS="$LDFLAGS -L$2/lib"; shift 2;;
 		--disable-debug) DISABLE_DEBUG=yes; shift;;
 		--disable-cassert) DISABLE_CASSERT=yes; shift;;
 		--) shift; break;;
@@ -117,11 +117,17 @@ compile-test() {
 	echo -e "checking for $TEST_NAME... \c" 
 
 	cat > $TEST_FILE
-	$TEST_CC $TEST_CFLAGS -c $TEST_FILE -o $TEST_FILE_OUTPUT > /dev/null 2>&1
+	$CC $CFLAGS -c $TEST_FILE -o $TEST_FILE_OUTPUT > /dev/null 2>&1
 
 	if [ $? -eq 0 ]; then
 		RET_CODE=0
 		RESULT=yes
+	else
+		if [ "$CONFIG_NAME" == "REQUIRE" ]; then
+			echo $RESULT
+			echo error: $TEST_NAME is required but not found
+			exit 1
+		fi
 	fi
 	echo $RESULT
 	eval $CONFIG_NAME=$RESULT
@@ -136,9 +142,8 @@ link-test() {
 	local RET_CODE=1
 	echo -e "checking for $TEST_NAME... \c" 
 
-
 	cat > $TEST_FILE
-	$TEST_CC $TEST_CFLAGS $TEST_FILE -o $TEST_FILE_OUTPUT -l$LIB > /dev/null 2>&1
+	$CC $CFLAGS $TEST_FILE -o $TEST_FILE_OUTPUT -l$LIB > /dev/null 2>&1
 
 	if [ $? -eq 0 ]; then
 		RET_CODE=0
@@ -273,7 +278,7 @@ int main() {
 }
 EOT
 
-link-test libui REQUIRE ui <<EOT
+compile-test libui REQUIRE<<EOT
 #include <ui.h>
 int main() {
 	uiInitOptions opts;

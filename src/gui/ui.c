@@ -21,17 +21,82 @@
  */
 
 #include "ui/ui.h"
+#include "ax/detect.h"
+#include "ax/log.h"
 #include <ui.h>
 #include <stdbool.h>
 
+#ifdef AX_OS_WIN
+#include <windef.h>
+#include <libloaderapi.h>
+#include <winuser.h>
+#include <errhandlingapi.h>
+
+typedef WINAPI UINT (*GetDpiForSystemProc)();
+
+static WINAPI UINT (*_GetDpiForSystem)() = NULL;
+
+static WINAPI UINT DefaultGetDpiForSystem()
+{
+	return 96;
+}
+
+#endif
+
 int ui_init(void)
 {
+	int retval = -1;
 	uiInitOptions opts = { 0 };
 	const char *err = uiInit(&opts);
-	if (!err)
-		return -1;
-	uiFreeInitError(err);
-	return 0;
+	if (err) {
+		ax_perror("uiInit failed: %s", err);
+		uiFreeInitError(err);
+		goto out;
+	}
+
+#ifdef AX_OS_WIN
+	HMODULE hUser32 = GetModuleHandleA("user32.dll");
+
+	_GetDpiForSystem = NULL;
+	if (hUser32)
+		_GetDpiForSystem = (GetDpiForSystemProc)GetProcAddress(hUser32, "GetDpiForSystem");
+
+	if (!_GetDpiForSystem) {
+		SetLastError(0);
+		_GetDpiForSystem = &DefaultGetDpiForSystem;
+	}
+
+	if (!SetProcessDPIAware()) {
+		ax_perror("SetProcessDPIAware failed: %d", GetLastError());
+		goto out;
+	}
+#endif
+	retval = 0;
+out:
+	return retval;
+}
+
+double ui_scale(void)
+{
+	double ratio = 1;
+#ifdef AX_OS_WIN
+	int zoom = _GetDpiForSystem();
+	switch (zoom) {
+		case 96:
+			ratio = 1;
+			break;
+		case 120:
+			ratio = 1.25;
+			break;
+		case 144:
+			ratio = 1.5;
+			break;
+		case 192:
+			ratio = 2;
+			break;
+	}
+#endif
+	return ratio;
 }
 
 void ui_quit(void)

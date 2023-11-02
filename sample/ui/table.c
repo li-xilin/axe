@@ -12,6 +12,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <windef.h>
+#include <winuser.h>
+
 bool on_closing(ui_window *sender, void *data)
 {
         printf("closing ...\n");
@@ -61,7 +64,7 @@ static ui_model_record *create_record(ui_model_r model, const char *name)
 	image->image = create_image().ui_image;
 
 	ui_model_checkbox_text *checkbox_text = ui_model_record_at(r, model.ui_model, 5);
-	checkbox_text->checked = true;
+	checkbox_text->checked = false;
 	checkbox_text->checkable = true;
 	checkbox_text->text = ax_strdup(name);
 	checkbox_text->editable = true;
@@ -101,7 +104,7 @@ static void button1_on_clicked(ui_button *sender, void *arg)
 		ax_seq_push(m.ax_seq, r);
 	}
 	else {
-		sprintf(buf, "%d", rows[0]);
+		sprintf(buf, "Text %d", rows[0]);
 		struct ui_model_record_st *r = create_record(m, buf);
 		ax_iter it = ax_seq_at(m.ax_seq, rows[0]);
 		ax_seq_insert(m.ax_seq, &it, r);
@@ -183,12 +186,11 @@ static bool model_on_checked(ui_model *sender, int column, int row, bool checked
 	return true;
 }
 
-
 int main()
 {
         ui_init();
 
-        ui_size size = { 800, 400 };
+        ui_size size = { 600, 300 };
         ui_window_r wnd = ax_new(ui_window, "Table sample", &size, 0);
 	ui_window_set_margined(wnd.ui_window, true);
 

@@ -24,6 +24,7 @@
 
 #include "ui/button.h"
 #include "ui/types.h"
+#include "ax/detect.h"
 
 #include <ui.h>
 

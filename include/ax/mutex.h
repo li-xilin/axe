@@ -66,6 +66,7 @@ static inline int __ax_mutex_init_win32(ax_mutex *lock)
 			HeapFree(GetProcessHeap(), 0, secp);
 		}
 	}
+	return 0;
 }
 #endif
 

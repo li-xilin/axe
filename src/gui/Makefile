@@ -21,6 +21,12 @@
 ROOT = ../..
 include $(ROOT)/config.mak
 
+TARGET = $(LIB)/libaxgui.a
+OBJS = widget.o label.o window.o control.o ui.o box.o button.o entry.o combobox.o \
+       selectentry.o group.o spinbox.o radiobox.o form.o slider.o checkbox.o \
+       timepicker.o colorpicker.o table.o model.o column.o image.o menu.o
+
+
 ifneq ($(TARGET_SYSTEM), win32)
 	CFLAGS += -D_DEFAULT_SOURCE
 else
@@ -28,10 +34,6 @@ else
 	CFLAGS += -D_WIN32_WINNT=0x0600
 endif
 
-TARGET = $(LIB)/libaxgui.a
-OBJS = widget.o label.o window.o control.o ui.o box.o button.o entry.o combobox.o \
-       selectentry.o group.o spinbox.o radiobox.o form.o slider.o checkbox.o \
-       timepicker.o colorpicker.o table.o model.o column.o image.o menu.o
 
 all: $(TARGET)
 

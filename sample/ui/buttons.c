@@ -36,7 +36,7 @@ int main()
 {
 	ui_init();
 
-	ui_size size = { 200, 300 };
+	ui_size size = { 400, 600 };
 	ui_window_r wnd = ax_new(ui_window, "Buttons", &size, 0);
 	ui_window_on_closing(wnd.ui_window, wnd_on_closing, NULL);
 	ui_window_set_margined(wnd.ui_window, true);

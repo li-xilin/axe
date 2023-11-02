@@ -22,6 +22,7 @@
 
 #include "control.h"
 
+#include "ui/ui.h"
 #include "ui/table.h"
 #include "ui/model.h"
 #include "ui/types.h"
@@ -150,7 +151,7 @@ fail:
 void ui_table_set_column_width(ui_table *t, int column, size_t width)
 {
 	ui_table_r self = AX_R_INIT(ui_table, t);
-	uiTableColumnSetWidth(TABLE(self), column, width);
+	uiTableColumnSetWidth(TABLE(self), column, ui_scale() * width);
 }
 
 static void OnClicked(uiTable *sender, int row, void *arg)

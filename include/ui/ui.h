@@ -24,6 +24,7 @@
 #define UI_UI_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 int ui_init(void);
 
@@ -44,5 +45,7 @@ void ui_timer(int milliseconds, int (*f)(void *arg), void *arg);
 void ui_on_should_quit(bool (*f)(void *arg), void *arg);
 
 void ui_str_free(char *text);
+
+double ui_scale(void);
 
 #endif
