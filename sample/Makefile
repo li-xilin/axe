@@ -51,10 +51,8 @@ RES_OBJ = ui/resource.o
 endif
 
 ui/%$(EXT): $(RES_OBJ) ui/%.c 
-	echo $^
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 ui/resource.o: ui/resource.rc
-	echo $^
 	windres -i $^ -o $@
 clean:
 	$(RM) $(TARGETS)

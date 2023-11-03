@@ -833,8 +833,10 @@ void __ui_model_free(ui_model *m)
 
 	ax_iter it = ax_box_rbegin(self.ax_box);
 	ax_iter end = ax_box_rend(self.ax_box);
-	while (!ax_iter_equal(&it, &end))
+	while (!ax_iter_equal(&it, &end)) {
 		ax_iter_erase(&it);
+		end = ax_box_rend(self.ax_box);
+	}
 
 	uiFreeTableModel(self.ui_model->uimodel);
 	free(self.ui_model->handler);
