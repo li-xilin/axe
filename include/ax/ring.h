@@ -1,16 +1,36 @@
+/*
+ * Copyright (c) 2020-2023 Li Xilin <lixilin@gmx.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include "ax/def.h"
 #include "ax/trick.h"
 #include <stdlib.h>
 #include <string.h>
 
 #ifndef TYPE
-#error "TYPE is not defined"
-#define TYPE int
+#error "TYPE macro not defined"
 #endif
 
 #ifndef NAME
-#error "NAME is not defined"
-#define NAME
+#error "NAME macro not defined"
 #endif
 
 #define AX_RING(tail) AX_CATENATE(NAME, ring_, tail)
@@ -44,9 +64,6 @@ inline static size_t ring_size(const struct ring_st *ring);
 
 static bool ring_offset_is_valid(const struct ring_st *ring, size_t offset)
 {
-	//return (ring->rear >= ring->front)
-	//	? offset >= ring->front && offset < ring->rear
-	//	: offset >= ring->front || offset < ring->rear;
 	return offset >= ring->front
 		? ring->rear > offset || ring->rear < ring->front
 		: ring->rear > offset;
@@ -144,24 +161,11 @@ inline static size_t ring_offset(const struct ring_st *ring, size_t index)
 	return (ring->front + index) % ring->size;
 }
 
-/*
-inline static size_t ring_prev_offset(const struct ring_st *ring, size_t offset)
-{
-	return (offset + ring->size - 1) % ring->size;
-}
-
-inline static size_t ring_next_offset(const struct ring_st *ring, size_t offset)
-{
-	return (offset + 1) % ring->size;
-}
-*/
-
 inline static size_t ring_step_offset(const struct ring_st *ring, size_t offset, size_t step, bool positive)
 {
 	return positive
 		? (offset + step) % ring->size
 		: (offset + ring->size - step) % ring->size;
-
 }
 
 static TYPE *ring_at_offset(const struct ring_st *ring, size_t offset)
@@ -186,7 +190,7 @@ static void ring_clear(struct ring_st *ring)
 	ring->front = ring->rear = 0;
 }
 
-void ring_init(struct ring_st *ring)
+inline static void ring_init(struct ring_st *ring)
 {
 	{
 		ax_unused(ring_free);
