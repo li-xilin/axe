@@ -47,5 +47,7 @@ const ax_uchar *ax_sys_getenv(const ax_uchar *name);
 
 int ax_sys_setenv(const ax_uchar *name, const ax_uchar *value);
 
+int ax_sys_utime(const ax_uchar *path, time_t atime, time_t mtime);
+
 #endif
 

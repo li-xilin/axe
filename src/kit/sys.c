@@ -21,6 +21,7 @@
  */
 
 #include "ax/io.h"
+#include "ax/def.h"
 #include "ax/sys.h"
 #include "ax/errno.h"
 #include "ax/types.h"
@@ -36,9 +37,11 @@
 
 #ifdef AX_OS_WIN
 #include <windows.h>
+#include <fileapi.h>
 #else
 #include <fcntl.h>
 #include <unistd.h>
+#include <utime.h>
 #include <sys/types.h>
 #endif
 
@@ -212,3 +215,35 @@ int ax_sys_setenv(const ax_uchar *name, const ax_uchar *value)
 #endif
 }
 
+#define TIMET_TO_ULI(timet) ((ULARGE_INTEGER) { \
+        .QuadPart = (LONGLONG)dwCreationTime * 10000000 + 116444736000000000 \
+})
+
+int ax_sys_utime(const ax_uchar *path, time_t atime, time_t mtime)
+{
+#ifdef AX_OS_WIN
+        int retval = -1;
+        ULARGE_INTEGER uiAccessTime =  TIMET_TO_ULI(atime);
+        ULARGE_INTEGER uiModifyTime =  TIMET_TO_ULI(mtime);
+        FILETIME ftAccess = {
+                .dwHighDateTime = uiAccessTime.HighPart,
+                .dwLowDateTime = uiAccessTime.LowPart
+        };
+        FILETIME ftModify = {
+                .dwHighDateTime = uiModifyTime.HighPart,
+                .dwLowDateTime = uiModifyTime.LowPart
+        };
+
+        HANDLE hFile = CreateFile(path, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
+        if (hFile == INVALID_HANDLE_VALUE)
+                return -1;
+        if (!SetFileTime(hDestFile, NULL, &ftAccess, &ftModify))
+                goto out;
+        retval = 0;
+out:
+        CloseHandle(hFile);
+        return retval;
+#else
+	return utime(path, ax_pstruct(struct utimbuf, .actime = atime, .modtime = mtime));
+#endif
+}
