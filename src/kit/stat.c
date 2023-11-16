@@ -167,6 +167,7 @@ int ax_stat_get(const ax_uchar* path, ax_stat *stat_buf)
 	stat_buf->st_ino = st.st_ino;
 	stat_buf->st_dev = st.st_dev;
 	stat_buf->st_nlink = st.st_nlink;
+	stat_buf->st_size = st.st_size;
 	stat_buf->st_mode = st.st_mode;
 	stat_buf->st_atim = st.st_atim.tv_sec;
 	stat_buf->st_mtim = st.st_mtim.tv_sec;
