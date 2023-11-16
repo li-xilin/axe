@@ -20,16 +20,16 @@
  * THE SOFTWARE.
  */
 
-#define NAME
-#define TYPE ax_byte *
-#include "ring.h"
-
 #include "ax/deq.h"
 #include "ax/mem.h"
 #include "ax/def.h"
 #include "ax/iter.h"
 #include "ax/trait.h"
 #include "check.h"
+
+#define NAME
+#define TYPE ax_byte *
+#include "ax/ring.h"
 
 #include <string.h>
 #include <stdlib.h>
