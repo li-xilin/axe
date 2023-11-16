@@ -66,6 +66,8 @@ inline static long int ax_dir_tell(ax_dir* dirp)
 
 inline static void ax_dir_close(ax_dir *dir)
 {
+	if (!dir)
+		return;
 	closedir(dir);
 }
 
