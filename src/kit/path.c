@@ -259,7 +259,7 @@ const ax_uchar *ax_path_basename(const ax_uchar *path)
 	int len = ax_ustrlen(path);
 	for (i = len - 1; i != -1; i--) {
 		if (path[i] == AX_PATH_SEP_CHAR)
-			return path + i;
+			return path + i + 1;
 	}
 	return path;
 }
