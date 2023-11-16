@@ -23,6 +23,16 @@
 #ifndef AX_OPTION_H
 #define AX_OPTION_H
 
+#ifndef AX_OPTION_DEFINED
+#define AX_OPTION_DEFINED
+typedef struct ax_option_st ax_option;
+#endif
+
+#ifndef AX_OPTION_LONG_DEFINED
+#define AX_OPTION_LONG_DEFINED
+typedef struct ax_option_long_st ax_option_long;
+#endif
+
 struct ax_option_st {
     char **argv;
     int permute;
