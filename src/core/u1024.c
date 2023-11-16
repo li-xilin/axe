@@ -7,6 +7,10 @@
 #include "check.h"
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <errno.h>
 
 static void u1024_rshift_one_bit(ax_u1024* a);
 static void u1024_lshift_one_bit(ax_u1024* a);
@@ -28,27 +32,42 @@ void ax_u1024_from_int(ax_u1024* n, uint64_t i)
 
 	ax_u1024_init(n);
 	n->array[0] = i;
-	uint64_t num_32 = 32;
-	uint64_t tmp = i >> num_32; /* bit-shift with U64 operands to force 64-bit results */
-	n->array[1] = tmp;
+	n->array[1] = i >> 32;
 }
 
-int ax_u1024_to_int(ax_u1024* n)
+ax_fail ax_u1024_to_int(ax_u1024* n, uint64_t *p)
 {
 	CHECK_PARAM_NULL(n);
 
-	int ret = 0;
-	ret += n->array[0];
-	return ret;
+	for (int i = 2; i < AX_U1024_ARR_LEN; i++) {
+		if (n->array[i]) {
+			errno = EDOM;
+			return true;
+		}
+	}
+
+	*p = (uint64_t)n->array[1] << 32 | n->array[0];
+	return false;
 }
 
-void ax_u1024_from_string(ax_u1024* n, char* str, int nbytes)
+ax_fail ax_u1024_from_string(ax_u1024* n, char* str, int nbytes)
 {
 	CHECK_PARAM_NULL(n);
 	CHECK_PARAM_NULL(str);
 	ax_assert(nbytes > 0, "nbytes must be positive");
-	ax_assert((nbytes & 1) == 0, "string format must be in hex -> equal number of bytes");
-	ax_assert((nbytes % (sizeof(uint32_t) * 2)) == 0, "string length must be a multiple of (sizeof(DTYPE) * 2) characters");
+
+	if (nbytes > AX_U1024_WORD_SIZE * AX_U1024_ARR_LEN * 2) {
+		errno = ERANGE;
+		return true;
+	}
+
+	for (int i = 0; i < nbytes; i++)
+		if (!isdigit(str[i]) && !(str[i] >= 'a' && str[i] <= 'f')
+				&& !(str[i] >= 'A' && str[i] <= 'F')) {
+			errno = EINVAL;
+			return true;
+		}
+
 	ax_u1024_init(n);
 
 	uint32_t tmp;
@@ -64,6 +83,11 @@ void ax_u1024_from_string(ax_u1024* n, char* str, int nbytes)
 		i -= (2 * AX_U1024_WORD_SIZE); /* step AX_U1024_WORD_SIZE hex-byte(s) back in the string. */
 		j += 1;               /* step one element forward in the array. */
 	}
+	char *end;
+	char buf[8];
+	strncpy(buf, str, (2 * AX_U1024_WORD_SIZE) + i);
+	n->array[j] = strtol(buf, &end, 16);
+	return false;
 }
 
 void ax_u1024_to_string(ax_u1024* n, char* str, int nbytes)
@@ -99,14 +123,9 @@ void ax_u1024_to_string(ax_u1024* n, char* str, int nbytes)
 void ax_u1024_dec(ax_u1024* n)
 {
 	CHECK_PARAM_NULL(n);
-
-	uint32_t tmp; /* copy of n */
-	uint32_t res;
-
-	int i;
-	for (i = 0; i < AX_U1024_ARR_LEN; ++i) {
-		tmp = n->array[i];
-		res = tmp - 1;
+	for (int i = 0; i < AX_U1024_ARR_LEN; ++i) {
+		uint32_t tmp = n->array[i];
+		uint32_t res = tmp - 1;
 		n->array[i] = res;
 		if (!(res > tmp))
 			break;
@@ -116,16 +135,10 @@ void ax_u1024_dec(ax_u1024* n)
 void ax_u1024_inc(ax_u1024* n)
 {
 	CHECK_PARAM_NULL(n);
-
-	uint32_t res;
-	uint64_t tmp; /* copy of n */
-
-	int i;
-	for (i = 0; i < AX_U1024_ARR_LEN; ++i) {
-		tmp = n->array[i];
-		res = tmp + 1;
+	for (int i = 0; i < AX_U1024_ARR_LEN; ++i) {
+		uint32_t tmp = n->array[i];
+		uint32_t res = tmp + 1;
 		n->array[i] = res;
-
 		if (res > tmp)
 			break;
 	}
@@ -235,7 +248,7 @@ void ax_u1024_div(const ax_u1024* a, const ax_u1024* b, ax_u1024* c)
 	}                                                           // return answer;
 }
 
-void ax_u1024__ax_lshift(const ax_u1024* a, ax_u1024* b, int nbits)
+void ax_u1024_lshift(const ax_u1024* a, ax_u1024* b, int nbits)
 {
 	CHECK_PARAM_NULL(a);
 	CHECK_PARAM_NULL(b);
@@ -258,7 +271,7 @@ void ax_u1024__ax_lshift(const ax_u1024* a, ax_u1024* b, int nbits)
 	}
 }
 
-void ax_u1024__ax_rshift(const ax_u1024* a, ax_u1024* b, int nbits)
+void ax_u1024_rshift(const ax_u1024* a, ax_u1024* b, int nbits)
 {
 	CHECK_PARAM_NULL(a);
 	CHECK_PARAM_NULL(b);
@@ -343,8 +356,7 @@ void ax_u1024_or(const ax_u1024* a, const ax_u1024* b, ax_u1024* c)
 	CHECK_PARAM_NULL(b);
 	CHECK_PARAM_NULL(c);
 
-	int i;
-	for (i = 0; i < AX_U1024_ARR_LEN; ++i)
+	for (int i = 0; i < AX_U1024_ARR_LEN; ++i)
 		c->array[i] = (a->array[i] | b->array[i]);
 }
 
@@ -354,9 +366,17 @@ void ax_u1024_xor(const ax_u1024* a, const ax_u1024* b, ax_u1024* c)
 	CHECK_PARAM_NULL(b);
 	CHECK_PARAM_NULL(c);
 
-	int i;
-	for (i = 0; i < AX_U1024_ARR_LEN; ++i)
+	for (int i = 0; i < AX_U1024_ARR_LEN; ++i)
 		c->array[i] = (a->array[i] ^ b->array[i]);
+}
+
+void ax_u1024_not(const ax_u1024* a, ax_u1024* b)
+{
+	CHECK_PARAM_NULL(a);
+	CHECK_PARAM_NULL(b);
+
+	for (int i = 0; i < AX_U1024_ARR_LEN; ++i)
+		b->array[i] = ~a->array[i];
 }
 
 int ax_u1024_cmp(const ax_u1024* a, const ax_u1024* b)
@@ -435,7 +455,7 @@ void ax_u1024_isqrt(const ax_u1024 *a, ax_u1024* b)
 
 	ax_u1024_init(&low);
 	ax_u1024_assign(&high, a);
-	ax_u1024__ax_rshift(&high, &mid, 1);
+	ax_u1024_rshift(&high, &mid, 1);
 	ax_u1024_inc(&mid);
 
 	while (ax_u1024_cmp(&high, &low) > 0) {
