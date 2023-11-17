@@ -530,3 +530,55 @@ void ax_memxor(void *a, const void *b, size_t size)
 		((char *)a)[j] ^= ((char *)b)[j];
 }
 
+inline static int char_to_int(char c)
+{
+        if (c >= '0' && c <= '9')
+                return c - '0';
+        if (c>= 'a' && c <= 'z')
+                return c - 'a' + 0xA;
+        if (c>= 'A' && c <= 'Z')
+                return c - 'A' + 0xA;
+        return -1;
+}
+
+inline static char int_to_char(int n)
+{
+        if (n >= 0 && n < 10)
+                return '0' + n;
+        if (n >= 10 && n < 36)
+                return 'a' + n - 10;
+        return '\0';
+}
+
+char *ax_strbaseconv(char *s, char *buf, size_t size, int old_base, int new_base)
+{
+        int j = size - 1;
+        ax_assert(old_base >= 2 && old_base <= 36, "Invalid old_base");
+        ax_assert(new_base >= 2 && new_base <= 36, "Invalid new_base");
+#ifndef NDEBUG
+        for (int i = 0; s[i]; i++) {
+                int n = char_to_int(s[i]);
+                ax_assert(n >= 0 && n < old_base, "Invalid charactor '%c'", s[i]);
+        }
+#endif
+        static const char hex[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+        while (1) {
+                int i = 0;
+                if (j < 0)
+                        return NULL;
+                while (s[i] && s[i] == '0')
+                        i++;
+                if (!s[i])
+                        break;
+                int sum = 0, res = 0;
+                for (i = 0; s[i]; i++) {
+                        sum = res * old_base + char_to_int(s[i]);
+                        s[i] = hex[sum / new_base];
+                        res = sum % new_base;
+                }
+                buf[j--] = int_to_char(sum % new_base);
+        }
+
+        return buf + j + 1;
+}
+
