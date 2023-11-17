@@ -51,7 +51,7 @@ void ax_u1024_init(ax_u1024* n);
 void ax_u1024_from_int(ax_u1024* n, uint64_t i);
 ax_fail ax_u1024_to_int(ax_u1024* n, uint64_t *p);
 ax_fail ax_u1024_from_string(ax_u1024* n, char* str, int nbytes);
-void ax_u1024_to_string(ax_u1024* n, char* str, int maxsize);
+ax_fail ax_u1024_to_string(ax_u1024* n, char* str, int maxsize);
 
 /* Basic arithmetic operations: */
 void ax_u1024_add(const ax_u1024* a, const ax_u1024* b, ax_u1024* c); /* c = a + b */

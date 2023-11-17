@@ -54,7 +54,7 @@ ax_fail ax_u1024_from_string(ax_u1024* n, char* str, int nbytes)
 {
 	CHECK_PARAM_NULL(n);
 	CHECK_PARAM_NULL(str);
-	ax_assert(nbytes > 0, "nbytes must be positive");
+	ax_assert(nbytes >= 0, "nbytes must be positive or zero");
 
 	if (nbytes > AX_U1024_WORD_SIZE * AX_U1024_ARR_LEN * 2) {
 		errno = ERANGE;
@@ -90,34 +90,41 @@ ax_fail ax_u1024_from_string(ax_u1024* n, char* str, int nbytes)
 	return false;
 }
 
-void ax_u1024_to_string(ax_u1024* n, char* str, int nbytes)
+ax_fail ax_u1024_to_string(ax_u1024* n, char* buf, int buf_size)
 {
 	CHECK_PARAM_NULL(n);
-	CHECK_PARAM_NULL(str);
-	ax_assert(nbytes > 0, "nbytes must be positive");
-	ax_assert((nbytes & 1) == 0, "string format must be in hex -> equal number of bytes");
+	CHECK_PARAM_NULL(buf);
+	ax_assert(buf_size > 0, "buf_size must be positive");
+	// ax_assert((buf_size & 1) == 0, "string format must be in hex -> equal number of bytes");
+
+	if (buf_size <= AX_U1024_WORD_SIZE * AX_U1024_ARR_LEN * 2) {
+		errno = ENOBUFS;
+		return true;
+	}
+
 
 	int j = AX_U1024_ARR_LEN - 1; /* index into array - reading "MSB" first -> big-endian */
 	int i = 0;                 /* index into string representation. */
 
 	/* reading last array-element "MSB" first -> big endian */
-	while ((j >= 0) && (nbytes > (i + 1))) {
-		sprintf(&str[i], "%.08x", n->array[j]);
+	while ((j >= 0) && (buf_size > (i + 1))) {
+		sprintf(&buf[i], "%.08x", n->array[j]);
 		i += (2 * AX_U1024_WORD_SIZE); /* step AX_U1024_WORD_SIZE hex-byte(s) forward in the string. */
 		j -= 1;               /* step one element back in the array. */
 	}
 
 	/* Count leading zeros: */
 	j = 0;
-	while (str[j] == '0')
+	while (buf[j] == '0')
 		j += 1;
 
 	/* Move string j places ahead, effectively skipping leading zeros */ 
-	for (i = 0; i < (nbytes - j); ++i)
-		str[i] = str[i + j];
+	for (i = 0; i < (buf_size - j); ++i)
+		buf[i] = buf[i + j];
 
 	/* Zero-terminate string */
-	str[i] = 0;
+	buf[i] = 0;
+	return false;
 }
 
 void ax_u1024_dec(ax_u1024* n)
