@@ -118,5 +118,7 @@ void ax_memxor(void *a, const void *b, size_t size);
 
 char *ax_strbaseconv(char *s, char *buf, size_t size, int old_base, int new_base);
 
+char *ax_strtrim(char *s, size_t *lenp);
+
 #endif
 

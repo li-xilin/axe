@@ -582,3 +582,20 @@ char *ax_strbaseconv(char *s, char *buf, size_t size, int old_base, int new_base
         return buf + j + 1;
 }
 
+char *ax_strtrim(char *s, size_t *lenp)
+{
+	int begin = 0, end = -1, i;
+	for (i = 0; s[i] && isspace(s[i]); i++);
+	begin = i;
+
+	for (; s[i]; i++) {
+		if (!isspace(s[i]))
+			end = i;
+	}
+
+	if (end >= 0)
+		s[end + 1] = '\0';
+	if (lenp)
+		*lenp = i;
+	return s + begin;
+}
