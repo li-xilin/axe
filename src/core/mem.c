@@ -564,12 +564,12 @@ char *ax_strbaseconv(char *s, char *buf, size_t size, int old_base, int new_base
         static const char hex[] = "0123456789abcdefghijklmnopqrstuvwxyz";
         while (1) {
                 int i = 0;
-                if (j < 0)
-                        return NULL;
                 while (s[i] && s[i] == '0')
                         i++;
                 if (!s[i])
                         break;
+                if (j < 0)
+                        return NULL;
                 int sum = 0, res = 0;
                 for (i = 0; s[i]; i++) {
                         sum = res * old_base + char_to_int(s[i]);
