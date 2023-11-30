@@ -147,6 +147,7 @@ int main(void)
 | ax/queue.h        | 队列 |
 | ax/stack.h        | 栈 |
 | ax/pque.h         | 优先队列 |
+| ax/base64.h       | BASE64编解码 |
 
 ### axnet 头文件列表
 
