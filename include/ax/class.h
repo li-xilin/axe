@@ -30,23 +30,22 @@
 #define __AX_CLASS_TRAIT_STRUCT(name) struct AX_CATENATE(name, _trait_st)
 #define __AX_CLASS_ENV_STRUCT(name) struct AX_CATENATE(name, _env_st)
 
-#define AX_CONCRETE_NEW_N(_n, name, ...) \
-	(name##_r) { .ax_base_of(1, name) = __AX_CATENATE_4(__, name, _construct, _n)(__VA_ARGS__) }
+#define __AX_CREATOR_NAME(name, _n) __AX_CATENATE_3(name, _new, _n)
 
 #define ax_new0(name) \
-	AX_CONCRETE_NEW_N(0, name, )
+	(name##_r) { .__ptr = __AX_CREATOR_NAME(name, )() }
 
 #define ax_new(name, ...) \
-	AX_CONCRETE_NEW_N(AX_NARG(__VA_ARGS__), name, __VA_ARGS__)
+	(name##_r) { .__ptr = __AX_CREATOR_NAME(name, AX_NARG(__VA_ARGS__))(__VA_ARGS__) }
 
 #define __AX_CLASS_EXTERN_TRAIT(name) \
 	const __AX_CLASS_TRAIT_STRUCT(ax_base_of(1, name)) AX_CATENATE(name, _tr)
 
 #define ax_concrete_creator0(name) \
-	__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) *AX_CATENATE(__, name, _construct0)()
+	__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) *__AX_CREATOR_NAME(name, )(void)
 
 #define ax_concrete_creator(name, ...) \
-	__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) *AX_CATENATE(__, name, _construct, AX_NARG(__VA_ARGS__))(__VA_ARGS__)
+	__AX_CLASS_ENTRY_STRUCT(ax_base_of(1, name)) *__AX_CREATOR_NAME(name, AX_NARG(__VA_ARGS__))(__VA_ARGS__)
 
 #define ax_abstract_root_code_begin(name) \
 	typedef __AX_CLASS_TRAIT_STRUCT(name)  AX_CATENATE(name, _trait); \
