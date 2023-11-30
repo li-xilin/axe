@@ -49,8 +49,8 @@ uninstall:
 		$(DESTDIR)/include/ut.h \
 		$(DESTDIR)/lib/libaxcore.a \
 		$(DESTDIR)/lib/libaxkit.a \
-		$(DESTDIR)/lib/libaxut.a
-		$(DESTDIR)/lib/libaxgui.a
+		$(DESTDIR)/lib/libaxut.a \
+		$(DESTDIR)/lib/libaxgui.a \
 	$(RM) $(MANDIR)/share/man/man3/ax_*.3
 distclean:  clean
 	$(RM) Makefile config.mak
