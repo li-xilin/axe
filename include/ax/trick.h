@@ -55,8 +55,8 @@
 #define __AX_DEC_14 13
 #define __AX_DEC_15 14
 #define __AX_DEC_16 15
-#define AX_MACRO_INC(n) __AX_PREFIX_TO_1(__AX_INC_##n)
-#define AX_MACRO_DEC(n) __AX_PREFIX_TO_1(__AX_DEC_##n)
+#define AX_INC(n) __AX_CATENATE_2(__AX_INC_, n)
+#define AX_DEC(n) __AX_CATENATE_2(__AX_DEC_, n)
 
 #define __AX_OVERLOAD_N(sym, n, ...) sym##n(__VA_ARGS__)
 #define AX_OVERLOAD_N(sym, n, ...) __AX_OVERLOAD_N(sym, n, __VA_ARGS__)
