@@ -29,6 +29,7 @@
 
 #ifdef AX_OS_WIN32
 #include <winsock2.h>
+#include <ws2tcpip.h>
 typedef SOCKET ax_socket;
 #define AX_SOCKET_INVALID INVALID_SOCKET
 #ifndef MSG_NOSIGNAL
