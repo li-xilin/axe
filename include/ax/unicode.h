@@ -74,7 +74,6 @@ size_t ax_utf8_charcnt(const char *str, int bytelen);
 
 /**
  * Calculates the display width of the first 'charlen' characters in 'str'.
- * See utf8_width()
  */
 size_t ax_utf8_strwidth(const char *str, int charlen);
 
@@ -108,7 +107,7 @@ size_t ax_utf8_to_ucode(const char *str, uint32_t *uc);
  * Returns the width (in characters) of the given unicode codepoint.
  * This is 1 for normal letters and 0 for combining characters and 2 for wide characters.
  */
-size_t ax_utf8_width(uint8_t ch);
+size_t ax_ucode_width(uint32_t ch);
 
 size_t ax_ucode_to_utf16(uint32_t codepoint, uint16_t* utf16);
 

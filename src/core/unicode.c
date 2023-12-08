@@ -158,7 +158,7 @@ size_t ax_utf8_strwidth(const char *str, int charlen)
 	while (charlen) {
 		uint32_t c;
 		int l = ax_utf8_to_ucode(str, &c);
-		width += ax_utf8_width(c);
+		width += ax_ucode_width(c);
 		str += l;
 		charlen--;
 	}
@@ -304,7 +304,7 @@ static int utf8_in_range(const struct utf8range *range, int num, int ch)
 	return 0;
 }
 
-size_t ax_utf8_width(uint8_t ch)
+size_t ax_ucode_width(uint32_t ch)
 {
 	/* short circuit for common case */
 	if (ch > 0 && ch < 128)

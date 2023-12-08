@@ -216,7 +216,7 @@ int ax_sys_setenv(const ax_uchar *name, const ax_uchar *value)
 }
 
 #define TIMET_TO_ULI(timet) ((ULARGE_INTEGER) { \
-        .QuadPart = (LONGLONG)dwCreationTime * 10000000 + 116444736000000000 \
+        .QuadPart = (LONGLONG)timet * 10000000 + 116444736000000000 \
 })
 
 int ax_sys_utime(const ax_uchar *path, time_t atime, time_t mtime)
@@ -234,10 +234,10 @@ int ax_sys_utime(const ax_uchar *path, time_t atime, time_t mtime)
                 .dwLowDateTime = uiModifyTime.LowPart
         };
 
-        HANDLE hFile = CreateFile(path, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
+        HANDLE hFile = CreateFileW(path, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
         if (hFile == INVALID_HANDLE_VALUE)
                 return -1;
-        if (!SetFileTime(hDestFile, NULL, &ftAccess, &ftModify))
+        if (!SetFileTime(hFile, NULL, &ftAccess, &ftModify))
                 goto out;
         retval = 0;
 out:

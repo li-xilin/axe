@@ -751,7 +751,7 @@ static int char_display_width(int ch)
 		return 2;
 	}
 	else {
-		return ax_utf8_width(ch);
+		return ax_ucode_width(ch);
 	}
 }
 
@@ -1082,7 +1082,7 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 			displayrow++;
 		}
 		else {
-			width = visible * ax_utf8_width(ch);
+			width = visible * ax_ucode_width(ch);
 
 			displaycol += width;
 			if (displaycol >= current->cols) {

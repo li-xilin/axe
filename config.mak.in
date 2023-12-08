@@ -38,7 +38,7 @@ LIB = $(ROOT)/lib
 BIN = $(ROOT)/bin
 
 CFLAGS += --pedantic -std=c99 -I$(ROOT)/src/include -I$(INCLUDE)
-CFLAGS += -Wall -Werror -Wno-format -fno-strict-aliasing -Wno-free-nonheap-object
+CFLAGS += -Wall -Werror -Wno-format -fno-strict-aliasing -Wno-free-nonheap-object -fPIC
 
 DISABLE_DEBUG = @DISABLE_DEBUG@
 DISABLE_CASSERT = @DISABLE_CASSERT@
