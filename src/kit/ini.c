@@ -80,11 +80,11 @@ void ax_ini_free(ax_ini * d)
 	if (!d)
 		return;
 
-	while (ax_link_is_empty(&d->sec_list)) {
-		struct section *sec = ax_link_entry(&d->sec_list, struct section, link);
+	while (!ax_link_is_empty(&d->sec_list)) {
+		struct section *sec = ax_link_first_entry(&d->sec_list, struct section, link);
 		ax_link_del(&sec->link);
-		while (ax_link_is_empty(&sec->opt_list)) {
-			struct option *opt = ax_link_entry(&sec->opt_list, struct option, link);
+		while (!ax_link_is_empty(&sec->opt_list)) {
+			struct option *opt = ax_link_first_entry(&sec->opt_list, struct option, link);
 			ax_link_del(&opt->link);
 			free(opt->key);
 			free(opt->val);
@@ -456,3 +456,12 @@ out:
 	return d;
 }
 
+const char *ax_ini_strerror(int errcode)
+{
+	switch (errcode) {
+		case AX_INI_EBADNAME: return "Invalid key name";
+		case AX_INI_ETOOLONG: return "Too long for single line";
+		case AX_INI_ESYNTAX: return "Syntax error";
+		default: return "";
+	}
+}

@@ -58,4 +58,6 @@ void ax_ini_unset(ax_ini *d, const ax_uchar *sec_name, const ax_uchar *key);
 
 bool ax_ini_check_name(ax_uchar *name);
 
+const char *ax_ini_strerror(int errcode);
+
 #endif
