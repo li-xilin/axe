@@ -69,7 +69,7 @@ inline static void ax_iobuf_clear(ax_iobuf *b)
 	b->rear = b->front = 0;
 }
 
-static size_t ax_iobuf_write(ax_iobuf *b, void *p, size_t size)
+inline static size_t ax_iobuf_write(ax_iobuf *b, void *p, size_t size)
 {
 	size_t writen_size = ax_min(ax_iobuf_max_size(b) - ax_iobuf_size(b), size);
 	size_t size1 = (b->size - b->rear) % writen_size;
@@ -79,7 +79,7 @@ static size_t ax_iobuf_write(ax_iobuf *b, void *p, size_t size)
 	return writen_size;
 }
 
-static size_t ax_iobuf_read(ax_iobuf *b, void *buf, size_t size)
+inline static size_t ax_iobuf_read(ax_iobuf *b, void *buf, size_t size)
 {
 	size_t read_size = ax_min(ax_iobuf_size(b), size);
 	size_t size1 = ax_min((b->size - b->front), read_size);
