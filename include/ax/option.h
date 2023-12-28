@@ -23,6 +23,8 @@
 #ifndef AX_OPTION_H
 #define AX_OPTION_H
 
+#include "uchar.h"
+
 #ifndef AX_OPTION_DEFINED
 #define AX_OPTION_DEFINED
 typedef struct ax_option_st ax_option;
@@ -34,12 +36,12 @@ typedef struct ax_option_long_st ax_option_long;
 #endif
 
 struct ax_option_st {
-    char **argv;
+    ax_uchar **argv;
     int permute;
     int optind;
     int optopt;
-    char *optarg;
-    char errmsg[64];
+    ax_uchar *optarg;
+    ax_uchar errmsg[64];
     int subopt;
 };
 
@@ -50,7 +52,7 @@ enum ax_option_argtype {
 };
 
 struct ax_option_long_st {
-    const char *longname;
+    const ax_uchar *longname;
     int shortname;
     enum ax_option_argtype argtype;
 };
@@ -58,7 +60,7 @@ struct ax_option_long_st {
 /**
  * Initializes the parser state.
  */
-void ax_option_init(struct ax_option_st *options, char **argv);
+void ax_option_init(struct ax_option_st *options, ax_uchar **argv);
 
 /**
  * Read the next option in the argv array.
@@ -69,7 +71,7 @@ void ax_option_init(struct ax_option_st *options, char **argv);
  * argument. One colon means the option has a required argument. Two
  * colons means the option takes an optional argument.
  */
-int ax_option_parse(struct ax_option_st *options, const char *optstring);
+int ax_option_parse(struct ax_option_st *options, const ax_uchar *optstring);
 
 /**
  * Handles GNU-style long options in addition to getopt() options.

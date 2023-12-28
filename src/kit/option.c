@@ -23,26 +23,26 @@
 #include "ax/option.h"
 #include "ax/mem.h"
 
-#define OPT_MSG_INVALID "invalid option"
-#define OPT_MSG_MISSING "option requires an argument"
-#define OPT_MSG_TOOMANY "option takes no arguments"
+#define OPT_MSG_INVALID ax_u("invalid option")
+#define OPT_MSG_MISSING ax_u("option requires an argument")
+#define OPT_MSG_TOOMANY ax_u("option takes no arguments")
 
-static int option_error(struct ax_option_st *options, const char *msg, const char *data)
+static int option_error(struct ax_option_st *options, const ax_uchar *msg, const ax_uchar *data)
 {
 	unsigned p = 0;
-	const char *sep = " -- '";
+	const ax_uchar *sep = " -- '";
 	while (*msg)
 		options->errmsg[p++] = *msg++;
 	while (*sep)
 		options->errmsg[p++] = *sep++;
-	while (p < sizeof(options->errmsg) - 2 && *data)
+	while (p < sizeof(options->errmsg) / sizeof(ax_uchar) - 2 && *data)
 		options->errmsg[p++] = *data++;
 	options->errmsg[p++] = '\'';
 	options->errmsg[p++] = '\0';
-	return '?';
+	return ax_u('?');
 }
 
-void ax_option_init(struct ax_option_st *options, char **argv)
+void ax_option_init(struct ax_option_st *options, ax_uchar **argv)
 {
 	options->argv = argv;
 	options->permute = 1;
@@ -52,31 +52,31 @@ void ax_option_init(struct ax_option_st *options, char **argv)
 	options->errmsg[0] = '\0';
 }
 
-static int option_is_dashdash(const char *arg)
+static int option_is_dashdash(const ax_uchar *arg)
 {
 	return arg != 0 && arg[0] == '-' && arg[1] == '-' && arg[2] == '\0';
 }
 
-static int option_is_shortopt(const char *arg)
+static int option_is_shortopt(const ax_uchar *arg)
 {
 	return arg != 0 && arg[0] == '-' && arg[1] != '-' && arg[1] != '\0';
 }
 
-static int option_is_longopt(const char *arg)
+static int option_is_longopt(const ax_uchar *arg)
 {
 	return arg != 0 && arg[0] == '-' && arg[1] == '-' && arg[2] != '\0';
 }
 
 static void option_permute(struct ax_option_st *options, int index)
 {
-	char *nonoption = options->argv[index];
+	ax_uchar *nonoption = options->argv[index];
 	int i;
 	for (i = index; i < options->optind - 1; i++)
 		options->argv[i] = options->argv[i + 1];
 	options->argv[options->optind - 1] = nonoption;
 }
 
-static int option_argtype(const char *optstring, char c)
+static int option_argtype(const ax_uchar *optstring, char c)
 {
 	int count = AX_OPT_NONE;
 	if (c == ':')
@@ -84,16 +84,16 @@ static int option_argtype(const char *optstring, char c)
 	for (; *optstring && c != *optstring; optstring++);
 	if (!*optstring)
 		return -1;
-	if (optstring[1] == ':')
-		count += optstring[2] == ':' ? 2 : 1;
+	if (optstring[1] == ax_u(':'))
+		count += optstring[2] == ax_u(':') ? 2 : 1;
 	return count;
 }
 
-int ax_option_parse(struct ax_option_st *options, const char *optstring)
+int ax_option_parse(struct ax_option_st *options, const ax_uchar *optstring)
 {
 	int type;
-	char *next;
-	char *option = options->argv[options->optind];
+	ax_uchar *next;
+	ax_uchar *option = options->argv[options->optind];
 	options->errmsg[0] = '\0';
 	options->optopt = 0;
 	options->optarg = 0;
@@ -120,7 +120,7 @@ int ax_option_parse(struct ax_option_st *options, const char *optstring)
 	switch (type) {
 		case -1:
 			;
-			char str[2] = {0, 0};
+			ax_uchar str[2] = {0, 0};
 			str[0] = option[0];
 			options->optind++;
 			return option_error(options, OPT_MSG_INVALID, str);
@@ -141,7 +141,7 @@ int ax_option_parse(struct ax_option_st *options, const char *optstring)
 				 options->optarg = next;
 				 options->optind++;
 			 } else {
-				 char str[2] = {0, 0};
+				 ax_uchar str[2] = {0, 0};
 				 str[0] = option[0];
 				 options->optarg = 0;
 				 return option_error(options, OPT_MSG_MISSING, str);
@@ -159,9 +159,9 @@ int ax_option_parse(struct ax_option_st *options, const char *optstring)
 	return 0;
 }
 
-char *ax_option_arg(struct ax_option_st *options)
+ax_uchar *ax_option_arg(struct ax_option_st *options)
 {
-	char *option = options->argv[options->optind];
+	ax_uchar *option = options->argv[options->optind];
 	options->subopt = 0;
 	if (option != 0)
 		options->optind++;
@@ -173,38 +173,38 @@ static int option_longopts_end(const struct ax_option_long_st *longopts, int i)
 	return !longopts[i].longname && !longopts[i].shortname;
 }
 
-static void option_from_long(const struct ax_option_long_st *longopts, char *optstring)
+static void option_from_long(const struct ax_option_long_st *longopts, ax_uchar *optstring)
 {
-	char *p = optstring;
+	ax_uchar *p = optstring;
 	int i;
 	for (i = 0; !option_longopts_end(longopts, i); i++) {
 		if (longopts[i].shortname && longopts[i].shortname < 127) {
 			int a;
 			*p++ = longopts[i].shortname;
 			for (a = 0; a < (int)longopts[i].argtype; a++)
-				*p++ = ':';
+				*p++ = ax_u(':');
 		}
 	}
 	*p = '\0';
 }
 
 /* Unlike strcmp(), handles options containing "=". */
-static int option_longopts_match(const char *longname, const char *option)
+static int option_longopts_match(const ax_uchar *longname, const ax_uchar *option)
 {
-	const char *a = option, *n = longname;
+	const ax_uchar *a = option, *n = longname;
 	if (longname == 0)
 		return 0;
-	for (; *a && *n && *a != '='; a++, n++)
+	for (; *a && *n && *a != ax_u('='); a++, n++)
 		if (*a != *n)
 			return 0;
-	return *n == '\0' && (*a == '\0' || *a == '=');
+	return *n == ax_u('\0') && (*a == ax_u('\0') || *a == ax_u('='));
 }
 
 /* Return the part after "=", or NULL. */
-static char * option_longopts_arg(char *option)
+static ax_uchar * option_longopts_arg(ax_uchar *option)
 {
-	for (; *option && *option != '='; option++);
-	if (*option == '=')
+	for (; *option && *option != ax_u('='); option++);
+	if (*option == ax_u('='))
 		return option + 1;
 	else
 		return 0;
@@ -215,7 +215,7 @@ static int option_long_fallback(struct ax_option_st *options,
 		int *longindex)
 {
 	int result;
-	char optstring[96 * 3 + 1]; /* 96 ASCII printable characters */
+	ax_uchar optstring[96 * 3 + 1]; /* 96 ASCII printable characters */
 	option_from_long(longopts, optstring);
 	result = ax_option_parse(options, optstring);
 	if (longindex != 0) {
@@ -234,7 +234,7 @@ int ax_option_parse_long(struct ax_option_st *options,
 		const struct ax_option_long_st *longopts, int *longindex)
 {
 	int i;
-	char *option = options->argv[options->optind];
+	ax_uchar *option = options->argv[options->optind];
 	if (option == 0) {
 		return -1;
 	} else if (option_is_dashdash(option)) {
@@ -261,9 +261,9 @@ int ax_option_parse_long(struct ax_option_st *options,
 	option += 2; /* skip "--" */
 	options->optind++;
 	for (i = 0; !option_longopts_end(longopts, i); i++) {
-		const char *name = longopts[i].longname;
+		const ax_uchar *name = longopts[i].longname;
 		if (option_longopts_match(name, option)) {
-			char *arg;
+			ax_uchar *arg;
 			if (longindex)
 				*longindex = i;
 			options->optopt = longopts[i].shortname;
