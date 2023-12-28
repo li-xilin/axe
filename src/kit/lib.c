@@ -28,6 +28,7 @@
 #include <winbase.h>
 #include <libloaderapi.h>
 #include <errhandlingapi.h>
+#include <shellapi.h>
 #else
 #include <dlfcn.h>
 #endif
@@ -42,7 +43,7 @@ static void ax_lib_win32_seterror(void)
 	if (!FormatMessageW(FORMAT_MESSAGE_IGNORE_INSERTS|FORMAT_MESSAGE_FROM_SYSTEM,
 			NULL, errcode, MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
 			last_error_message_win32, sizeof(last_error_message_win32) / 2 - 1, NULL)) {
-		wsprintfW(last_error_message_win32, L"unknown error %lu", errcode);
+		swprintf(last_error_message_win32, ax_nelems(last_error_message_win32), L"unknown error %lu", errcode);
 	}
 }
 
@@ -99,7 +100,7 @@ int ax_lib_close(ax_lib *lib)
 #endif
 }
 
-const char *ax_lib_error(void)
+const ax_uchar *ax_lib_error(void)
 {
 #if defined(AX_OS_WIN32)
 	if (last_error_message_win32[0])

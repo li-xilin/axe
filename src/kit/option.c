@@ -30,7 +30,7 @@
 static int option_error(struct ax_option_st *options, const ax_uchar *msg, const ax_uchar *data)
 {
 	unsigned p = 0;
-	const ax_uchar *sep = " -- '";
+	const ax_uchar *sep = ax_u(" -- '");
 	while (*msg)
 		options->errmsg[p++] = *msg++;
 	while (*sep)

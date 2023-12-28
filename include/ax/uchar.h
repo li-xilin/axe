@@ -33,6 +33,7 @@
 
 #include <windef.h>
 #include <winbase.h>
+#include <shellapi.h>
 typedef WCHAR ax_uchar;
 #define __ax_u(s) L##s
 #define ax_ustrlen wcslen

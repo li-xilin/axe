@@ -92,6 +92,6 @@ int ax_option_parse_long(struct ax_option_st *options,
  * subcommand returned by ax_option_arg(). This function allows you to
  * ignore the value of optind.
  */
-char *ax_option_arg(struct ax_option_st *options);
+ax_uchar *ax_option_arg(struct ax_option_st *options);
 
 #endif

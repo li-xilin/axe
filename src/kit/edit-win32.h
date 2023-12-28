@@ -139,7 +139,7 @@ static void add_ubuf(struct current *current, int ch)
     else {
         current->ubuf[current->ubuflen++] = ch;
     }
-    current->ubufcols += ax_utf8_width(ch);
+    current->ubufcols += ax_ucode_width(ch);
     if (current->ubuflen >= UBUF_MAX_CHARS) {
         flush_ubuf(current);
     }

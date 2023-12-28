@@ -37,6 +37,6 @@ void *ax_lib_symbol(ax_lib *lib, const char *symb);
 
 int ax_lib_close(ax_lib *lib);
 
-const char *ax_lib_error(void);
+const ax_uchar *ax_lib_error(void);
 
 #endif
