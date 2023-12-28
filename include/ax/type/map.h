@@ -89,7 +89,7 @@ inline static void *ax_map_iput(ax_map *map, const void *key, ...)
 
 inline static ax_fail ax_map_erase(ax_map *map, const void *key)
 {
-	return ax_obj_do(map, erase, key);
+	return ax_obj_do(map, erase, ax_trait_in(map->env.key_tr, key));
 }
 
 inline static void *ax_map_get(ax_map *map, const void *key)
