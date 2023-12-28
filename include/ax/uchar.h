@@ -23,11 +23,11 @@
 #ifndef AX_UCHAR_H
 #define AX_UCHAR_H
 
-#include <ax/detect.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
-
+#include <ax/detect.h>
+#include <ax/mem.h>
 
 #ifdef AX_OS_WIN
 
@@ -50,7 +50,10 @@ typedef WCHAR ax_uchar;
 #define ax_usnprintf swprintf
 #define ax_uvsnprintf wvsnprintf
 #define ax_ustrhash ax_wcshash
+#define ax_ustrargv ax_wcsargv
+#define ax_ustrtrim ax_wcstrim
 #define AX_PRIus L"ls"
+#define ax_t_ustr ax_t_wcs
 
 #else
 
@@ -71,11 +74,16 @@ typedef char ax_uchar;
 #define ax_usnprintf snprintf
 #define ax_uvsnprintf vsnprintf
 #define ax_ustrhash ax_strhash
+#define ax_ustrargv ax_strargv
+#define ax_ustrtrim ax_strtrim
 #define AX_PRIus "s"
+#define ax_t_ustr ax_t_str
 
 #endif
 
 #define ax_u(s) __ax_u(s)
+
+typedef int ax_umain_f(int argc, ax_uchar *argv[]);
 
 int ax_ustr_from_utf8(ax_uchar *us, size_t size, const char *from);
 
@@ -94,5 +102,25 @@ ax_uchar *ax_ustrsplit(ax_uchar **s, ax_uchar ch);
 ax_uchar *ax_ustrdup(const ax_uchar *s);
 
 size_t ax_ustrihash(const ax_uchar *s);
+
+inline static int ax_umain(ax_umain_f *umain, int argc, char *argv[])
+{
+#ifdef AX_OS_WIN
+	int nArgs;
+	LPWSTR *pArgList = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+	if (!pArgList)
+		return EXIT_FAILURE;
+	return umain(nArgs, pArgList);
+#else
+	return umain(argc, argv);
+#endif
+}
+
+#define AX_MAIN \
+	main(int argc, char *argv[]) { \
+		extern int umain(int argc, ax_uchar *argv[]); \
+		return ax_umain(umain, argc, argv);  \
+	} \
+	extern int umain
 
 #endif
