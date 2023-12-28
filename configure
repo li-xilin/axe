@@ -35,7 +35,7 @@ DISABLE_CASSERT=no
 HAVE_EPOLL=
 HAVE_KQUEUE=
 HAVE_SELECT=
-HAVE_SELECT=
+HAVE_LIBUI=
 TARGET_SYSTEM=
 BUILD_SYSTEM=
 
@@ -278,7 +278,7 @@ int main() {
 }
 EOT
 
-compile-test libui REQUIRE<<EOT
+compile-test libui HAVE_LIBUI<<EOT
 #include <ui.h>
 int main() {
 	uiInitOptions opts;
@@ -310,5 +310,6 @@ sed -e "s#@CC@#$CC#g" \
 
 sed -e "s#@PREFIX@#$PREFIX#g" \
     -e "s#@INCLUDEDIR@#$INCLUDEDIR#g" \
+    -e "s#@HAVE_LIBUI@#$HAVE_LIBUI#g" \
     > $MAKE_FILE < $MAKE_FILE.in
 
