@@ -50,6 +50,7 @@
 #define AX_LOG_MAX 1024
 
 int __ax_log_print(const ax_location *loc, int level, const char* fmt, ...);
+int __ax_log_vprint(const ax_location *loc, int level, const char* fmt, va_list ap);
 
 void ax_log_set_mode(int mode);
 

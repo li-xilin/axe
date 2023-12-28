@@ -30,12 +30,12 @@
 #include <time.h>
 
 static int sg_mode = 0;
-static ax_log_handler_f *sg_handler = NULL;
+static ax_log_handler_f *s_handler = NULL;
 static void *sg_handler_arg = NULL;
 	
 void ax_log_set_handler(ax_log_handler_f *f, void *arg)
 {
-	sg_handler = f;
+	s_handler = f;
 	sg_handler_arg = arg;
 }
 
@@ -105,9 +105,15 @@ static int default_handler(const ax_location *loc, void *arg, int level, const c
 
 int __ax_log_print(const ax_location *loc, int level, const char* fmt, ...)
 {
-	va_list va;
-	int retval = -1;
+	va_list ap;
+	va_start(ap, fmt);
+	int retval = __ax_log_vprint(loc, level, fmt, ap);
+	va_end(ap);
+	return retval;
+}
 
+int __ax_log_vprint(const ax_location *loc, int level, const char* fmt, va_list ap)
+{
 	switch(level)
 	{
 		default:
@@ -133,15 +139,11 @@ int __ax_log_print(const ax_location *loc, int level, const char* fmt, ...)
 			break;
 	}
 
-	va_start(va, fmt);
 
 	char msg_buf[AX_LOG_MAX];
-	vsnprintf(msg_buf, sizeof msg_buf, fmt, va);
+	vsnprintf(msg_buf, sizeof msg_buf, fmt, ap);
 
-	retval = sg_handler
-		? sg_handler(loc, sg_handler_arg, level, msg_buf)
+	return s_handler ? s_handler(loc, sg_handler_arg, level, msg_buf)
 		: default_handler(loc, sg_handler_arg, level, msg_buf);
-	va_end(va);
-	return retval;
 }
 
