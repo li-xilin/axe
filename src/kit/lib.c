@@ -35,26 +35,26 @@
 #include <stdio.h>
 
 #if defined(AX_OS_WIN32)
-static char last_error_message_win32[256];
+static wchar_t last_error_message_win32[256];
 static void ax_lib_win32_seterror(void)
 {
 	DWORD errcode = GetLastError();
-	if (!FormatMessage(FORMAT_MESSAGE_IGNORE_INSERTS|FORMAT_MESSAGE_FROM_SYSTEM,
+	if (!FormatMessageW(FORMAT_MESSAGE_IGNORE_INSERTS|FORMAT_MESSAGE_FROM_SYSTEM,
 			NULL, errcode, MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
-			last_error_message_win32, sizeof(last_error_message_win32)-1, NULL)) {
-		sprintf(last_error_message_win32, "unknown error %lu", errcode);
+			last_error_message_win32, sizeof(last_error_message_win32) / 2 - 1, NULL)) {
+		wsprintfW(last_error_message_win32, L"unknown error %lu", errcode);
 	}
 }
 
 #endif
 
-ax_lib *ax_lib_open(const char* fname)
+ax_lib *ax_lib_open(const ax_uchar* fname)
 {
 #if defined(AX_OS_WIN32)
 	HMODULE h;
 	int emd;
 	emd = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
-	h = LoadLibrary(fname);
+	h = LoadLibraryW(fname);
 	SetErrorMode(emd);
 	if(!h) {
 		ax_lib_win32_seterror();
@@ -72,8 +72,7 @@ void *ax_lib_symbol(ax_lib *lib, const char *func)
 #if defined(AX_OS_WIN32)
 	void *ptr;
 	*(FARPROC*)(&ptr) = GetProcAddress((HMODULE)lib, func);
-	if(!ptr)
-	{
+	if(!ptr) {
 		ax_lib_win32_seterror();
 		return NULL;
 	}
@@ -86,6 +85,8 @@ void *ax_lib_symbol(ax_lib *lib, const char *func)
 
 int ax_lib_close(ax_lib *lib)
 {
+	if (!lib)
+		return 0;
 #if defined(AX_OS_WIN32)
 	if (!FreeLibrary((HMODULE)lib)) {
 		ax_lib_win32_seterror();
