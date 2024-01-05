@@ -23,6 +23,7 @@
 #include "ax/type/seq.h"
 #include "ax/dump.h"
 #include "ax/trait.h"
+#include "ax/arraya.h"
 #include "check.h"
 
 #include <errno.h>
