@@ -51,7 +51,7 @@ typedef struct ax_once_st ax_once;
 typedef void ax_once_f(void);
 
 #ifdef AX_OS_WIN
-BOOL CALLBACK __ax_once_proc_win32(PINIT_ONCE InitOnce, PVOID pInitProc, PVOID *lpContext)
+static BOOL CALLBACK __ax_once_proc_win32(PINIT_ONCE InitOnce, PVOID pInitProc, PVOID *lpContext)
 {
 	((ax_once_f *)(uintptr_t)pInitProc)();
 	return TRUE;
