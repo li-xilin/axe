@@ -39,27 +39,154 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+int ax_io_setinput(FILE *stream);
+int ax_io_setoutput(FILE *stream);
+FILE* ax_fdopen(intptr_t handle, const ax_uchar *mode);
 
+static inline FILE *ax_fopen(const ax_uchar *path, const ax_uchar *mode)
+{
 #ifdef AX_OS_WIN
-#define ax_fscanf(fp, fmt, ...)  fwscanf(fp, fmt, __VA_ARGS__)
-#define ax_vfscanf(fp, fmt, ap) vfwscanf(fp, fmt, ap)
-#define ax_fprintf(fp, fmt, ...) fwprintf(fp, fmt, __VA_ARGS__)
-#define ax_vfprintf(fp, fmt, ap) vfwprintf(fp, fmt, ap)
-#define ax_fopen(path, mode) _wfopen(path, mode)
-#define ax_freopen(path, mode, fp) _wfreopen(path, mode, fp)
+	return _wfopen(path, mode);
 #else
-#define ax_fscanf(fp, fmt, ...)  fscanf(fp, fmt, __VA_ARGS__)
-#define ax_vfscanf(fp, fmt, ap) vfscanf(fp, fmt, ap)
-#define ax_fprintf(fp, fmt, ...) fprintf(fp, fmt, __VA_ARGS__)
-#define ax_vfprintf(fp, fmt, ap) vfprintf(fp, fmt, ap)
-#define ax_fopen(path, mode) fopen(path, mode)
-#define ax_freopen(path, mode, fp) freopen(path, mode, fp)
+	return fopen(path, mode);
 #endif
+}
 
-#define ax_scanf(fmt, ...) ax_fscanf(stdin, fmt, __VA_ARGS__)
-#define ax_printf(fmt, ...) ax_fprintf(stdout, fmt, __VA_ARGS__)
+static inline FILE *ax_freopen(const ax_uchar *path, const ax_uchar *mode, FILE *stream)
+{
+#ifdef AX_OS_WIN
+	return _wfreopen(path, mode, stream);
+#else
+	return freopen(path, mode, stream);
+#endif
+}
 
-FILE *ax_fdopen(intptr_t handle, const ax_uchar *mode);
+static inline int ax_vfprintf(FILE *stream, const ax_uchar *format, va_list ap)
+{
+#ifdef AX_OS_WIN
+	return vfwprintf(stream, format, ap);
+#else
+	return vfprintf(stream, format, ap);
+#endif
+}
+
+static inline int ax_fprintf(FILE *stream, const ax_uchar *format, ...)
+{
+	va_list ap;
+	va_start(ap, format);
+	int ret = ax_vfprintf(stream, format, ap);
+	va_end(ap);
+	return ret;
+}
+
+
+static inline int ax_vprintf(const ax_uchar *format, va_list ap)
+{
+#ifdef AX_OS_WIN
+	return vwprintf(format, ap);
+#else
+	return vprintf(format, ap);
+#endif
+}
+
+static inline int ax_printf(const ax_uchar *format, ...)
+{
+	va_list ap;
+	va_start(ap, format);
+	int ret = ax_vprintf(format, ap);
+	va_end(ap);
+	return ret;
+}
+
+static inline int ax_fputs(const ax_uchar *ws, FILE *stream)
+{
+#ifdef AX_OS_WIN
+	return fputws(ws, stream);
+#else
+	return fputs(ws, stream);
+#endif
+}
+
+static inline wint_t ax_fputc(ax_uchar c, FILE *stream)
+{
+#ifdef AX_OS_WIN
+	return fputwc(c, stream);
+#else
+	return fputc(c, stream);
+#endif
+}
+
+static inline wint_t ax_putchar(ax_uchar c)
+{
+#ifdef AX_OS_WIN
+	return fputwc(c, stdout);
+#else
+	return fputc(c, stdout);
+#endif
+}
+
+static inline int ax_vfscanf(FILE *stream, const ax_uchar *format, va_list ap)
+{
+#ifdef AX_OS_WIN
+	return vfwscanf(stream, format, ap);
+#else
+	return vfscanf(stream, format, ap);
+#endif
+}
+
+static inline int ax_fscanf(FILE *stream, const ax_uchar *format, ...)
+{
+	va_list ap;
+	va_start(ap, format);
+	int ret = ax_vfscanf(stream, format, ap);
+	va_end(ap);
+	return ret;
+}
+
+static inline int ax_vscanf(const ax_uchar *format, va_list ap)
+{
+#ifdef AX_OS_WIN
+	return vwscanf(format, ap);
+#else
+	return vscanf(format, ap);
+#endif
+}
+
+static inline int ax_scanf(const ax_uchar *format, ...)
+{
+	va_list ap;
+	va_start(ap, format);
+	int ret = ax_vscanf(format, ap);
+	va_end(ap);
+	return ret;
+}
+
+static inline ax_uchar *ax_fgets(ax_uchar *ws, int n, FILE *stream)
+{
+#ifdef AX_OS_WIN
+	return fgetws(ws, n, stream);
+#else
+	return fgets(ws, n, stream);
+#endif
+}
+
+static inline wint_t ax_fgetc(FILE *stream)
+{
+#ifdef AX_OS_WIN
+	return fgetwc(stream);
+#else
+	return fgetc(stream);
+#endif
+}
+
+static inline int ax_getchar(void)
+{
+#ifdef AX_OS_WIN
+	return getwchar();
+#else
+	return getchar();
+#endif
+}
 
 #endif
 
