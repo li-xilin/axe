@@ -38,14 +38,6 @@
 #define AX_UTF32LE_BOM (uint8_t[]) { 0xFF, 0XFE, 0x00, 0x00 }
 
 /**
- * Converts the given unicode codepoint (0 - 0x1fffff) to utf-8
- * and stores the result at 'p'.
- *
- * Returns the number of utf-8 characters
- */
-size_t ax_ucode_to_utf8(char *p, uint32_t uc);
-
-/**
  * Returns the length of the utf-8 sequence starting with 'c'.
  *
  * Returns 1-4, or -1 if this is not a valid start byte.
@@ -54,10 +46,6 @@ size_t ax_ucode_to_utf8(char *p, uint32_t uc);
  */
 size_t ax_utf8_charlen(uint8_t c);
 
-/**
- * Returns the number of utf-8 characters of the given code point.
- */
-size_t ax_ucode_utf8len(uint32_t uc);
 
 /**
  * Returns the number of characters in the utf-8
@@ -103,6 +91,8 @@ size_t ax_utf8_index(const char *str, int charindex);
  */
 size_t ax_utf8_to_ucode(const char *str, uint32_t *uc);
 
+size_t ax_utf8_to_utf16(const char *utf8, size_t utf8_len, uint16_t* utf16, size_t utf16_len);
+
 /**
  * Returns the width (in characters) of the given unicode codepoint.
  * This is 1 for normal letters and 0 for combining characters and 2 for wide characters.
@@ -111,13 +101,23 @@ size_t ax_ucode_width(uint32_t ch);
 
 size_t ax_ucode_to_utf16(uint32_t codepoint, uint16_t* utf16);
 
-size_t ax_utf16_to_ucode(const uint16_t* utf16, uint32_t *codepoint);
+size_t ax_ucode_utf8len(uint32_t uc);
 
-size_t ax_utf16_charcnt(const uint16_t* str, int bytelen);
+/**
+ * Converts the given unicode codepoint (0 - 0x1fffff) to utf-8
+ * and stores the result at 'p'.
+ *
+ * Returns the number of utf-8 characters
+ */
+size_t ax_ucode_to_utf8(uint32_t uc, char *p);
+
+size_t ax_utf16_index(const uint16_t *str, int charindex);
 
 size_t ax_ucode_utf16len(uint32_t codepoint);
 
-size_t ax_utf8_to_utf16(const char *utf8, size_t utf8_len, uint16_t* utf16, size_t utf16_len);
+size_t ax_utf16_charcnt(const uint16_t* str, int bytelen);
+
+size_t ax_utf16_to_ucode(const uint16_t* utf16, uint32_t *codepoint);
 
 size_t ax_utf16_to_utf8(const uint16_t *utf16, size_t utf16_len, char* utf8, size_t utf8_len);
 
