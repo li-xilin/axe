@@ -24,8 +24,15 @@
 
 #include <ax/detect.h>
 #include <ax/uchar.h>
+#include <ax/log2.h>
 #include <errno.h>
 #include <stddef.h>
+
+#ifdef AX_OS_WIN
+#define ax_strerror _wcserror
+#else
+#define ax_strerror strerror
+#endif
 
 #define __AX_EBASE 700
 
@@ -110,11 +117,19 @@
 #define AX_EWOULDBLOCK		EWOULDBLOCK
 
 #define AX_EDQUOT __AX_EBASE + 1
-#define AX_ERRBUF_MAX 1024
-#define ax_error_goto(label) do { ax_error_occur(); goto label; } while(0)
+
+#define ax_err_goto(label) do { \
+	ax_error_occur(); \
+	goto label; \
+} while(0)
+
+#define ax_err_return(val) do { \
+	ax_error_occur(); \
+	return (val); \
+} while(0)
 
 void ax_error_occur(void);
 
-ax_uchar *ax_strerror(ax_uchar *buf);
+ax_uchar *ax_errmsg(ax_uchar *buf, size_t size);
 
 #endif
