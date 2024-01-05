@@ -94,22 +94,22 @@ static BOOL ExecuteWithPipe(LPCWSTR pwzFile, LPWSTR pwzCmdLine, struct ax_proc_s
 	saAttr.lpSecurityDescriptor = NULL; 
 
 	if (!CreatePipe(&hInput[0], &hInput[1], &saAttr, PIPE_BUFSIZ))
-		ax_error_goto(out);
+		ax_err_goto(out);
 	if (!SetHandleInformation(hInput[0], HANDLE_FLAG_INHERIT, TRUE)
 			|| !SetHandleInformation(hInput[1], HANDLE_FLAG_INHERIT, FALSE))
-		ax_error_goto(out);
+		ax_err_goto(out);
 
 	if (!CreatePipe(&hOutput[0], &hOutput[1], &saAttr, PIPE_BUFSIZ))
-		ax_error_goto(out);
+		ax_err_goto(out);
 	if (!SetHandleInformation(hOutput[1], HANDLE_FLAG_INHERIT, TRUE)
 			|| !SetHandleInformation(hOutput[0], HANDLE_FLAG_INHERIT, FALSE))
-		ax_error_goto(out);
+		ax_err_goto(out);
 
 	if (!CreatePipe(&hError[0], &hError[1], &saAttr, PIPE_BUFSIZ))
-		ax_error_goto(out);
+		ax_err_goto(out);
 	if (!SetHandleInformation(hError[1], HANDLE_FLAG_INHERIT, TRUE)
 			|| !SetHandleInformation(hError[0], HANDLE_FLAG_INHERIT, FALSE))
-		ax_error_goto(out);
+		ax_err_goto(out);
 
 	DWORD dwProcessId;
 	hProcess = CreateChildProcess(pwzFile, pwzCmdLine, hInput[0],
@@ -157,7 +157,7 @@ ax_proc *ax_proc_open(const ax_uchar* file, ax_uchar *const argv[])
 	CONST DWORD dwBufLen = 32 * 1024;
 
 	if (!(pCmdBuf = HeapAlloc(GetProcessHeap(), 0, dwBufLen * sizeof(ax_uchar))))
-		ax_error_goto(fail);
+		ax_err_goto(fail);
 	DWORD dwBufOffset = 0;
 
 	for (int i = 0; argv[i]; i++) {
@@ -232,7 +232,7 @@ int ax_proc_kill(const ax_proc *proc)
 		return -1;
 	}
 	if (!TerminateProcess(proc->hProcess, 1))
-		ax_error_goto(fail);
+		ax_err_goto(fail);
 	return 0;
 fail:
 	return -1;
@@ -256,10 +256,10 @@ int ax_proc_close(ax_proc *proc)
 		fclose(proc->err);
 
 	if (WaitForSingleObject(proc->hProcess, INFINITE))
-		ax_error_goto(out);
+		ax_err_goto(out);
 
 	if (!GetExitCodeProcess(proc->hProcess, &dwExitCode)) {
-		ax_error_goto(out);
+		ax_err_goto(out);
 	}
 	exit_code = dwExitCode;
 out:
