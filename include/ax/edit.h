@@ -28,18 +28,19 @@
 #ifndef AX_EDIT_H
 #define AX_EDIT_H
 
+#include "ax/uchar.h"
 #include <stddef.h>
 
 #ifndef NO_COMPLETION
 typedef struct ax_edit_completions_st {
   size_t len;
-  char **cvec;
+  ax_uchar **cvec;
 } ax_edit_completions;
 
 /*
  * The callback type for tab completion handlers.
  */
-typedef void(ax_edit_completion_cb)(const char *prefix, ax_edit_completions *comp, void *arg);
+typedef void(ax_edit_completion_cb)(const ax_uchar *prefix, ax_edit_completions *comp, void *arg);
 
 /*
  * Sets the current tab completion handler and returns the previous one, or NULL
@@ -51,9 +52,9 @@ ax_edit_completion_cb * ax_edit_set_completion_cb(ax_edit_completion_cb *comp, v
  * Adds a copy of the given string to the given completion list. The copy is owned
  * by the ax_edit_completions object.
  */
-void ax_edit_add_completion(ax_edit_completions *comp, const char *str);
+void ax_edit_add_completion(ax_edit_completions *comp, const ax_uchar *str);
 
-typedef char*(ax_edit_hints_cb)(const char *, int *color, int *bold, void *arg);
+typedef ax_uchar*(ax_edit_hints_cb)(const ax_uchar *, int *color, int *bold, void *arg);
 void ax_edit_set_hints_cb(ax_edit_hints_cb *callback, void *arg);
 
 typedef void(ax_edit_free_hints_cb)(void *hint, void *arg);
@@ -68,12 +69,12 @@ void ax_edit_set_free_hints_cb(ax_edit_free_hints_cb *callback);
  * a copy of the entered string (for ENTER) or NULL (on EOF).  The
  * caller owns the returned string and must eventually free() it.
  */
-char *ax_edit_readline(const char *prompt);
+ax_uchar *ax_edit_readline(const ax_uchar *prompt);
 
 /**
  * Like ax_edit_readline() but starts with an initial buffer.
  */
-char *ax_edit_readline2(const char *prompt, const char *initial);
+ax_uchar *ax_edit_readline2(const ax_uchar *prompt, const ax_uchar *initial);
 
 /**
  * Clear the screen.
@@ -83,7 +84,7 @@ extern void ax_edit_clear_screen(void);
 /*
  * Adds a copy of the given line of the command history.
  */
-int ax_edit_history_add(const char *line);
+int ax_edit_history_add(const ax_uchar *line);
 
 /*
  * Sets the maximum length of the command history, in lines.
@@ -102,13 +103,13 @@ int ax_edit_history_maxlen(void);
  * Saves the current contents of the history to the given file.
  * Returns 0 on success.
  */
-int ax_edit_history_save(const char *filename);
+int ax_edit_history_save(const ax_uchar *filename);
 
 /*
  * Replaces the current history with the contents
  * of the given file.  Returns 0 on success.
  */
-int ax_edit_history_load(const char *filename);
+int ax_edit_history_load(const ax_uchar *filename);
 
 /*
  * Frees all history entries, clearing the history.
@@ -120,7 +121,7 @@ void ax_edit_history_free(void);
  * length to *len if len is not NULL. The memory is owned by linenoise
  * and must not be freed.
  */
-char **ax_edit_history(int *len);
+ax_uchar **ax_edit_history(int *len);
 
 /*
  * Returns the number of display columns in the current terminal.

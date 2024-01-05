@@ -53,37 +53,41 @@ void sb_free(stringbuf *sb)
 
 static void sb_realloc(stringbuf *sb, int newlen)
 {
-	sb->data = (char *)realloc(sb->data, newlen);
+	sb->data = (ax_uchar *)realloc(sb->data, newlen * sizeof(ax_uchar));
 	sb->remaining = newlen - sb->last;
 }
 
-void sb_append(stringbuf *sb, const char *str)
+void sb_append(stringbuf *sb, const ax_uchar *str)
 {
-	sb_append_len(sb, str, strlen(str));
+	sb_append_len(sb, str, ax_ustrlen(str));
 }
 
-void sb_append_len(stringbuf *sb, const char *str, int len)
+void sb_append_len(stringbuf *sb, const ax_uchar *str, int len)
 {
 	if (sb->remaining < len + 1) {
 		sb_realloc(sb, sb->last + len + 1 + SB_INCREMENT);
 	}
-	memcpy(sb->data + sb->last, str, len);
+	memcpy(sb->data + sb->last, str, len * sizeof(ax_uchar));
 	sb->data[sb->last + len] = 0;
 
 	sb->last += len;
 	sb->remaining -= len;
+#if AX_UCHAR_LEN == 1
 	sb->chars += ax_utf8_charcnt(str, len);
+#else
+	sb->chars += ax_utf16_charcnt(str, len);
+#endif
 }
 
-char *sb_to_string(stringbuf *sb)
+ax_uchar *sb_to_string(stringbuf *sb)
 {
 	if (sb->data == NULL) {
 		/* Return an allocated empty string, not null */
-		return ax_strdup("");
+		return ax_ustrdup(ax_u(""));
 	}
 	else {
 		/* Just return the data and free the stringbuf structure */
-		char *pt = sb->data;
+		ax_uchar *pt = sb->data;
 		free(sb);
 		return pt;
 	}
@@ -105,7 +109,7 @@ static void sb_insert_space(stringbuf *sb, int pos, int len)
 		sb_realloc(sb, sb->last + len + SB_INCREMENT);
 	}
 	/* Now move it up */
-	memmove(sb->data + pos + len, sb->data + pos, sb->last - pos);
+	memmove(sb->data + pos + len, sb->data + pos, (sb->last - pos) * sizeof(ax_uchar));
 	sb->last += len;
 	sb->remaining -= len;
 	/* And null terminate */
@@ -121,28 +125,32 @@ static void sb_delete_space(stringbuf *sb, int pos, int len)
 	assert(pos < sb->last);
 	assert(pos + len <= sb->last);
 
+#if AX_UCHAR_LEN == 1
 	sb->chars -= ax_utf8_charcnt(sb->data + pos, len);
+#else
+	sb->chars -= ax_utf16_charcnt(sb->data + pos, len);
+#endif
 
 	/* Now move it up */
-	memmove(sb->data + pos, sb->data + pos + len, sb->last - pos - len);
+	memmove(sb->data + pos, sb->data + pos + len, (sb->last - pos - len) * sizeof(ax_uchar));
 	sb->last -= len;
 	sb->remaining += len;
 	/* And null terminate */
 	sb->data[sb->last] = 0;
 }
 
-void sb_insert(stringbuf *sb, int index, const char *str)
+void sb_insert(stringbuf *sb, int index, const ax_uchar *str)
 {
 	if (index >= sb->last) {
 		/* Inserting after the end of the list appends. */
 		sb_append(sb, str);
 	}
 	else {
-		int len = strlen(str);
+		int len = ax_ustrlen(str);
 
 		sb_insert_space(sb, index, len);
-		memcpy(sb->data + index, str, len);
-		sb->chars += ax_utf8_charcnt(str, len);
+		memcpy(sb->data + index, str, len * sizeof(ax_uchar));
+		sb->chars += ax_ustr_charcnt(str, len);
 	}
 }
 
@@ -153,7 +161,7 @@ void sb_insert(stringbuf *sb, int index, const char *str)
 void sb_delete(stringbuf *sb, int index, int len)
 {
 	if (index < sb->last) {
-		char *pos = sb->data + index;
+		ax_uchar *pos = sb->data + index;
 		if (len < 0) {
 			len = sb->last;
 		}

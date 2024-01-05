@@ -6,6 +6,8 @@
 #ifndef STRINGBUF_H
 #define STRINGBUF_H
 
+#include "ax/uchar.h"
+
 /** @file
  * A stringbuf is a resizing, null terminated string buffer.
  *
@@ -25,7 +27,7 @@ typedef struct {
 	int remaining;	/**< Allocated, but unused space */
 	int last;		/**< Index of the null terminator (and thus the length of the string) */
 	int chars;		/**< Count of characters */
-	char *data;		/**< Allocated memory containing the string or NULL for empty */
+	ax_uchar *data;		/**< Allocated memory containing the string or NULL for empty */
 } stringbuf;
 
 stringbuf *sb_alloc(void);
@@ -46,16 +48,16 @@ static inline int sb_chars(stringbuf *sb) {
 #endif
 }
 
-void sb_append(stringbuf *sb, const char *str);
+void sb_append(stringbuf *sb, const ax_uchar *str);
 
-void sb_append_len(stringbuf *sb, const char *str, int len);
+void sb_append_len(stringbuf *sb, const ax_uchar *str, int len);
 
-static inline char *sb_str(const stringbuf *sb)
+static inline ax_uchar *sb_str(const stringbuf *sb)
 {
 	return sb->data;
 }
 
-void sb_insert(stringbuf *sb, int index, const char *str);
+void sb_insert(stringbuf *sb, int index, const ax_uchar *str);
 
 /**
  * Delete 'len' bytes in the string at the given index.
@@ -69,6 +71,6 @@ void sb_delete(stringbuf *sb, int index, int len);
 
 void sb_clear(stringbuf *sb);
 
-char *sb_to_string(stringbuf *sb);
+ax_uchar *sb_to_string(stringbuf *sb);
 
 #endif
