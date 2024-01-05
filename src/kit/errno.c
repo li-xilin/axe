@@ -289,24 +289,17 @@ void ax_error_occur(void)
 		errno = get_errno(error);
 }
 
-#ifdef AX_OS_WIN
-#define ustrerror _wcserror
-#else
-#define ustrerror strerror
-#endif
-
-ax_uchar *ax_strerror(ax_uchar *buf)
+ax_uchar *ax_errmsg(ax_uchar *buf, size_t size)
 {
-	buf[AX_ERRBUF_MAX - 1] = ax_u('\0');
 	if (errno >= 0)
-		return ax_ustrncpy(buf, ustrerror(errno), AX_ERRBUF_MAX - 1);
+		return ax_ustrncpy(buf, ax_strerror(errno), size - 1);
 #ifdef AX_OS_WIN
 	FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, NULL, -errno,
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf,
-			AX_ERRBUF_MAX, NULL);
+			size, NULL);
 	return buf;
 #else
-	return ax_ustrncpy(buf, ustrerror(-errno), AX_ERRBUF_MAX - 1);
+	return ax_ustrncpy(buf, ax_strerror(-errno), AX_ERRBUF_MAX - 1);
 
 #endif
 }
