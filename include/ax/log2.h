@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Li hsilin <lihsilyn@gmail.com>
+ * Copyright (c) 2023 Li Xilin <lixilin@gmx.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,67 +20,35 @@
  * THE SOFTWARE.
  */
 
-#ifndef AX_LOG_H
-#define AX_LOG_H
+#ifndef AX_LOG2_H
+#define AX_LOG2_H
 
-#include "debug.h"
-#include <stdarg.h>
+#include "log.h"
+#include "uchar.h"
 
-#define AX_LL_DEBUG    0
-#define AX_LL_INFO     1
-#define AX_LL_WARN     2
-#define AX_LL_ERROR    3
-#define AX_LL_FATAL    4
+int __ax_log2_print(const ax_location *loc, int level, const ax_uchar* fmt, ...);
+int __ax_log2_vprint(const ax_location *loc, int level, const ax_uchar* fmt, va_list ap);
 
-#define AX_LM_NODEBUG (1 << 0)
-#define AX_LM_NOINFO  (1 << 1)
-#define AX_LM_NOWARN  (1 << 2)
-#define AX_LM_NOERROR (1 << 3)
-#define AX_LM_NOFATAL (1 << 4)
-#define AX_LM_NOLOC   (1 << 5)
-#define AX_LM_NOTIME  (1 << 6)
+typedef int ax_log2_handler_f(const ax_location *loc, void *arg, int level, const ax_uchar *text);
+void ax_log2_set_handler(ax_log2_handler_f *f, void *arg);
 
-#define AX_LM_NOLOG \
-	( AX_LM_NODEBUG \
-	| AX_LM_NOINFO \
-	| AX_LM_NOWARN \
-	| AX_LM_NOERROR \
-	| AX_LM_NOFATAL)
+#undef ax_log
+#define ax_log(level, ...) __ax_log2_print(AX_WHERE, level, ax_u("") __VA_ARGS__)
 
-#define AX_LOG_MAX 1024
-
-int __ax_log_print(const ax_location *loc, int level, const char* fmt, ...);
-int __ax_log_vprint(const ax_location *loc, int level, const char* fmt, va_list ap);
-
-void ax_log_set_mode(int mode);
-
-int ax_log_mode();
-
-typedef int ax_log_handler_f(const ax_location *loc, void *arg, int level, const char *text);
-
-void ax_log_set_handler(ax_log_handler_f *f, void *arg);
-
-#define ax_log(level, ...) __ax_log_print(AX_WHERE, level, __VA_ARGS__)
-
-#ifndef ax_pdebug
+#undef ax_pdebug
 #define ax_pdebug(...) ax_log(AX_LL_DEBUG, __VA_ARGS__)
-#endif
 
-#ifndef ax_pinfo
+#undef ax_pinfo
 #define ax_pinfo(...) ax_log(AX_LL_INFO, __VA_ARGS__)
-#endif
 
-#ifndef ax_pwarn
+#undef ax_pwarn
 #define ax_pwarn(...) ax_log(AX_LL_WARN, __VA_ARGS__)
-#endif
 
-#ifndef ax_perror
+#undef ax_perror
 #define ax_perror(...) ax_log(AX_LL_ERROR, __VA_ARGS__)
-#endif
 
-#ifndef ax_pfatal
+#undef ax_pfatal
 #define ax_pfatal(...) ax_log(AX_LL_FATAL, __VA_ARGS__)
-#endif
 
 #endif
 

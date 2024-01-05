@@ -74,7 +74,7 @@ size_t ax_ucode_utf8len(uint32_t uc)
 	}
 }
 
-size_t ax_ucode_to_utf8(char *p, uint32_t uc)
+size_t ax_ucode_to_utf8(uint32_t uc, char *p)
 {
 	size_t len = ax_ucode_utf8len(uc);
 
@@ -171,6 +171,16 @@ size_t ax_utf8_index(const char *str, int index)
 	while (index--) {
 		uint32_t c;
 		s += ax_utf8_to_ucode(s, &c);
+	}
+	return s - str;
+}
+
+size_t ax_utf16_index(const uint16_t *str, int index)
+{
+	const uint16_t *s = str;
+	while (index--) {
+		uint32_t c;
+		s += ax_utf16_to_ucode(s, &c);
 	}
 	return s - str;
 }
@@ -419,7 +429,7 @@ size_t ax_utf16_to_utf8(uint16_t const* utf16, size_t utf16_len, char* utf8, siz
 			j += ax_utf16_to_ucode(utf16 + j, &codepoint);
 			if (ax_ucode_utf8len(codepoint) + i > utf8_len)
 				break;
-			i += ax_ucode_to_utf8((char *)utf8 + i, codepoint);
+			i += ax_ucode_to_utf8(codepoint, (char *)utf8 + i);
 		}
 	}
 	else {
