@@ -50,3 +50,24 @@ FILE* ax_fdopen(intptr_t handle, const ax_uchar *mode)
 #endif
 }
 
+int ax_io_setinput(FILE *stream)
+{
+	fflush(stream);
+#ifdef AX_OS_WIN
+	fflush(stream);
+	return _setmode(fileno(stream), _O_U16TEXT);
+#else
+	return 0;
+#endif
+}
+
+int ax_io_setoutput(FILE *stream)
+{
+	fflush(stream);
+#ifdef AX_OS_WIN
+	return _setmode(fileno(stream), _O_U8TEXT);
+#else
+	return 0;
+#endif
+}
+
