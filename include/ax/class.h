@@ -25,6 +25,7 @@
 
 #include "trick.h"
 #include "debug.h"
+#include "narg.h"
 
 #define __AX_CLASS_ENTRY_STRUCT(name) struct AX_CATENATE(name, _st)
 #define __AX_CLASS_TRAIT_STRUCT(name) struct AX_CATENATE(name, _trait_st)
