@@ -5,7 +5,7 @@
  * Copyright (c) 2010, Salvatore Sanfilippo <antirez at gmail dot com>
  * Copyright (c) 2010, Pieter Noordhuis <pcnoordhuis at gmail dot com>
  * Copyright (c) 2011, Steve Bennett <steveb at workware dot net dot au>
- * Copyright (c) 2023, Li hsilin <lihsilyn@gmail.com>
+ * Copyright (c) 2023, Li Xilin <lixilin@gmx.com>
  *
  * ------------------------------------------------------------------------
  *
@@ -77,8 +77,10 @@
 */
 
 #include "ax/edit.h"
+#include "ax/io.h"
 #include "ax/unicode.h"
 #include "ax/mem.h"
+#include "ax/uchar.h"
 #include "stringbuf.h"
 
 #ifdef _WIN32 /* Windows platform, either MinGW or Visual Studio (MSVC) */
@@ -144,7 +146,7 @@ enum {
 static int history_max_len = LINENOISE_DEFAULT_HISTORY_MAX_LEN;
 static int history_len = 0;
 static int history_index = 0;
-static char **history = NULL;
+static ax_uchar **history = NULL;
 
 /* Structure to contain the status of the current (being edited) line */
 struct current {
@@ -155,7 +157,7 @@ struct current {
 	int rpos;   /* The current row containing the cursor - multiline mode only */
 	int colsright; /* refresh_line() cached cols for insert_char() optimisation */
 	int colsleft;  /* refresh_line() cached cols for remove_char() optimisation */
-	const char *prompt;
+	const ax_uchar *prompt;
 	stringbuf *capture; /* capture buffer, or NULL for none. Always null terminated */
 	stringbuf *output;  /* used only during refresh_line() - output accumulator */
 #if defined(USE_TERMIOS)
@@ -179,10 +181,10 @@ static void cursor_down(struct current *current, int n);
 static void cursor_up(struct current *current, int n);
 static void erase_eol(struct current *current);
 static void refresh_line(struct current *current);
-static void refresh_line_alt(struct current *current, const char *prompt, const char *buf, int cursor_pos);
+static void refresh_line_alt(struct current *current, const ax_uchar *prompt, const ax_uchar *buf, int cursor_pos);
 static void set_cursor_pos(struct current *current, int x);
 static void set_output_highlight(struct current *current, const int *props, int nprops);
-static void set_current(struct current *current, const char *str);
+static void set_current(struct current *current, const ax_uchar *str);
 
 static int fd_isatty(struct current *current)
 {
@@ -234,7 +236,7 @@ struct esc_parser {
 static void init_parse_escape_seq(struct esc_parser *parser, int termchar)
 {
 	parser->state = EP_START;
-	parser->maxprops = sizeof(parser->props) / sizeof(*parser->props);
+	parser->maxprops = ax_nelems(parser->props);
 	parser->numprops = 0;
 	parser->current = 0;
 	parser->termchar = termchar;
@@ -295,29 +297,31 @@ donedigits:
 	return parser->state;
 }
 
-/*#define DEBUG_REFRESHLINE*/
+#define DEBUG_REFRESHLINE
 
 #ifdef DEBUG_REFRESHLINE
-#define DRL(ARGS...) fprintf(dfh, ARGS)
+#define DRL(...) ax_fprintf(dfh, __VA_ARGS__)
 static FILE *dfh;
 
 static void DRL_CHAR(int ch)
 {
 	if (ch < ' ') {
-		DRL("^%c", ch + '@');
+		DRL(ax_u("^%c"), ch + ax_u('@'));
 	}
+	/* TODO
 	else if (ch > 127) {
-		DRL("\\u%04x", ch);
+		DRL(ax_u("\\u%04x"), ch);
 	}
+	*/
 	else {
-		DRL("%c", ch);
+		DRL(ax_u("%c"), ch);
 	}
 }
-static void DRL_STR(const char *str)
+static void DRL_STR(const ax_uchar *str)
 {
 	while (*str) {
-		int ch;
-		int n = ax_utf8_tounicode(str, &ch);
+		uint32_t ch;
+		int n = ax_ustr_to_ucode(str, &ch);
 		str += n;
 		DRL_CHAR(ch);
 	}
@@ -418,10 +422,10 @@ static void edit_at_exit(void) {
 /**
  * Output bytes directly, or accumulate output (if current->output is set)
  */
-static void output_chars(struct current *current, const char *buf, int len)
+static void output_chars(struct current *current, const ax_uchar *buf, int len)
 {
 	if (len < 0) {
-		len = strlen(buf);
+		len = ax_ustrlen(buf);
 	}
 	if (current->output) {
 		sb_append_len(current->output, buf, len);
@@ -433,16 +437,15 @@ static void output_chars(struct current *current, const char *buf, int len)
 
 /* Like output_chars, but using printf-style formatting
 */
-static void output_formated(struct current *current, const char *format, ...)
+static void output_formated(struct current *current, const ax_uchar *format, ...)
 {
 	va_list args;
-	char buf[64];
+	ax_uchar buf[64];
 	int n;
-
 	va_start(args, format);
-	n = vsnprintf(buf, sizeof(buf), format, args);
+	n = vsnprintf(buf, ax_nelems(buf), format, args);
 	/* This will never happen because we are sure to use output_formated() only for short sequences */
-	assert(n < (int)sizeof(buf));
+	assert(n < ax_nelems(buf));
 	va_end(args);
 	output_chars(current, buf, n);
 }
@@ -526,14 +529,14 @@ static int fd_read_char(int fd, int timeout)
  */
 static int fd_read(struct current *current)
 {
-	char buf[MAX_UTF8_LEN];
+	ax_uchar buf[MAX_UTF8_LEN];
 	int n, i;
 	uint32_t c;
 
 	if (read(current->fd, &buf[0], 1) != 1) {
 		return -1;
 	}
-	n = ax_utf8_charlen(buf[0]);
+	n = ax_ustr_charlen(buf[0]);
 	if (n < 1) {
 		return -1;
 	}
@@ -543,7 +546,7 @@ static int fd_read(struct current *current)
 		}
 	}
 	/* decode and return the character */
-	ax_utf8_to_ucode(buf, &c);
+	ax_ustr_to_ucode(buf, &c);
 	return c;
 }
 
@@ -715,18 +718,13 @@ static void clear_output_hightlight(struct current *current)
 	set_output_highlight(current, &nohighlight, 1);
 }
 
-static void output_control_char(struct current *current, char ch)
+static void output_control_char(struct current *current, ax_uchar ch)
 {
 	int reverse = 7;
 	set_output_highlight(current, &reverse, 1);
-	output_chars(current, "^", 1);
+	output_chars(current, ax_u("^"), 1);
 	output_chars(current, &ch, 1);
 	clear_output_hightlight(current);
-}
-
-static int utf8_getchars(char *buf, int c)
-{
-	return ax_ucode_to_utf8(buf, c);
 }
 
 /**
@@ -737,8 +735,8 @@ static int get_char(struct current *current, int pos)
 {
 	if (pos >= 0 && pos < sb_chars(current->buf)) {
 		uint32_t c;
-		int i = ax_utf8_index(sb_str(current->buf), pos);
-		(void)ax_utf8_to_ucode(sb_str(current->buf) + i, &c);
+		int i = ax_ustr_index(sb_str(current->buf), pos);
+		(void)ax_ustr_to_ucode(sb_str(current->buf) + i, &c);
 		return c;
 	}
 	return -1;
@@ -790,7 +788,7 @@ static int completeLine(struct current *current) {
 		while(!stop) {
 			/* Show completion or original buffer */
 			if (i < lc.len) {
-				int chars = ax_utf8_charcnt(lc.cvec[i], -1);
+				int chars = ax_ustr_charcnt(lc.cvec[i], -1);
 				refresh_line_alt(current, current->prompt, lc.cvec[i], chars);
 			} else {
 				refresh_line(current);
@@ -838,9 +836,9 @@ ax_edit_completion_cb * ax_edit_set_completion_cb(ax_edit_completion_cb *fn, voi
 	return old;
 }
 
-void ax_edit_add_completion(ax_edit_completions *lc, const char *str) {
-	lc->cvec = (char **)realloc(lc->cvec,sizeof(char*)*(lc->len+1));
-	lc->cvec[lc->len++] = ax_strdup(str);
+void ax_edit_add_completion(ax_edit_completions *lc, const ax_uchar *str) {
+	lc->cvec = (ax_uchar **)realloc(lc->cvec, sizeof(ax_uchar *) * (lc->len+1));
+	lc->cvec[lc->len++] = ax_ustrdup(str);
 }
 
 void ax_edit_set_hints_cb(ax_edit_hints_cb *callback, void *arg)
@@ -857,7 +855,7 @@ void ax_edit_set_free_hints_cb(ax_edit_free_hints_cb *callback)
 #endif
 
 
-static const char *reduce_single_buf(const char *buf, int availcols, int *cursor_pos)
+static const ax_uchar *reduce_single_buf(const ax_uchar *buf, int availcols, int *cursor_pos)
 {
 	/* We have availcols columns available.
 	 * If necessary, strip chars off the front of buf until *cursor_pos
@@ -866,13 +864,13 @@ static const char *reduce_single_buf(const char *buf, int availcols, int *cursor
 	int needcols = 0;
 	int pos = 0;
 	int new_cursor_pos = *cursor_pos;
-	const char *pt = buf;
+	const ax_uchar *pt = buf;
 
-	DRL("reduce_single_buf: availcols=%d, cursor_pos=%d\n", availcols, *cursor_pos);
+	DRL(ax_u("reduce_single_buf: availcols=%d, cursor_pos=%d\n"), availcols, *cursor_pos);
 
 	while (*pt) {
 		uint32_t ch;
-		int n = ax_utf8_to_ucode(pt, &ch);
+		int n = ax_ustr_to_ucode(pt, &ch);
 		pt += n;
 
 		needcols += char_display_width(ch);
@@ -884,7 +882,7 @@ static const char *reduce_single_buf(const char *buf, int availcols, int *cursor
 		 * can't be used.
 		 */
 		while (needcols >= availcols - 3) {
-			n = ax_utf8_to_ucode(buf, &ch);
+			n = ax_ustr_to_ucode(buf, &ch);
 			buf += n;
 			needcols -= char_display_width(ch);
 			DRL_CHAR(ch);
@@ -903,9 +901,9 @@ static const char *reduce_single_buf(const char *buf, int availcols, int *cursor
 		}
 
 	}
-	DRL("<snip>");
+	DRL(ax_u("<snip>"));
 	DRL_STR(buf);
-	DRL("\nafter reduce, needcols=%d, new_cursor_pos=%d\n", needcols, new_cursor_pos);
+	DRL(ax_u("\nafter reduce, needcols=%d, new_cursor_pos=%d\n"), needcols, new_cursor_pos);
 
 	/* Done, now new_cursor_pos contains the adjusted cursor position
 	 * and buf points to he adjusted start
@@ -926,31 +924,31 @@ void ax_edit_set_multi_line(int enableml)
  * Returns 1 if a hint was shown, or 0 if not
  * If 'display' is 0, does no output. Just returns the appropriate return code.
  */
-static int refresh_show_hints(struct current *current, const char *buf, int availcols, int display)
+static int refresh_show_hints(struct current *current, const ax_uchar *buf, int availcols, int display)
 {
 	int rc = 0;
 	if (showhints && hints_cb && availcols > 0) {
 		int bold = 0;
 		int color = -1;
-		char *hint = hints_cb(buf, &color, &bold, hints_arg);
+		ax_uchar *hint = hints_cb(buf, &color, &bold, hints_arg);
 		if (hint) {
 			rc = 1;
 			if (display) {
-				const char *pt;
+				const ax_uchar *pt;
 				if (bold == 1 && color == -1) color = 37;
 				if (bold || color > 0) {
 					int props[3] = { bold, color, 49 }; /* bold, color, fgnormal */
 					set_output_highlight(current, props, 3);
 				}
-				DRL("<hint bold=%d,color=%d>", bold, color);
+				DRL(ax_u("<hint bold=%d,color=%d>"), bold, color);
 				pt = hint;
 				while (*pt) {
 					uint32_t ch;
-					int n = ax_utf8_to_ucode(pt, &ch);
+					int n = ax_ustr_to_ucode(pt, &ch);
 					int width = char_display_width(ch);
 
 					if (width >= availcols) {
-						DRL("<hinteol>");
+						DRL(ax_u("<hinteol>"));
 						break;
 					}
 					DRL_CHAR(ch);
@@ -993,7 +991,7 @@ static void refresh_start_chars(struct current *current)
 
 static void refresh_new_line(struct current *current)
 {
-	DRL("<nl>");
+	DRL(ax_u("<nl>"));
 	output_chars(current, "\n", 1);
 }
 
@@ -1003,10 +1001,10 @@ static void refresh_end_chars(struct current *current)
 }
 #endif
 
-static void refresh_line_alt(struct current *current, const char *prompt, const char *buf, int cursor_pos)
+static void refresh_line_alt(struct current *current, const ax_uchar *prompt, const ax_uchar *buf, int cursor_pos)
 {
 	int i;
-	const char *pt;
+	const ax_uchar *pt;
 	int displaycol;
 	int displayrow;
 	int visible;
@@ -1026,7 +1024,7 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 
 	refresh_start(current);
 
-	DRL("wincols=%d, cursor_pos=%d, nrows=%d, rpos=%d\n", current->cols, cursor_pos, current->nrows, current->rpos);
+	DRL(ax_u("wincols=%d, cursor_pos=%d, nrows=%d, rpos=%d\n"), current->cols, cursor_pos, current->nrows, current->rpos);
 
 	/* Here is the plan:
 	 * (a) move the the bottom row, going down the appropriate number of lines
@@ -1041,19 +1039,19 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 
 	/* (a) - The cursor is currently at row rpos */
 	cursor_down(current, current->nrows - current->rpos - 1);
-	DRL("<cud=%d>", current->nrows - current->rpos - 1);
+	DRL(ax_u("<cud=%d>"), current->nrows - current->rpos - 1);
 
 	/* (b), (c) - Erase lines upwards until we get to the first row */
 	for (i = 0; i < current->nrows; i++) {
 		if (i) {
-			DRL("<cup>");
+			DRL(ax_u("<cup>"));
 			cursor_up(current, 1);
 		}
-		DRL("<clearline>");
+		DRL(ax_u("<clearline>"));
 		cursor_to_left(current);
 		erase_eol(current);
 	}
-	DRL("\n");
+	DRL(ax_u("\n"));
 
 	/* (d) First output the prompt. control sequences don't take up display space */
 	pt = prompt;
@@ -1066,13 +1064,13 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 	while (*pt) {
 		int width;
 		uint32_t ch;
-		int n = ax_utf8_to_ucode(pt, &ch);
+		int n = ax_ustr_to_ucode(pt, &ch);
 
 		if (visible && ch == CHAR_ESCAPE) {
 			/* The start of an escape sequence, so not visible */
 			visible = 0;
 			init_parse_escape_seq(&parser, 'm');
-			DRL("<esc-seq-start>");
+			DRL(ax_u("<esc-seq-start>"));
 		}
 
 		if (ch == '\n' || ch == '\r') {
@@ -1110,10 +1108,10 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 				case EP_END:
 					visible = 1;
 					set_output_highlight(current, parser.props, parser.numprops);
-					DRL("<esc-seq-end,numprops=%d>", parser.numprops);
+					DRL(ax_u("<esc-seq-end,numprops=%d>"), parser.numprops);
 					break;
 				case EP_ERROR:
-					DRL("<esc-seq-err>");
+					DRL(ax_u("<esc-seq-err>"));
 					visible = 1;
 					break;
 			}
@@ -1122,7 +1120,7 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 	}
 
 	/* Now we are at the first line with all lines erased */
-	DRL("\nafter prompt: displaycol=%d, displayrow=%d\n", displaycol, displayrow);
+	DRL(ax_u("\nafter prompt: displaycol=%d, displayrow=%d\n"), displaycol, displayrow);
 
 
 	/* (e) output the buffer, counting cols and rows */
@@ -1141,7 +1139,7 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 
 	while (*pt) {
 		uint32_t ch;
-		int n = ax_utf8_to_ucode(pt, &ch);
+		int n = ax_ustr_to_ucode(pt, &ch);
 		int width = char_display_width(ch);
 
 		if (currentpos == cursor_pos) {
@@ -1152,7 +1150,7 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 		if (displaycol + width >= current->cols) {
 			if (mlmode == 0) {
 				/* In single line mode stop once we print as much as we can on one line */
-				DRL("<slmode>");
+				DRL(ax_u("<slmode>"));
 				break;
 			}
 			/* need to wrap to the next line since it doesn't fit */
@@ -1166,7 +1164,7 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 			cursorcol = displaycol;
 			cursorrow = displayrow;
 			notecursor = 0;
-			DRL("<cursor>");
+			DRL(ax_u("<cursor>"));
 		}
 
 		displaycol += width;
@@ -1179,7 +1177,7 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 		}
 		DRL_CHAR(ch);
 		if (width != 1) {
-			DRL("<w=%d>", width);
+			DRL(ax_u("<w=%d>"), width);
 		}
 
 		pt += n;
@@ -1188,12 +1186,12 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 
 	/* If we didn't see the cursor, it is at the current location */
 	if (notecursor) {
-		DRL("<cursor>");
+		DRL(ax_u("<cursor>"));
 		cursorcol = displaycol;
 		cursorrow = displayrow;
 	}
 
-	DRL("\nafter buf: displaycol=%d, displayrow=%d, cursorcol=%d, cursorrow=%d\n", displaycol, displayrow, cursorcol, cursorrow);
+	DRL(ax_u("\nafter buf: displaycol=%d, displayrow=%d, cursorcol=%d, cursorrow=%d\n"), displaycol, displayrow, cursorcol, cursorrow);
 
 	/* (f) show hints */
 	hint = refresh_show_hints(current, buf, current->cols - displaycol, 1);
@@ -1208,7 +1206,7 @@ static void refresh_line_alt(struct current *current, const char *prompt, const 
 		current->colsright = 0;
 		current->colsleft = 0;
 	}
-	DRL("\nafter hints: colsleft=%d, colsright=%d\n\n", current->colsleft, current->colsright);
+	DRL(ax_u("\nafter hints: colsleft=%d, colsright=%d\n\n"), current->colsleft, current->colsright);
 
 	refresh_end_chars(current);
 
@@ -1235,7 +1233,7 @@ static void refresh_line(struct current *current)
 	refresh_line_alt(current, current->prompt, sb_str(current->buf), current->pos);
 }
 
-static void set_current(struct current *current, const char *str)
+static void set_current(struct current *current, const ax_uchar *str)
 {
 	sb_clear(current->buf);
 	sb_append(current->buf, str);
@@ -1251,8 +1249,8 @@ static void set_current(struct current *current, const char *str)
 static int remove_char(struct current *current, int pos)
 {
 	if (pos >= 0 && pos < sb_chars(current->buf)) {
-		int offset = ax_utf8_index(sb_str(current->buf), pos);
-		int nbytes = ax_utf8_index(sb_str(current->buf) + offset, 1);
+		int offset = ax_ustr_index(sb_str(current->buf), pos);
+		int nchars = ax_ustr_index(sb_str(current->buf) + offset, 1);
 		int rc = 1;
 
 		/* Now we try to optimise in the simple but very common case that:
@@ -1265,7 +1263,7 @@ static int remove_char(struct current *current, int pos)
 		 */
 		if (current->output && current->pos == pos + 1 && current->pos == sb_chars(current->buf) && pos > 0) {
 			/* Could implement ax_utf8_prev_len() but simplest just to not optimise this case */
-			char last = sb_str(current->buf)[offset];
+			ax_uchar last = sb_str(current->buf)[offset];
 			if (current->colsleft > 0 && (last & 0x80) == 0) {
 				/* Have cols on the left and not a UTF-8 char or continuation */
 				/* Yes, can optimise */
@@ -1275,7 +1273,7 @@ static int remove_char(struct current *current, int pos)
 			}
 		}
 
-		sb_delete(current->buf, offset, nbytes);
+		sb_delete(current->buf, offset, nchars);
 
 		if (current->pos > pos) {
 			current->pos--;
@@ -1287,7 +1285,7 @@ static int remove_char(struct current *current, int pos)
 			}
 			else {
 				/* optimised output */
-				output_chars(current, "\b \b", 3);
+				output_chars(current, ax_u("\b \b"), 3);
 			}
 		}
 		return rc;
@@ -1305,9 +1303,9 @@ static int remove_char(struct current *current, int pos)
 static int insert_char(struct current *current, int pos, int ch)
 {
 	if (pos >= 0 && pos <= sb_chars(current->buf)) {
-		char buf[MAX_UTF8_LEN + 1];
-		int offset = ax_utf8_index(sb_str(current->buf), pos);
-		int n = utf8_getchars(buf, ch);
+		ax_uchar buf[MAX_UTF8_LEN + 1];
+		int offset = ax_ustr_index(sb_str(current->buf), pos);
+		int n = ax_ucode_to_ustr(ch, buf);
 		int rc = 1;
 
 		/* null terminate since sb_insert() requires it */
@@ -1355,8 +1353,8 @@ static int insert_char(struct current *current, int pos, int ch)
 static void capture_chars(struct current *current, int pos, int nchars)
 {
 	if (pos >= 0 && (pos + nchars - 1) < sb_chars(current->buf)) {
-		int offset = ax_utf8_index(sb_str(current->buf), pos);
-		int nbytes = ax_utf8_index(sb_str(current->buf) + offset, nchars);
+		int offset = ax_ustr_index(sb_str(current->buf), pos);
+		int nbytes = ax_ustr_index(sb_str(current->buf) + offset, nchars);
 
 		if (nbytes > 0) {
 			if (current->capture) {
@@ -1392,13 +1390,13 @@ static int remove_chars(struct current *current, int pos, int n)
  *
  * Returns 0 if no chars were inserted or non-zero otherwise.
  */
-static int insert_chars(struct current *current, int pos, const char *chars)
+static int insert_chars(struct current *current, int pos, const ax_uchar *chars)
 {
 	int inserted = 0;
 
 	while (*chars) {
 		uint32_t ch;
-		int n = ax_utf8_to_ucode(chars, &ch);
+		int n = ax_ustr_to_ucode(chars, &ch);
 		if (insert_char(current, pos, ch) == 0) {
 			break;
 		}
@@ -1437,7 +1435,7 @@ static void set_history_index(struct current *current, int new_index)
 		/* Update the current history entry before to
 		 * overwrite it with the next one. */
 		free(history[history_len - 1 - history_index]);
-		history[history_len - 1 - history_index] = ax_strdup(sb_str(current->buf));
+		history[history_len - 1 - history_index] = ax_ustrdup(sb_str(current->buf));
 		/* Show the new entry */
 		history_index = new_index;
 		if (history_index < 0) {
@@ -1457,8 +1455,8 @@ static void set_history_index(struct current *current, int new_index)
 static int reverse_incremental_search(struct current *current)
 {
 	/* Display the reverse-i-search prompt and process chars */
-	char rbuf[50];
-	char rprompt[80];
+	ax_uchar rbuf[50];
+	ax_uchar rprompt[80];
 	int rchars = 0;
 	int rlen = 0;
 	int searchpos = history_len - 1;
@@ -1467,18 +1465,18 @@ static int reverse_incremental_search(struct current *current)
 	rbuf[0] = 0;
 	while (1) {
 		int n = 0;
-		const char *p = NULL;
+		const ax_uchar *p = NULL;
 		int skipsame = 0;
 		int searchdir = -1;
 
-		snprintf(rprompt, sizeof(rprompt), "(reverse-i-search)'%s': ", rbuf);
+		ax_usnprintf(rprompt, ax_nelems(rprompt), ax_u("(reverse-i-search)'%" AX_PRIus "': "), rbuf);
 		refresh_line_alt(current, rprompt, sb_str(current->buf), current->pos);
 		c = fd_read(current);
 		if (c == ctrl('H') || c == CHAR_DELETE) {
 			if (rchars) {
-				int p_ind = ax_utf8_index(rbuf, --rchars);
+				int p_ind = ax_ustr_index(rbuf, --rchars);
 				rbuf[p_ind] = 0;
-				rlen = strlen(rbuf);
+				rlen = ax_ustrlen(rbuf);
 			}
 			continue;
 		}
@@ -1516,11 +1514,11 @@ static int reverse_incremental_search(struct current *current)
 		}
 		else if (c >= ' ' && c <= '~') {
 			/* >= here to allow for null terminator */
-			if (rlen >= (int)sizeof(rbuf) - MAX_UTF8_LEN) {
+			if (rlen >= (int)ax_nelems(rbuf) - MAX_UTF8_LEN) {
 				continue;
 			}
 
-			n = utf8_getchars(rbuf + rlen, c);
+			n = ax_ucode_to_ustr(c, rbuf + rlen);
 			rlen += n;
 			rchars++;
 			rbuf[rlen] = 0;
@@ -1535,17 +1533,17 @@ static int reverse_incremental_search(struct current *current)
 
 		/* Now search through the history for a match */
 		for (; searchpos >= 0 && searchpos < history_len; searchpos += searchdir) {
-			p = strstr(history[searchpos], rbuf);
+			p = ax_ustrstr(history[searchpos], rbuf);
 			if (p) {
 				/* Found a match */
-				if (skipsame && strcmp(history[searchpos], sb_str(current->buf)) == 0) {
+				if (skipsame && ax_ustrcmp(history[searchpos], sb_str(current->buf)) == 0) {
 					/* But it is identical, so skip it */
 					continue;
 				}
 				/* Copy the matching line and set the cursor position */
 				history_index = history_len - 1 - searchpos;
 				set_current(current,history[searchpos]);
-				current->pos = ax_utf8_charcnt(history[searchpos], p - history[searchpos]);
+				current->pos = ax_ustr_charcnt(history[searchpos], p - history[searchpos]);
 				break;
 			}
 		}
@@ -1558,7 +1556,7 @@ static int reverse_incremental_search(struct current *current)
 	}
 	if (c == ctrl('G') || c == ctrl('C')) {
 		/* ctrl-g terminates the search with no effect */
-		set_current(current, "");
+		set_current(current, ax_u(""));
 		history_index = 0;
 		c = 0;
 	}
@@ -1572,7 +1570,8 @@ static int reverse_incremental_search(struct current *current)
 	return c;
 }
 
-static int edit_line(struct current *current) {
+static int edit_line(struct current *current)
+{
 	history_index = 0;
 
 	refresh_line(current);
@@ -1820,7 +1819,7 @@ static stringbuf *sb_getline(FILE *fh)
 	int n = 0;
 
 	while ((c = getc(fh)) != EOF) {
-		char ch;
+		ax_uchar ch;
 		n++;
 		if (c == '\r') {
 			/* CRLF -> LF */
@@ -1840,7 +1839,7 @@ static stringbuf *sb_getline(FILE *fh)
 	return sb;
 }
 
-char *ax_edit_readline2(const char *prompt, const char *initial)
+ax_uchar *ax_edit_readline2(const ax_uchar *prompt, const ax_uchar *initial)
 {
 	int count;
 	struct current current;
@@ -1849,11 +1848,11 @@ char *ax_edit_readline2(const char *prompt, const char *initial)
 	memset(&current, 0, sizeof(current));
 
 	if (enable_raw_mode(&current) == -1) {
-		printf("%s", prompt);
+		ax_printf(ax_u("%" AX_PRIus), prompt);
 		fflush(stdout);
 		sb = sb_getline(stdin);
 		if (sb && !fd_isatty(&current)) {
-			printf("%s\n", sb_str(sb));
+			ax_printf(ax_u("%" AX_PRIus "\n"), sb_str(sb));
 			fflush(stdout);
 		}
 	}
@@ -1870,7 +1869,7 @@ char *ax_edit_readline2(const char *prompt, const char *initial)
 		count = edit_line(&current);
 
 		disable_raw_mode(&current);
-		printf("\n");
+		ax_printf(ax_u("\n"));
 
 		sb_free(current.capture);
 		if (count == -1) {
@@ -1882,13 +1881,13 @@ char *ax_edit_readline2(const char *prompt, const char *initial)
 	return sb ? sb_to_string(sb) : NULL;
 }
 
-char *ax_edit_readline(const char *prompt)
+ax_uchar *ax_edit_readline(const ax_uchar *prompt)
 {
-	return ax_edit_readline2(prompt, "");
+	return ax_edit_readline2(prompt, ax_u(""));
 }
 
 /* Using a circular buffer is smarter, but a bit more complex to handle. */
-static int ax_edit_history_add_allocated(char *line) {
+static int ax_edit_history_add_allocated(ax_uchar *line) {
 
 	if (history_max_len == 0) {
 notinserted:
@@ -1896,17 +1895,17 @@ notinserted:
 		return 0;
 	}
 	if (history == NULL) {
-		history = (char **)calloc(sizeof(char*), history_max_len);
+		history = (ax_uchar **)calloc(sizeof(ax_uchar*), history_max_len);
 	}
 
 	/* do not insert duplicate lines into history */
-	if (history_len > 0 && strcmp(line, history[history_len - 1]) == 0) {
+	if (history_len > 0 && ax_ustrcmp(line, history[history_len - 1]) == 0) {
 		goto notinserted;
 	}
 
 	if (history_len == history_max_len) {
 		free(history[0]);
-		memmove(history,history+1,sizeof(char*)*(history_max_len-1));
+		memmove(history,history+1,sizeof(ax_uchar*)*(history_max_len-1));
 		history_len--;
 	}
 	history[history_len] = line;
@@ -1914,8 +1913,8 @@ notinserted:
 	return 1;
 }
 
-int ax_edit_history_add(const char *line) {
-	return ax_edit_history_add_allocated(ax_strdup(line));
+int ax_edit_history_add(const ax_uchar *line) {
+	return ax_edit_history_add_allocated(ax_ustrdup(line));
 }
 
 int ax_edit_history_maxlen(void) {
@@ -1923,13 +1922,13 @@ int ax_edit_history_maxlen(void) {
 }
 
 int ax_edit_history_set_maxlen(int len) {
-	char **newHistory;
+	ax_uchar **newHistory;
 
 	if (len < 1) return 0;
 	if (history) {
 		int tocopy = history_len;
 
-		newHistory = (char **)calloc(sizeof(char*), len);
+		newHistory = (ax_uchar **)calloc(sizeof(ax_uchar*), len);
 
 		/* If we can't copy everything, free the elements we'll not use. */
 		if (len < tocopy) {
@@ -1938,7 +1937,7 @@ int ax_edit_history_set_maxlen(int len) {
 			for (j = 0; j < tocopy-len; j++) free(history[j]);
 			tocopy = len;
 		}
-		memcpy(newHistory,history+(history_len-tocopy), sizeof(char*)*tocopy);
+		memcpy(newHistory,history+(history_len-tocopy), sizeof(ax_uchar*) * tocopy);
 		free(history);
 		history = newHistory;
 	}
@@ -1950,30 +1949,26 @@ int ax_edit_history_set_maxlen(int len) {
 
 /* Save the history in the specified file. On success 0 is returned
  * otherwise -1 is returned. */
-int ax_edit_history_save(const char *filename) {
-	FILE *fp = fopen(filename,"w");
+int ax_edit_history_save(const ax_uchar *filename) {
+	FILE *fp = ax_fopen(filename, ax_u("w"));
 	int j;
 
 	if (fp == NULL) return -1;
 	for (j = 0; j < history_len; j++) {
-		const char *str = history[j];
+		const ax_uchar *str = history[j];
 		/* Need to encode backslash, nl and cr */
 		while (*str) {
-			if (*str == '\\') {
-				fputs("\\\\", fp);
-			}
-			else if (*str == '\n') {
-				fputs("\\n", fp);
-			}
-			else if (*str == '\r') {
-				fputs("\\r", fp);
-			}
-			else {
-				fputc(*str, fp);
-			}
+			if (*str == '\\')
+				ax_fputs(ax_u("\\\\"), fp);
+			else if (*str == '\n')
+				ax_fputs(ax_u("\\n"), fp);
+			else if (*str == '\r')
+				ax_fputs(ax_u("\\r"), fp);
+			else
+				ax_fputc(*str, fp);
 			str++;
 		}
-		fputc('\n', fp);
+		ax_fputc(ax_u('\n'), fp);
 	}
 
 	fclose(fp);
@@ -1986,20 +1981,20 @@ int ax_edit_history_save(const char *filename) {
  * and -1 is returned.
  * Otherwise 0 is returned.
  */
-int ax_edit_history_load(const char *filename) {
-	FILE *fp = fopen(filename,"r");
+int ax_edit_history_load(const ax_uchar *filename) {
+	FILE *fp = ax_fopen(filename, ax_u("r"));
 	stringbuf *sb;
 
 	if (fp == NULL) return -1;
 
 	while ((sb = sb_getline(fp)) != NULL) {
 		/* Take the stringbuf and decode backslash escaped values */
-		char *buf = sb_to_string(sb);
-		char *dest = buf;
-		const char *src;
+		ax_uchar *buf = sb_to_string(sb);
+		ax_uchar *dest = buf;
+		const ax_uchar *src;
 
 		for (src = buf; *src; src++) {
-			char ch = *src;
+			ax_uchar ch = *src;
 
 			if (ch == '\\') {
 				src++;
@@ -2026,7 +2021,7 @@ int ax_edit_history_load(const char *filename) {
  *
  * If 'len' is not NULL, the length is stored in *len.
  */
-char **ax_edit_history(int *len) {
+ax_uchar **ax_edit_history(int *len) {
 	if (len) {
 		*len = history_len;
 	}
