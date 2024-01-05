@@ -101,6 +101,8 @@ void ax_socket_deinit()
 }
 
 int ax_socket_close(ax_socket fd) {
+	if (fd == AX_SOCKET_INVALID)
+		return 0;
 #ifdef AX_OS_WIN32
 	return - !closesocket(fd);
 #else
