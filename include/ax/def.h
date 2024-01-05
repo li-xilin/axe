@@ -23,8 +23,6 @@
 #ifndef AX_DEF_H
 #define AX_DEF_H
 
-#include "arraya.h"
-
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -58,8 +56,7 @@ typedef uint_fast32_t ax_fast_uint;
 
 #define ax_strcommalen(s) ("" s), (sizeof(s) - 1)
 
-#define ax_nelems(_a) (ax_assert((void *)_a == (void *)&_a, "_a pass to ax_nelems is not array"), \
-		(sizeof(_a) / sizeof(_a[0])))
+#define ax_nelems(_a) (((sizeof (_a) / sizeof *(_a))) / !((uintptr_t)_a - (uintptr_t)&_a))
 
 #define ax_container_of(ptr, type, member) (((type*)((char*)ptr - (offsetof(type, member)))))
 
