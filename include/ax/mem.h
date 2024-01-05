@@ -114,6 +114,8 @@ void ax_membyhex(const char *text, void *out);
 
 char **ax_strargv(const char *cmdline, int* count);
 
+wchar_t **ax_wcsargv(const wchar_t *cmdline, int* count);
+
 void ax_memxor(void *a, const void *b, size_t size);
 
 char *ax_strbaseconv(char *s, char *buf, size_t size, int old_base, int new_base);
