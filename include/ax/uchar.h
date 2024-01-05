@@ -27,6 +27,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <ax/detect.h>
+#include <ax/unicode.h>
 #include <ax/mem.h>
 
 #ifdef AX_OS_WIN
@@ -49,11 +50,21 @@ typedef WCHAR ax_uchar;
 #define ax_ustrncmp wcscmp
 #define ax_usscanf swscanf
 #define ax_usnprintf swprintf
-#define ax_uvsnprintf wvsnprintf
+#define ax_usprintf _swprintf
+#define ax_uvsnprintf vsnwprintf
 #define ax_ustrhash ax_wcshash
 #define ax_ustrargv ax_wcsargv
 #define ax_ustrtrim ax_wcstrim
-#define AX_PRIus L"ls"
+#define ax_ustr_index ax_utf16_index
+#define ax_ustr_to_ucode ax_utf16_to_ucode
+#define ax_ustr_charcnt ax_utf16_charcnt
+#define ax_ucode_to_ustr ax_ucode_to_utf16
+
+#define AX_PRIus "ls"
+#define AX_PRIs "hs"
+#define AX_PRIuc "lc"
+#define AX_PRIc "hc"
+
 #define ax_t_ustr ax_t_wcs
 
 #else
@@ -72,15 +83,26 @@ typedef char ax_uchar;
 #define ax_ustricmp strcasecmp
 #define ax_ustrnicmp strncasecmp
 #define ax_usscanf sscanf
+#define ax_usprintf sprintf
 #define ax_usnprintf snprintf
 #define ax_uvsnprintf vsnprintf
 #define ax_ustrhash ax_strhash
 #define ax_ustrargv ax_strargv
 #define ax_ustrtrim ax_strtrim
+#define ax_ustr_index ax_utf8_index
+#define ax_ustr_to_ucode ax_utf8_to_ucode
+#define ax_ustr_charcnt ax_utf_charcnt
+#define ax_ucode_to_ustr ax_ucode_to_utf8
+
 #define AX_PRIus "s"
+#define AX_PRIs "s"
+#define AX_PRIuc "c"
+#define AX_PRIc "c"
 #define ax_t_ustr ax_t_str
 
 #endif
+
+#define AX_US(flag) "%" #flag AX_PRIus
 
 #define ax_u(s) __ax_u(s)
 
@@ -110,18 +132,18 @@ inline static int ax_umain(ax_umain_f *umain, int argc, char *argv[])
 	int nArgs;
 	LPWSTR *pArgList = CommandLineToArgvW(GetCommandLineW(), &nArgs);
 	if (!pArgList)
-		return EXIT_FAILURE;
+		return 1;
 	return umain(nArgs, pArgList);
 #else
 	return umain(argc, argv);
 #endif
 }
 
-#define AX_MAIN \
+#define ax_main \
 	main(int argc, char *argv[]) { \
-		extern int umain(int argc, ax_uchar *argv[]); \
-		return ax_umain(umain, argc, argv);  \
+		extern int ax_main(int argc, ax_uchar *argv[]); \
+		return ax_umain(ax_main, argc, argv);  \
 	} \
-	extern int umain
+	extern int ax_main
 
 #endif
