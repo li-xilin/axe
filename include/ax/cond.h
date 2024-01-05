@@ -2,6 +2,7 @@
 #define AX_COND_H
 
 #include "mutex.h"
+#include "errno.h"
 #include <stdint.h>
 #include <assert.h>
 #include <time.h>
@@ -9,7 +10,7 @@
 
 #ifdef AX_OS_WIN
 #include <synchapi.h>
-#define AX_COND_INIT { .condver = NULL }
+#define AX_COND_INIT { .condvar = NULL }
 #else
 #include <pthread.h>
 #define AX_COND_INIT { .cond = PTHREAD_COND_INITIALIZER }
@@ -28,6 +29,20 @@ struct ax_cond_st
 #define AX_COND_DEFINED
 typedef struct ax_cond_st ax_cond;
 #endif
+
+static inline int __ax_cond_init_competitive(ax_cond *cond)
+{
+	if (!cond->condvar) {
+		CONDITION_VARIABLE *condp = HeapAlloc(GetProcessHeap(), 0, sizeof *condp);
+		if (!condp) {
+			return -1;
+		}
+		if (InterlockedCompareExchangePointer(&cond->condvar, condp, NULL)) {
+			HeapFree(GetProcessHeap(), 0, condp);
+		}
+	}
+	return 0;
+}
 
 static inline int ax_cond_init(ax_cond *cond)
 {
@@ -54,19 +69,16 @@ static inline int ax_cond_sleep(ax_cond *cond, ax_mutex *mutex, int millise)
 		errno = EPERM;
 		return -1;
 	}
-	if (!cond->condvar) {
-		CONDITION_VARIABLE *condp = HeapAlloc(GetProcessHeap(), 0, sizeof *condp);
-		if (!condp) {
-			errno = ENOMEM;
-			return -1;
-		}
-		InitializeConditionVariable(condp);
-		if (InterlockedCompareExchangePointer((PVOID*)&cond->condvar, condp, NULL)) {
-			HeapFree(GetProcessHeap(), 0, condp);
-		}
+	if (__ax_cond_init_competitive(cond)) {
+		ax_error_occur();
+		return -1;
 	}
+	
 	if (!SleepConditionVariableCS(cond->condvar, mutex->section,
 				millise < 0 ? INFINITE : millise)) {
+		ax_error_occur();
+		if (GetLastError() == ERROR_TIMEOUT)
+			return 1;
 		return -1;
 	}
 #else
@@ -101,6 +113,10 @@ static inline int ax_cond_wake(ax_cond *cond)
 {
 	assert(cond);
 #ifdef AX_OS_WIN
+	if (__ax_cond_init_competitive(cond)) {
+		ax_error_occur();
+		return -1;
+	}
 	WakeConditionVariable(cond->condvar);
 #else
 	if (pthread_cond_signal(&cond->cond)) {
@@ -114,6 +130,10 @@ static inline int ax_cond_wake_all(ax_cond *cond)
 {
 	assert(cond);
 #ifdef AX_OS_WIN
+	if (__ax_cond_init_competitive(cond)) {
+		ax_error_occur();
+		return -1;
+	}
 	WakeAllConditionVariable(cond->condvar);
 #else
 	if (pthread_cond_broadcast(&cond->cond)) {
@@ -129,7 +149,7 @@ static inline void ax_cond_destroy(ax_cond *cond)
 #ifdef AX_OS_WIN
 	if (!cond->condvar)
 		return;
-	free(cond->condvar);
+	HeapFree(GetProcessHeap(), 0, cond->condvar);
 #else
 	(void)pthread_cond_destroy(&cond->cond);
 #endif
