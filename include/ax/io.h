@@ -107,7 +107,7 @@ static inline int ax_fputs(const ax_uchar *ws, FILE *stream)
 #endif
 }
 
-static inline wint_t ax_fputc(ax_uchar c, FILE *stream)
+static inline int ax_fputc(ax_uchar c, FILE *stream)
 {
 #ifdef AX_OS_WIN
 	return fputwc(c, stream);
@@ -116,7 +116,7 @@ static inline wint_t ax_fputc(ax_uchar c, FILE *stream)
 #endif
 }
 
-static inline wint_t ax_putchar(ax_uchar c)
+static inline int ax_putchar(ax_uchar c)
 {
 #ifdef AX_OS_WIN
 	return fputwc(c, stdout);
@@ -170,7 +170,7 @@ static inline ax_uchar *ax_fgets(ax_uchar *ws, int n, FILE *stream)
 #endif
 }
 
-static inline wint_t ax_fgetc(FILE *stream)
+static inline int ax_fgetc(FILE *stream)
 {
 #ifdef AX_OS_WIN
 	return fgetwc(stream);

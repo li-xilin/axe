@@ -120,6 +120,13 @@ size_t ax_utf8_charlen(uint8_t c)
 	return -1;
 }
 
+size_t ax_utf16_charlen(uint16_t c)
+{
+	if ((c >> 12) == 0xF)
+		return 2;
+	return 1;
+}
+
 size_t ax_utf8_charcnt(const char *str, int bytelen)
 {
 	int charlen = 0;

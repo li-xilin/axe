@@ -57,7 +57,7 @@ inline static void ax_array_reset(ax_array *array, char *ptr, size_t size)
 	array->size = elem_size ? size / elem_size : SIZE_MAX;
 }
 
-#define __ax_array_construct3(_etr, _ptr, _size) \
+#define ax_array_new3(_etr, _ptr, _size) \
 	((struct ax_seq_st *)(struct ax_array_st[1]) { \
 		 	[0].ax_seq.env.ax_box.elem_tr = (_etr), \
 			[0].ax_seq.tr = &ax_array_tr, \
@@ -65,7 +65,8 @@ inline static void ax_array_reset(ax_array *array, char *ptr, size_t size)
 			[0].array = (_ptr), \
 		})
 
-#define __ax_array_construct2(_etr, _size) \
-	__ax_array_construct3(_etr, (uint8_t [(_size)]) { 0 }, _size)
+#define ax_array_new2(_etr, _size) \
+	ax_array_new3(_etr, (uint8_t [(_size)]) { 0 }, _size)
 
 #endif
+

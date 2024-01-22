@@ -299,7 +299,7 @@ ax_uchar *ax_errmsg(ax_uchar *buf, size_t size)
 			size, NULL);
 	return buf;
 #else
-	return ax_ustrncpy(buf, ax_strerror(-errno), AX_ERRBUF_MAX - 1);
+	return ax_ustrncpy(buf, ax_strerror(-errno), size - 1);
 
 #endif
 }

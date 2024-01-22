@@ -131,11 +131,11 @@ int ax_ctrlc_set(ax_ctrlc_proc_f *proc)
 			.sa_flags = SA_NODEFER | SA_RESTART,
 		};
 		if (sigaction(SIGINT, &sa, &sg_sigint_sa))
-			ax_error_goto(fail);
+			ax_err_goto(fail);
 		if (sigaction(SIGQUIT, &sa, &sg_sigquit_sa))
-			ax_error_goto(fail);
+			ax_err_goto(fail);
 		if (sigaction(SIGTERM, &sa, &sg_sigterm_sa))
-			ax_error_goto(fail);
+			ax_err_goto(fail);
 	}
 	sg_user_handler = proc;
 	return 0;

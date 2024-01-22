@@ -27,8 +27,7 @@ int main()
 		NULL };
 	ax_proc *p = ax_proc_open(ax_u(TEST_EXEC), argv);
 	if (!p) {
-		ax_uchar buf[AX_ERRBUF_MAX];
-		ax_printf(ax_u("%s\n"), ax_strerror(buf));
+		ax_printf(ax_u("%s\n"), ax_strerror(errno));
 		exit(1);
 	}
 	FILE *in = ax_proc_stdio(p, 0);
