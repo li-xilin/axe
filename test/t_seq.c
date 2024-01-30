@@ -25,6 +25,7 @@
 #include "ax/vector.h"
 #include "ax/list.h"
 #include "ax/algo.h"
+#include "ax/arraya.h"
 
 #include "ut/runner.h"
 #include "ut/suite.h"

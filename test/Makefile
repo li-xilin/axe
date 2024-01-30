@@ -1,7 +1,7 @@
 ROOT = ..
 include ../config.mak
 
-LDFLAGS = -L$(ROOT)/lib -laxut -laxcore -laxthread  #-fsanitize=address
+LDFLAGS = -L$(ROOT)/lib -laxut -laxkit -laxcore #-fsanitize=address
 
 OBJS = t_main.o t_pred.o t_vector.o t_list.o t_avl.o \
        t_hmap.o t_uintk.o t_string.o t_seq.o t_algo.o \
