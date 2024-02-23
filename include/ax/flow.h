@@ -25,6 +25,7 @@
 
 #include "def.h"
 #include "trick.h"
+#include "narg.h"
 #include <stddef.h>
 #include <stdint.h>
 

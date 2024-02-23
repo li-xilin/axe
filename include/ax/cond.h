@@ -30,6 +30,7 @@ struct ax_cond_st
 typedef struct ax_cond_st ax_cond;
 #endif
 
+#ifdef AX_OS_WIN
 static inline int __ax_cond_init_competitive(ax_cond *cond)
 {
 	if (!cond->condvar) {
@@ -43,6 +44,7 @@ static inline int __ax_cond_init_competitive(ax_cond *cond)
 	}
 	return 0;
 }
+#endif
 
 static inline int ax_cond_init(ax_cond *cond)
 {

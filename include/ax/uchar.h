@@ -66,6 +66,7 @@ typedef WCHAR ax_uchar;
 #define AX_PRIc "hc"
 
 #define ax_t_ustr ax_t_wcs
+#define AX_UCHAR_LEN 2
 
 #else
 
@@ -91,7 +92,7 @@ typedef char ax_uchar;
 #define ax_ustrtrim ax_strtrim
 #define ax_ustr_index ax_utf8_index
 #define ax_ustr_to_ucode ax_utf8_to_ucode
-#define ax_ustr_charcnt ax_utf_charcnt
+#define ax_ustr_charcnt ax_utf8_charcnt
 #define ax_ucode_to_ustr ax_ucode_to_utf8
 
 #define AX_PRIus "s"
@@ -99,6 +100,7 @@ typedef char ax_uchar;
 #define AX_PRIuc "c"
 #define AX_PRIc "c"
 #define ax_t_ustr ax_t_str
+#define AX_UCHAR_LEN 1
 
 #endif
 

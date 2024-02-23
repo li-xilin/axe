@@ -74,7 +74,7 @@ const struct ax_one_trait_st ax_ptra_tr =
 	.free = (ax_one_free_f)ax_ptra_free,
 };
 
-#define __ax_ptra_construct2(_tr, _ptr) \
+#define ax_ptra_new2(_tr, _ptr) \
 	((struct ax_one_st *)(struct ax_ptra_st[1]) { \
 			[0].ax_one.tr = &ax_ptra_tr, \
 		 	[0].tr = (_tr), \
@@ -82,8 +82,7 @@ const struct ax_one_trait_st ax_ptra_tr =
 			[0].ptr = _ptr, \
 			})
 
-#define ax_onelize_2(_p, _f) \
-	AX_CONCRETE_NEW_N(2, ax_ptra, ax_p(const ax_trait, { .t_free = _f }), _p).ax_one
+#define ax_onelize_2(_p, _f) (ax_one *)ax_ptra_new2(ax_p(const ax_trait, { .t_free = _f }), _p)
 
 #define ax_onelize_1(_p) \
 	ax_onelize_2(_p, free)
