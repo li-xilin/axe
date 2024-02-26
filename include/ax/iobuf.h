@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Li Xilin <lixilin@gmx.com>
+ * Copyright (c) 2023-2024 Li Xilin <lixilin@gmx.com>
  *
  * Permission is hereby granted, free of charge, to one person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,7 +96,7 @@ inline static size_t ax_iobuf_read(ax_iobuf *b, void *buf, size_t size)
 	return read_size;
 }
 
-inline static size_t ax_iobuf_drop(ax_iobuf *b, void *buf, size_t size)
+inline static size_t ax_iobuf_drop(ax_iobuf *b, size_t size)
 {
 	size_t read_size = ax_min(ax_iobuf_data_size(b), size);
 	b->front = (b->front + read_size) % b->size;

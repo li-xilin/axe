@@ -24,6 +24,7 @@
 #include "ax/avl.h"
 #include "ax/list.h"
 #include "ax/oper.h"
+#include "ax/arraya.h"
 #include "ut/runner.h"
 #include "ut/suite.h"
 
