@@ -42,6 +42,7 @@ extern ut_suite *suite_for_mem();
 extern ut_suite *suite_for_class();
 extern ut_suite *suite_for_stuff();
 extern ut_suite *suite_for_unicode();
+extern ut_suite *suite_for_iobuf();
 extern void suite_for_maps(ut_runner *r);
 
 int main()
@@ -65,6 +66,7 @@ int main()
 	ut_runner_add(r, suite_for_class());
 	ut_runner_add(r, suite_for_stuff());
 	ut_runner_add(r, suite_for_unicode());
+	ut_runner_add(r, suite_for_iobuf());
 
 	suite_for_maps(r);
 

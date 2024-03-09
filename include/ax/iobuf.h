@@ -50,7 +50,6 @@ inline static size_t ax_iobuf_data_size(ax_iobuf *b)
 	return (b->size + b->rear - b->front) % b->size;
 }
 
-
 inline static size_t ax_iobuf_full(ax_iobuf *b)
 {
 	return (b->rear + 1) % b->size == b->front;
@@ -124,6 +123,34 @@ inline static size_t ax_iobuf_drain(ax_iobuf *b, size_t size, ax_iobuf_drain_cb 
 		cb(b->buf, read_size - size1, arg);
 	b->front = (b->front + read_size) % b->size;
 	return read_size;
+}
+
+inline static void *ax_iobuf_flatten(ax_iobuf *b)
+{
+	if (b->front == b->rear)
+		return NULL;
+
+	if (b->rear >= b->front)
+		return b->buf + b->front;
+
+	size_t data_size = (b->rear - b->front + b->size) % b->size;
+	uint8_t temp_buf[1024];
+	size_t copied = 0;
+
+	while (copied < data_size) {
+		size_t chunk_size = (data_size - copied > 1024) ? 1024 : (data_size - copied);
+		size_t first_part = b->size - b->front;
+		size_t second_part = chunk_size - first_part;
+
+		memcpy(temp_buf, b->buf + b->front, first_part);
+		memcpy(temp_buf + first_part, b->buf, second_part);
+		memcpy(b->buf + copied, temp_buf, chunk_size);
+		b->front = second_part;
+		copied += chunk_size;
+	}
+
+	b->rear = data_size;
+	return b->buf;
 }
 
 #endif

@@ -219,21 +219,65 @@ void __ut_assert_str_equal(ut_runner *r, const char *ex, const char *ac, const c
 {
 	if (strcmp(ex, ac) == 0)
 		return;
-	__ut_fail(r, file, line, "assertion failed: expect '%s', but actually '%s'", ex, ac);
+	__ut_fail(r, file, line, "test failed: expect '%s', but actual '%s'", ex, ac);
+}
+
+void __ut_assert_mem_equal(ut_runner *r, const void *ex, size_t exsize, const void *ac, size_t acsize, const char *file, int line)
+{
+
+	if (exsize != acsize) {
+		__ut_fail(r, file, line, "test failed: expect size is %zd, but actual %zd", exsize, acsize);
+		return;
+	}
+
+	int index = -1;
+	int cmp = 0;
+
+	const char *exp = ex, *acp = ac;
+	for (int i = 0; i < exsize; i++) {
+		if (exp[i] != acp[i]) {
+			cmp = exp[i] - acp[i];
+			index = i;
+			break;
+		}
+	}
+
+	if (cmp == 0)
+		return;
+
+	char ex_buf[66 + 1];
+	char ac_buf[66 + 1];
+
+	size_t left = ax_max(index - 16, 0);
+	size_t right = ax_min((index + 1) + 16, exsize);
+
+	ax_memtohex(exp + left, index - left, ex_buf);
+	sprintf(ex_buf + (index - left) * 2, "[%hhX]", exp[index]);
+	ax_memtohex(exp + index + 1, right - (index + 1), ex_buf + (index - left) * 2 + 4);
+
+	ax_memtohex(acp + left, index - left, ac_buf);
+	sprintf(ac_buf + (index - left) * 2, "[%hhX]", acp[index]);
+	ax_memtohex(acp + index + 1, right - (index + 1), ac_buf + (index - left) * 2 + 4);
+
+
+
+	__ut_fail(r, file, line, "test failed: at offset +%d\n"
+			"\texpect: '%s'\n"
+			"\tactual: '%s'", index, ex_buf, ac_buf);
 }
 
 void __ut_assert_int_equal(ut_runner *r, int64_t ex, int64_t ac, const char *file, int line)
 {
 	if (ex == ac)
 		return;
-	__ut_fail(r, file, line, "assertion failed: expect '%" PRId64 "', but actually '%" PRId64 "'", ex, ac);
+	__ut_fail(r, file, line, "test failed: expect '%" PRId64 "', but actual '%" PRId64 "'", ex, ac);
 }
 
 void __ut_assert_uint_equal(ut_runner *r, uint64_t ex, uint64_t ac, const char *file, int line)
 {
 	if (ex == ac)
 		return;
-	__ut_fail(r, file, line, "assertion failed: expect '%" PRIu64 "', but actually '%" PRIu64 "'", ex, ac);
+	__ut_fail(r, file, line, "test failed: expect '%" PRIu64 "', but actual '%" PRIu64 "'", ex, ac);
 }
 
 void __ut_fail(ut_runner *r, const char *file, int line, const char *fmt, ...)
