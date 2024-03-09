@@ -25,14 +25,7 @@
 #include "def.h"
 #include <string.h>
 
-#define ax_swap(_a, _b, _type) \
-do { \
-	register _type *a = ax_cast(_type *, _a); \
-	register _type *b = ax_cast(_type *, _b); \
-	register _type tmp = *a; \
-	*a = *b; \
-	*b = tmp; \
-} while(0)
+#define ax_swap(a, b, type) do { type tmp = *(a); *(a) = *(b); *(b) = tmp; } while(0)
 
 inline static uint32_t ax_hash_murmur32(const void *key, size_t size)
 {
@@ -65,20 +58,7 @@ inline static size_t ax_hash_djb(const void *p, size_t size)
 	return h;
 }
 
-inline static void ax_memswp(void *p1, void *p2, size_t size)
-{
-	ax_byte tmp[0x1000];
-	size_t rest = size;
-	while (rest) {
-		size_t batch = rest % sizeof tmp;
-		memcpy(tmp, p1, batch);
-		memcpy(p1, p2, batch);
-		memcpy(p2, tmp, batch);
-		rest -= batch;
-	}
-}
-
-void ax_memswp1(void *p1, void *p2, size_t size);
+void ax_memswp(void *p1, void *p2, size_t size);
 
 char *ax_strdup(const char *str);
 

@@ -36,30 +36,22 @@
 #define WIDE_CHAR
 #include "strargv.h"
 
-void ax_memswp1(void *ptr1, void *ptr2, size_t size)
+void ax_memswp(void *p1, void *p2, size_t size)
 {
-	CHECK_PARAM_NULL(ptr1);
-	CHECK_PARAM_NULL(ptr2);
+	CHECK_PARAM_NULL(p1);
+	CHECK_PARAM_NULL(p2);
 
-	if (ptr1 == ptr2)
-		return;
+	size_t chunk_cnt = size / sizeof(ax_fast_uint),
+	       tail_size = size % sizeof(ax_fast_uint);
 
-	register size_t fast_size = size / sizeof(ax_fast_uint);
-	register size_t slow_size = size % sizeof(ax_fast_uint);
+	ax_fast_uint *pf1 = p1, *pf2 = p2;
+	for (size_t i = 0; i < chunk_cnt; i++)
+		ax_swap(pf1 + i, pf2 + i, ax_fast_uint);
 
-	ax_fast_uint *pf1 = ptr1, *pf2 = ptr2;
-	for (size_t i = 0; i!= fast_size; i++) {
-		pf1[i] = pf1[i] ^ pf2[i];
-		pf2[i] = pf1[i] ^ pf2[i];
-		pf1[i] = pf1[i] ^ pf2[i];
-	}
-
-	uint8_t *p1 = (ax_byte *)ptr1 + size - slow_size, *p2 = (ax_byte*)ptr2 + size - slow_size;
-	for (size_t i = 0; i!= slow_size; i++) {
-		p1[i] = p1[i] ^ p2[i];
-		p2[i] = p1[i] ^ p2[i];
-		p1[i] = p1[i] ^ p2[i];
-	}
+	uint8_t *ps1 = (ax_byte *)p1 + (size - tail_size),
+		*ps2 = (ax_byte *)p2 + (size - tail_size);
+	for (size_t i = 0; i != tail_size; i++)
+		ax_swap(ps1 + i, ps2 + i, uint8_t);
 }
 
 char *ax_strdup(const char *s)
