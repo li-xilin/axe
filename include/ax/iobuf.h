@@ -83,7 +83,6 @@ size_t ax_iobuf_write(ax_iobuf *b, void *p, size_t size);
 size_t ax_iobuf_peek(ax_iobuf *b, void *buf, size_t start, size_t size);
 
 size_t ax_iobuf_read(ax_iobuf *b, void *buf, size_t size);
-
 void *ax_iobuf_chbuf(ax_iobuf *b, void *buf, size_t size);
 
 size_t ax_iobuf_drain(ax_iobuf *b, size_t size, ax_iobuf_drain_cb *cb, void *arg);
