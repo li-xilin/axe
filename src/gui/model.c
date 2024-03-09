@@ -554,6 +554,9 @@ static ax_dump *record_dump(const void* p)
 				ax_dump_bind(item, 0, ax_dump_ptr(field.image->image));
 				ax_dump_bind(item, 1, ax_dump_str(field.checkbox_text->text));
 				break;
+			default:
+				item = ax_dump_symbol("unknown widget");
+				break;
 		}
 		ax_dump_bind(dmp, i, item);
 	}
