@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Li Xilin <lixilin@gmx.com>
+ * Copyright (c) 2022-2024 Li Xilin <lixilin@gmx.com>
  * 
  * Permission is hereby granted, free of charge, to one person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-
-#ifndef AX_TPOOL_WORK_DEFINED
-#define AX_TPOOL_WORK_DEFINED
-typedef struct ax_tpool_work_st ax_tpool_work;
-#endif
-
 #ifndef AX_TPOOL_DEFINED
 #define AX_TPOOL_DEFINED
 typedef struct ax_tpool_st ax_tpool;
@@ -42,7 +36,7 @@ typedef void ax_tpool_worker_f(void *arg);
 ax_tpool *ax_tpool_create(size_t num);
 void ax_tpool_destroy(ax_tpool *tpool);
 
-bool ax_tpool_add_work(ax_tpool *tpool, ax_tpool_worker_f *func, void *arg);
+int ax_tpool_add_work(ax_tpool *tpool, ax_tpool_worker_f *func, void *arg);
 void ax_tpool_wait(ax_tpool *tpool);
 
 #endif

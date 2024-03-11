@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Li Xilin <lixilin@gmx.com>
+ * Copyright (c) 2022-2024 Li Xilin <lixilin@gmx.com>
  * 
  * Permission is hereby granted, free of charge, to one person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,26 +28,28 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct ax_tpool_work_st
+struct tpool_work_st
 {
 	ax_tpool_worker_f *func;
 	void *arg;
-	struct ax_tpool_work_st *next;
+	struct tpool_work_st *next;
 };
+
+typedef struct tpool_work_st tpool_work;
 
 struct ax_tpool_st
 {
-	ax_tpool_work *work_first, *work_last;
+	tpool_work *work_first, *work_last;
 	ax_cond work_cond, working_cond;
 	size_t working_cnt, thread_cnt;
 	ax_mutex work_mutex;
 	bool stop;
 };
 
-static ax_tpool_work *ax_tpool_work_create(ax_tpool_worker_f *func, void *arg)
+static tpool_work *tpool_work_create(ax_tpool_worker_f *func, void *arg)
 {
 	assert(func);
-	ax_tpool_work *work;
+	tpool_work *work;
 	work = malloc(sizeof *work);
 	if (!work)
 		return NULL;
@@ -57,19 +59,16 @@ static ax_tpool_work *ax_tpool_work_create(ax_tpool_worker_f *func, void *arg)
 	return work;
 }
 
-static void ax_tpool_work_destroy(ax_tpool_work *work)
+static void tpool_work_destroy(tpool_work *work)
 {
-	if (!work)
-		return;
+	assert(work);
 	free(work);
 }
 
-static ax_tpool_work *ax_tpool_work_get(ax_tpool *tpool)
+static tpool_work *tpool_work_get(ax_tpool *tpool)
 {
-	ax_tpool_work *work;
-
-	if (tpool == NULL)
-		return NULL;
+	assert(tpool);
+	tpool_work *work;
 
 	work = tpool->work_first;
 	if (work == NULL)
@@ -85,12 +84,12 @@ static ax_tpool_work *ax_tpool_work_get(ax_tpool *tpool)
 	return work;
 }
 
-static uintptr_t ax_tpool_worker(void *arg)
+static uintptr_t tpool_worker(void *arg)
 {
-	ax_tpool      *tpool = arg;
-	ax_tpool_work *work;
+	ax_tpool *tpool = arg;
+	tpool_work *work;
 
-	while (1) {
+	while (true) {
 		ax_mutex_lock(&(tpool->work_mutex));
 
 		while (tpool->work_first == NULL && !tpool->stop)
@@ -99,13 +98,12 @@ static uintptr_t ax_tpool_worker(void *arg)
 		if (tpool->stop)
 			break;
 
-		work = ax_tpool_work_get(tpool);
-		// tpool->working_cnt++;
+		work = tpool_work_get(tpool);
 		ax_mutex_unlock(&(tpool->work_mutex));
 
 		if (work != NULL) {
 			work->func(work->arg);
-			ax_tpool_work_destroy(work);
+			tpool_work_destroy(work);
 		}
 
 		ax_mutex_lock(&(tpool->work_mutex));
@@ -123,9 +121,8 @@ static uintptr_t ax_tpool_worker(void *arg)
 
 ax_tpool *ax_tpool_create(size_t num)
 {
-	ax_tpool   *tpool;
-	ax_thread  thread;
-	size_t     i;
+	ax_tpool *tpool;
+	ax_thread thread;
 
 	memset(&thread, 0, sizeof thread);
 
@@ -143,8 +140,8 @@ ax_tpool *ax_tpool_create(size_t num)
 	tpool->work_first = NULL;
 	tpool->work_last  = NULL;
 
-	for (i=0; i<num; i++) {
-		if (ax_thread_create(ax_tpool_worker, tpool, &thread))
+	for (int i = 0; i < num; i++) {
+		if (ax_thread_create(tpool_worker, tpool, &thread))
 			continue;
 		ax_thread_detach(&thread);
 	}
@@ -155,20 +152,19 @@ ax_tpool *ax_tpool_create(size_t num)
 void ax_tpool_destroy(ax_tpool *tpool)
 {
 	assert(tpool);
-	ax_tpool_work *work;
-	ax_tpool_work *work2;
+	tpool_work *work;
+	tpool_work *work2;
 
 	ax_mutex_lock(&(tpool->work_mutex));
 	work = tpool->work_first;
 	while (work != NULL) {
 		work2 = work->next;
-		ax_tpool_work_destroy(work);
+		tpool_work_destroy(work);
 		work = work2;
 	}
 	tpool->stop = true;
 	ax_cond_wake_all(&(tpool->work_cond));
 	ax_mutex_unlock(&(tpool->work_mutex));
-
 	ax_tpool_wait(tpool);
 
 	ax_mutex_destroy(&(tpool->work_mutex));
@@ -178,32 +174,33 @@ void ax_tpool_destroy(ax_tpool *tpool)
 	free(tpool);
 }
 
-bool ax_tpool_add_work(ax_tpool *tpool, ax_tpool_worker_f *func, void *arg)
+int ax_tpool_add_work(ax_tpool *tpool, ax_tpool_worker_f *func, void *arg)
 {
 	assert(tpool);
 	assert(func);
-	ax_tpool_work *work;
+	tpool_work *work;
 
-	work = ax_tpool_work_create(func, arg);
+	work = tpool_work_create(func, arg);
 	if (work == NULL)
-		return false;
+		return -1;
 
 	ax_mutex_lock(&(tpool->work_mutex));
 
 	tpool->working_cnt++;
 
-	if (tpool->work_first == NULL) {
+	if (!tpool->work_first) {
 		tpool->work_first = work;
-		tpool->work_last  = tpool->work_first;
-	} else {
+		tpool->work_last = tpool->work_first;
+	}
+	else {
 		tpool->work_last->next = work;
-		tpool->work_last       = work;
+		tpool->work_last = work;
 	}
 
 	ax_cond_wake_all(&(tpool->work_cond));
 	ax_mutex_unlock(&(tpool->work_mutex));
 
-	return true;
+	return 0;
 }
 
 void ax_tpool_wait(ax_tpool *tpool)
@@ -211,11 +208,10 @@ void ax_tpool_wait(ax_tpool *tpool)
 	assert(tpool);
 	ax_mutex_lock(&(tpool->work_mutex));
 	while (true) {
-		if ((!tpool->stop && tpool->working_cnt != 0) || (tpool->stop && tpool->thread_cnt != 0)) {
+		if ((!tpool->stop && tpool->working_cnt != 0) || (tpool->stop && tpool->thread_cnt != 0))
 			ax_cond_sleep(&(tpool->working_cond), &(tpool->work_mutex), -1);
-		} else {
+		else
 			break;
-		}
 	}
 	ax_mutex_unlock(&(tpool->work_mutex));
 }
