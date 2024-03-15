@@ -4,6 +4,7 @@
 
 #include "ax/u1024.h"
 #include "ax/def.h"
+#include "ax/mem.h"
 #include "check.h"
 
 #include <stdio.h>
@@ -84,7 +85,7 @@ ax_fail ax_u1024_from_string(ax_u1024* n, char* str, int nbytes)
 		j += 1;               /* step one element forward in the array. */
 	}
 	char *end;
-	char buf[8];
+	char buf[8] = { 0 };
 	strncpy(buf, str, (2 * AX_U1024_WORD_SIZE) + i);
 	n->array[j] = strtol(buf, &end, 16);
 	return false;
@@ -532,5 +533,23 @@ static void u1024_rshift_one_bit(ax_u1024* a)
 	for (i = 0; i < (AX_U1024_ARR_LEN - 1); ++i)
 		a->array[i] = (a->array[i] >> 1) | (a->array[i + 1] << ((8 * AX_U1024_WORD_SIZE) - 1));
 	a->array[AX_U1024_ARR_LEN - 1] >>= 1;
+}
+
+char *ax_u1024_base_string(ax_u1024 *n, char *buf, int base)
+{
+	ax_assert(base > 0 && base < 36, "invalid base");
+        char hexbuf[128 * 2 + 1];
+        ax_u1024_to_string(n, hexbuf, sizeof hexbuf);
+        char *p = buf;
+
+        if (base == 16) 
+		strcpy(buf, hexbuf);
+	else
+                p = ax_strbaseconv(hexbuf, buf, AX_U1024_BASED_BUFLEN, 16, base);
+
+	if (!p[0]) {
+		strcpy(buf, "0");
+	}
+	return p;
 }
 

@@ -371,10 +371,14 @@ inline static char int_to_char(int n)
 
 char *ax_strbaseconv(char *s, char *buf, size_t size, int old_base, int new_base)
 {
-        int j = size - 1;
-        ax_assert(old_base >= 2 && old_base <= 36, "Invalid old_base");
-        ax_assert(new_base >= 2 && new_base <= 36, "Invalid new_base");
-        for (int i = 0; s[i]; i++) {
+	
+	int j = size - 2;
+	ax_assert(size >= 2, "invalid size");
+	ax_assert(old_base >= 2 && old_base <= 36, "invalid old_base");
+	ax_assert(new_base >= 2 && new_base <= 36, "invalid new_base");
+
+	buf[size - 1] = '\0';
+	for (int i = 0; s[i]; i++) {
                 uint8_t n = char_to_int(s[i]);
                 if (n < 0 || n >= old_base) {
 			errno = EINVAL;
@@ -388,8 +392,10 @@ char *ax_strbaseconv(char *s, char *buf, size_t size, int old_base, int new_base
                         i++;
                 if (!s[i])
                         break;
-                if (j < 0)
+                if (j < 0) {
+			errno = ENOBUFS;
                         return NULL;
+		}
                 int sum = 0, res = 0;
                 for (i = 0; s[i]; i++) {
                         sum = res * old_base + char_to_int(s[i]);

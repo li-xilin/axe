@@ -29,11 +29,13 @@
 #define AX_U1024_ARR_LEN 32
 #define AX_U1024_MAX ((uint64_t)0xFFFFFFFF)
 #define AX_U1024_WORD_SIZE (sizeof(uint32_t))
+#define AX_U1024_BASED_BUFLEN (AX_U1024_ARR_LEN * AX_U1024_WORD_SIZE * 8 + 1)
 
 struct ax_u1024_st
 {
 	uint32_t array[AX_U1024_ARR_LEN];
 };
+
 
 #ifndef AX_U1024_DEFINED
 #define AX_U1024_DEFINED
@@ -52,6 +54,7 @@ void ax_u1024_from_int(ax_u1024* n, uint64_t i);
 ax_fail ax_u1024_to_int(ax_u1024* n, uint64_t *p);
 ax_fail ax_u1024_from_string(ax_u1024* n, char* str, int nbytes);
 ax_fail ax_u1024_to_string(ax_u1024* n, char* str, int maxsize);
+char *ax_u1024_base_string(ax_u1024 *n, char *buf, int base);
 
 /* Basic arithmetic operations: */
 void ax_u1024_add(const ax_u1024* a, const ax_u1024* b, ax_u1024* c); /* c = a + b */
