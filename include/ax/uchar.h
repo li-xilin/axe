@@ -128,6 +128,8 @@ ax_uchar *ax_ustrdup(const ax_uchar *s);
 
 size_t ax_ustrihash(const ax_uchar *s);
 
+size_t ax_ustrnihash(const ax_uchar *s, size_t len);
+
 inline static int ax_umain(ax_umain_f *umain, int argc, char *argv[])
 {
 #ifdef AX_OS_WIN

@@ -220,6 +220,15 @@ ax_uchar *ax_ustrdup(const ax_uchar *s)
 	return dup;
 }
 
+size_t ax_ustrnihash(const ax_uchar *s, size_t len)
+{
+	size_t h = 5381;
+	for (int i = 0; i < len && s[i]; i++) {
+		h = (h ^ (h << 5)) ^ tolower(s[i]);
+	}
+	return h;
+}
+
 size_t ax_ustrihash(const ax_uchar *s)
 {
 	size_t h = 5381;

@@ -48,6 +48,8 @@ void ax_ini_free(ax_ini * d);
 
 const ax_uchar *ax_ini_get(const ax_ini *d, const ax_uchar *sec_name, const ax_uchar *key);
 
+ax_uchar *ax_ini_path_get(const ax_ini *d, const ax_uchar *path);
+
 int ax_ini_set(ax_ini *d, const ax_uchar *sec_name, const ax_uchar *key, const ax_uchar *val);
 
 int ax_ini_push_sec(ax_ini *d, const ax_uchar *sec_name);
@@ -59,5 +61,11 @@ void ax_ini_unset(ax_ini *d, const ax_uchar *sec_name, const ax_uchar *key);
 bool ax_ini_check_name(ax_uchar *name);
 
 const char *ax_ini_strerror(int errcode);
+
+int ax_ini_get_bool(const ax_ini *d, const ax_uchar *seckey, bool dft_value);
+
+int ax_ini_get_int(const ax_ini *d, const ax_uchar *seckey, int dft_value);
+
+ax_uchar *ax_ini_get_str(const ax_ini *d, const ax_uchar *seckey, ax_uchar *dft_value);
 
 #endif
