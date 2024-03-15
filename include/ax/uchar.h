@@ -47,7 +47,7 @@ typedef WCHAR ax_uchar;
 #define ax_ustrcmp wcscmp
 #define ax_ustricmp _wcsicmp
 #define ax_ustrnicmp _wcsnicmp
-#define ax_ustrncmp wcscmp
+#define ax_ustrncmp wcsncmp
 #define ax_usscanf swscanf
 #define ax_usnprintf swprintf
 #define ax_usprintf _swprintf
@@ -59,6 +59,7 @@ typedef WCHAR ax_uchar;
 #define ax_ustr_to_ucode ax_utf16_to_ucode
 #define ax_ustr_charcnt ax_utf16_charcnt
 #define ax_ucode_to_ustr ax_ucode_to_utf16
+#define ax_ustrtoint _wtoi
 
 #define AX_PRIus "ls"
 #define AX_PRIs "hs"
@@ -94,6 +95,7 @@ typedef char ax_uchar;
 #define ax_ustr_to_ucode ax_utf8_to_ucode
 #define ax_ustr_charcnt ax_utf8_charcnt
 #define ax_ucode_to_ustr ax_ucode_to_utf8
+#define ax_ustrtoint atoi
 
 #define AX_PRIus "s"
 #define AX_PRIs "s"
@@ -129,6 +131,7 @@ ax_uchar *ax_ustrdup(const ax_uchar *s);
 size_t ax_ustrihash(const ax_uchar *s);
 
 size_t ax_ustrnihash(const ax_uchar *s, size_t len);
+
 
 inline static int ax_umain(ax_umain_f *umain, int argc, char *argv[])
 {
