@@ -374,12 +374,13 @@ char *ax_strbaseconv(char *s, char *buf, size_t size, int old_base, int new_base
         int j = size - 1;
         ax_assert(old_base >= 2 && old_base <= 36, "Invalid old_base");
         ax_assert(new_base >= 2 && new_base <= 36, "Invalid new_base");
-#ifndef NDEBUG
         for (int i = 0; s[i]; i++) {
-                int n = char_to_int(s[i]);
-                ax_assert(n >= 0 && n < old_base, "Invalid charactor '%c'", s[i]);
+                uint8_t n = char_to_int(s[i]);
+                if (n < 0 || n >= old_base) {
+			errno = EINVAL;
+			return NULL;
+		}
         }
-#endif
         static const char hex[] = "0123456789abcdefghijklmnopqrstuvwxyz";
         while (1) {
                 int i = 0;
