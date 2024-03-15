@@ -476,13 +476,13 @@ out:
 	return d;
 }
 
-const char *ax_ini_strerror(int errcode)
+const ax_uchar *ax_ini_strerror(int errcode)
 {
 	switch (errcode) {
-		case AX_INI_EBADNAME: return "Invalid key name";
-		case AX_INI_ETOOLONG: return "Too long for single line";
-		case AX_INI_ESYNTAX: return "Syntax error";
-		default: return "";
+		case AX_INI_EBADNAME: return ax_u("Invalid key name");
+		case AX_INI_ETOOLONG: return ax_u("Too long for single line");
+		case AX_INI_ESYNTAX: return ax_u("Syntax error");
+		default: return ax_u("");
 	}
 }
 

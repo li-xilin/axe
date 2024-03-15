@@ -4,7 +4,7 @@
 
 int err_cb(unsigned line, unsigned err, void *args)
 {
-	ax_fprintf(stderr, ax_u("error: line = %d, err = %d\n"), line, err);
+	ax_fprintf(stderr, ax_u("error: line = %d, err = " AX_US() "\n"), line, ax_ini_strerror(err));
 	return 0;
 }
 int main()

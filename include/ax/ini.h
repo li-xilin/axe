@@ -60,7 +60,7 @@ void ax_ini_unset(ax_ini *d, const ax_uchar *sec_name, const ax_uchar *key);
 
 bool ax_ini_check_name(ax_uchar *name);
 
-const char *ax_ini_strerror(int errcode);
+const ax_uchar *ax_ini_strerror(int errcode);
 
 int ax_ini_get_bool(const ax_ini *d, const ax_uchar *seckey, bool dft_value);
 
