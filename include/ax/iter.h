@@ -58,6 +58,7 @@ typedef struct ax_iter_trait_st
 	void     (*move)  (      ax_citer *it, long i);
 	void     (*erase) (      ax_iter *it);
 	ax_fail  (*set)   (const ax_iter *it, const void *p, va_list *ap);
+	void     (*swap)  (ax_iter *it1, ax_iter *it2);
 	void    *(*get)   (const ax_citer *it);
 	ax_box  *(*box)   (const ax_citer *it);
 	bool     (norm);
@@ -258,11 +259,16 @@ inline static ax_box *ax_iter_box(const ax_iter *it)
 	return it->tr->box(ax_iter_cc(it));
 }
 
-inline static void ax_iter_swap(const ax_iter *it1, const ax_iter *it2)
+inline static void ax_iter_swap(ax_iter *it1, ax_iter *it2)
 {
-	ax_assert(it1->tr->get && it2->tr->get, "operation not supported");
-	ax_memswp(it1->tr->get(ax_iter_cc(it1)),
-			it2->tr->get(ax_iter_cc(it2)), ax_trait_size(it1->etr));
+	if (it1->tr->swap) {
+		it1->tr->swap(it1, it2);
+	}
+	else {
+		ax_assert(it1->tr->get && it2->tr->get, "operation not supported");
+		ax_memswp(it1->tr->get(ax_iter_cc(it1)),
+				it2->tr->get(ax_iter_cc(it2)), ax_trait_size(it1->etr));
+	}
 }
 
 const char *ax_iter_type_str(int type);

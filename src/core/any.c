@@ -39,9 +39,6 @@ ax_fail __ax_any_print(const ax_any *any, const char *file, int line)
 	fprintf(stdout, "%s:%d:", file, line);
 	ax_fail ret = ax_dump_fput(dmp, NULL, stdout);
 	ax_dump_free(dmp);
-
-	if (ret)
-		return true;
-	return putchar('\n') == EOF;
+	return ret;
 }
 

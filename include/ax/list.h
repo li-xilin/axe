@@ -37,6 +37,8 @@ extern const ax_seq_trait ax_list_tr;
 
 ax_seq *__ax_list_construct(const ax_trait *elem_tr);
 
+void ax_list_insertion_sort(const ax_iter *first, const ax_iter *last);
+
 inline static ax_concrete_creator(ax_list, const ax_trait* trait)
 {
 	return __ax_list_construct(trait);
