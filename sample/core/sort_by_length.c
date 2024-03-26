@@ -32,7 +32,8 @@ int main()
 	
 	/* sort the sequence in ascending order*/
 	ax_quick_sort(ax_p(ax_iter, ax_box_begin(arr.ax_box)), 
-			ax_p(ax_iter, ax_box_end(arr.ax_box)));
+			ax_p(ax_iter, ax_box_end(arr.ax_box)),
+			NULL);
 
 	/* reverse the sequence */
 	ax_seq_invert(arr.ax_seq);
