@@ -81,25 +81,25 @@
 #define DECLARE_INT_OPERSET_STRUCT(_type) \
 	const struct ax_oper_st ax_oper_##_type = \
 	{ \
-		.add = _type##_add, \
-		.sub = _type##_sub, \
-		.mul = _type##_mul, \
-		.div = _type##_div, \
-		.mod = _type##_mod, \
-		.and = _type##_and, \
-		.or  = _type##_or, \
-		.not = _type##_not, \
-		.bit_and = _type##_bit_and, \
-		.bit_or  = _type##_bit_or, \
-		.bit_not = _type##_bit_not, \
-		.bit_xor = _type##_bit_xor, \
-		.gt  = _type##_gt, \
-		.ge  = _type##_ge, \
-		.lt  = _type##_lt, \
-		.le  = _type##_le, \
-		.eq  = _type##_eq, \
-		.ne  = _type##_ne, \
-		.hash = NULL \
+		.o_add = _type##_add, \
+		.o_sub = _type##_sub, \
+		.o_mul = _type##_mul, \
+		.o_div = _type##_div, \
+		.o_mod = _type##_mod, \
+		.o_and = _type##_and, \
+		.o_or  = _type##_or, \
+		.o_not = _type##_not, \
+		.o_bit_and = _type##_bit_and, \
+		.o_bit_or  = _type##_bit_or, \
+		.o_bit_not = _type##_bit_not, \
+		.o_bit_xor = _type##_bit_xor, \
+		.o_gt  = _type##_gt, \
+		.o_ge  = _type##_ge, \
+		.o_lt  = _type##_lt, \
+		.o_le  = _type##_le, \
+		.o_eq  = _type##_eq, \
+		.o_ne  = _type##_ne, \
+		.o_hash = NULL \
 	};
 
 #define DECLARE_INT_OPER(_type) \
@@ -114,6 +114,7 @@ DECLARE_INT_OPER(uint8_t)
 DECLARE_INT_OPER(uint16_t)
 DECLARE_INT_OPER(uint32_t)
 DECLARE_INT_OPER(uint64_t)
+DECLARE_INT_OPER(uintptr_t)
 DECLARE_INT_OPER(size_t)
 
 #define DECLARE_FLOAT_OPERSET_FUNCS(_type) \
@@ -131,29 +132,29 @@ DECLARE_INT_OPER(size_t)
 #define DECLARE_FLOAT_OPERSET_STRUCT(_type) \
 	const struct ax_oper_st ax_oper_##_type = \
 	{ \
-		.add = _type##_add, \
-		.sub = _type##_sub, \
-		.mul = _type##_mul, \
-		.div = _type##_div, \
-		.mod = NULL, \
+		.o_add = _type##_add, \
+		.o_sub = _type##_sub, \
+		.o_mul = _type##_mul, \
+		.o_div = _type##_div, \
+		.o_mod = NULL, \
 		\
-		.and = NULL, \
-		.or  = NULL, \
-		.not = NULL, \
+		.o_and = NULL, \
+		.o_or  = NULL, \
+		.o_not = NULL, \
 		\
-		.bit_and = NULL, \
-		.bit_or  = NULL, \
-		.bit_not = NULL, \
-		.bit_xor = NULL, \
+		.o_bit_and = NULL, \
+		.o_bit_or  = NULL, \
+		.o_bit_not = NULL, \
+		.o_bit_xor = NULL, \
 		\
-		.gt  = _type##_gt, \
-		.ge  = _type##_ge, \
-		.lt  = _type##_lt, \
-		.le  = _type##_le, \
-		.eq  = _type##_eq, \
-		.ne  = _type##_ne, \
+		.o_gt  = _type##_gt, \
+		.o_ge  = _type##_ge, \
+		.o_lt  = _type##_lt, \
+		.o_le  = _type##_le, \
+		.o_eq  = _type##_eq, \
+		.o_ne  = _type##_ne, \
 		\
-		.hash = NULL \
+		.o_hash = NULL \
 	};
 
 

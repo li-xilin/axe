@@ -29,40 +29,82 @@
 #include <setjmp.h>
 #include <stdlib.h>
 
-static void pred_unary(ut_runner *r)
+void binary(void *ret, const void *v1, const void *v2, void *ctx)
 {
-	uint32_t in = 1, out;
-	ax_pred pred = ax_pred_unary_make(ax_op(uint32_t).bit_not, NULL, NULL);
-	ax_pred_do(&pred, &out, &in, NULL);
-	ut_assert(r, out == 0xFFFFFFFE);
-
-	bool bool_out;
-	pred = ax_pred_unary_make(ax_op(uint32_t).not, &in, NULL);
-	ax_pred_do(&pred, &bool_out, NULL, NULL);
-	ut_assert(r, bool_out == false);
-
+	*(int *)ret = (v1 ? *(int *)v1 : -1) + (v2 ? *(int *)v2 : -2);
 }
+
+void unary(void *ret, const void *v, void *ctx)
+{
+	*(int *)ret = (v ? *(int *)v : -1);
+}
+
 
 static void pred_binary(ut_runner *r)
 {
-	ax_pred pred;
-	uint32_t in1 = 3, in2 = 4, out;
+	int n, ret, expect;
+	ax_pred0 *p0;
+	ax_pred1 *p1;
+	ax_pred2 *p2;
 
-	pred = ax_pred_binary_make(ax_op(uint32_t).add, NULL, NULL, NULL);
-	ax_pred_do(&pred, &out, &in1, &in2);
-	ut_assert(r, out == 7);
+	int _2 = 2, _3 = 3, _4 = 4, _5 = 5, _6 = 6, _7 = 7;
 
-	pred = ax_pred_binary_make(ax_op(uint32_t).add, &in1, NULL, NULL);
-	ax_pred_do(&pred, &out, &in2, NULL);
-	ut_assert(r, out == 7);
+	ax_pred2 pred2 = ax_pred2_make(binary, &n);
 
-	pred = ax_pred_binary_make(ax_op(uint32_t).add, NULL, &in2, NULL);
-	ax_pred_do(&pred, &out, &in1, NULL);
-	ut_assert(r, out == 7);
+	p2 = &pred2;
+	ax_pred2_do(p2, &ret, &_2, &_3);
+	binary(&expect, &_2, &_3, NULL);
+	ut_assert_int_equal(r, expect, ret);
 
-	pred = ax_pred_binary_make(ax_op(uint32_t).add, &in1, &in2, NULL);
-	ax_pred_do(&pred, &out, NULL, NULL);
-	ut_assert(r, out == 7);
+	p1 = ax_pred2_bind1(p2, &_4);
+	ax_pred1_do(p1, &ret, &_5);
+	binary(&expect, &_4, &_5, NULL);
+	ut_assert_int_equal(r, expect, ret);
+
+	p1 = ax_pred2_bind2(p2, &_4);
+	ax_pred1_do(p1, &ret, &_5);
+	binary(&expect, &_5, &_4, NULL);
+	ut_assert_int_equal(r, expect, ret);
+
+	p0 = ax_pred1_bind(p1, &_6);
+	ax_pred0_do(p0, &ret);
+	binary(&expect, &_6, &_4, NULL);
+	ut_assert_int_equal(r, expect, ret);
+
+	p1 = ax_pred2_bind2(p2, &_6);
+	ax_pred1_do(p1, &ret, &_7);
+	binary(&expect, &_7, &_6, NULL);
+	ut_assert_int_equal(r, expect, ret);
+
+	ax_pred2_do(p2, &ret, &_3, &_2);
+	binary(&expect, &_3, &_2, NULL);
+	ut_assert_int_equal(r, expect, ret);
+
+}
+
+static void pred_unary(ut_runner *r)
+{
+
+	int n, ret, expect;
+	int _2 = 2, _3 = 3, _4 = 4;
+	ax_pred0 *p0;
+	ax_pred1 *p1;
+
+	ax_pred1 pred1 = ax_pred1_make(unary, &n);
+
+	p1 = &pred1;
+	ax_pred1_do(p1, &ret, &_2);
+	unary(&expect, &_2, NULL);
+	ut_assert_int_equal(r, expect, ret);
+
+	p0 = ax_pred1_bind(p1, &_3);
+	ax_pred0_do(p0, &ret);
+	unary(&expect, &_3, NULL);
+	ut_assert_int_equal(r, expect, ret);
+
+	ax_pred1_do(p1, &ret, &_4);
+	unary(&expect, &_4, NULL);
+	ut_assert_int_equal(r, expect, ret);
 
 }
 
