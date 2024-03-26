@@ -38,7 +38,7 @@ static bool seq_equal_array(ax_seq *seq, void *arr, size_t mem_size)
 	ax_box *box = ax_r(ax_seq, seq).ax_box;
 	ax_iter first = ax_box_begin(box);
 	ax_iter last = ax_box_end(box);
-	return ax_equal_to_arr(&first, &last, arr, mem_size);
+	return ax_equal_to_array(&first, &last, arr, mem_size, NULL);
 }
 
 static void create(ut_runner *r)

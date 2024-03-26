@@ -23,7 +23,7 @@
 #include "ut/suite.h"
 #include "ut/case.h"
 
-#include "ax/vector.h"
+#include "ax/list.h"
 #include "ax/algo.h"
 #include "ax/mem.h"
 
@@ -38,7 +38,7 @@ struct ut_suite_st
 {
 	char *name;
 	void *arg;
-	ax_vector_r tctab;
+	ax_list_r tctab;
 };
 
 void ut_suite_destroy(ut_suite *s)
@@ -54,14 +54,14 @@ ut_suite *ut_suite_create(const char *name)
 {
 	CHECK_PARAM_NULL(name);
 	ut_suite *suite = NULL;
-	ax_vector_r cases = AX_R_NULL;
+	ax_list_r cases = AX_R_NULL;
 	char *name_copy = NULL;
 	
 	suite = malloc(sizeof(ut_suite));
 	if (!suite)
 		return NULL;
 
-	cases = ax_new(ax_vector, &ut_case_tr);
+	cases = ax_new(ax_list, &ut_case_tr);
 	if (ax_r_isnull(cases)) {
 		return NULL;
 	}
@@ -107,11 +107,11 @@ ax_fail ut_suite_add_case(ut_suite *suite, const char *name, ut_case_proc_f proc
 		return fail;
 	ax_iter first = ax_box_begin(suite->tctab.ax_box);
 	ax_iter last = ax_box_end(suite->tctab.ax_box);
-	ax_insertion_sort(&first, &last);
+	ax_list_insertion_sort(&first, &last);
 	return false;
 }
 
-ax_vector_r ut_suite_all_case(const ut_suite *suite)
+ax_list_r ut_suite_all_case(const ut_suite *suite)
 {
 	return suite->tctab;
 }

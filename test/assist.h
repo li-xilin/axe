@@ -29,6 +29,6 @@ inline static bool seq_equal_array(ax_seq *seq, void *arr, size_t mem_size)
 {
 	ax_iter first = ax_box_begin(ax_r(ax_seq, seq).ax_box);
 	ax_iter last = ax_box_end(ax_r(ax_seq, seq).ax_box);
-	return ax_equal_to_arr(&first, &last, arr, mem_size);
+	return ax_equal_to_array(&first, &last, arr, mem_size, NULL);
 }
 #endif

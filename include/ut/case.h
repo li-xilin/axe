@@ -23,7 +23,8 @@
 #ifndef UT_CASE_H
 #define UT_CASE_H
 
-#include "../ax/trait.h"
+#include "ax/trait.h"
+#include "ax/link.h"
 
 #ifndef UT_CASE_DEFINED
 #define UT_CASE_DEFINED
@@ -37,6 +38,14 @@ typedef struct ut_runner_st ut_runner;
 
 typedef void (*ut_case_proc_f)(ut_runner *runner);
 
+typedef enum ut_case_state_en
+{
+        UT_CS_READY = 0,
+        UT_CS_PASS,
+        UT_CS_FAIL,
+        UT_CS_TERM,
+} ut_case_state;
+
 struct ut_case_st
 {
 	ut_case_proc_f proc;
@@ -46,9 +55,15 @@ struct ut_case_st
 	unsigned int line;
 	int state;
 	const int priority;
+	ax_link msg_list;
 };
 
 extern const ax_trait ut_case_tr;
+
+ax_fail ut_case_add_text(ut_case *c, const char *file, int line, char *msg);
+
+typedef void ax_case_enum_text_f(ut_case *c, const char *file, int line, char *msg, void *ctx);
+void ut_case_enum_text(ut_case *c, ax_case_enum_text_f *f, void *ctx);
 
 #endif
 

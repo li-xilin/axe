@@ -443,6 +443,11 @@ ax_fail ax_dump_fput(const ax_dump *dmp, const ax_dump_format *format, FILE *fp)
 static int dump_out_dfs(const ax_dump *dmp, int depth, struct search_args *args)
 {
 	int ret;
+	if (!dmp) {
+		if (args->format->symbol("NOT_BIND", args->filter_cb, args))
+			return -1;
+		return 0;
+	}
 	union value_u *value = (void *)dmp->value;
 	switch (dmp->type & ~DTYPE_BIND) {
 		case DTYPE_SNUM:

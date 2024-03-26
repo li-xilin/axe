@@ -43,7 +43,14 @@ extern ut_suite *suite_for_class();
 extern ut_suite *suite_for_stuff();
 extern ut_suite *suite_for_unicode();
 extern ut_suite *suite_for_iobuf();
+extern ut_suite *suite_for_mpool();
 extern void suite_for_maps(ut_runner *r);
+
+void show_process(const char *suite_name, const char *case_name, int cur, int total)
+{
+	fprintf(stderr, " [%d/%d] %s : %s %*c\r", cur, total, suite_name, case_name, 30, ' ');
+	fflush(stderr);
+}
 
 int main()
 {
@@ -67,10 +74,11 @@ int main()
 	ut_runner_add(r, suite_for_stuff());
 	ut_runner_add(r, suite_for_unicode());
 	ut_runner_add(r, suite_for_iobuf());
+	ut_runner_add(r, suite_for_mpool());
 
 	suite_for_maps(r);
 
-	ut_runner_run(r);
+	ut_runner_run(r, show_process);
 	fputs(ut_runner_result(r), stdout);
 
 	ax_one_free(ax_r(ut_runner, r).ax_one);

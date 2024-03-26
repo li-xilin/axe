@@ -40,14 +40,6 @@ typedef struct ut_runner_st ut_runner;
 typedef struct ut_suite_st ut_suite;
 #endif
 
-typedef enum ut_case_state_en
-{
-	UT_CS_READY = 0,
-	UT_CS_PASS,
-	UT_CS_FAIL,
-	UT_CS_TERM,
-} ut_case_state;
-
 ut_suite *ut_suite_create(const char* name);
 
 void ut_suite_destroy(ut_suite *s);
