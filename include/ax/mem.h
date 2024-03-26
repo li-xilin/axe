@@ -25,7 +25,13 @@
 #include "def.h"
 #include <string.h>
 
-#define ax_swap(a, b, type) do { type tmp = *(a); *(a) = *(b); *(b) = tmp; } while(0)
+#define ax_swap(a, b, type) do { \
+	register type *x = a; \
+	register type *y = b; \
+	type tmp = *x; \
+	*(x) = *(y); \
+	*(y) = tmp; \
+} while(0)
 
 inline static uint32_t ax_hash_murmur32(const void *key, size_t size)
 {
