@@ -23,6 +23,7 @@
 #ifndef AX_DEF_H
 #define AX_DEF_H
 
+#include "trick.h"
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -59,6 +60,9 @@ typedef uint_fast32_t ax_fast_uint;
 #define ax_nelems(_a) (((sizeof (_a) / sizeof *(_a))) / !((uintptr_t)_a - (uintptr_t)&_a))
 
 #define ax_container_of(ptr, type, member) (((type*)((char*)ptr - (offsetof(type, member)))))
+
+#define __AX_SIZEOF(i, type) + sizeof(type)
+#define ax_sizeof(...) (AX_TRANSFORM(__AX_SIZEOF, __VA_ARGS__))
 
 #endif
 
