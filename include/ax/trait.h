@@ -174,7 +174,7 @@ typedef ptrdiff_t ax_type(diff);
 
 #define ax_trait_define(_name, ...) \
 	const struct ax_trait_st __AX_TRAIT_STRUCT_NAME(_name) = \
-	{ .t_size = sizeof(ax_type(_name)), AX_MTOOL_TRANSFORM(__AX_TRAIT_SET, __VA_ARGS__) }
+	{ .t_size = sizeof(ax_type(_name)), AX_TRANSFORM(__AX_TRAIT_SET, __VA_ARGS__) }
 
 #define ax_trait_define0(_name) \
 	const struct ax_trait_st __AX_TRAIT_STRUCT_NAME(_name) = \

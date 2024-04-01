@@ -72,7 +72,7 @@
 #define ax_end }
 #endif
 
-#define __ax_base_of(n, name) __AX_PREFIX_TO_##n(ax_baseof_, name)
+#define __ax_base_of(n, name) __AX_EXPAND_PREFIX_##n(ax_baseof_, name)
 #define ax_base_of(n, name) __ax_base_of(n, name)
 
 #define __AX_CLASS_DECLARE_VAR(const, name) const struct AX_CATENATE(name, _st) *name; 
