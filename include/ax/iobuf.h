@@ -73,6 +73,24 @@ inline static size_t ax_iobuf_free_size(ax_iobuf *b)
 	return ax_iobuf_max_size(b) - ax_iobuf_data_size(b);
 }
 
+inline static size_t ax_iobuf_inplace_size(const ax_iobuf *b)
+{
+        return (b->rear >= b->front)
+		? b->size - b->rear - !b->front
+		: b->front - b->rear - 1;
+}
+
+inline static void *ax_iobuf_inplace_buf(ax_iobuf *b)
+{
+	return b->buf + b->rear;
+}
+
+inline static void ax_iobuf_inplace_take(ax_iobuf *b, size_t size)
+{
+        assert(size <= ax_iobuf_inplace_size(b));
+        b->rear += size;
+}
+
 inline static void ax_iobuf_clear(ax_iobuf *b)
 {
 	b->rear = b->front = 0;
@@ -83,10 +101,11 @@ size_t ax_iobuf_write(ax_iobuf *b, void *p, size_t size);
 size_t ax_iobuf_peek(ax_iobuf *b, void *buf, size_t start, size_t size);
 
 size_t ax_iobuf_read(ax_iobuf *b, void *buf, size_t size);
+
 void *ax_iobuf_chbuf(ax_iobuf *b, void *buf, size_t size);
 
 size_t ax_iobuf_drain(ax_iobuf *b, size_t size, ax_iobuf_drain_cb *cb, void *arg);
 
-void *ax_iobuf_flatten(ax_iobuf *b);
+void *ax_iobuf_pullup(ax_iobuf *b);
 
 #endif

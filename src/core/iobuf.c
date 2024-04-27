@@ -34,6 +34,15 @@ size_t ax_iobuf_write(ax_iobuf *b, void *p, size_t size)
         return buf_size;
 }
 
+void *ax_iobuf_inplace_write(ax_iobuf *b, size_t *size)
+{
+        size_t write_size = ax_min(ax_iobuf_inplace_size(b), *size);
+	size_t old_rear = b->rear;
+	b->rear += write_size;
+	*size = write_size;
+	return b->buf + old_rear;
+}
+
 size_t ax_iobuf_peek(ax_iobuf *b, void *buf, size_t start, size_t size)
 {
         assert(buf != NULL);
@@ -102,7 +111,7 @@ size_t ax_iobuf_drain(ax_iobuf *b, size_t size, ax_iobuf_drain_cb *cb, void *arg
         return read_size;
 }
 
-void *ax_iobuf_flatten(ax_iobuf *b)
+void *ax_iobuf_pullup(ax_iobuf *b)
 {
 	CHECK_PARAM_NULL(b);
 
@@ -139,3 +148,4 @@ void *ax_iobuf_flatten(ax_iobuf *b)
         b->rear = size;
         return b->buf + b->front;
 }
+
