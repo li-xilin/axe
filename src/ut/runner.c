@@ -79,7 +79,7 @@ static void case_enum(ut_case *c, const char *file, int line, char *msg, void *c
 	ax_str *out = ctx_arr[0];
 	const char *suite_name = ctx_arr[1];
 
-	ax_str_sprintf(out, "[INFO] %-10s : %s: %s, line %d: %s\n",
+	ax_str_sprintf(out, "[INFO] %-8s : %s:%s:%d: %s\n",
 				suite_name, c->name, file, line, msg);
 }
 
@@ -89,14 +89,14 @@ static void default_output(const char *suite_name, ut_case *tc, ax_str *out)
 	ut_case_enum_text(tc, case_enum, &(const void *[]) { out, suite_name });
 	switch (tc->state) {
 		case UT_CS_PASS:
-			ax_str_sprintf(out, "[ OK ] %-10s : %s\n", suite_name, tc->name);
+			ax_str_sprintf(out, "[ OK ] %-8s : %s\n", suite_name, tc->name);
 			break;
 		case UT_CS_FAIL:
-			ax_str_sprintf(out, "[FAIL] %-10s : %s: %s, line %d: %s\n",
+			ax_str_sprintf(out, "[FAIL] %-8s : %s:%s:%d: %s\n",
 				suite_name, tc->name, tc->file, tc->line, tc->log ? tc->log : "none");
 			break;
 		case UT_CS_TERM:
-			ax_str_sprintf(out, "[TERM] %-10s : %s: %s, line %d: %s\n",
+			ax_str_sprintf(out, "[TERM] %-8s : %s:%s:%d: %s\n",
 				suite_name, tc->name, tc->file, tc->line, tc->log ? tc->log : "none");
 			break;
 	}
