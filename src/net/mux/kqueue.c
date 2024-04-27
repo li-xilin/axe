@@ -155,7 +155,7 @@ void mux_del(mux *mux, ax_socket fd, short flags)
 	mux->nevents --;
 }
 
-int mux_poll(mux *mux, ax_mutex *lock, struct timeval * timeout, mux_pending_cb *pending_cb, void *arg)
+int mux_poll(mux *mux, ax_lock *lock, struct timeval * timeout, mux_pending_cb *pending_cb, void *arg)
 {
 	assert(mux != NULL);
 	int res_flags , nreadys, i;
@@ -164,9 +164,9 @@ int mux_poll(mux *mux, ax_mutex *lock, struct timeval * timeout, mux_pending_cb 
 		? (struct timespec[]){{ .tv_sec = timeout->tv_sec,
 				.tv_nsec = timeout->tv_usec * 1000 }}
 		: NULL;
-	ax_mutex_unlock(lock);
+	ax_lock_put(lock);
 	nreadys = kevent(mux->kqueue_fd, NULL, 0, mux->events, mux->nevents, spec);
-	ax_mutex_lock(lock);
+	ax_lock_get(lock);
 	for (i = 0; i < nreadys; ++i) {
 		res_flags = 0;
 		if (mux->events[i].filter == EVFILT_READ)

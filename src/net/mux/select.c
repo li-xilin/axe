@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <assert.h>
+#include <errno.h>
 
 struct mux_st
 {
@@ -39,7 +40,7 @@ mux *mux_init(void)
 	mux->fds.ax_one = NULL;
 	mux->n_readfd = mux->n_writefd = 0;
 
-	mux->fds = ax_new(ax_hmap, ax_t(ax_socket), ax_t(short));
+	mux->fds = ax_new(ax_hmap, &ax_t_socket, ax_t(short));
 	if (ax_r_isnull(mux->fds))
 		goto fail;
 	return mux;
@@ -61,8 +62,10 @@ int mux_add(mux *mux, ax_socket fd, short flags)
 		return -1;
 	}
 
-	if (ax_map_exist(mux->fds.ax_map, &fd))
+	if (ax_map_exist(mux->fds.ax_map, &fd)) {
+		errno = EALREADY;
 		return -1;
+	}
 
 	if (flags & AX_EV_READ)
 		mux->n_readfd ++;
@@ -117,7 +120,7 @@ void mux_del(mux *mux, ax_socket fd, short flags)
 	ax_map_erase(mux->fds.ax_map, &fd);
 }
 
-int mux_poll(mux *mux, ax_mutex *lock, struct timeval * timeout, mux_pending_cb *pending_cb, void *arg)
+int mux_poll(mux *mux, ax_lock *lock, struct timeval * timeout, mux_pending_cb *pending_cb, void *arg)
 {
 	assert(mux);
 
@@ -137,9 +140,9 @@ int mux_poll(mux *mux, ax_mutex *lock, struct timeval * timeout, mux_pending_cb 
 			FD_SET(*fd, &write_fdset);
 	}
 
-	ax_mutex_unlock(lock);
+	ax_lock_put(lock);
 	int nreadys = select(fd_max + 1, &read_fdset, &write_fdset, NULL, timeout);
-	ax_mutex_lock(lock);
+	ax_lock_get(lock);
 
 	if (nreadys < 0)
 		return -1;

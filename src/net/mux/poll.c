@@ -170,7 +170,7 @@ void mux_del(mux *mux, ax_socket fd, short flags)
 	}
 }
 
-int mux_poll(mux *mux, ax_mutex *lock, struct timeval * timeout, mux_pending_cb *pending_cb, void *arg)
+int mux_poll(mux *mux, ax_lock *lock, struct timeval * timeout, mux_pending_cb *pending_cb, void *arg)
 {
 	assert(mux);
 
@@ -190,11 +190,11 @@ int mux_poll(mux *mux, ax_mutex *lock, struct timeval * timeout, mux_pending_cb 
 	/* No need to realloc and rememcpy since we are in single-threaeded environment. */
 	/* mux->fds = mux->fds_in; */
 
-	ax_mutex_unlock(lock);
+	ax_lock_put(lock);
 	nreadys = poll(mux->fds, 
 			mux->n_events, 
 			timeout ? timeout->tv_sec * 1000 + timeout->tv_usec / 1000 : -1);
-	ax_mutex_lock(lock);
+	ax_lock_get(lock);
 
 	if(nreadys) {
 		for(int i = 0; i < mux->n_events; ++i) {
