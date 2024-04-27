@@ -93,7 +93,7 @@ int ax_socket_init()
 #endif
 }
 
-void ax_socket_deinit()
+void ax_socket_exit()
 {
 #ifdef AX_OS_WIN32
 	WSACleanup();

@@ -61,7 +61,7 @@ extern const ax_trait ax_t_socket;
 
 int ax_socket_init();
 
-void ax_socket_deinit();
+void ax_socket_exit();
 
 int ax_socket_pair(int family, int type, int protocol, ax_socket fd[2]);
 
