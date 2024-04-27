@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Li Xilin <lixilin@gmx.com>
+ * Copyright (c) 2023-2024 Li Xilin <lixilin@gmx.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@
 #include <unistd.h>
 #include <utime.h>
 #include <sys/types.h>
+#include <sys/sysinfo.h>
 #endif
 
 int ax_sys_mkdir(const ax_uchar *path, int mode)
@@ -156,9 +157,9 @@ int ax_sys_symlink(const ax_uchar *path, const ax_uchar *link_path, bool dir_lin
 	return 0;
 }
 
-static ax_once sg_env_once = AX_ONCE_INIT;
-static ax_tss sg_env_tss;
-static ax_mutex sg_env_lock = AX_MUTEX_INIT;
+static ax_once s_env_once = AX_ONCE_INIT;
+static ax_tss s_env_tss;
+static ax_mutex s_env_lock = AX_MUTEX_INIT;
 
 static void getcwd_tss_free(void *p)
 {
@@ -167,7 +168,7 @@ static void getcwd_tss_free(void *p)
 
 static void getcwd_init(void)
 {
-        ax_tss_create(&sg_env_tss, getcwd_tss_free);
+        ax_tss_create(&s_env_tss, getcwd_tss_free);
 }
 
 const ax_uchar *ax_sys_getenv(const ax_uchar *name)
@@ -175,10 +176,10 @@ const ax_uchar *ax_sys_getenv(const ax_uchar *name)
 	assert(name);
 
 	ax_uchar *tss_buf = NULL, *val;
-        if (ax_once_run(&sg_env_once, getcwd_init))
+        if (ax_once_run(&s_env_once, getcwd_init))
 		goto out;
 
-	if (ax_mutex_lock(&sg_env_lock))
+	if (ax_mutex_lock(&s_env_lock))
 		goto out;
 #ifdef AX_OS_WIN
 	val = _wgetenv(name);
@@ -190,14 +191,14 @@ const ax_uchar *ax_sys_getenv(const ax_uchar *name)
 	if (!(tss_buf = ax_ustrdup(val)))
 		goto unlock;
 
-	free(ax_tss_get(&sg_env_tss));
-	if (ax_tss_set(&sg_env_tss, tss_buf)) {
+	free(ax_tss_get(&s_env_tss));
+	if (ax_tss_set(&s_env_tss, tss_buf)) {
 		free(tss_buf);
 		tss_buf = NULL;
 		goto unlock;
 	}
 unlock:
-	ax_mutex_unlock(&sg_env_lock);
+	ax_mutex_unlock(&s_env_lock);
 out:
 	return tss_buf;
 }
@@ -215,7 +216,7 @@ int ax_sys_setenv(const ax_uchar *name, const ax_uchar *value)
 #endif
 }
 
-#define TIMET_TO_ULI(timet) ((ULARGE_INTEGER) { \
+#define TIMET_TO_ULINTEGER(timet) ((ULARGE_INTEGER) { \
         .QuadPart = (LONGLONG)timet * 10000000 + 116444736000000000 \
 })
 
@@ -223,8 +224,8 @@ int ax_sys_utime(const ax_uchar *path, time_t atime, time_t mtime)
 {
 #ifdef AX_OS_WIN
         int retval = -1;
-        ULARGE_INTEGER uiAccessTime =  TIMET_TO_ULI(atime);
-        ULARGE_INTEGER uiModifyTime =  TIMET_TO_ULI(mtime);
+        ULARGE_INTEGER uiAccessTime =  TIMET_TO_ULINTEGER(atime);
+        ULARGE_INTEGER uiModifyTime =  TIMET_TO_ULINTEGER(mtime);
         FILETIME ftAccess = {
                 .dwHighDateTime = uiAccessTime.HighPart,
                 .dwLowDateTime = uiAccessTime.LowPart
@@ -247,3 +248,15 @@ out:
 	return utime(path, ax_pstruct(struct utimbuf, .actime = atime, .modtime = mtime));
 #endif
 }
+
+int ax_sys_nprocs(void)
+{
+#ifdef AX_OS_WIN
+	SYSTEM_INFO sys;
+	GetSystemInfo(&sys);
+	return sys.dwNumberOfProcessors;
+#else
+	return get_nprocs();
+#endif
+}
+

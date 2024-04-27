@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Li Xilin <lixilin@gmx.com>
+ * Copyright (c) 2023-2024 Li Xilin <lixilin@gmx.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,7 @@ int ax_sys_copy(const ax_uchar *path, const ax_uchar *new_path);
 
 int ax_sys_link(const ax_uchar *path, const ax_uchar *link_path);
 
+/* 'dir_link' parameter specifies if the symbolic link is for a directory in Windows. */
 int ax_sys_symlink(const ax_uchar *path, const ax_uchar *link_path, bool dir_link);
 
 const ax_uchar *ax_sys_getenv(const ax_uchar *name);
@@ -48,6 +49,8 @@ const ax_uchar *ax_sys_getenv(const ax_uchar *name);
 int ax_sys_setenv(const ax_uchar *name, const ax_uchar *value);
 
 int ax_sys_utime(const ax_uchar *path, time_t atime, time_t mtime);
+
+int ax_sys_nprocs(void);
 
 #endif
 
