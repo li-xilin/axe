@@ -29,41 +29,35 @@
 #include <assert.h>
 #include <errno.h>
 
-/*
- ** A minimum allocation is an instance of the following structure.
- ** Larger allocations are an array of these structures where the
- ** size of the array is a power of 2.
- **
- ** The size of this object must be a power of two.  That fact is
- ** verified in ax_mpool_init().
- */
+/* A minimum allocation is an instance of the following structure.
+ * Larger allocations are an array of these structures where the
+ * size of the array is a power of 2.
+ *
+ * The size of this object must be a power of two.  That fact is
+ * verified in ax_mpool_init().  */
 
-typedef struct mpool_link_st {
+typedef struct {
 	int next;
 	int prev;
-} mpool_link;
+} link;
 
-/*
- ** Masks used for ax_mpool.ctrl_table[] elements.
- */
+/* Masks used for ax_mpool.ctrl_table[] elements.  */
 #define CTRL_LOGSIZE  0x1f    /* Log2 Size of this block */
 #define CTRL_FREE     0x20    /* True if not checked out */
 
-/*
- ** Assuming ax_mpool.pool_buf is divided up into an array of mpool_link
- ** structures, return a pointer to the idx-th such lik.
- */
-#define mpool_getlink(mp, idx) ((mpool_link *)(&mp->pool_buf[(idx) * mp->atom_size]))
+/* Assuming ax_mpool.pool_buf is divided up into an array of mpool_link
+ * structures, return a pointer to the idx-th such lik. */
+#define mpool_getlink(mp, idx) ((link *)(&mp->pool_buf[(idx) * mp->atom_size]))
 
 static int mpool_logarithm(size_t value);
 static size_t mpool_size(const ax_mpool *mp, void *p);
-static void mpool_link_st(ax_mpool *mp, int i, size_t log_size);
+static void mpool_link(ax_mpool *mp, int i, size_t log_size);
 static void mpool_unlink(ax_mpool *mp, int i, size_t log_size);
 static int mpool_unlink_first(ax_mpool *mp, size_t log_size);
 static void *mpool_malloc_unsafe(ax_mpool *mp, size_t nbytes);
 static void mpool_free_unsafe(ax_mpool *mp, void *old_ptr);
 
-void ax_mpool_init(ax_mpool *mp, void *buf, size_t buf_size, size_t min_alloc)
+int ax_mpool_init(ax_mpool *mp, void *buf, size_t buf_size, size_t min_alloc)
 {
 	CHECK_PARAM_NULL(mp);
 	CHECK_PARAM_NULL(buf);
@@ -76,14 +70,17 @@ void ax_mpool_init(ax_mpool *mp, void *buf, size_t buf_size, size_t min_alloc)
 
 	memset(mp, 0, sizeof *mp);
 
-	/* The size of a mpool_link object must be a power of two.  Verify that this is case.  */
-	assert((sizeof (mpool_link)&(sizeof (mpool_link) - 1)) == 0);
+	/* The size of a link object must be a power of two */
+	assert((sizeof (link)&(sizeof (link) - 1)) == 0);
+
+	if (ax_lock_init(&mp->lock))
+		return -1;
 
 	nbytes = buf_size;
 
 	nminlogs = mpool_logarithm(min_alloc);
 	mp->atom_size = (1 << nminlogs);
-	while ((int) sizeof (mpool_link) > mp->atom_size)
+	while ((int) sizeof (link) > mp->atom_size)
 		mp->atom_size = mp->atom_size << 1;
 
 	mp->nblocks = (nbytes / (mp->atom_size + sizeof (uint8_t)));
@@ -98,12 +95,12 @@ void ax_mpool_init(ax_mpool *mp, void *buf, size_t buf_size, size_t min_alloc)
 		int n_alloc = (1 << i);
 		if ((offset + n_alloc) <= mp->nblocks) {
 			mp->ctrl_table[offset] = (uint8_t) (i | CTRL_FREE);
-			mpool_link_st(mp, offset, i);
+			mpool_link(mp, offset, i);
 			offset += n_alloc;
 		}
 		assert((offset + n_alloc) > mp->nblocks);
 	}
-	ax_lock_init(&mp->lock);
+	return 0;
 }
 
 void *ax_mpool_malloc(ax_mpool *mp, size_t size)
@@ -157,7 +154,9 @@ size_t ax_mpool_roundup(ax_mpool *mp, size_t n)
 
 ax_dump *ax_mpool_stats(const ax_mpool *mp)
 {
-	ax_dump *blk = ax_dump_block("", 8);
+
+#ifdef AX_MPOOL_ENABLE_STATISTICS
+	ax_dump *blk = ax_dump_block("mpool_stats", 8);
 	ax_dump_bind(blk, 0, ax_dump_pair(ax_dump_symbol("NUM_OF_MALLOC_CALL"), ax_dump_uint(mp->n_alloc)));
 	ax_dump_bind(blk, 1, ax_dump_pair(ax_dump_symbol("TOTAL_OF_ALL_MALLOC_CALLS"), ax_dump_uint(mp->total_alloc)));
 	ax_dump_bind(blk, 2, ax_dump_pair(ax_dump_symbol("NUM_OF_FRAGMENTATIONS"), ax_dump_uint(mp->total_excess)));
@@ -167,18 +166,21 @@ ax_dump *ax_mpool_stats(const ax_mpool *mp)
 	ax_dump_bind(blk, 6, ax_dump_pair(ax_dump_symbol("MAX_INSTANTANEOUS_CUR_CNT"), ax_dump_uint(mp->max_count)));
 	ax_dump_bind(blk, 7, ax_dump_pair(ax_dump_symbol("MAX_ALLOC_SIZE"), ax_dump_uint(mp->max_req)));
 	return blk;
+#else
+	ax_dump *blk = ax_dump_block("mpool_stats", 1);
+	ax_dump_bind(blk, 0, ax_dump_symbol("DISABLED"));
+	return blk;
+#endif
 }
 
-/*
- ** Return the ceiling of the logarithm base 2 of iValue.
- **
- ** Examples:   mpool_logarithm(1) -> 0
- **             mpool_logarithm(2) -> 1
- **             mpool_logarithm(4) -> 2
- **             mpool_logarithm(5) -> 3
- **             mpool_logarithm(8) -> 3
- **             mpool_logarithm(9) -> 4
- */
+/* Return the ceiling of the logarithm base 2 of value.
+ *
+ * Examples:   mpool_logarithm(1) -> 0
+ *             mpool_logarithm(2) -> 1
+ *             mpool_logarithm(4) -> 2
+ *             mpool_logarithm(5) -> 3
+ *             mpool_logarithm(8) -> 3
+ *             mpool_logarithm(9) -> 4 */
 static int mpool_logarithm(size_t value)
 {
 	int i;
@@ -186,11 +188,9 @@ static int mpool_logarithm(size_t value)
 	return i;
 }
 
-/*
- ** Return the size of an outstanding allocation, in bytes.  The
- ** size returned omits the 8-byte header overhead.  This only
- ** works for chunks that are currently checked out.
- */
+/* Return the size of an outstanding allocation, in bytes. The
+ * size returned omits the 8-byte header overhead. This only
+ * works for chunks that are currently checked out. */
 static size_t mpool_size(const ax_mpool *mp, void *p)
 {
 	if (!p)
@@ -203,11 +203,9 @@ static size_t mpool_size(const ax_mpool *mp, void *p)
 	return size;
 }
 
-/*
- ** Link the chunk at mp->aPool[i] so that is on the log_size
- ** free list.
- */
-static void mpool_link_st(ax_mpool *mp, int i, size_t log_size)
+/* Link the chunk at mp->aPool[i] so that is on the log_size
+ * free list. */
+static void mpool_link(ax_mpool *mp, int i, size_t log_size)
 {
 	int x;
 	assert(i >= 0 && i < mp->nblocks);
@@ -223,10 +221,8 @@ static void mpool_link_st(ax_mpool *mp, int i, size_t log_size)
 	mp->free_list[log_size] = i;
 }
 
-/*
- ** Unlink the chunk at mp->aPool[i] from list it is currently
- ** on.  It should be found on mp->free_list[log_size].
- */
+/* Unlink the chunk at mp->aPool[i] from list it is currently
+ * on. It should be found on mp->free_list[log_size]. */
 static void mpool_unlink(ax_mpool *mp, int i, size_t log_size)
 {
 	int next, prev;
@@ -245,10 +241,8 @@ static void mpool_unlink(ax_mpool *mp, int i, size_t log_size)
 		mpool_getlink(mp, next)->prev = prev;
 }
 
-/*
- ** Find the first entry on the freelist log_size.  Unlink that
- ** entry and return its index.
- */
+/* Find the first entry on the freelist log_size. Unlink that
+ * entry and return its index. */
 static int mpool_unlink_first(ax_mpool *mp, size_t log_size)
 {
 	int i, first;
@@ -263,16 +257,14 @@ static int mpool_unlink_first(ax_mpool *mp, size_t log_size)
 	return first;
 }
 
-/*
- ** Return a block of memory of at least nbytes in size.
- ** Return NULL if unable.  Return NULL if nbytes==0.
- **
- ** The caller guarantees that nbytes positive.
- **
- ** The caller has obtained a lock prior to invoking this
- ** routine so there is never any chance that two or more
- ** threads can be in this routine at the same time.
- */
+/* Return a block of memory of at least nbytes in size.
+ * Return NULL if unable.  Return NULL if nbytes==0.
+ *
+ * The caller guarantees that nbytes positive.
+ *
+ * The caller has obtained a lock prior to invoking this
+ * routine so there is never any chance that two or more
+ * threads can be in this routine at the same time.  */
 static void *mpool_malloc_unsafe(ax_mpool *mp, size_t nbytes)
 {
 	int i; /* Index of a mp->aPool[] slot */
@@ -281,14 +273,15 @@ static void *mpool_malloc_unsafe(ax_mpool *mp, size_t nbytes)
 	size_t log_size; /* Log2 of full_size/POW2_MIN */
 
 	/* Keep track of the maximum allocation request.  Even unfulfilled
-	 ** requests are counted */
+	 * requests are counted */
+#ifdef AX_MPOOL_ENABLE_STATISTICS
 	if ((uint32_t) nbytes > mp->max_req) {
 		mp->max_req = nbytes;
 	}
+#endif
 
 	/* Abort if the requested allocation size is larger than the largest
-	 ** power of two that we can represent using 32-bit signed integers.
-	 */
+	 * power of two that we can represent using 32-bit signed integers. */
 	if (nbytes > AX_MPOOL_MAX_ALLOC_SIZE) {
 		errno = EINVAL;
 		return NULL;
@@ -299,9 +292,8 @@ static void *mpool_malloc_unsafe(ax_mpool *mp, size_t nbytes)
 			full_size < nbytes; full_size *= 2, log_size++);
 
 	/* Make sure mp->free_list[log_size] contains at least one free
-	 ** block.  If not, then split a block of the next larger power of
-	 ** two in order to create a new free block of size log_size.
-	 */
+	 * block.  If not, then split a block of the next larger power of
+	 * two in order to create a new free block of size log_size. */
 	for (bin = log_size; mp->free_list[bin] < 0 && bin <= AX_MPOOL_LOGMAX; bin++);
 
 	if (bin > AX_MPOOL_LOGMAX) {
@@ -314,10 +306,11 @@ static void *mpool_malloc_unsafe(ax_mpool *mp, size_t nbytes)
 		bin--;
 		size_t new_size = 1 << bin;
 		mp->ctrl_table[i + new_size] = (uint8_t) (CTRL_FREE | bin);
-		mpool_link_st(mp, i + new_size, bin);
+		mpool_link(mp, i + new_size, bin);
 	}
 	mp->ctrl_table[i] = (uint8_t) log_size;
 
+#ifdef AX_MPOOL_ENABLE_STATISTICS
 	/* Update allocator performance statistics. */
 	mp->n_alloc++;
 	mp->total_alloc += full_size;
@@ -328,13 +321,12 @@ static void *mpool_malloc_unsafe(ax_mpool *mp, size_t nbytes)
 		mp->max_count = mp->cur_cnt;
 	if (mp->max_out < mp->cur_out)
 		mp->max_out = mp->cur_out;
+#endif
 
 	return (void*)&mp->pool_buf[i * mp->atom_size];
 }
 
-/*
- ** Free an outstanding memory allocation.
- */
+/* Free an outstanding memory allocation. */
 static void mpool_free_unsafe(ax_mpool *mp, void *ptr)
 {
 	uint32_t size, log_size;
@@ -344,8 +336,7 @@ static void mpool_free_unsafe(ax_mpool *mp, void *ptr)
 		return;
 
 	/* Set block to the index of the block pointed to by ptr in
-	 ** the array of mp->atom_size byte blocks pointed to by mp->pool_buf.
-	 */
+	 * the array of mp->atom_size byte blocks pointed to by mp->pool_buf.  */
 	block = ((uint8_t *) ptr - mp->pool_buf) / mp->atom_size;
 
 	/* Check that the pointer ptr points to a valid, non-free block. */
@@ -359,12 +350,15 @@ static void mpool_free_unsafe(ax_mpool *mp, void *ptr)
 
 	mp->ctrl_table[block] |= CTRL_FREE;
 	mp->ctrl_table[block + size - 1] |= CTRL_FREE;
+
+#ifdef AX_MPOOL_ENABLE_STATISTICS
 	assert(mp->cur_cnt > 0);
 	assert(mp->cur_out >= (size * mp->atom_size));
 	mp->cur_cnt--;
 	mp->cur_out -= size * mp->atom_size;
 	assert(mp->cur_out > 0 || mp->cur_cnt == 0);
 	assert(mp->cur_cnt > 0 || mp->cur_out == 0);
+#endif
 
 	mp->ctrl_table[block] = (uint8_t) (CTRL_FREE | log_size);
 	while (log_size < AX_MPOOL_LOGMAX) {
@@ -391,5 +385,5 @@ static void mpool_free_unsafe(ax_mpool *mp, void *ptr)
 		}
 		size *= 2;
 	}
-	mpool_link_st(mp, block, log_size);
+	mpool_link(mp, block, log_size);
 }

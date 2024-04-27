@@ -29,39 +29,121 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
-static void common(ut_runner *r)
+#define RANDOM_NALLOC 512
+#define PERF_NALLOC 4096
+
+static void check_data(ut_runner *r, char **list, size_t *size, size_t n)
 {
-	char *buf = malloc(40960);
+	for (int i = 0; i < n; i++) {
+		char expect[256];
+		memset(expect, size[i], size[i]);
+		ut_assert_mem_equal(r, expect, size[i], list[i], size[i]);
+	}
+}
+
+static void random_test(ut_runner *r)
+{
+	char *buf = malloc(RANDOM_NALLOC * 256);
 	if (!buf)
 		ut_term(r, "malloc");
 	ax_mpool mp;
-	ax_mpool_init(&mp, buf, 40960, 4);
+	ax_mpool_init(&mp, buf, RANDOM_NALLOC * 256, 4);
 
-	char **list = malloc(10240 * sizeof(void *));
+	size_t *size_list = malloc(RANDOM_NALLOC * sizeof(size_t));
+	char **list = malloc(RANDOM_NALLOC * sizeof(void *));
 	size_t list_len = 0;
 
-	for (int i = 0; i < 4096; i++) {
-		if (list_len >= 10240) {
-			continue;
-		}
-		if (rand() % 2 && list_len != 0 && list_len < 10240) {
-			int idx = rand() % list_len;
-			ax_mpool_free(&mp, list[idx]);
-			list[idx] = list[list_len - 1];
-			list_len--;
+	for (int i = 0; i < 1000; i++) {
+		if (list_len >= RANDOM_NALLOC) {
+			/* To randomly free a half of allocated memory block */
+			for (int j = 0; j < RANDOM_NALLOC / 2; j++) {
+				int idx = rand() % list_len;
+				ax_mpool_free(&mp, list[idx]);
+				list[idx] = list[list_len - 1];
+				size_list[idx] = size_list[list_len - 1];
+				list_len--;
+				check_data(r, list, size_list, list_len);
+			}
 		}
 		else {
-			list[list_len++] = ax_mpool_malloc(&mp, rand() % 1024);
-			
+			size_list[list_len] = rand() % 0xFF;
+			list[list_len] = ax_mpool_malloc(&mp, size_list[list_len]);
+			memset(list[list_len], size_list[list_len], size_list[list_len]);
+			list_len++;
+			check_data(r, list, size_list, list_len);
 		}
 	}
+	free(buf);
 }
+
+static void perf_test(ut_runner *r)
+{
+	char *buf = malloc(PERF_NALLOC * 256);
+	if (!buf)
+		ut_term(r, "malloc");
+	ax_mpool mp;
+	ax_mpool_init(&mp, buf, PERF_NALLOC * 256, 4);
+
+	size_t *size_list = malloc(PERF_NALLOC * sizeof(size_t));
+	char **list = malloc(PERF_NALLOC * sizeof(void *));
+	size_t list_len = 0;
+
+
+	const int nloops = 100000;
+
+	clock_t tim = clock();
+	for (int i = 0; i < nloops; i++) {
+		if (list_len >= PERF_NALLOC) {
+			for (int j = 0; j < PERF_NALLOC / 2; j++) {
+				int idx = rand() % list_len;
+				ax_mpool_free(&mp, list[idx]);
+				list[idx] = list[list_len - 1];
+				size_list[idx] = size_list[list_len - 1];
+				list_len--;
+			}
+		}
+		else {
+			size_list[list_len] = rand() % 128;
+			list[list_len] = ax_mpool_malloc(&mp, size_list[list_len]);
+			list_len++;
+		}
+	}
+	ut_printf(r, "mpool time: %dms", (clock() - tim));
+	ax_dump *dmp = ax_mpool_stats(&mp);
+	ax_dump_fput(dmp, ax_dump_default_format(), stderr);
+	free(buf);
+
+	tim = clock();
+	list_len = 0;
+	for (int i = 0; i < nloops; i++) {
+		if (list_len >= PERF_NALLOC) {
+			for (int j = 0; j < PERF_NALLOC / 2; j++) {
+				int idx = rand() % list_len;
+				free(list[idx]);
+				list[idx] = list[list_len - 1];
+				size_list[idx] = size_list[list_len - 1];
+				list_len--;
+			}
+		}
+		else {
+			size_list[list_len] = rand() % 128;
+			list[list_len] = malloc(size_list[list_len]);
+			list_len++;
+		}
+	}
+	ut_printf(r, "malloc time: %dms", (clock() - tim));
+
+	for (int i = 0; i < list_len; i++)
+		free(list[i]);
+}
+
 ut_suite *suite_for_mpool()
 {
 	ut_suite* suite = ut_suite_create("mpool");
-
-	ut_suite_add(suite, common, 0);
+	ut_suite_add(suite, random_test, 0);
+	ut_suite_add(suite, perf_test, 0);
 
 	return suite;
 }
