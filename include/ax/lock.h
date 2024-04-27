@@ -36,28 +36,26 @@ typedef struct ax_lock_st ax_lock;
 typedef struct ax_lock_trait_st ax_lock_trait;
 #endif
 
+struct ax_lock_st {
+    const ax_lock_trait *l_tr;
+    void *l_handle;
+};
+
 struct ax_lock_trait_st
 {
-	size_t arg_size;
+	size_t handle_size;
 	int (*t_init)(void *arg);
 	int (*t_get)(void *arg);
 	int (*t_put)(void *arg);
 	void (*t_free)(void *arg);
 };
 
-struct ax_lock_st {
-    void *l_arg;
-    const ax_lock_trait *l_tr;
-};
 
 int ax_lock_init(ax_lock *l);
 
 inline static int ax_lock_get(ax_lock *l)
 {
-	assert(l);
-	assert(l->l_tr);
-	assert(l->l_tr->t_get);
-	return l->l_tr->t_get(l->l_arg);
+	return l->l_tr->t_get(l->l_handle);
 }
 
 inline static int ax_lock_put(ax_lock *l)
@@ -65,7 +63,7 @@ inline static int ax_lock_put(ax_lock *l)
 	assert(l);
 	assert(l->l_tr);
 	assert(l->l_tr->t_put);
-	return l->l_tr->t_put(l->l_arg);
+	return l->l_tr->t_put(l->l_handle);
 }
 
 inline static void ax_lock_free(ax_lock *l)

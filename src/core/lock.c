@@ -26,29 +26,25 @@
 
 static int lock_init_default(void *arg)
 {
-	*(int *)arg = 0;
 	return 0;
 }
 
 static int lock_get_default(void *arg)
 {
-	while (*(int *)arg == 0);
 	return 0;
 }
 
 static int lock_set_default(void *arg)
 {
-	*(int *)arg = 1;
 	return 0;
 }
 
 static void lock_free_default(void *arg)
 {
-	free(arg);
 }
 
 static const ax_lock_trait s_def_trait = {
-	.arg_size = sizeof(int),
+	.handle_size = sizeof(int),
 	.t_init = lock_init_default,
 	.t_get = lock_get_default,
 	.t_put = lock_set_default,
@@ -70,15 +66,15 @@ void ax_lock_set_trait(const ax_lock_trait *t)
 
 int ax_lock_init(ax_lock *l)
 {
-	void *arg = malloc(s_cur_trait->arg_size);
-	if (!arg)
+	void *handle = malloc(s_cur_trait->handle_size);
+	if (!handle)
 		return -1;
 
-	if (s_cur_trait->t_init(arg)) {
-		free(arg);
+	if (s_cur_trait->t_init(handle)) {
+		free(handle);
 		return -1;
 	}
-	l->l_arg = arg;
+	l->l_handle = handle;
 	l->l_tr = s_cur_trait;
 	return 0;
 }
