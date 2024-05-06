@@ -34,15 +34,6 @@ size_t ax_iobuf_write(ax_iobuf *b, void *p, size_t size)
         return buf_size;
 }
 
-void *ax_iobuf_inplace_write(ax_iobuf *b, size_t *size)
-{
-        size_t write_size = ax_min(ax_iobuf_inplace_size(b), *size);
-	size_t old_rear = b->rear;
-	b->rear += write_size;
-	*size = write_size;
-	return b->buf + old_rear;
-}
-
 size_t ax_iobuf_peek(ax_iobuf *b, void *buf, size_t start, size_t size)
 {
         assert(buf != NULL);

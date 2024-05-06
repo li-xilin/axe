@@ -73,22 +73,34 @@ inline static size_t ax_iobuf_free_size(ax_iobuf *b)
 	return ax_iobuf_max_size(b) - ax_iobuf_data_size(b);
 }
 
-inline static size_t ax_iobuf_inplace_size(const ax_iobuf *b)
+inline static size_t ax_iobuf_zread(const ax_iobuf *b, void **ptr)
 {
+	if (ptr)
+		*ptr = b->buf + b->front;
+        return (b->rear >= b->front)
+		? b->rear - b->front - 1
+		: b->size - b->front - !b->rear;
+}
+
+inline static void ax_iobuf_zread_commit(ax_iobuf *b, size_t size)
+{
+        assert(size <= ax_iobuf_zread(b, NULL));
+	b->front = (b->front + size) % b->size;
+}
+
+inline static size_t ax_iobuf_zwrite(const ax_iobuf *b, void **ptr)
+{
+	if (ptr)
+		*ptr = b->buf + b->rear;
         return (b->rear >= b->front)
 		? b->size - b->rear - !b->front
 		: b->front - b->rear - 1;
 }
 
-inline static void *ax_iobuf_inplace_buf(ax_iobuf *b)
+inline static void ax_iobuf_zwrite_commit(ax_iobuf *b, size_t size)
 {
-	return b->buf + b->rear;
-}
-
-inline static void ax_iobuf_inplace_take(ax_iobuf *b, size_t size)
-{
-        assert(size <= ax_iobuf_inplace_size(b));
-        b->rear += size;
+        assert(size <= ax_iobuf_zwrite(b, NULL));
+	b->rear = (b->rear + size) % b->size;
 }
 
 inline static void ax_iobuf_clear(ax_iobuf *b)
