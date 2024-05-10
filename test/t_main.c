@@ -45,6 +45,7 @@ extern ut_suite *suite_for_unicode();
 extern ut_suite *suite_for_iobuf();
 extern ut_suite *suite_for_mpool();
 extern ut_suite *suite_for_bitmap();
+extern ut_suite *suite_for_splay();
 
 extern void suite_for_maps(ut_runner *r);
 
@@ -78,6 +79,7 @@ int main()
 	ut_runner_add(r, suite_for_iobuf());
 	ut_runner_add(r, suite_for_mpool());
 	ut_runner_add(r, suite_for_bitmap());
+	ut_runner_add(r, suite_for_splay());
 
 	suite_for_maps(r);
 
