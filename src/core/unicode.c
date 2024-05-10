@@ -165,6 +165,19 @@ size_t ax_utf8_strwidth(const char *str, int charlen)
 	return width;
 }
 
+size_t ax_utf16_strwidth(const uint16_t *str, int charlen)
+{
+	int width = 0;
+	while (charlen) {
+		uint32_t c;
+		int l = ax_utf16_to_ucode(str, &c);
+		width += ax_ucode_width(c);
+		str += l;
+		charlen--;
+	}
+	return width;
+}
+
 size_t ax_utf8_index(const char *str, int index)
 {
 	const char *s = str;

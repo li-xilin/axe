@@ -58,6 +58,7 @@ typedef WCHAR ax_uchar;
 #define ax_ustr_index ax_utf16_index
 #define ax_ustr_to_ucode ax_utf16_to_ucode
 #define ax_ustr_charcnt ax_utf16_charcnt
+#define ax_ustrwidth ax_utf16_strwidth
 #define ax_ucode_to_ustr ax_ucode_to_utf16
 #define ax_ustrtoint _wtoi
 
@@ -94,6 +95,7 @@ typedef char ax_uchar;
 #define ax_ustr_index ax_utf8_index
 #define ax_ustr_to_ucode ax_utf8_to_ucode
 #define ax_ustr_charcnt ax_utf8_charcnt
+#define ax_ustrwidth ax_utf8_strwidth
 #define ax_ucode_to_ustr ax_ucode_to_utf8
 #define ax_ustrtoint atoi
 

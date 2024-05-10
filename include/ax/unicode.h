@@ -121,6 +121,8 @@ size_t ax_utf16_to_ucode(const uint16_t* utf16, uint32_t *codepoint);
 
 size_t ax_utf16_to_utf8(const uint16_t *utf16, size_t utf16_len, char* utf8, size_t utf8_len);
 
+size_t ax_utf16_strwidth(const uint16_t *str, int charlen);
+
 inline static size_t ax_utf16_strlen(const uint16_t *str)
 {
 	size_t len = 0;
