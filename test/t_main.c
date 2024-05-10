@@ -44,6 +44,8 @@ extern ut_suite *suite_for_stuff();
 extern ut_suite *suite_for_unicode();
 extern ut_suite *suite_for_iobuf();
 extern ut_suite *suite_for_mpool();
+extern ut_suite *suite_for_bitmap();
+
 extern void suite_for_maps(ut_runner *r);
 
 void show_process(const char *suite_name, const char *case_name, int cur, int total)
@@ -75,6 +77,7 @@ int main()
 	ut_runner_add(r, suite_for_unicode());
 	ut_runner_add(r, suite_for_iobuf());
 	ut_runner_add(r, suite_for_mpool());
+	ut_runner_add(r, suite_for_bitmap());
 
 	suite_for_maps(r);
 
