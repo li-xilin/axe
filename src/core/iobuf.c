@@ -140,3 +140,19 @@ void *ax_iobuf_pullup(ax_iobuf *b)
         return b->buf + b->front;
 }
 
+size_t ax_iobuf_pour(ax_iobuf *src, ax_iobuf *dst, size_t size)
+{
+	size_t moved_size = 0;
+	size_t read_size, write_size;
+
+	do {
+		void *p;
+		read_size = ax_min(size - moved_size, ax_iobuf_zread(src, &p));
+		write_size = ax_iobuf_write(dst, p, read_size);
+		ax_iobuf_zread_commit(src, write_size);
+		moved_size += write_size;
+	} while (read_size && write_size);
+
+	return moved_size;
+}
+
