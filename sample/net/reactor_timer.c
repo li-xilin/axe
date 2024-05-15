@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 	ax_reactor_loop(g_reactor, NULL, 0);
 
 	ax_reactor_destroy(g_reactor);
-	ax_socket_deinit();
+	ax_socket_exit();
 	return 0;
 }
 

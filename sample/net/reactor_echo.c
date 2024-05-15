@@ -26,8 +26,16 @@
 
 ax_reactor *g_reactor;
 
-void read_cb(ax_socket fd, short fl, void *arg)
+void read_cb(ax_socket fd, short ev, void *arg)
 {
+	ax_event *event = arg;
+	if (ev & AX_EV_WRITE) {
+		event->ev_flags &= ~AX_EV_WRITE;
+		ax_reactor_modify(event->reactor, event);
+		puts("write callback.");
+		return;
+	}
+
 	char buf[1024];
 	int len = recv(fd, buf, sizeof buf - 1, 0);
 	if (len == 0) {
@@ -36,6 +44,8 @@ void read_cb(ax_socket fd, short fl, void *arg)
 		printf("client lost: %" PRIu64 "\n", (uint64_t)fd);
 	} else {
 		send(fd, buf, len, 0);
+		event->ev_flags |= AX_EV_WRITE;
+		ax_reactor_modify(event->reactor, event);
 	}
 
 }
@@ -43,15 +53,20 @@ void read_cb(ax_socket fd, short fl, void *arg)
 void listen_cb(ax_socket fd, short fl, void *arg)
 {
 	struct sockaddr_in sa;
-	socklen_t len;
+	socklen_t len = sizeof(struct sockaddr_in);
 	int cli_fd = accept(fd, (struct sockaddr *)&sa, &len);
+	if (cli_fd < 0) {
+		printf("accept %d\n", ax_socket_errno());
+		exit(EXIT_FAILURE);
+	}
 
 	printf("client found: %" PRIu64 ", %s:%hu\n", (uint64_t)cli_fd, inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
 
 	ax_event *ev = malloc(sizeof *ev);
-	ax_event_set(ev, cli_fd, AX_EV_READ, read_cb, ev);
+	ax_event_set(ev, cli_fd, AX_EV_READ|AX_EV_WRITE, read_cb, ev);
 
 	ax_reactor_add(arg, ev);
+	// ax_reactor_add(arg, ev1);
 }
 
 int main(int argc, char *argv[]) {
@@ -80,12 +95,12 @@ int main(int argc, char *argv[]) {
 	sa.sin_addr.s_addr = INADDR_ANY;
 	ret = bind(fd, (struct sockaddr *)&sa, sizeof sa);
 	if (ret < 0) {
-		printf("bind %d\n", last_error());
+		printf("bind %d\n", ax_socket_errno());
 		exit(EXIT_FAILURE);
 	}
 	ret = listen(fd, 1024);
 	if (ret < 0) {
-		printf("bind %d\n", last_error());
+		printf("bind %d\n", ax_socket_errno());
 		exit(EXIT_FAILURE);
 	}
 
@@ -99,7 +114,7 @@ int main(int argc, char *argv[]) {
 
 	ax_reactor_destroy(g_reactor);
 
-	ax_socket_deinit();
+	ax_socket_exit();
 
 	return 0;
 }
