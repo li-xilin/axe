@@ -316,6 +316,7 @@ static int socketpair_win32_afunix(int family, int type, int protocol, ax_socket
 	if (connect(connector, (struct sockaddr *) &connect_addr,
 				sizeof(connect_addr)) == -1)
 		goto tidy_up_and_fail;
+	DeleteFileA(tmp_file);
 
 	size = sizeof(listen_addr);
 	acceptor = accept(listener, (struct sockaddr *) &listen_addr, &size);
