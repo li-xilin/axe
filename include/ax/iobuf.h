@@ -78,8 +78,8 @@ inline static size_t ax_iobuf_zread(const ax_iobuf *b, void **ptr)
 	if (ptr)
 		*ptr = b->buf + b->front;
         return (b->rear >= b->front)
-		? b->rear - b->front - 1
-		: b->size - b->front - !b->rear;
+		? b->rear - b->front
+		: b->size - b->front;
 }
 
 inline static void ax_iobuf_zread_commit(ax_iobuf *b, size_t size)
@@ -109,6 +109,8 @@ inline static void ax_iobuf_clear(ax_iobuf *b)
 }
 
 size_t ax_iobuf_write(ax_iobuf *b, void *p, size_t size);
+
+size_t ax_iobuf_pour(ax_iobuf *src, ax_iobuf *dst, size_t size);
 
 size_t ax_iobuf_peek(ax_iobuf *b, void *buf, size_t start, size_t size);
 
