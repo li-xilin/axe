@@ -31,29 +31,29 @@ typedef struct ax_oper_st ax_oper;
 
 struct ax_oper_st
 {
-    ax_binary_f add;
-    ax_binary_f sub;
-    ax_binary_f mul;
-    ax_binary_f div;
-    ax_binary_f mod;
+    ax_binary_f o_add;
+    ax_binary_f o_sub;
+    ax_binary_f o_mul;
+    ax_binary_f o_div;
+    ax_binary_f o_mod;
 
-    ax_binary_f and;
-    ax_binary_f or;
-    ax_unary_f  not;
+    ax_binary_f o_and;
+    ax_binary_f o_or;
+    ax_unary_f  o_not;
 
-    ax_binary_f bit_and;
-    ax_binary_f bit_or;
-    ax_unary_f  bit_not;
-    ax_binary_f bit_xor;
+    ax_binary_f o_bit_and;
+    ax_binary_f o_bit_or;
+    ax_unary_f  o_bit_not;
+    ax_binary_f o_bit_xor;
 
-    ax_binary_f gt;
-    ax_binary_f ge;
-    ax_binary_f lt;
-    ax_binary_f le;
-    ax_binary_f eq;
-    ax_binary_f ne;
+    ax_binary_f o_gt;
+    ax_binary_f o_ge;
+    ax_binary_f o_lt;
+    ax_binary_f o_le;
+    ax_binary_f o_eq;
+    ax_binary_f o_ne;
 
-    ax_unary_f hash;
+    ax_unary_f o_hash;
 };
 
 extern const ax_oper ax_oper_int8_t;
@@ -64,6 +64,7 @@ extern const ax_oper ax_oper_uint8_t;
 extern const ax_oper ax_oper_uint16_t;
 extern const ax_oper ax_oper_uint32_t;
 extern const ax_oper ax_oper_uint64_t;
+extern const ax_oper ax_oper_uintptr_t;
 extern const ax_oper ax_oper_size_t;
 extern const ax_oper ax_oper_float;
 extern const ax_oper ax_oper_double;

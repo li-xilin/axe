@@ -187,7 +187,6 @@ static void rehash(ut_runner* r)
 		sprintf(key, "%d", i);
 		ax_map_put(hmap.ax_map, key, &i);
 	}
-	printf("threshold = %zu\n", ax_hmap_threshold(hmap.ax_hmap));
 	if (ax_hmap_rehash(hmap.ax_hmap, 20))
 		ut_term(r, "ax_hmap_rehash");
 

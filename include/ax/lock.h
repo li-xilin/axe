@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023-2024 Li Xilin <lixilin@gmx.com>
- * 
+ * Copyright (c) 2024 Li Xilin <lixilin@gmx.com>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -20,37 +20,59 @@
  * SOFTWARE.
  */
 
-#ifndef AX_SYS_H
-#define AX_SYS_H
+#ifndef AX_LOCK_H
+#define AX_LOCK_H
 
-#include "uchar.h"
-#include "types.h"
-
-#include <ax/detect.h>
+#include <assert.h>
 #include <stddef.h>
-#include <stdlib.h>
-#include <stdbool.h>
 
-int ax_sys_mkdir(const ax_uchar *path, int mode);
+#ifndef AX_LOCK_DEFINED
+#define AX_LOCK_DEFINED
+typedef struct ax_lock_st ax_lock;
+#endif
 
-int ax_sys_unlink(const ax_uchar *path);
+#ifndef AX_LOCK_TRAIT_DEFINED
+#define AX_LOCK_TRAIT_DEFINED
+typedef struct ax_lock_trait_st ax_lock_trait;
+#endif
 
-int ax_sys_rename(const ax_uchar *path, const ax_uchar *new_path);
+struct ax_lock_st {
+    const ax_lock_trait *l_tr;
+    void *l_handle;
+};
 
-int ax_sys_copy(const ax_uchar *path, const ax_uchar *new_path);
+struct ax_lock_trait_st
+{
+	size_t handle_size;
+	int (*t_init)(void *arg);
+	int (*t_get)(void *arg);
+	int (*t_put)(void *arg);
+	void (*t_free)(void *arg);
+};
 
-int ax_sys_link(const ax_uchar *path, const ax_uchar *link_path);
 
-/* 'dir_link' parameter specifies if the symbolic link is for a directory in Windows. */
-int ax_sys_symlink(const ax_uchar *path, const ax_uchar *link_path, bool dir_link);
+int ax_lock_init(ax_lock *l);
 
-const ax_uchar *ax_sys_getenv(const ax_uchar *name);
+inline static int ax_lock_get(ax_lock *l)
+{
+	return l->l_tr->t_get(l->l_handle);
+}
 
-int ax_sys_setenv(const ax_uchar *name, const ax_uchar *value);
+inline static int ax_lock_put(ax_lock *l)
+{
+	assert(l);
+	assert(l->l_tr);
+	assert(l->l_tr->t_put);
+	return l->l_tr->t_put(l->l_handle);
+}
 
-int ax_sys_utime(const ax_uchar *path, time_t atime, time_t mtime);
-
-int ax_sys_nprocs(void);
+inline static void ax_lock_free(ax_lock *l)
+{
+	assert(l);
+	assert(l->l_tr);
+	assert(l->l_tr->t_free);
+	l->l_tr->t_free(l);
+}
 
 #endif
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Li hsilin <lihsilyn@gmail.com>
+ * Copyright (c) 2024 Li Xilin <lixilin@gmx.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,28 +20,62 @@
  * THE SOFTWARE.
  */
 
-#ifndef AX_LIST_H
-#define AX_LIST_H
-#include "type/seq.h"
+#include "check.h"
+#include "ax/lock.h"
+#include <stdlib.h>
 
-#ifndef AX_LIST_DEFINED
-#define AX_LIST_DEFINED
-typedef struct ax_list_st ax_list;
-#endif
-
-#define ax_baseof_ax_list ax_seq
-
-ax_concrete_declare(4, ax_list);
-
-extern const ax_seq_trait ax_list_tr;
-
-ax_seq *__ax_list_construct(const ax_trait *elem_tr);
-
-void ax_list_insertion_sort(const ax_iter *first, const ax_iter *last);
-
-inline static ax_concrete_creator(ax_list, const ax_trait* trait)
+static int lock_init_default(void *arg)
 {
-	return __ax_list_construct(trait);
+	return 0;
 }
 
-#endif
+static int lock_get_default(void *arg)
+{
+	return 0;
+}
+
+static int lock_set_default(void *arg)
+{
+	return 0;
+}
+
+static void lock_free_default(void *arg)
+{
+}
+
+static const ax_lock_trait s_def_trait = {
+	.handle_size = sizeof(int),
+	.t_init = lock_init_default,
+	.t_get = lock_get_default,
+	.t_put = lock_set_default,
+	.t_free = lock_free_default,
+};
+
+static const ax_lock_trait *s_cur_trait = &s_def_trait;
+
+void ax_lock_set_trait(const ax_lock_trait *t)
+{
+	if (t) {
+		CHECK_PARAM_NULL(t->t_init);
+		CHECK_PARAM_NULL(t->t_get);
+		CHECK_PARAM_NULL(t->t_put);
+		CHECK_PARAM_NULL(t->t_free);
+	}
+	s_cur_trait = t ? t : &s_def_trait;
+}
+
+int ax_lock_init(ax_lock *l)
+{
+	void *handle = malloc(s_cur_trait->handle_size);
+	if (!handle)
+		return -1;
+
+	if (s_cur_trait->t_init(handle)) {
+		free(handle);
+		return -1;
+	}
+	l->l_handle = handle;
+	l->l_tr = s_cur_trait;
+	return 0;
+}
+

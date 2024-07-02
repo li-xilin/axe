@@ -204,16 +204,16 @@ void mux_del(mux *mux, ax_socket fd, short flags)
 	--mux->n_events;
 }
 
-int mux_poll(mux *mux, ax_mutex *lock, struct timeval * timeout, mux_pending_cb *pending_cb, void *arg)
+int mux_poll(mux *mux, ax_lock *lock, struct timeval * timeout, mux_pending_cb *pending_cb, void *arg)
 {
 	int res_flags , nreadys, i;
 
 	assert(mux != NULL);
 
-	ax_mutex_unlock(lock);
+	ax_lock_put(lock);
 	nreadys = epoll_wait(mux->epoll_fd, mux->events, mux->n_events,
 			timeout ? timeout->tv_sec * 1000 + timeout->tv_usec / 1000 : -1 );
-	ax_mutex_lock(lock);
+	ax_lock_get(lock);
 
 	for(i = 0; i < nreadys; ++i) {
 		res_flags = 0;

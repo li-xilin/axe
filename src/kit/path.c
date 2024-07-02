@@ -238,6 +238,9 @@ ax_uchar *ax_path_realize(const ax_uchar *path, ax_uchar *resolved_path, size_t 
 	if (dwLen == 0) {
 		return NULL;
 	}
+	if (resolved_path[dwLen - 1] == L'\\')
+		resolved_path[dwLen - 1] = L'\0';
+
 	return resolved_path;
 #else
 	char resolved_buf[PATH_MAX];

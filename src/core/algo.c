@@ -48,69 +48,69 @@
 		ax_one_name((const ax_one *)_obj) \
 	)
 
-void ax_transform(const ax_citer *first1, const ax_citer *last1, const ax_iter *first2, const ax_pred *upred)
+void ax_transform(const ax_citer *first1, const ax_citer *last1, const ax_iter *first2, ax_pred1 *pred1)
 {
-	CHECK_PARAM_NULL(upred);
+	CHECK_PARAM_NULL(pred1);
 	CHECK_ITER_COMPARABLE(first1, last1);
 	ax_citer cur1 = *first1;
 	ax_iter cur2 = *first2;
 	for (; !ax_citer_equal(&cur1, last1); ax_citer_next(&cur1)) {
-		ax_pred_do(upred, ax_iter_get(&cur2), ax_citer_get(&cur1), NULL);
+		ax_pred1_do(pred1, ax_iter_get(&cur2), ax_citer_get(&cur1));
 		ax_iter_next(&cur2);
 	}
 }
 
-bool ax_all_of(const ax_citer *first, const ax_citer *last, const ax_pred *upred)
+bool ax_all_of(const ax_citer *first, const ax_citer *last, ax_pred1 *pred1)
 {
-	CHECK_PARAM_NULL(upred);
+	CHECK_PARAM_NULL(pred1);
 	CHECK_ITER_COMPARABLE(first, last);
 
 	bool out;
 	for (ax_citer it = *first; !ax_citer_equal(&it, last); ax_citer_next(&it)) {
-		ax_pred_do(upred, &out, ax_citer_get(&it), NULL);
+		ax_pred1_do(pred1, &out, ax_citer_get(&it));
 		if (!out)
 			return false;
 	}
 	return true;
 }
 
-bool ax_any_of(const ax_citer *first, const ax_citer *last, const ax_pred *upred)
+bool ax_any_of(const ax_citer *first, const ax_citer *last, ax_pred1 *pred1)
 {
-	CHECK_PARAM_NULL(upred);
+	CHECK_PARAM_NULL(pred1);
 	CHECK_ITER_COMPARABLE(first, last);
 
 	bool out;
 	for (ax_citer it = *first; !ax_citer_equal(&it, last); ax_citer_next(&it)) {
-		ax_pred_do(upred, &out, ax_citer_get(&it), NULL);
+		ax_pred1_do(pred1, &out, ax_citer_get(&it));
 		if (out)
 			return true;
 	}
 	return false;
 }
 
-bool ax_none_of(const ax_citer *first, const ax_citer *last, const ax_pred *upred)
+bool ax_none_of(const ax_citer *first, const ax_citer *last, ax_pred1 *pred1)
 {
-	CHECK_PARAM_NULL(upred);
+	CHECK_PARAM_NULL(pred1);
 	CHECK_ITER_COMPARABLE(first, last);
 
 	bool out;
 	for (ax_citer it = *first; !ax_citer_equal(&it, last); ax_citer_next(&it)) {
-		ax_pred_do(upred, &out, ax_citer_get(&it), NULL);
+		ax_pred1_do(pred1, &out, ax_citer_get(&it));
 		if (out)
 			return false;
 	}
 	return true;
 }
 
-size_t ax_count_if(const ax_citer *first, const ax_citer *last, const ax_pred *upred)
+size_t ax_count_if(const ax_citer *first, const ax_citer *last, ax_pred1 *pred1)
 {
-	CHECK_PARAM_NULL(upred);
+	CHECK_PARAM_NULL(pred1);
 	CHECK_ITER_COMPARABLE(first, last);
 
 	size_t count = 0;
 	bool out = false;
 	for (ax_citer it = *first; !ax_citer_equal(&it, last); ax_citer_next(&it)) {
-		ax_pred_do(upred, &out, ax_citer_get(&it), NULL);
+		ax_pred1_do(pred1, &out, ax_citer_get(&it));
 		count += out ? 1 : 0;
 	}
 	return count;
@@ -146,35 +146,35 @@ void ax_generate(const ax_iter *first, const ax_iter *last, const void *ptr)
 	}
 }
 
-void ax_find_if(ax_citer *first, const ax_citer *last, const ax_pred *upred)
+void ax_find_if(ax_citer *first, const ax_citer *last, ax_pred1 *pred1)
 {
-	CHECK_PARAM_NULL(upred);
+	CHECK_PARAM_NULL(pred1);
 	CHECK_ITER_COMPARABLE(first, last);
 
 	bool retval;
 	while (!ax_citer_equal(first, last)) {
-		if (ax_pred_do(upred, &retval, ax_citer_get(first), NULL), retval)
+		if (*(bool *)ax_pred1_do(pred1, &retval, ax_citer_get(first)))
 			return;
 		ax_citer_next(first);
 	}
 }
 
-void ax_find_if_not(ax_citer *first, const ax_citer *last, const ax_pred *upred)
+void ax_find_if_not(ax_citer *first, const ax_citer *last, ax_pred1 *pred1)
 {
-	CHECK_PARAM_NULL(upred);
+	CHECK_PARAM_NULL(pred1);
 	CHECK_ITER_COMPARABLE(first, last);
 
 	bool retval;
 	while (!ax_citer_equal(first, last)) {
-		if (ax_pred_do(upred, &retval, ax_citer_get(first), NULL), !retval)
+		if (!*(bool *)ax_pred1_do(pred1, &retval, ax_citer_get(first)))
 			return;
 		ax_citer_next(first);
 	}
 }
 
-bool ax_sorted(const ax_citer *first, const ax_citer *last, const ax_pred *bpred)
+bool ax_sorted(const ax_citer *first, const ax_citer *last, ax_pred2 *pred2)
 {
-	CHECK_PARAM_NULL(bpred);
+	CHECK_PARAM_NULL(pred2);
 	CHECK_ITER_COMPARABLE(first, last);
 
 	if (ax_citer_equal(first, last))
@@ -185,7 +185,7 @@ bool ax_sorted(const ax_citer *first, const ax_citer *last, const ax_pred *bpred
 	ax_citer_next(&it2);
 
 	while (!ax_citer_equal(&it2, last)) {
-		if (ax_pred_do(bpred, &retval, ax_citer_get(&it1), ax_citer_get(&it2)), !retval)
+		if (!*(bool *)ax_pred2_do(pred2, &retval, ax_citer_get(&it1), ax_citer_get(&it2)))
 			return false;
 		it1 = it2;
 		ax_citer_next(&it2);
@@ -193,13 +193,13 @@ bool ax_sorted(const ax_citer *first, const ax_citer *last, const ax_pred *bpred
 	return true;
 }
 
-void ax_partition(ax_iter *first, const ax_iter *last, const ax_pred *pred)
+void ax_partition(ax_iter *first, const ax_iter *last, ax_pred1 *pred1)
 {
-	CHECK_PARAM_NULL(pred);
+	CHECK_PARAM_NULL(pred1);
 	CHECK_ITER_COMPARABLE(first, last);
 	ASSERT_ITER_TYPE(first, AX_IT_FORW);
 
-	ax_find_if_not(ax_iter_c(first), ax_iter_cc(last), pred);
+	ax_find_if_not(ax_iter_c(first), ax_iter_cc(last), pred1);
 
 	if (ax_iter_equal(first, last))
 		return;
@@ -207,7 +207,7 @@ void ax_partition(ax_iter *first, const ax_iter *last, const ax_pred *pred)
 	ax_iter it = *first;
 	for (ax_iter_next(&it); !ax_iter_equal(&it, last); ax_iter_next(&it)) {
 		bool retval;
-		ax_pred_do(pred, &retval, ax_iter_get(&it), NULL);
+		ax_pred1_do(pred1, &retval, ax_iter_get(&it));
 		if (retval) {
 			ax_iter_swap(&it, first);
 			ax_iter_next(first);
@@ -220,7 +220,7 @@ static void less_then(bool *out, void *in1, void *in2, const ax_trait *tr)
 	*out = ax_trait_less(tr, in1, in2);
 }
 
-static void quick_sort(const ax_iter *first, const ax_iter *last)
+static void quick_sort(const ax_iter *first, const ax_iter *last, ax_pred2 *pred2)
 {
 	if (ax_iter_equal(first, last))
 		return;
@@ -232,29 +232,31 @@ static void quick_sort(const ax_iter *first, const ax_iter *last)
 		return;
 
 	ax_iter right_first = second;
-	const ax_pred pred = ax_pred_binary_make((ax_binary_f) less_then,
-			NULL, ax_iter_get(first), (void *)first->etr);
-	ax_partition(&right_first, last, &pred);
+	ax_pred1 *pred1 = ax_pred2_bind2(pred2, ax_iter_get(first));
+
+	ax_partition(&right_first, last, pred1);
 
 	ax_iter left_last = right_first;
 	ax_iter_prev(&left_last);
 	ax_memswp(left_last.tr->get(ax_iter_cc(&left_last)),
 			first->tr->get(ax_iter_cc(first)), ax_trait_size(first->etr));
 
-	quick_sort(first, &left_last);
-	quick_sort(&right_first, last);
+	quick_sort(first, &left_last, pred2);
+	quick_sort(&right_first, last, pred2);
 }
 
-ax_fail ax_quick_sort(const ax_iter *first, const ax_iter *last)
+ax_fail ax_quick_sort(const ax_iter *first, const ax_iter *last, ax_pred2 *pred2)
 {
 	CHECK_ITER_COMPARABLE(first, last);
 	ASSERT_ITER_TYPE(first, AX_IT_BID);
 
-	quick_sort(first, last);
+	ax_pred2 p2 = pred2 ? *pred2 : ax_pred2_make((ax_binary_f)less_then, (void *)first->etr);
+
+	quick_sort(first, last, &p2);
 	return false;
 }
 
-void ax_merge(const ax_citer *first1, const ax_citer *last1, const ax_citer *first2, const ax_citer *last2, ax_iter *dest)
+void ax_merge(const ax_citer *first1, const ax_citer *last1, const ax_citer *first2, const ax_citer *last2, ax_iter *dest, ax_pred2 *pred2)
 {
 	CHECK_ITER_COMPARABLE(first1, last1);
 	CHECK_ITER_COMPARABLE(first2, last2);
@@ -263,11 +265,16 @@ void ax_merge(const ax_citer *first1, const ax_citer *last1, const ax_citer *fir
 
 	const ax_trait *etr = first1->etr;
 	ax_citer cur1 = *first1, cur2 = *first2;
-
 	ax_citer src;
 	ax_citer src_last;
 	while (!ax_citer_equal(&cur1, last1) && !ax_citer_equal(&cur2, last2)) {
-		if (ax_trait_less(etr, ax_citer_get(&cur1), ax_citer_get(&cur2))) {
+		bool cmp;
+		if (pred2)
+			cmp = ax_trait_less(etr, ax_citer_get(&cur1), ax_citer_get(&cur2));
+		else
+			ax_pred2_do(pred2, &cmp, ax_citer_get(&cur1), ax_citer_get(&cur2));
+
+		if (cmp) {
 			src = cur1;
 			ax_citer_next(&cur1);
 		} else {
@@ -275,9 +282,7 @@ void ax_merge(const ax_citer *first1, const ax_citer *last1, const ax_citer *fir
 			ax_citer_next(&cur2);
 		}
 		ax_iter_set(dest, ax_citer_get(&src));
-
 		ax_iter_next(dest);
-
 	}
 
 	if (!ax_citer_equal(&cur1, last1)) {
@@ -300,7 +305,7 @@ struct merge_sort_context_st {
 	void *aux;
 };
 
-void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
+void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext, ax_pred2 *pred2)
 {
 	if (right - left <= 1)
 		return;
@@ -308,15 +313,15 @@ void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
 	size_t lmid = left + (mid - left) / 2;
 	size_t rmid = mid + (right - mid) / 2;
 
-	merge_sort(left, lmid, ext);
-	merge_sort(lmid, mid, ext);
-	merge_sort(mid, rmid, ext);
-	merge_sort(rmid, right, ext);
+	merge_sort(left, lmid, ext, pred2);
+	merge_sort(lmid, mid, ext, pred2);
+	merge_sort(mid, rmid, ext, pred2);
+	merge_sort(rmid, right, ext, pred2);
 
 	ax_iter end = ax_box_end(ax_r(ax_seq, ext->main).ax_box);
-	ax_iter main_first = { .owner = end.owner, .tr = end.tr, .etr = end.etr };
-	ax_iter main_mid  = { .owner = end.owner, .tr = end.tr, .etr = end.etr };
-	ax_iter main_last = { .owner = end.owner, .tr = end.tr, .etr = end.etr };
+	ax_iter main_first = end;
+	ax_iter main_mid  = end;
+	ax_iter main_last = end;
 	ax_iter aux_first;
 	ax_iter aux_mid;
 	ax_iter aux_last;
@@ -329,7 +334,7 @@ void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
 	aux_mid = aux_first;
 	ax_merge(ax_iter_c(&main_first), ax_iter_c(&main_mid),
 			ax_iter_c(&main_mid), ax_iter_c(&main_last),
-			&aux_mid);
+			&aux_mid, pred2);
 
 	main_first.point = ext->imap[mid];
 	main_mid.point = ext->imap[rmid];
@@ -337,16 +342,16 @@ void merge_sort(size_t left, size_t right, struct merge_sort_context_st *ext)
 	aux_last = aux_mid;
 	ax_merge(ax_iter_c(&main_first), ax_iter_c(&main_mid),
 			ax_iter_c(&main_mid), ax_iter_c(&main_last),
-			&aux_last);
+			&aux_last, pred2);
 
 	main_first.point = ext->imap[left];
 	main_last = main_first;
 	ax_merge(ax_iter_c(&aux_first), ax_iter_c(&aux_mid),
 			ax_iter_c(&aux_mid), ax_iter_c(&aux_last),
-			&main_last);
+			&main_last, pred2);
 }
 
-ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
+ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last, ax_pred2 *pred2)
 {
 	CHECK_PARAM_NULL(first);
 	CHECK_PARAM_NULL(last);
@@ -386,7 +391,7 @@ ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 		.aux = aux.ax_one,
 	};
 
-	merge_sort(0, size, &ext);
+	merge_sort(0, size, &ext, pred2);
 
 	free(imap);
 	ax_one_free(aux.ax_one);
@@ -394,17 +399,22 @@ ax_fail ax_merge_sort(const ax_iter *first, const ax_iter *last)
 	return false;
 }
 
-bool ax_equal_to_arr(const ax_iter *first, const ax_iter *last, void *arr, size_t size)
+bool ax_equal_to_array(const ax_iter *first, const ax_iter *last, void *arr, size_t size, ax_pred2 *pred2)
 {
 	CHECK_PARAM_VALIDITY(arr, !!arr == !!size);
 
 	const ax_trait *tr = first->etr;
-	ax_assert(size % ax_trait_size(tr) == 0, "unexpected size");
-
+	ax_assert(size % ax_trait_size(tr) == 0, "unexpected 0 size");
 	size_t pos = 0;
 	ax_iter cur = *first;
 	while (!ax_iter_equal(&cur, last) && pos < size) {
-		if (!ax_trait_equal(tr, ax_iter_get(&cur), (ax_byte*)arr + pos))
+		bool equal;
+		if (pred2)
+			ax_pred2_do(pred2, &equal, ax_iter_get(&cur), (ax_byte*)arr + pos);
+		else
+			equal = ax_trait_equal(tr, ax_iter_get(&cur), (ax_byte*)arr + pos);
+
+		if (!equal)
 			return false;
 		ax_iter_next(&cur);
 		pos += ax_trait_size(tr);
@@ -443,7 +453,7 @@ void ax_binary_search(ax_citer *first, const ax_citer *last, const void* p)
 	first->point = right.point;
 }
 
-void ax_binary_search_if_not(ax_citer *first, const ax_citer *last, const ax_pred *upred)
+void ax_binary_search_if_not(ax_citer *first, const ax_citer *last, ax_pred1 *pred1)
 {
 	CHECK_ITER_COMPARABLE(first, last);
 	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, ax_seq));
@@ -457,7 +467,7 @@ void ax_binary_search_if_not(ax_citer *first, const ax_citer *last, const ax_pre
 		long m = length / 2;
 		middle.point = left.point;
 		ax_citer_move(&middle, m);
-		if (ax_pred_do(upred, &ret, ax_citer_get(&middle), NULL), !ret)
+		if (!*(bool *)ax_pred1_do(pred1, &ret, ax_citer_get(&middle)))
 			right.point = middle.point;
 		else {
 			left.point = middle.point;
@@ -468,41 +478,43 @@ void ax_binary_search_if_not(ax_citer *first, const ax_citer *last, const ax_pre
 	first->point = left.point;
 }
 
-ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
+ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last, ax_pred2 *pred2)
 {
 	CHECK_ITER_COMPARABLE(first, last);
 	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, ax_seq));
 	ASSERT_ITER_TYPE(first, AX_IT_FORW);
 
-	ax_pred pred;
 	const ax_trait *etr = first->etr;
 	void *tmp = malloc(ax_trait_size(etr));
 	if (!tmp) {
 		return true;
 	}
 
-	void (*search_if_not)(ax_citer *first, const ax_citer *last, const ax_pred *upred)
+	void (*search_if_not)(ax_citer *first, const ax_citer *last, ax_pred1 *pred1)
 		= ax_iter_is(first, AX_IT_RAND)
 		? ax_binary_search_if_not
 		: ax_find_if_not;
 
 
-	ax_iter cur = *first, sorted_first = *first, swap_prev = { first->owner, first->tr }, find;
+	ax_iter cur = *first, sorted_first = *first, swap_prev = *first, find;
 	ax_iter_next(&cur);
 
 	while (!ax_iter_equal(&cur, last)) {
-
-		pred = ax_pred_binary_make((ax_binary_f) less_then, NULL,
-				ax_iter_get(&cur), (void*)etr);
+		ax_pred2 pred;
+		if (!pred2) {
+			pred = ax_pred2_make((ax_binary_f)less_then, (void*)etr);
+			pred2 = &pred;
+		}
+		ax_pred1 *pred1 = ax_pred2_bind2(pred2, ax_iter_get(&cur));
 		find = sorted_first;
-		search_if_not(ax_iter_c(&find), ax_iter_c(&cur), &pred);
+		search_if_not(ax_iter_c(&find), ax_iter_c(&cur), pred1);
 
 		memcpy(tmp, cur.tr->get(ax_iter_cc(&cur)), ax_trait_size(etr));
 		ax_iter swapit = cur;
 		while(!ax_iter_equal(&find, &swapit)) {
 			swap_prev.point = swapit.point;
 			ax_iter_prev(&swap_prev);
-			ax_iter_swap(&swapit, &swap_prev);
+			ax_memswp(ax_iter_get(&swapit), ax_iter_get(&swap_prev), swapit.etr->t_size);
 			swapit.point = swap_prev.point;
 		}
 		memcpy(find.tr->get(ax_iter_cc(&find)), tmp, ax_trait_size(etr));
@@ -513,9 +525,9 @@ ax_fail ax_insertion_sort(const ax_iter *first, const ax_iter *last)
 	return false;
 }
 
-void ax_find_first_unsorted(ax_citer *first, const ax_citer *last, const ax_pred *bpred)
+void ax_find_first_unsorted(ax_citer *first, const ax_citer *last, ax_pred2 *pred2)
 {
-	CHECK_PARAM_NULL(bpred);
+	CHECK_PARAM_NULL(pred2);
 	CHECK_ITER_COMPARABLE(first, last);
 	ASSERT_OBJ_TYPE(first->owner, ax_class_name(3, ax_seq));
 	ASSERT_ITER_TYPE(first, AX_IT_FORW);
@@ -529,7 +541,7 @@ void ax_find_first_unsorted(ax_citer *first, const ax_citer *last, const ax_pred
 	ax_citer it1 = *first, it2 = *first;
 	ax_citer_next(&it2);
 	while (!ax_citer_equal(&it2, last)) {
-		if (ax_pred_do(bpred, &retval, ax_citer_get(&it1), ax_citer_get(&it2)), !retval) {
+		if (!*(bool *)ax_pred2_do(pred2, &retval, ax_citer_get(&it1), ax_citer_get(&it2))) {
 			first->point = it2.point;
 			return;
 		}

@@ -101,14 +101,14 @@ int ax_stat_get(const wchar_t* path, ax_stat *stat)
 
 
 	hFile = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, 0);
-	if (hFile == INVALID_HANDLE_VALUE && GetLastError() != ERROR_ACCESS_DENIED)
-		goto out;
-	else {
+	if (hFile == INVALID_HANDLE_VALUE) {
+		DWORD err = GetLastError();
+		if (err != ERROR_PATH_NOT_FOUND && err != ERROR_ACCESS_DENIED)
+			goto out;
 		hFile = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
 		if (hFile == INVALID_HANDLE_VALUE)
 			goto out;
 	}
-
 
 	if (!GetFileInformationByHandle(hFile, &info))
 		goto out;

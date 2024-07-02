@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Li Xilin <lixilin@gmx.com>
+ * Copyright (c) 2022-2024 Li Xilin <lixilin@gmx.com>
  * 
  * Permission is hereby granted, free of charge, to one person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -210,7 +210,7 @@ static void timerheap_heapify_bottomup(struct timerheap_st *pti, int idx)
 	heap[idx].e->timerheap_idx = idx;
 }
 
-inline void timerheap_reset_timer(ax_reactor *r, ax_event *e)
+void timerheap_reset_timer(ax_reactor *r, ax_event *e)
 {
 	assert(r != NULL);
 	assert(e != NULL);

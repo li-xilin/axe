@@ -20,15 +20,16 @@
  * THE SOFTWARE.
  */
 
+#include "check.h"
 #include "ax/list.h"
 #include "ax/iter.h"
 #include "ax/trait.h"
+#include "ax/algo.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <check.h>
 
 #undef free
 
@@ -105,12 +106,10 @@ static void citer_next(ax_citer *it)
 	ax_list *list = (ax_list *)it->owner;
 	struct node_st *node = it->point;
 	ax_assert(node != NULL, "iterator boundary exceed");
-	if (node->next == list->head) {
-		it->point = NULL;
 
-	} else {
-		it->point = node->next;
-	}
+	it->point = node->next == list->head
+		? NULL
+		: node->next;
 }
 
 static void *citer_get(const ax_citer *it)
@@ -185,6 +184,8 @@ static void rciter_prev(ax_citer *it)
 	CHECK_ITERATOR_VALIDITY(it, it->owner && it->tr);
 	ax_list *list = (ax_list *)it->owner;
 	struct node_st *node = it->point;
+
+
 	if (node == NULL) {
 		ax_assert(list->head, "iterator boundary exceed");
 		it->point = list->head;
@@ -202,12 +203,10 @@ static void rciter_next(ax_citer *it)
 	ax_list *list = (ax_list *)it->owner;
 	struct node_st *node = it->point;
 	ax_assert(node != NULL, "iterator boundary exceed");
-	if (node == list->head) {
-		it->point = NULL;
 
-	} else {
-		it->point = node->pre;
-	}
+	it->point = node->next == list->head
+		? NULL
+		: node->pre;
 }
 
 static bool rciter_less(const ax_citer *it1, const ax_citer *it2)
@@ -290,6 +289,58 @@ static ax_fail iter_set(const ax_iter *it, const void *val, va_list *ap)
 	return false;
 }
 
+static void iter_swap(ax_iter *it1, ax_iter *it2)
+{
+	CHECK_ITER_COMPARABLE(it1, it2);
+	ax_list *list = (ax_list *) it1->owner;
+
+	if (it1->point == it2->point)
+		return;
+
+	struct node_st *node1 = it1->point;
+	struct node_st *node2 = it2->point;
+	struct node_st node1_tmp = *(struct node_st *)it1->point;
+	struct node_st node2_tmp = *(struct node_st *)it2->point;
+
+	if (node1->next == node2) {
+		node1->pre = node2;
+		node1->next = node2->next;
+		node2->pre = node1_tmp.pre;
+		node2->next = node1;
+		node1_tmp.pre->next = node2;
+		node2_tmp.next->pre = node1;
+
+	}
+	else if (node2->next == node1) {
+		node2->pre = node1;
+		node2->next = node1->next;
+		node1->pre = node2_tmp.pre;
+		node1->next = node2;
+		node2_tmp.pre->next = node1;
+		node1_tmp.next->pre = node2;
+	}
+	else {
+		node1_tmp.pre->next = node2;
+		node1_tmp.next->pre = node2;
+		node2_tmp.pre->next = node1;
+		node2_tmp.next->pre = node1;
+		*node1 = node2_tmp;
+		*node2 = node1_tmp;
+	}
+
+	if (list->head == node1)
+		list->head = node2;
+	else if (list->head == node2)
+		list->head = node1;
+
+	ax_swap(&it1->point, &it2->point, void *);
+}
+
+static ax_box *iter_box(const ax_citer *it)
+{
+	return (ax_box *)it->owner;
+}
+
 static void iter_erase(ax_iter *it)
 {
 	CHECK_PARAM_VALIDITY(it, it->owner && it->tr && it->point);
@@ -297,7 +348,12 @@ static void iter_erase(ax_iter *it)
 	ax_list *list = it->owner;
 
 	struct node_st *node = it->point;
-	it->point = ax_iter_norm(it) ? node->next : node->pre; 
+	it->point = node->next == list->head
+		? NULL
+		: (ax_iter_norm(it)
+		? node->next
+		: node->pre); 
+
 	if (list->size == 1) {
 		list->head = NULL;
 		it->point = NULL;
@@ -752,6 +808,8 @@ const ax_seq_trait ax_list_tr =
 			.get = citer_get,
 			.set = iter_set,
 			.erase = iter_erase,
+			.swap = iter_swap,
+			.box = iter_box,
 		},
 		.riter = {
 			.norm = false,
@@ -764,6 +822,7 @@ const ax_seq_trait ax_list_tr =
 			.get = citer_get,
 			.set = iter_set,
 			.erase = iter_erase,
+			.swap = iter_swap,
 		},
 
 		.size = box_size,
@@ -789,6 +848,34 @@ const ax_seq_trait ax_list_tr =
 	.last = seq_last,
 };
 
+static void less_then(bool *cmp, const void *in1, const void *in2, const ax_trait *tr)
+{
+        *cmp = ax_trait_less(tr, in1, in2) || ax_trait_equal(tr, in1, in2);
+}
+
+void ax_list_insertion_sort(const ax_iter *first, const ax_iter *last)
+{
+        CHECK_ITER_COMPARABLE(first, last);
+	CHECK_ITERATOR_VALIDITY(first, strcmp(ax_one_name(first->owner), "ax_one.ax_any.ax_box.ax_seq.ax_list") == 0);
+	CHECK_ITERATOR_VALIDITY(first, strcmp(ax_one_name(last->owner), "ax_one.ax_any.ax_box.ax_seq.ax_list") == 0);
+
+        ax_list_r list = { first->owner };
+        const ax_trait *etr = first->etr;
+        ax_iter cur = *first;
+        ax_iter_next(&cur);
+        while (!ax_iter_equal(&cur, last)) {
+		ax_pred2 pred2 = ax_pred2_make((ax_binary_f)less_then, (void*)etr);
+		ax_pred1 *pred1 = ax_pred2_bind2(&pred2, ax_iter_get(&cur));
+		ax_iter find = ax_box_begin(list.ax_box);
+                ax_find_if_not(ax_iter_c(&find), ax_iter_c(&cur), pred1);
+                if (!ax_iter_equal(&find, &cur)) {
+                        ax_seq_insert(list.ax_seq, &find, ax_iter_get(&cur));
+                        ax_iter_erase(&cur);
+			continue;
+                }
+		ax_iter_next(&cur);
+        }
+}
 
 ax_seq* __ax_list_construct(const ax_trait *elem_tr)
 {

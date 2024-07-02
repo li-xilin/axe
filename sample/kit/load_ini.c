@@ -4,7 +4,7 @@
 
 int err_cb(unsigned line, unsigned err, void *args)
 {
-	fprintf(stderr, "error: line = %d, err = %d\n", line, err);
+	ax_fprintf(stderr, ax_u("error: line = %d, err = " AX_US() "\n"), line, ax_ini_strerror(err));
 	return 0;
 }
 int main()
@@ -17,7 +17,10 @@ int main()
 	ax_ustr_ansi(ax_ini_get(d, ax_u("Pizza"), ax_u("Ham")), buf, sizeof buf);
 	printf("Pizza:Ham -> %s\n", buf);
 	ax_ustr_ansi(ax_ini_get(d, ax_u("wine"), ax_u("grape")), buf, sizeof buf);
-	printf("wizza:gam -> %s\n", buf);
+	printf("wine:grape -> %s\n", buf);
+
+	ax_ustr_ansi(ax_ini_get_str(d, ax_u("wine:grape"), ax_u("default")), buf, sizeof buf);
+	printf("wine:grape -> %s\n", buf);
 
 	puts("\nAdd option:");
 	ax_ini_set(d, ax_u("Foo"), ax_u("Bar"), ax_u("42"));

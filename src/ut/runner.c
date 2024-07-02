@@ -54,7 +54,7 @@ ax_concrete_begin(ut_runner)
 	void *arg;
 ax_end;
 
-void one_free(ax_one *one)
+static void one_free(ax_one *one)
 {
 	if (!one)
 		return;
@@ -67,24 +67,36 @@ void one_free(ax_one *one)
 	free(self.ax_one);
 }
 
-const char *one_name(const ax_one *one)
+static const char *one_name(const ax_one *one)
 {
 	return ax_class_name(1, ut_runner);
+}
+
+
+static void case_enum(ut_case *c, const char *file, int line, char *msg, void *ctx)
+{
+	void **ctx_arr = (void **)ctx;
+	ax_str *out = ctx_arr[0];
+	const char *suite_name = ctx_arr[1];
+
+	ax_str_sprintf(out, "[INFO] %-8s : %s:%s:%d: %s\n",
+				suite_name, c->name, file, line, msg);
 }
 
 static void default_output(const char *suite_name, ut_case *tc, ax_str *out)
 {
 	assert(tc->state != UT_CS_READY);
+	ut_case_enum_text(tc, case_enum, &(const void *[]) { out, suite_name });
 	switch (tc->state) {
 		case UT_CS_PASS:
-			ax_str_sprintf(out, "[ OK ] %-10s : %s\n", suite_name, tc->name);
+			ax_str_sprintf(out, "[ OK ] %-8s : %s\n", suite_name, tc->name);
 			break;
 		case UT_CS_FAIL:
-			ax_str_sprintf(out, "[FAIL] %-10s : %s: %s, line %d: %s\n",
+			ax_str_sprintf(out, "[FAIL] %-8s : %s:%s:%d: %s\n",
 				suite_name, tc->name, tc->file, tc->line, tc->log ? tc->log : "none");
 			break;
 		case UT_CS_TERM:
-			ax_str_sprintf(out, "[TERM] %-10s : %s: %s, line %d: %s\n",
+			ax_str_sprintf(out, "[TERM] %-8s : %s:%s:%d: %s\n",
 				suite_name, tc->name, tc->file, tc->line, tc->log ? tc->log : "none");
 			break;
 	}
@@ -138,14 +150,19 @@ void ut_runner_remove(ut_runner *r, ut_suite* s)
 	ax_iter_erase(&last);
 }
 
-void ut_runner_run(ut_runner *r)
+void ut_runner_run(ut_runner *r, ut_process_f *process_cb)
 {
-	int case_count = 0, case_pass = 0;
+	int case_tested = 0, case_pass = 0;
 	ut_output_f output_cb = r->output_cb ? r->output_cb : default_output;
 	ax_box_clear(r->output.ax_box);
 	r->statistic.pass = 0;
 	r->statistic.fail = 0;
 	r->statistic.term = 0;
+
+	int case_total = 0;
+	ax_box_foreach(r->suites.ax_box, ut_suite * const*, ppsuite)
+		case_total += ut_suite_size(*ppsuite);
+
 	ax_box_foreach(r->suites.ax_box, ut_suite * const*, ppsuite) {
 		r->arg = ut_suite_arg(*ppsuite);
 		size_t size = ut_suite_size(*ppsuite);
@@ -154,6 +171,10 @@ void ut_runner_run(ut_runner *r)
 			ut_case *tc = ut_suite_at(*ppsuite, i);;
 			if (tc->state != UT_CS_READY)
 				continue;
+
+			if (process_cb)
+				process_cb(ut_suite_name(*ppsuite), tc->name, case_tested + 1, case_total);
+
 			r->jump_ptr = &jmp;
 			r->current = tc;
 			int jmpid = setjmp(jmp);
@@ -171,11 +192,12 @@ void ut_runner_run(ut_runner *r)
 					break;
 			}
 			output_cb(ut_suite_name(*ppsuite), tc, r->output.ax_str);
-			case_count ++;
+			case_tested ++;
 		}
+
 	}
 	r->arg = NULL;
-	ax_str_sprintf(r->output.ax_str, "PASS : %d / %d\n", case_pass, case_count);
+	ax_str_sprintf(r->output.ax_str, "PASS : %d / %d\n", case_pass, case_tested);
 }
 
 void *ut_runner_arg(const ut_runner *r)
@@ -215,25 +237,80 @@ void __ut_assert(ut_runner *r, bool cond, const char *file, int line, const char
 	va_end(args);
 }
 
+void __ut_printf(ut_runner *r, const char *file, int line, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	char buf[1024];
+	strcpy(buf, "failed to print log message.");
+	vsnprintf(buf, sizeof buf, fmt, ap);
+	ut_case_add_text(r->current, file, line, buf);
+	va_end(ap);
+}
+
 void __ut_assert_str_equal(ut_runner *r, const char *ex, const char *ac, const char *file, int line)
 {
 	if (strcmp(ex, ac) == 0)
 		return;
-	__ut_fail(r, file, line, "assertion failed: expect '%s', but actually '%s'", ex, ac);
+	__ut_fail(r, file, line, "test failed: expect '%s', but actual '%s'", ex, ac);
+}
+
+void __ut_assert_mem_equal(ut_runner *r, const void *ex, size_t exsize, const void *ac, size_t acsize, const char *file, int line)
+{
+
+	if (exsize != acsize) {
+		__ut_fail(r, file, line, "test failed: expect size is %zd, but actual %zd", exsize, acsize);
+		return;
+	}
+
+	int index = -1;
+	int cmp = 0;
+
+	const char *exp = ex, *acp = ac;
+	for (int i = 0; i < exsize; i++) {
+		if (exp[i] != acp[i]) {
+			cmp = exp[i] - acp[i];
+			index = i;
+			break;
+		}
+	}
+
+	if (cmp == 0)
+		return;
+
+	char ex_buf[66 + 1];
+	char ac_buf[66 + 1];
+
+	size_t left = ax_max(index - 16, 0);
+	size_t right = ax_min((index + 1) + 16, exsize);
+
+	ax_memtohex(exp + left, index - left, ex_buf);
+	sprintf(ex_buf + (index - left) * 2, "[%hhX]", exp[index]);
+	ax_memtohex(exp + index + 1, right - (index + 1), ex_buf + (index - left) * 2 + 4);
+
+	ax_memtohex(acp + left, index - left, ac_buf);
+	sprintf(ac_buf + (index - left) * 2, "[%hhX]", acp[index]);
+	ax_memtohex(acp + index + 1, right - (index + 1), ac_buf + (index - left) * 2 + 4);
+
+
+
+	__ut_fail(r, file, line, "test failed: at offset +%d\n"
+			"\texpect: '%s'\n"
+			"\tactual: '%s'", index, ex_buf, ac_buf);
 }
 
 void __ut_assert_int_equal(ut_runner *r, int64_t ex, int64_t ac, const char *file, int line)
 {
 	if (ex == ac)
 		return;
-	__ut_fail(r, file, line, "assertion failed: expect '%" PRId64 "', but actually '%" PRId64 "'", ex, ac);
+	__ut_fail(r, file, line, "test failed: expect '%" PRId64 "', but actual '%" PRId64 "'", ex, ac);
 }
 
 void __ut_assert_uint_equal(ut_runner *r, uint64_t ex, uint64_t ac, const char *file, int line)
 {
 	if (ex == ac)
 		return;
-	__ut_fail(r, file, line, "assertion failed: expect '%" PRIu64 "', but actually '%" PRIu64 "'", ex, ac);
+	__ut_fail(r, file, line, "test failed: expect '%" PRIu64 "', but actual '%" PRIu64 "'", ex, ac);
 }
 
 void __ut_fail(ut_runner *r, const char *file, int line, const char *fmt, ...)

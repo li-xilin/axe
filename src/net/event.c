@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Li Xilin <lixilin@gmx.com>
+ * Copyright (c) 2022-2024 Li Xilin <lixilin@gmx.com>
  * 
  * Permission is hereby granted, free of charge, to one person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,3 +47,4 @@ bool ax_event_in_use(const ax_event *e){
 
 	return e->ev_flags & AX_EV_REACTING;
 }
+

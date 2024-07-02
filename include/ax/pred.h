@@ -30,81 +30,152 @@
 #define AX_BIND_2 2
 #define AX_BIND_U 4
 
-#ifndef AX_PRED_DEFINED
-#define AX_PRED_DEFINED
-typedef struct ax_pred_st ax_pred;
+#ifndef AX_PRED0_DEFINED
+#define AX_PRED0_DEFINED
+typedef struct ax_pred0_st ax_pred0;
 #endif
 
-struct ax_pred_st
+#ifndef AX_PRED1_DEFINED
+#define AX_PRED1_DEFINED
+typedef struct ax_pred1_st ax_pred1;
+#endif
+
+#ifndef AX_PRED2_DEFINED
+#define AX_PRED2_DEFINED
+typedef struct ax_pred2_st ax_pred2;
+#endif
+
+#define __AX_PRED_FUNMASK (3 << 2)
+
+#define __AX_PRED_BINDMASK (3)
+
+#define __AX_PRED_BIND1 1
+#define __AX_PRED_BIND2 2
+
+#define __AX_PRED_FUN0 (0 << 2)
+#define __AX_PRED_FUN1 (1 << 2)
+#define __AX_PRED_FUN2 (2 << 2)
+
+struct ax_pred0_st
 {
 	union {
-		ax_unary_f u;
-		ax_binary_f b;
-	} fun;
-	void *first;
-	void *second;
-	void *args;
-	int   bind;
+		ax_unary_f unary;
+		ax_binary_f binary;
+	} p_fun;
+	int p_bindf;
+	void *p_ctx;
 };
 
-inline static ax_pred ax_pred_unary_make(ax_unary_f oper, void *in, void *args)
+struct ax_pred1_st
 {
-	return (ax_pred) {
-		.fun.u = oper,
-		.first = in,
-		.second = NULL,
-		.bind = (in ? AX_BIND_1 : 0) | AX_BIND_U,
-		.args = args
+	ax_pred0 p_p0;
+	void *p_value;
+};
+
+struct ax_pred2_st
+{
+	ax_pred1 p_p1;
+	void *p_value;
+};
+
+
+inline static ax_pred2 ax_pred2_make(ax_binary_f binary, void *ctx)
+{
+	return (ax_pred2) {
+		.p_p1.p_p0.p_bindf = __AX_PRED_FUN2,
+		.p_p1.p_p0.p_fun.binary = binary,
+		.p_p1.p_p0.p_ctx = ctx,
 	};
 }
 
-inline static ax_pred ax_pred_binary_make(ax_binary_f oper, void *in1, void *in2, void *args)
+
+inline static ax_pred1 ax_pred1_make(ax_unary_f unary, void *ctx)
 {
-	return (ax_pred) {
-		.fun.b = oper,
-		.first = in1,
-		.second = in2,
-		.bind = (in1 ? AX_BIND_1 : 0) | (in2 ? AX_BIND_2 : 0 ),
-		.args = args
+	return (ax_pred1) {
+		.p_p0.p_bindf = __AX_PRED_FUN1,
+		.p_p0.p_fun.unary = unary,
+		.p_p0.p_ctx = ctx,
 	};
 }
 
-inline static void ax_pred_do(const ax_pred *pred, void *out, const void *in1, const void *in2)
+inline static ax_pred0 ax_pred0_make(ax_unary_f unary, void *ctx)
 {
-#ifndef NDEBUG
-	const char *failed_msg = "invalid argument for predicate input";
-#endif
-	switch (pred->bind) {
-		case AX_BIND_U:
-			ax_assert(in1 && !in2, failed_msg);
-			goto do_unary;
-		case AX_BIND_U | AX_BIND_1:
-			ax_assert(!in1 && !in2, failed_msg);
-			in1 = pred->first;
-			goto do_unary;
-		case 0:
-			ax_assert(in1 && in2, failed_msg);
-			goto do_binary;
-		case AX_BIND_1:
-			ax_assert(in1 && !in2, failed_msg);
-			in2 = in1;
-			in1 = pred->first;
-			goto do_binary;
-		case AX_BIND_2:
-			ax_assert(in1 && !in2, failed_msg);
-			in2 = pred->second;
-			goto do_binary;
-		case AX_BIND_1 | AX_BIND_2:
-			ax_assert(!in1 && !in2, failed_msg);
-			in1 = pred->first;
-			in2 = pred->second;
-			goto do_binary;
+	return (ax_pred0) {
+		.p_bindf = __AX_PRED_FUN0,
+		.p_fun.unary = unary,
+		.p_ctx = ctx,
+		
+	};
+}
+
+inline static ax_pred1 *ax_pred2_bind1(ax_pred2 *p2, void *value)
+{
+	p2->p_p1.p_p0.p_bindf &= ~__AX_PRED_BINDMASK;
+	p2->p_p1.p_p0.p_bindf |= __AX_PRED_BIND1;
+	p2->p_value = value;
+	return &p2->p_p1;
+}
+
+inline static ax_pred1 *ax_pred2_bind2(ax_pred2 *p2, void *value)
+{
+	p2->p_p1.p_p0.p_bindf &= ~__AX_PRED_BINDMASK;
+	p2->p_p1.p_p0.p_bindf |= __AX_PRED_BIND2;
+	p2->p_value = value;
+	return &p2->p_p1;
+}
+
+inline static ax_pred0 *ax_pred1_bind(ax_pred1 *p1, void *value)
+{
+	p1->p_value = value;
+	return &p1->p_p0;
+}
+
+inline static void *ax_pred2_do(ax_pred2 *p2, void *ret, const void *val1, const void *val2)
+{
+	ax_assert((p2->p_p1.p_p0.p_bindf & __AX_PRED_FUN2) == __AX_PRED_FUN2, "invalid function type of pred");
+	p2->p_p1.p_p0.p_fun.binary(ret, val1, val2, p2->p_p1.p_p0.p_ctx);
+	return ret;
+}
+
+inline static void *ax_pred1_do(ax_pred1 *p1, void *ret, const void *val)
+{
+	ax_pred2 *p2 = (ax_pred2 *)p1;
+	switch (p1->p_p0.p_bindf) {
+		case __AX_PRED_FUN1:
+			p1->p_p0.p_fun.unary(ret, val, p1->p_p0.p_ctx);
+			break;
+		case __AX_PRED_FUN2 | __AX_PRED_BIND1:
+			p1->p_p0.p_fun.binary(ret, p2->p_value, val, p1->p_p0.p_ctx);
+			break;
+		case __AX_PRED_FUN2 | __AX_PRED_BIND2:
+			p1->p_p0.p_fun.binary(ret, val, p2->p_value, p1->p_p0.p_ctx);
+			break;
+		default:
+			ax_assert(false, "invalid pred");
+			break;
 	}
-do_unary:
-	pred->fun.u(out, in1, pred->args);
-	return;
-do_binary:
-	pred->fun.b(out, in1, in2, pred->args);
+	return ret;
+}
+
+inline static void* ax_pred0_do(ax_pred0 *p0, void *ret)
+{
+	ax_pred2 *p2 = (ax_pred2 *)p0;
+	switch (p0->p_bindf) {
+		case __AX_PRED_FUN0:
+			p0->p_fun.unary(ret, NULL, p0->p_ctx);
+		case __AX_PRED_FUN1:
+			p2->p_p1.p_p0.p_fun.unary(ret, p2->p_p1.p_value, p0->p_ctx);
+			break;
+		case __AX_PRED_FUN2 | __AX_PRED_BIND1:
+			p0->p_fun.binary(ret, p2->p_value, p2->p_p1.p_value, p2->p_p1.p_p0.p_ctx);
+			break;
+		case __AX_PRED_FUN2 | __AX_PRED_BIND2:
+			p0->p_fun.binary(ret, p2->p_p1.p_value, p2->p_value, p2->p_p1.p_p0.p_ctx);
+			break;
+		default:
+			ax_assert(false, "invalid pred");
+	}
+	return ret;
 }
 
 #endif

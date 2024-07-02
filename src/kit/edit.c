@@ -536,7 +536,7 @@ static int fd_read(struct current *current)
 	if (read(current->fd, &buf[0], 1) != 1) {
 		return -1;
 	}
-	n = ax_ustr_charlen(buf[0]);
+	n = ax_utf8_charlen(buf[0]);
 	if (n < 1) {
 		return -1;
 	}

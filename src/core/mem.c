@@ -36,30 +36,22 @@
 #define WIDE_CHAR
 #include "strargv.h"
 
-void ax_memswp1(void *ptr1, void *ptr2, size_t size)
+void ax_memswp(void *p1, void *p2, size_t size)
 {
-	CHECK_PARAM_NULL(ptr1);
-	CHECK_PARAM_NULL(ptr2);
+	CHECK_PARAM_NULL(p1);
+	CHECK_PARAM_NULL(p2);
 
-	if (ptr1 == ptr2)
-		return;
+	size_t chunk_cnt = size / sizeof(ax_fast_uint),
+	       tail_size = size % sizeof(ax_fast_uint);
 
-	register size_t fast_size = size / sizeof(ax_fast_uint);
-	register size_t slow_size = size % sizeof(ax_fast_uint);
+	ax_fast_uint *pf1 = p1, *pf2 = p2;
+	for (size_t i = 0; i < chunk_cnt; i++)
+		ax_swap(pf1 + i, pf2 + i, ax_fast_uint);
 
-	ax_fast_uint *pf1 = ptr1, *pf2 = ptr2;
-	for (size_t i = 0; i!= fast_size; i++) {
-		pf1[i] = pf1[i] ^ pf2[i];
-		pf2[i] = pf1[i] ^ pf2[i];
-		pf1[i] = pf1[i] ^ pf2[i];
-	}
-
-	uint8_t *p1 = (ax_byte *)ptr1 + size - slow_size, *p2 = (ax_byte*)ptr2 + size - slow_size;
-	for (size_t i = 0; i!= slow_size; i++) {
-		p1[i] = p1[i] ^ p2[i];
-		p2[i] = p1[i] ^ p2[i];
-		p1[i] = p1[i] ^ p2[i];
-	}
+	uint8_t *ps1 = (ax_byte *)p1 + (size - tail_size),
+		*ps2 = (ax_byte *)p2 + (size - tail_size);
+	for (size_t i = 0; i != tail_size; i++)
+		ax_swap(ps1 + i, ps2 + i, uint8_t);
 }
 
 char *ax_strdup(const char *s)
@@ -379,15 +371,20 @@ inline static char int_to_char(int n)
 
 char *ax_strbaseconv(char *s, char *buf, size_t size, int old_base, int new_base)
 {
-        int j = size - 1;
-        ax_assert(old_base >= 2 && old_base <= 36, "Invalid old_base");
-        ax_assert(new_base >= 2 && new_base <= 36, "Invalid new_base");
-#ifndef NDEBUG
-        for (int i = 0; s[i]; i++) {
-                int n = char_to_int(s[i]);
-                ax_assert(n >= 0 && n < old_base, "Invalid charactor '%c'", s[i]);
+	
+	int j = size - 2;
+	ax_assert(size >= 2, "invalid size");
+	ax_assert(old_base >= 2 && old_base <= 36, "invalid old_base");
+	ax_assert(new_base >= 2 && new_base <= 36, "invalid new_base");
+
+	buf[size - 1] = '\0';
+	for (int i = 0; s[i]; i++) {
+                uint8_t n = char_to_int(s[i]);
+                if (n < 0 || n >= old_base) {
+			errno = EINVAL;
+			return NULL;
+		}
         }
-#endif
         static const char hex[] = "0123456789abcdefghijklmnopqrstuvwxyz";
         while (1) {
                 int i = 0;
@@ -395,8 +392,10 @@ char *ax_strbaseconv(char *s, char *buf, size_t size, int old_base, int new_base
                         i++;
                 if (!s[i])
                         break;
-                if (j < 0)
+                if (j < 0) {
+			errno = ENOBUFS;
                         return NULL;
+		}
                 int sum = 0, res = 0;
                 for (i = 0; s[i]; i++) {
                         sum = res * old_base + char_to_int(s[i]);

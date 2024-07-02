@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Li Xilin <lixilin@gmx.com>
+ * Copyright (c) 2023-2024 Li Xilin <lixilin@gmx.com>
  *
  * Permission is hereby granted, free of charge, to one person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,17 @@
 #define AX_IOBUF_H
 
 #include "ax/def.h"
+#include "ax/mem.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 
 struct ax_iobuf_st
 {
-        size_t size, front, rear;
-        uint8_t *buf;
+	size_t size, front, rear;
+	uint8_t *buf;
 };
 
 typedef struct ax_iobuf_st ax_iobuf;
@@ -40,8 +42,9 @@ typedef void ax_iobuf_drain_cb(void *data, size_t size, void *arg);
 
 inline static void ax_iobuf_init(ax_iobuf *b, void *buf, size_t size)
 {
+	assert(size > 1);
 	b->size = size;
-	b->buf = (uint8_t *)buf;
+	b->buf = buf;
 	b->rear = b->front = 0;
 }
 
@@ -49,7 +52,6 @@ inline static size_t ax_iobuf_data_size(ax_iobuf *b)
 {
 	return (b->size + b->rear - b->front) % b->size;
 }
-
 
 inline static size_t ax_iobuf_full(ax_iobuf *b)
 {
@@ -66,9 +68,27 @@ inline static size_t ax_iobuf_max_size(ax_iobuf *b)
 	return b->size - 1;
 }
 
-inline static size_t ax_iobuf_buf_size(ax_iobuf *b)
+inline static size_t ax_iobuf_free_size(ax_iobuf *b)
 {
 	return ax_iobuf_max_size(b) - ax_iobuf_data_size(b);
+}
+
+inline static size_t ax_iobuf_inplace_size(const ax_iobuf *b)
+{
+        return (b->rear >= b->front)
+		? b->size - b->rear - !b->front
+		: b->front - b->rear - 1;
+}
+
+inline static void *ax_iobuf_inplace_buf(ax_iobuf *b)
+{
+	return b->buf + b->rear;
+}
+
+inline static void ax_iobuf_inplace_take(ax_iobuf *b, size_t size)
+{
+        assert(size <= ax_iobuf_inplace_size(b));
+        b->rear += size;
 }
 
 inline static void ax_iobuf_clear(ax_iobuf *b)
@@ -76,54 +96,16 @@ inline static void ax_iobuf_clear(ax_iobuf *b)
 	b->rear = b->front = 0;
 }
 
-inline static size_t ax_iobuf_write(ax_iobuf *b, void *p, size_t size)
-{
-	size_t buf_size = ax_min(ax_iobuf_buf_size(b), size);
-	size_t size1 = ax_min(b->size - b->rear, buf_size);
-	memcpy(b->buf + b->rear, p, size1);
-	memcpy(b->buf, (uint8_t *)p + size1, buf_size - size1);
-	b->rear = (b->rear + buf_size) % b->size;
-	return buf_size;
-}
+size_t ax_iobuf_write(ax_iobuf *b, void *p, size_t size);
 
-inline static size_t ax_iobuf_read(ax_iobuf *b, void *buf, size_t size)
-{
-	size_t read_size = ax_min(ax_iobuf_data_size(b), size);
-	size_t size1 = ax_min((b->size - b->front), read_size);
-	memcpy(buf, b->buf + b->front, size1);
-	memcpy((uint8_t *)buf + size1, b->buf, read_size - size1);
-	b->front = (b->front + read_size) % b->size;
-	return read_size;
-}
+size_t ax_iobuf_peek(ax_iobuf *b, void *buf, size_t start, size_t size);
 
-inline static size_t ax_iobuf_drop(ax_iobuf *b, void *buf, size_t size)
-{
-	size_t read_size = ax_min(ax_iobuf_data_size(b), size);
-	b->front = (b->front + read_size) % b->size;
-	return read_size;
-}
+size_t ax_iobuf_read(ax_iobuf *b, void *buf, size_t size);
 
-inline static void *ax_iobuf_chbuf(ax_iobuf *b, void *buf, size_t size)
-{
-	if (ax_iobuf_data_size(b) < size - 1) {
-		errno = EINVAL;
-		return NULL;
-	}
-	b->rear = ax_iobuf_read(b, buf, size);
-	b->front = 0;
-	return b->buf;
-}
+void *ax_iobuf_chbuf(ax_iobuf *b, void *buf, size_t size);
 
-inline static size_t ax_iobuf_drain(ax_iobuf *b, size_t size, ax_iobuf_drain_cb *cb, void *arg)
-{
-	size_t read_size = ax_min(ax_iobuf_data_size(b), size);
-	size_t size1 = ax_min((b->size - b->front), read_size);
-	if (size1)
-		cb(b->buf + b->front, size1, arg);
-	if (read_size - size1)
-		cb(b->buf, read_size - size1, arg);
-	b->front = (b->front + read_size) % b->size;
-	return read_size;
-}
+size_t ax_iobuf_drain(ax_iobuf *b, size_t size, ax_iobuf_drain_cb *cb, void *arg);
+
+void *ax_iobuf_pullup(ax_iobuf *b);
 
 #endif

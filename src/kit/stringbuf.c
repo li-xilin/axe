@@ -151,6 +151,7 @@ void sb_insert(stringbuf *sb, int index, const ax_uchar *str)
 		sb_insert_space(sb, index, len);
 		memcpy(sb->data + index, str, len * sizeof(ax_uchar));
 		sb->chars += ax_ustr_charcnt(str, len);
+
 	}
 }
 

@@ -22,6 +22,7 @@
 
 #include "ax/ini.h"
 #include "ax/link.h"
+#include "ax/debug.h"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -124,6 +125,25 @@ static struct section *find_section(const ax_ini *d, const ax_uchar *sec_name)
 		if (sec_hash != sec->hash)
 			continue;
 		if (ax_ustricmp(sec_name, sec->name))
+			continue;
+		return sec;
+	}
+	return NULL;
+}
+
+static struct section *find_section_with_len(const ax_ini *d, const ax_uchar *sec_name, size_t sec_name_len)
+{
+	if (!sec_name)
+		sec_name = DEFAULT_SEC_NAME;
+
+	size_t sec_hash = ax_ustrnihash(sec_name, sec_name_len);
+
+	ax_link *cur_sec;
+	ax_link_foreach(cur_sec, &d->sec_list) {
+		struct section *sec = ax_link_entry(cur_sec, struct section, link);
+		if (sec_hash != sec->hash)
+			continue;
+		if (ax_ustrnicmp(sec_name, sec->name, sec_name_len))
 			continue;
 		return sec;
 	}
@@ -456,12 +476,84 @@ out:
 	return d;
 }
 
-const char *ax_ini_strerror(int errcode)
+const ax_uchar *ax_ini_strerror(int errcode)
 {
 	switch (errcode) {
-		case AX_INI_EBADNAME: return "Invalid key name";
-		case AX_INI_ETOOLONG: return "Too long for single line";
-		case AX_INI_ESYNTAX: return "Syntax error";
-		default: return "";
+		case AX_INI_EBADNAME: return ax_u("Invalid key name");
+		case AX_INI_ETOOLONG: return ax_u("Too long for single line");
+		case AX_INI_ESYNTAX: return ax_u("Syntax error");
+		default: return ax_u("");
 	}
 }
+
+static int section_name_len(const ax_uchar *path)
+{
+	for (int i = 0; path[i]; i++)
+		if (path[i] == ax_u(':'))
+			return i;
+	return -1;
+}
+
+ax_uchar *ax_ini_path_get(const ax_ini *d, const ax_uchar *path)
+{
+	int sec_len = section_name_len(path);
+	ax_assert(sec_len >= 0, "no colon(:) found in field path");
+	struct section *sec = find_section_with_len(d, path, sec_len);
+	if (!sec)
+		return NULL;
+	struct option *opt = find_option(sec, path + sec_len + 1);
+	if (!opt)
+		return NULL;
+	return opt->val;
+}
+
+int ax_ini_get_bool(const ax_ini *d, const ax_uchar *path, bool dft_value)
+{
+	ax_uchar *value = ax_ini_path_get(d, path);
+	if (!value)
+		return dft_value;
+
+	if (ax_ustricmp(value, ax_u("true")) == 0)
+		return 1;
+	if (ax_ustricmp(value, ax_u("false")) == 0)
+		return 0;
+
+	if (ax_ustricmp(value, ax_u("yes")) == 0)
+		return 1;
+	if (ax_ustricmp(value, ax_u("no")) == 0)
+		return 0;
+
+	if (ax_ustricmp(value, ax_u("y")) == 0)
+		return 1;
+	if (ax_ustricmp(value, ax_u("n")) == 0)
+		return 0;
+
+	if (ax_ustricmp(value, ax_u("1")) == 0)
+		return 1;
+	if (ax_ustricmp(value, ax_u("0")) == 0)
+		return 0;
+
+	return -1;
+}
+
+int ax_ini_get_int(const ax_ini *d, const ax_uchar *path, int dft_value)
+{
+
+	ax_uchar *value = ax_ini_path_get(d, path);
+	if (!value)
+		return dft_value;
+
+	int num;
+	if (ax_usscanf(value, ax_u("%d"), &num) != 1)
+		return dft_value;
+	return num;
+}
+
+ax_uchar *ax_ini_get_str(const ax_ini *d, const ax_uchar *path, ax_uchar *dft_value)
+{
+	ax_uchar *value = ax_ini_path_get(d, path);
+	if (!value)
+		return dft_value;
+	return value;
+}
+

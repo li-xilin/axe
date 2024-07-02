@@ -79,6 +79,16 @@ inline static ax_event ax_event_make(ax_socket fd, short ev_flags,ax_event_cb_f 
 	return event;
 }
 
+inline static ax_event ax_event_for_socket(ax_socket fd, short ev_flags, ax_event_cb_f *cb, void *arg)
+{
+	return ax_event_make(fd, ev_flags, cb, arg);
+}
+
+inline static ax_event ax_event_for_timeout(unsigned millisec, bool once, ax_event_cb_f *cb, void *arg)
+{
+	return ax_event_make(millisec, AX_EV_TIMEOUT | (once ? AX_EV_ONCE : 0), cb, arg);
+}
+
 bool ax_event_in_use(const ax_event *e);
 
 #endif

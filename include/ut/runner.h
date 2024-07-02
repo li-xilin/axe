@@ -56,13 +56,16 @@ ax_fail ut_runner_add(ut_runner *r, ut_suite* s);
 
 void ut_runner_remove(ut_runner *r, ut_suite* s);
 
-void ut_runner_run(ut_runner *r);
+typedef void ut_process_f(const char *suite_name, const char *case_name, int pos, int total);
+void ut_runner_run(ut_runner *r, ut_process_f *f);
 
 void *ut_runner_arg(const ut_runner *r);
 
 void __ut_assert(ut_runner *r, bool cond, const char *file, int line, const char *fmt, ...);
 
 void __ut_assert_str_equal(ut_runner *r, const char *ex, const char *ac, const char *file, int line);
+
+void __ut_assert_mem_equal(ut_runner *r, const void *ex, size_t exlen, const void *ac, size_t aclen, const char *file, int line);
 
 void __ut_assert_int_equal(ut_runner *r, int64_t ex, int64_t ac, const char *file, int line);
 
@@ -72,7 +75,11 @@ void __ut_fail(ut_runner *r, const char *file, int line, const char *fmt, ...);
 
 void __ut_term(ut_runner *r, const char *file, int line, const char *fmt, ...);
 
+void __ut_printf(ut_runner *r, const char *file, int line, const char *fmt, ...);
+
 #define ut_assert(r, cond) __ut_assert((r), (cond), __FILE__, __LINE__, "assertion failed: %s", #cond)
+
+#define ut_printf(r, ...) __ut_printf((r), __FILE__, __LINE__, __VA_ARGS__)
 
 #define ut_assert_msg(r, cond, ...) __ut_assert((r), (cond), __FILE__, __LINE__, __VA_ARGS__)
 
@@ -81,6 +88,8 @@ void __ut_term(ut_runner *r, const char *file, int line, const char *fmt, ...);
 #define ut_term(r, ...) __ut_term((r), __FILE__, __LINE__, __VA_ARGS__)
 
 #define ut_assert_str_equal(r, ex, ac) __ut_assert_str_equal((r), ex, ac, __FILE__, __LINE__)
+
+#define ut_assert_mem_equal(r, ex, exlen, ac, aclen) __ut_assert_mem_equal((r), (ex), (exlen), (ac), (aclen), __FILE__, __LINE__)
 
 #define ut_assert_int_equal(r, ex, ac) __ut_assert_int_equal((r), ex, ac, __FILE__, __LINE__)
 

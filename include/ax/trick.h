@@ -20,6 +20,8 @@
  * THE SOFTWARE.
  */
 
+#include "narg.h"
+
 #ifndef AX_TRICK_H
 #define AX_TRICK_H
 
@@ -62,41 +64,41 @@
 #define AX_OVERLOAD_N(sym, n, ...) __AX_OVERLOAD_N(sym, n, __VA_ARGS__)
 #define AX_OVERLOAD(sym, ...) AX_OVERLOAD_N(sym, AX_NARG(__VA_ARGS__), __VA_ARGS__)
 
-#define __AX_CALL_1(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_2(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_3(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_4(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_5(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_6(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_7(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_8(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_9(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_10(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_11(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_12(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_13(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_14(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_15(macro, ...) macro(__VA_ARGS__)
-#define __AX_CALL_16(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_1(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_2(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_3(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_4(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_5(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_6(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_7(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_8(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_9(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_10(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_11(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_12(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_13(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_14(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_15(macro, ...) macro(__VA_ARGS__)
+#define __AX_EXPAND_16(macro, ...) macro(__VA_ARGS__)
 
-#define __AX_PREFIX_TO_0(_pre, x) x
-#define __AX_PREFIX_TO_1(_pre, x) __AX_CALL_1(__AX_PREFIX_TO_0, _pre, _pre##x)
-#define __AX_PREFIX_TO_2(_pre, x) __AX_CALL_2(__AX_PREFIX_TO_1, _pre, _pre##x)
-#define __AX_PREFIX_TO_3(_pre, x) __AX_CALL_3(__AX_PREFIX_TO_2, _pre, _pre##x)
-#define __AX_PREFIX_TO_4(_pre, x) __AX_CALL_4(__AX_PREFIX_TO_3, _pre, _pre##x)
-#define __AX_PREFIX_TO_5(_pre, x) __AX_CALL_5(__AX_PREFIX_TO_4, _pre, _pre##x)
-#define __AX_PREFIX_TO_6(_pre, x) __AX_CALL_6(__AX_PREFIX_TO_5, _pre, _pre##x)
-#define __AX_PREFIX_TO_7(_pre, x) __AX_CALL_7(__AX_PREFIX_TO_6, _pre, _pre##x)
-#define __AX_PREFIX_TO_8(_pre, x) __AX_CALL_8(__AX_PREFIX_TO_7, _pre, _pre##x)
-#define __AX_PREFIX_TO_9(_pre, x) __AX_CALL_9(__AX_PREFIX_TO_8, _pre, _pre##x)
-#define __AX_PREFIX_TO_10(_pre, x) __AX_CALL_10(__AX_PREFIX_TO_9, _pre, _pre##x)
-#define __AX_PREFIX_TO_11(_pre, x) __AX_CALL_11(__AX_PREFIX_TO_10, _pre, _pre##x)
-#define __AX_PREFIX_TO_12(_pre, x) __AX_CALL_12(__AX_PREFIX_TO_11, _pre, _pre##x)
-#define __AX_PREFIX_TO_13(_pre, x) __AX_CALL_13(__AX_PREFIX_TO_12, _pre, _pre##x)
-#define __AX_PREFIX_TO_14(_pre, x) __AX_CALL_14(__AX_PREFIX_TO_13, _pre, _pre##x)
-#define __AX_PREFIX_TO_15(_pre, x) __AX_CALL_15(__AX_PREFIX_TO_14, _pre, _pre##x)
-#define __AX_PREFIX_TO_16(_pre, x) __AX_CALL_16(__AX_PREFIX_TO_15, _pre, _pre##x)
-#define AX_PREFIX_TO(n, _pre, x) __AX_CALL_##n(__AX_PREFIX_TO_##n, _pre, x)
+#define __AX_EXPAND_PREFIX_0(_pre, x) x
+#define __AX_EXPAND_PREFIX_1(_pre, x) __AX_EXPAND_1(__AX_EXPAND_PREFIX_0, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_2(_pre, x) __AX_EXPAND_2(__AX_EXPAND_PREFIX_1, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_3(_pre, x) __AX_EXPAND_3(__AX_EXPAND_PREFIX_2, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_4(_pre, x) __AX_EXPAND_4(__AX_EXPAND_PREFIX_3, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_5(_pre, x) __AX_EXPAND_5(__AX_EXPAND_PREFIX_4, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_6(_pre, x) __AX_EXPAND_6(__AX_EXPAND_PREFIX_5, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_7(_pre, x) __AX_EXPAND_7(__AX_EXPAND_PREFIX_6, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_8(_pre, x) __AX_EXPAND_8(__AX_EXPAND_PREFIX_7, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_9(_pre, x) __AX_EXPAND_9(__AX_EXPAND_PREFIX_8, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_10(_pre, x) __AX_EXPAND_10(__AX_EXPAND_PREFIX_9, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_11(_pre, x) __AX_EXPAND_11(__AX_EXPAND_PREFIX_10, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_12(_pre, x) __AX_EXPAND_12(__AX_EXPAND_PREFIX_11, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_13(_pre, x) __AX_EXPAND_13(__AX_EXPAND_PREFIX_12, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_14(_pre, x) __AX_EXPAND_14(__AX_EXPAND_PREFIX_13, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_15(_pre, x) __AX_EXPAND_15(__AX_EXPAND_PREFIX_14, _pre, _pre##x)
+#define __AX_EXPAND_PREFIX_16(_pre, x) __AX_EXPAND_16(__AX_EXPAND_PREFIX_15, _pre, _pre##x)
+#define AX_EXPAND_PREFIX(n, _pre, x) __AX_EXPAND_PREFIX_##n(_pre, x)
 
 #define __AX_PAVE_TO_0(n, macro, ...)
 #define __AX_PAVE_TO_1(n, macro, ...) macro(n, __VA_ARGS__)
@@ -117,32 +119,38 @@
 #define __AX_PAVE_TO_16(n, macro, ...) macro(n, __VA_ARGS__) __AX_PAVE_TO_15(15, macro, __VA_ARGS__)
 #define AX_PAVE_TO(n, macro, ...) __AX_PAVE_TO_##n(n, macro, __VA_ARGS__)
 
-#define __AX_CATENATE_8(a1, a2, a3, a4, a5, a6, a7, a8) a1##a2##a3##a4##a5##a6##a7##a8
-#define __AX_CATENATE_7(a1, a2, a3, a4, a5, a6, a7) a1##a2##a3##a4##a5##a6##a7
-#define __AX_CATENATE_6(a1, a2, a3, a4, a5, a6) a1##a2##a3##a4##a5##a6
-#define __AX_CATENATE_5(a1, a2, a3, a4, a5) a1##a2##a3##a4##a5
-#define __AX_CATENATE_4(a1, a2, a3, a4) a1##a2##a3##a4
-#define __AX_CATENATE_3(a1, a2, a3) a1##a2##a3
-#define __AX_CATENATE_2(a1, a2) a1##a2
-#define __AX_CATENATE_1(a1) a1
+#define __AX_CATENATE_1(seq) seq
+#define __AX_CATENATE_2(seq, ...) __AX_CATENATE_1(seq##__VA_ARGS__)
+#define __AX_CATENATE_3(seq, ...) __AX_CATENATE_2(seq##__VA_ARGS__)
+#define __AX_CATENATE_4(seq, ...) __AX_CATENATE_3(seq##__VA_ARGS__)
+#define __AX_CATENATE_5(seq, ...) __AX_CATENATE_4(seq##__VA_ARGS__)
+#define __AX_CATENATE_6(seq, ...) __AX_CATENATE_5(seq##__VA_ARGS__)
+#define __AX_CATENATE_7(seq, ...) __AX_CATENATE_6(seq##__VA_ARGS__)
+#define __AX_CATENATE_8(seq, ...) __AX_CATENATE_7(seq##__VA_ARGS__)
+#define __AX_CATENATE_9(seq, ...) __AX_CATENATE_8(seq##__VA_ARGS__)
+#define __AX_CATENATE_10(seq, ...) __AX_CATENATE_9(seq##__VA_ARGS__)
+#define __AX_CATENATE_11(seq, ...) __AX_CATENATE_10(seq##__VA_ARGS__)
+#define __AX_CATENATE_12(seq, ...) __AX_CATENATE_11(seq##__VA_ARGS__)
+#define __AX_CATENATE_13(seq, ...) __AX_CATENATE_12(seq##__VA_ARGS__)
+#define __AX_CATENATE_14(seq, ...) __AX_CATENATE_13(seq##__VA_ARGS__)
+#define __AX_CATENATE_15(seq, ...) __AX_CATENATE_14(seq##__VA_ARGS__)
+#define __AX_CATENATE_16(seq, ...) __AX_CATENATE_15(seq##__VA_ARGS__)
 #define AX_CATENATE(...) AX_OVERLOAD(__AX_CATENATE_, __VA_ARGS__)
 
-#define __AX_MTOOL_TRANSFORM_3( macro, i, x)      macro(n, x)
-#define __AX_MTOOL_TRANSFORM_4( macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_3 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_5( macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_4 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_6( macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_5 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_7( macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_6 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_8( macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_7 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_9( macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_8 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_10(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_9 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_11(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_10(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_12(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_11(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_13(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_12(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_14(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_13(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_15(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_14(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_16(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_15(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_17(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_16(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define __AX_MTOOL_TRANSFORM_18(macro, i, x, ...) macro(i, x) __AX_MTOOL_TRANSFORM_17(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
-#define AX_MTOOL_TRANSFORM(macro, ...) AX_OVERLOAD(__AX_MTOOL_TRANSFORM_, macro, 0, __VA_ARGS__)
+#define __AX_TRANSFORM_3( macro, i, x)      macro(i, x)
+#define __AX_TRANSFORM_4( macro, i, x, ...) macro(i, x) __AX_TRANSFORM_3 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_TRANSFORM_5( macro, i, x, ...) macro(i, x) __AX_TRANSFORM_4 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_TRANSFORM_6( macro, i, x, ...) macro(i, x) __AX_TRANSFORM_5 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_TRANSFORM_7( macro, i, x, ...) macro(i, x) __AX_TRANSFORM_6 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_TRANSFORM_8( macro, i, x, ...) macro(i, x) __AX_TRANSFORM_7 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_TRANSFORM_9( macro, i, x, ...) macro(i, x) __AX_TRANSFORM_8 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_TRANSFORM_10(macro, i, x, ...) macro(i, x) __AX_TRANSFORM_9 (macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_TRANSFORM_11(macro, i, x, ...) macro(i, x) __AX_TRANSFORM_10(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_TRANSFORM_12(macro, i, x, ...) macro(i, x) __AX_TRANSFORM_11(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_TRANSFORM_13(macro, i, x, ...) macro(i, x) __AX_TRANSFORM_12(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_TRANSFORM_14(macro, i, x, ...) macro(i, x) __AX_TRANSFORM_13(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_TRANSFORM_15(macro, i, x, ...) macro(i, x) __AX_TRANSFORM_14(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define __AX_TRANSFORM_16(macro, i, x, ...) macro(i, x) __AX_TRANSFORM_15(macro, __AX_CATENATE_2(__AX_INC_, i), __VA_ARGS__)
+#define AX_TRANSFORM(macro, ...) AX_OVERLOAD(__AX_TRANSFORM_, macro, 0, __VA_ARGS__)
 
 #endif

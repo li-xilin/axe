@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Li hsilin <lihsilyn@gmail.com>
+ * Copyright (c) 2020-2021, 2023-2024 Li Xilin <lixilin@gmx.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 #define AX_DEBUG_H
 
 #include "trick.h"
+#include "narg.h"
 
 typedef struct {
         const char *file;
@@ -46,10 +47,10 @@ int __ax_debug_assert_fail (const ax_location *loc, const char* brief, const cha
 # define ax_static_assert(_exp) typedef char AX_CATENATE(__ax_static_assert_, \
 		__LINE__)[(_exp) ? 1 : -1]
 #else
-# define ax_static_assert(_exp) ((void)0)
+# define ax_static_assert(_exp) typedef char AX_CATENATE(__ax_static_assert_, __LINE__)[1]
 #endif
 
-#define ax_assert_not_null(x) ax_assert((x), "unexpected NULL with `%s`", #x);
+#define ax_assert_not_null(x) ax_assert((x), "unexpected NULL value for `%s`", #x);
 
 #endif
 
