@@ -21,15 +21,15 @@ $ sudo make install
 
 | 库文件       | 描述 |
 |---           |---   |
-| libaxcore.a  | 公共核心库 |
-| libaxut.a    | 单元测试库 |
-| libaxnet.a   | 网络统信库 |
-| libaxkit.a   | 系统移植库 |
-| libaxgui.a   | 图形用户界面库 |
+| libaxcore.a  | 基础功能 |
+| libaxut.a    | 单元测试 |
+| libaxnet.a   | 套接字和事件驱动 |
+| libaxkit.a   | 系统接口兼容 |
+| libaxgui.a   | 图形用户界面 |
 
 在这些模块中，除 *axgui* 依赖了第三方程序[libui-ng](https://github.com/libui-ng/libui-ng)以外，其它模块无任何第三方的接口依赖。其中 *axcore* 基于纯C99标准编写，并作为其他几个模块的共同依赖。而其他模块之间互相不存在依赖。
 
-在这里我们需要讨论一下关于 *axgui* 的实现，对于将不同操作系统的原生GUI进行统一接口封装，通过纯C语言完成存在很多难题。比如在OSX系统中，界面的创建需要通过Objective-C语言调用Cocoa的接口。而在Linux下，带有图形用户界面的程序通常使用GTK+来创建界面，但GTK+已经依赖于强大的基础库 *glib* ，其完整性、性能和灵活性都要高于我们的实现，直接通过 *glib* 对界面进行可移植封装可能是更好的方式。所以综合来看，*libui* 是一个不错的GUI工具，它在不同的平台通过原生GUI接口实现图形界面，并且在GUI的程序的轻便性、功能完整性和接口的灵活性之间达到了不错的平衡。在 *configure* 阶段会检查 *libui.h* 的存在性，如果不存在则放弃对 *axgui* 模块的编译。
+将不同操作系统的原生GUI进行统一接口封装，通过纯C语言完成存在很多难题。比如在OSX系统中，界面的创建需要通过Objective-C语言调用Cocoa的接口。而在Linux下，带有图形用户界面的程序通常使用GTK+来创建界面，但GTK+已经依赖于强大的基础库 *glib* ，其完整性、性能和灵活性都要高于我们的实现，直接通过 *glib* 对界面进行可移植封装可能是更好的方式。所以综合来看，*libui* 是一个不错的GUI工具，它在不同的平台通过原生GUI接口实现图形界面，并且在GUI的程序的轻便性、功能完整性和接口的灵活性之间达到了不错的平衡。在 *configure* 阶段会检查 *libui.h* 的存在性，如果不存在则放弃对 *axgui* 模块的编译。
 
 开发者可以选择性的引用指定的模块，通过执行 `configure --help` 获取更多配置信息。
 
@@ -37,68 +37,7 @@ $ sudo make install
 
 您可以直接通过引入相关头文件来使用特定的功能，下面是一个样例程序，这其中包括一些有趣的特性，比如链表、迭代器算法、对象转储和容器遍历等操作. 在编译客户程序时需要通过加入编译参数`-lax*`来连接相关的库文件. 详细的帮助文档请参考MAN手册页，它们位于工程目录的 *man/man3* 目录下，或参考单元测试程序和附带的样例程序，它们分别位于工程目录下的 *test* 和 *sample* 目录. 
 
-```c
-/* gcc foo.c -laxcore */
-#include "ax/algo.h" /* 基于迭代器的算法函数 */
-#include "ax/list.h" /* 双链表 */
-#include "ax/ptra.h" /* 自动指针 */
-#include <stdlib.h>
-#include <stdio.h>
-
-/* 定义一个一元算子函数 */
-void oper_del_odd(void *out, const void *in, void *args)
-{
-        const int *num = in;
-        int *ret = out;
-        if (*num % 2 == 1) /* 如果输入为基数，则输出为0 */
-                *ret = 0;
-}
-
-int main(void)
-{
-        /* 定义双链表 */
-        ax_list_r l = ax_new(ax_list, ax_t(int));
-
-        int *count = malloc(sizeof *count);
-
-        /* RAII块，退出作用域后，l和count自动被释放 */
-        ax_scope(l.ax_one, ax_onelize(count)) {
-
-                /* 对区间[1, 11)进行循环迭代 */
-                ax_forrange(10, 0, -1)
-                        /* 将区间每个元素逐个压入链表 */
-                        ax_seq_push(l.ax_seq, &_);
-
-                /* 转储 */
-                ax_dump_out(l.ax_any);
-                /* OUTPUT: foo.c:33:ax_one.ax_any.ax_box.ax_seq.ax_list {10, 9, 8, 7, 6, 5, 4, 3, 2, 1} */
-
-                /* 创建一个一元谓词 */
-                ax_pred del_odd = ax_pred_unary_make(oper_del_odd, NULL, NULL);
-
-                ax_citer cbegin = ax_box_cbegin(l.ax_box);
-                ax_citer cend = ax_box_cend(l.ax_box);
-
-                /* 遍历容器中所有元素，对每个元素应用rmodd谓词 */
-                ax_transform(&cbegin, &cend, ax_p(ax_iter, ax_box_begin(l.ax_box)), &del_odd);
-
-                /* 转储 */
-                ax_dump_out(l.ax_any);
-                // OUTPUT: a.c:46:ax_one.ax_any.ax_box.ax_seq.ax_list {10, 0, 8, 0, 6, 0, 4, 0, 2, 0}
-
-                /* 遍历链表元素并求和 */
-                ax_box_foreach(l.ax_box, int *, i)
-                        *count += *i;
-
-                printf("Sum of elements = %d\n", *count);
-                /* OUTPUT: Sum of elements = 30 */
-        }
-
-        return 0;
-}
-```
-
-该程的 *axui* 模块可以实现常用的用户界面控件，下面是一个表格示例，源代码位于 `sample/ui/table.c`
+*axui* 模块支持基本的用户界面控件，下面是一个表格示例的截图，示例源代码位于 `sample/ui/table.c`
 
 ![GUI sample](./ui_sample.png "表格示例")
 
@@ -149,6 +88,7 @@ int main(void)
 | ax/stack.h        | 栈 |
 | ax/pque.h         | 优先队列 |
 | ax/base64.h       | BASE64编解码 |
+| ax/iobuf.h        | IO缓冲区 |
 
 ### axnet 头文件列表
 
