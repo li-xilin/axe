@@ -36,6 +36,7 @@
 #include <winbase.h>
 #include <shellapi.h>
 typedef WCHAR ax_uchar;
+#define AX_UCHAR_LEN 2
 #define __ax_u(s) L##s
 #define ax_ustrlen wcslen
 #define ax_ustrcat wcscat
@@ -58,7 +59,7 @@ typedef WCHAR ax_uchar;
 #define ax_ustr_index ax_utf16_index
 #define ax_ustr_to_ucode ax_utf16_to_ucode
 #define ax_ustr_charcnt ax_utf16_charcnt
-#define ax_ustrwidth ax_utf16_strwidth
+#define ax_ustr_charlen ax_utf16_charlen
 #define ax_ucode_to_ustr ax_ucode_to_utf16
 #define ax_ustrtoint _wtoi
 
@@ -73,6 +74,7 @@ typedef WCHAR ax_uchar;
 #else
 
 typedef char ax_uchar;
+#define AX_UCHAR_LEN 1
 #define __ax_u(s) s
 #define ax_ustrlen strlen
 #define ax_ustrcat strcat
@@ -95,7 +97,7 @@ typedef char ax_uchar;
 #define ax_ustr_index ax_utf8_index
 #define ax_ustr_to_ucode ax_utf8_to_ucode
 #define ax_ustr_charcnt ax_utf8_charcnt
-#define ax_ustrwidth ax_utf8_strwidth
+#define ax_ustr_charlen ax_utf8_charlen
 #define ax_ucode_to_ustr ax_ucode_to_utf8
 #define ax_ustrtoint atoi
 

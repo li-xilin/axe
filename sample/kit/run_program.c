@@ -27,8 +27,12 @@ int main()
 		NULL };
 	ax_proc *p = ax_proc_open(ax_u(TEST_EXEC), argv);
 	if (!p) {
+<<<<<<< HEAD
+		ax_printf(ax_u("%s\n"), ax_strerror(errno));
+=======
 		ax_uchar buf[1024];
 		ax_printf(ax_u("%s\n"), ax_errmsg(buf, ax_nelems(buf)));
+>>>>>>> 8ccfe6236391a81c7df0fd18e2ab2d6992cabcda
 		exit(1);
 	}
 	FILE *in = ax_proc_stdio(p, 0);

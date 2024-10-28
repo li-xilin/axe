@@ -320,6 +320,7 @@ static void sort_time(ut_runner *r) {
 	{
 		time_before = clock();
 		qsort(ax_vector_buffer(vec4.ax_vector), ax_box_size(vec4.ax_box), vec4.ax_box->env.elem_tr->t_size, qsort_compare_cb);
+		printf("qsort() spent %lfs\n", (double)(clock()-time_before) / CLOCKS_PER_SEC );
 		ut_printf(r, "qsort() spent %lfs", (double)(clock()-time_before) / CLOCKS_PER_SEC );
 		ut_assert(r, ax_sorted(ax_iter_c(&first), ax_iter_c(&last), &pred));
 	}

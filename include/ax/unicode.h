@@ -47,6 +47,8 @@
 size_t ax_utf8_charlen(uint8_t c);
 
 
+size_t ax_utf16_charlen(uint16_t c);
+
 /**
  * Returns the number of characters in the utf-8
  * string of the given byte length.

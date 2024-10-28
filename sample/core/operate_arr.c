@@ -6,7 +6,7 @@ int main()
 {
 	char arr[] = "Hello world";
 
-	ax_array_r a = ax_new(ax_array, ax_t(char), arr, sizeof(arr));
+	ax_array_r a = ax_new(ax_array, &ax_t_char, arr, sizeof(arr));
 	printf("size = %zu\n", ax_box_size(a.ax_box));
 	printf("maxsize = %zu\n", ax_box_maxsize(a.ax_box));
 

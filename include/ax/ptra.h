@@ -82,7 +82,8 @@ const struct ax_one_trait_st ax_ptra_tr =
 			[0].ptr = _ptr, \
 			})
 
-#define ax_onelize_2(_p, _f) (ax_one *)ax_ptra_new2(ax_p(const ax_trait, { .t_free = _f }), _p)
+#define ax_onelize_2(_p, _f) \
+	ax_ptra_new2(ax_p(const ax_trait, { .t_free = _f }), _p)
 
 #define ax_onelize_1(_p) \
 	ax_onelize_2(_p, free)

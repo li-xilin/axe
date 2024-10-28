@@ -69,3 +69,4 @@ inline static void ax_array_reset(ax_array *array, char *ptr, size_t size)
 	ax_array_new3(_etr, (uint8_t [(_size)]) { 0 }, _size)
 
 #endif
+
